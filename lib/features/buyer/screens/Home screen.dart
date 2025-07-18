@@ -25,7 +25,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
               SizedBox(height: 20.h,),
               BuyerHomeSearchBar(),
               PromoSlider(),
-
+              SizedBox(height: 20.h,),
+              
             ],
           ),
         ),

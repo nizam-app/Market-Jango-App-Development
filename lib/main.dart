@@ -11,4 +11,3 @@ void main() {
       splitScreenMode: true,
         child: App()),
   ));
-}

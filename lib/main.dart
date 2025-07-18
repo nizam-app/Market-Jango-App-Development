@@ -4,10 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app.dart';
 
 void main() {
-  runApp( ProviderScope(
+  runApp(ProviderScope(
     child: ScreenUtilInit(
-      designSize: const Size(393, 852),
-      minTextAdapt: true,
-      splitScreenMode: true,
+        designSize: const Size(393, 852),
+        minTextAdapt: true,
+        splitScreenMode: true,
         child: App()),
   ));
+}

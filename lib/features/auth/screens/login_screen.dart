@@ -24,8 +24,6 @@ class LoginScreen extends StatelessWidget {
                 LoginHereText(),
                 LoginTextFormField(),
                 LoginBotton()
-          
-          
               ],
             ),
           ),
@@ -77,7 +75,10 @@ class LoginBotton extends StatelessWidget {
       ],
     );
   }
-void loginDone() {}
+void loginDone() {
+    print("Login Done");
+  // Here you can add the logic to handle the login process
+}
 
 void goToForgotPasswordScreen(BuildContext context) {
   context.push(ForgotPasswordScreen.routeName);}
@@ -114,6 +115,7 @@ class LoginTextFormField extends StatelessWidget {
     TextFormField(
       obscureText: true,
       decoration: InputDecoration(
+        suffixIcon: Icon(Icons.visibility_off_outlined),
         hintText: "Password",
       ),
     )

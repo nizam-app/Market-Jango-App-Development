@@ -3,8 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
-import 'package:riverpod/riverpod.dart';
 class BuyerHomeScreen extends StatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';
@@ -22,16 +22,20 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
           padding:  EdgeInsets.symmetric(horizontal: 20.w,),
           child: Column(
             children: [
-              SizedBox(height: 20.h,),
+
               BuyerHomeSearchBar(),
               PromoSlider(),
-              SizedBox(height: 20.h,),
+              SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
+              
 
             ],
           ),
         ),
       ),
     );
+  }
+  void goToCategoriesPage() {
+
   }
 }
 
@@ -42,87 +46,92 @@ class BuyerHomeSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          flex: 2,
-          child: TextFormField(
-            decoration: InputDecoration(
-              hintText: 'Search for products',
-              prefixIcon: Icon(Icons.search,),
-              isDense: true,
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.symmetric(vertical: 12.h,),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50.r),
-                borderSide: BorderSide.none,
+        SizedBox(height: 20.h,),
+        Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: 'Search for products',
+                  prefixIcon: Icon(Icons.search,),
+                  isDense: true,
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: EdgeInsets.symmetric(vertical: 12.h,),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50.r),
+                    borderSide: BorderSide(color: Colors.grey), // ফোকাসে যেটা দেখাতে চান
+                  ),
+                ), // থিম ইনহেরিট না করার জন্য
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50.r),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(50.r),
-                borderSide: BorderSide(color: Colors.grey), // ফোকাসে যেটা দেখাতে চান
-              ),
-            ), // থিম ইনহেরিট না করার জন্য
-          ),
-        ),
-        SizedBox(width: 8.w),
-        // Menu Icon
-        InkWell(
-          onTap: () {
-           goToNotificationScreen(context);
-          },
-          child: Container(
-            height: 35.h,
-            width: 35.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4.sp,
-                  offset: Offset(0, 0.5.sp),
+            ),
+            SizedBox(width: 8.w),
+            // Menu Icon
+            InkWell(
+              onTap: () {
+               goToNotificationScreen(context);
+              },
+              child: Container(
+                height: 35.h,
+                width: 35.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4.sp,
+                      offset: Offset(0, 0.5.sp),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.menu, size: 20.sp),
-              onPressed: () {},
-            ),
-          ),
-        ),
-        SizedBox(width: 8.w),
-    
-        // Notification Icon
-        InkWell(
-          onTap: () {
-            openingFilter(context);
-          },
-          child: Container(
-            height: 35.h,
-            width: 35.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0,0.5.sp),
+                child: IconButton(
+                  icon: Icon(Icons.menu, size: 20.sp),
+                  onPressed: () {},
                 ),
-              ],
+              ),
             ),
-            child: IconButton(
-              icon: Icon(Icons.notifications, size: 20.sp),
-              onPressed: () {},
+            SizedBox(width: 8.w),
+
+            // Notification Icon
+            InkWell(
+              onTap: () {
+                openingFilter(context);
+              },
+              child: Container(
+                height: 35.h,
+                width: 35.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0,0.5.sp),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.notifications, size: 20.sp),
+                  onPressed: () {},
+                ),
+              ),
             ),
-          ),
+
+          ],
         ),
-    
       ],
     );
   }

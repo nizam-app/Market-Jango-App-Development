@@ -57,7 +57,7 @@ final GoRouter router = GoRouter(
      GoRoute(path:PhoneNumberScreen.routeName, 
     name: 'phoneNumber',
     builder: (context,state)=>const PhoneNumberScreen(), 
-     )
+     ),
     GoRoute(
       path: BuyerHomeScreen.routeName,
       name: 'buyer_home',

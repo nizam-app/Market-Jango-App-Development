@@ -3,24 +3,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/code_screen.dart';
+import 'package:market_jango/features/auth/screens/email_screen.dart';
 
-class PhoneNumberScreen extends StatelessWidget {
-  const PhoneNumberScreen({super.key});
-  static final String routeName = '/phoneNumberScreen'; 
+class CodeScreen extends StatelessWidget {
+  const CodeScreen({super.key});
+  static final String routeName = '/codeScreen';  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
+
       body: ScreenBackground(
+        
         child: SingleChildScrollView(
           child: Padding(padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-              NumberText(),
-              NextBotton(), 
-        
+              CodeText(),
+              NextBotton(),
+
             ],
           ),),
         ),
@@ -30,8 +31,9 @@ class PhoneNumberScreen extends StatelessWidget {
   }
 }
 
-class NumberText extends StatelessWidget {
-  const NumberText({super.key});
+
+class CodeText extends StatelessWidget {
+  const CodeText({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,14 @@ class NumberText extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios),
         ),
         SizedBox(height: 20.h),
-        Center(child: Text("Can we get to your number? ", style: textTheme.titleLarge)),
+        Center(child: Text("Enter your Code ", style: textTheme.titleLarge)),
+        SizedBox(height: 16.h),
+          Center(
+            child: Text(
+            "011 221 333 56 Resend?",
+            style: Theme.of(context).textTheme.titleSmall,
+                    ),
+          ),
         SizedBox(height: 24.h),
         
       ],
@@ -72,10 +81,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCodeScreen(context);
+    goToEmailScreen(context);
   }
 
-  void goToCodeScreen(BuildContext context) {
-    context.push(CodeScreen.routeName);
+  void goToEmailScreen(BuildContext context) {
+    context.push(EmailScreen.routeName);
   }
 }

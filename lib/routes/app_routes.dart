@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/features/auth/screens/code_screen.dart';
+import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
@@ -43,20 +45,31 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(path:SplashScreen.routeName, 
-    name: 'splash',
+    name: 'splashScreen',
     builder: (context,state)=>const SplashScreen(), 
      ),
      GoRoute(path:NameScreen.routeName, 
-    name: 'name',
+    name: 'nameScreen',
     builder: (context,state)=>const NameScreen(), 
      ),
       GoRoute(path:UserScreen.routeName, 
-    name: 'user',
+    name: 'userScreen',
     builder: (context,state)=>const UserScreen(), 
      ),
      GoRoute(path:PhoneNumberScreen.routeName, 
-    name: 'phoneNumber',
+    name: 'phoneNumberScreen',
     builder: (context,state)=>const PhoneNumberScreen(), 
+     ),
+
+
+    GoRoute(path:CodeScreen.routeName,
+    name: 'codeScreen',
+    builder: (context,state)=>const CodeScreen(),
+     ),
+
+GoRoute(path:EmailScreen.routeName,
+    name: 'emailScreen',
+    builder: (context,state)=>const EmailScreen(),
      ),
     GoRoute(
       path: BuyerHomeScreen.routeName,

@@ -3,35 +3,28 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/code_screen.dart';
 
-class PhoneNumberScreen extends StatelessWidget {
-  const PhoneNumberScreen({super.key});
-  static final String routeName = '/phoneNumberScreen'; 
+class EmailScreen extends StatelessWidget {
+  const EmailScreen({super.key});
+  static final String routeName = '/emailScreen';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
       body: ScreenBackground(
         child: SingleChildScrollView(
-          child: Padding(padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              NumberText(),
-              NextBotton(), 
-        
-            ],
-          ),),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(children: [EmailScreen(), NextBotton()]),
+          ),
         ),
       ),
-
     );
   }
 }
 
-class NumberText extends StatelessWidget {
-  const NumberText({super.key});
+class EmailText extends StatelessWidget {
+  const EmailText({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +40,20 @@ class NumberText extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios),
         ),
         SizedBox(height: 20.h),
-        Center(child: Text("Can we get to your number? ", style: textTheme.titleLarge)),
+        Center(child: Text("Your email ", style: textTheme.titleLarge)),
         SizedBox(height: 24.h),
-        
+        SizedBox(height: 16.h),
+        Center(
+          child: Text(
+            "Don't lose access to your account, verify your email ",
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ),
       ],
     );
   }
 }
- 
- 
+
 class NextBotton extends StatelessWidget {
   const NextBotton({super.key});
   @override
@@ -72,10 +70,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCodeScreen(context);
+    goToEmailScreen(context);
   }
 
-  void goToCodeScreen(BuildContext context) {
-    context.push(CodeScreen.routeName);
+  void goToEmailScreen(BuildContext context) {
+    context.push(EmailScreen.routeName);
   }
 }

@@ -24,8 +24,6 @@ class LoginScreen extends StatelessWidget {
                 LoginHereText(),
                 LoginTextFormField(),
                 LoginBotton()
-          
-          
               ],
             ),
           ),

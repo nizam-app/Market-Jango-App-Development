@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/features/auth/screens/code_screen.dart';
+import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
+import 'package:market_jango/features/auth/screens/password_screen.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
 
@@ -13,7 +17,7 @@ import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
 
-  initialLocation: BuyerHomeScreen.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Error: ${state.error } '),
@@ -43,21 +47,44 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(path:SplashScreen.routeName, 
-    name: 'splash',
+    name: 'splashScreen',
     builder: (context,state)=>const SplashScreen(), 
      ),
      GoRoute(path:NameScreen.routeName, 
-    name: 'name',
+    name: 'nameScreen',
     builder: (context,state)=>const NameScreen(), 
      ),
       GoRoute(path:UserScreen.routeName, 
-    name: 'user',
+    name: 'userScreen',
     builder: (context,state)=>const UserScreen(), 
      ),
      GoRoute(path:PhoneNumberScreen.routeName, 
-    name: 'phoneNumber',
+    name: 'phoneNumberScreen',
     builder: (context,state)=>const PhoneNumberScreen(), 
-     )
+
+     ),
+
+    GoRoute(path:CodeScreen.routeName, 
+    name: 'codeScreen',
+    builder: (context,state)=>const CodeScreen(), 
+     ),
+
+GoRoute(path:EmailScreen.routeName, 
+    name: 'emailScreen',
+    builder: (context,state)=>const EmailScreen(), 
+     ),
+GoRoute(path:PasswordScreen.routeName, 
+    name: 'passwordScreen',
+    builder: (context,state)=>const PasswordScreen(), 
+     ),
+ 
+
+GoRoute(path:VendorRequestFrom.routeName, 
+    name: 'vendorRequstFrom',
+    builder: (context,state)=>const VendorRequestFrom(), 
+     ),
+ 
+    
     GoRoute(
       path: BuyerHomeScreen.routeName,
       name: 'buyer_home',

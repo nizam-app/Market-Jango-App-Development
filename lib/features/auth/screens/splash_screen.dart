@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -12,15 +13,17 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(right: 49, left: 49, top: 89),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset("assets/images/splash-logo.png", height: 300, width: 300,fit: BoxFit.cover,), 
-               SplashScreenText(),
-            ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 60.h),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset("assets/images/logo.svg", height: 333.h, width: 303.w,fit: BoxFit.cover,), 
+                 SplashScreenText(),
+              ],
+            ),
           ),
         ),
       ),
@@ -41,7 +44,7 @@ class SplashScreenText extends StatelessWidget{
          return Column(
           children: [
                  SizedBox(height: 48.h,), 
-                 Center(child: Text("One Marketplace, \n Endless Possibilities",style:textTheme.titleLarge,)),
+                 Center(child: Text("One Marketplace,\n Endless Possibilities",style:textTheme.titleLarge,)),
                  SizedBox(height: 20.h,), 
               CustomAuthButton(buttonText: "Login", onTap: () => loginDone(context)),
               SizedBox(height: 20.h,), 

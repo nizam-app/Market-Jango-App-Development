@@ -3,6 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 class BuyerHomeScreen extends StatefulWidget {
@@ -18,17 +20,20 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 20.w,),
-          child: Column(
-            children: [
-
-              BuyerHomeSearchBar(),
-              PromoSlider(),
-              SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
-              
-
-            ],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding:  EdgeInsets.symmetric(horizontal: 20.w,),
+            child: Column(
+              children: [
+          
+                BuyerHomeSearchBar(),
+                PromoSlider(),
+                SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
+                Categories_list()
+          
+          
+              ],
+            ),
           ),
         ),
       ),
@@ -36,6 +41,62 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   }
   void goToCategoriesPage() {
 
+  }
+}
+
+class Categories_list extends StatelessWidget {
+   Categories_list({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 10.h,
+        crossAxisSpacing: 10.w,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: 8, // Example item count
+      itemBuilder: (context, index) {
+        return Card(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 4.h,
+                  crossAxisSpacing: 4.w,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: 1, // Example item count for images
+                itemBuilder: (context, imgIndex) {
+                  return Image.asset(
+                    "assets/images/product.jpg", // Example image path
+                    fit: BoxFit.cover,
+                    height: 100.h,
+                    width: double.infinity,
+                  );
+                },
+              ),
+              SizedBox(height: 10.h),
+              Text('Category ${index + 1}', style: TextStyle(fontSize: 16.sp)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  List<CategoryModel> categories = [];
+  Future<void> loadCategories() async {
+    // Load categories from JSON or API
+    // Example: categories = await Category.loadCategories();
   }
 }
 

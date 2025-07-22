@@ -10,7 +10,7 @@ class SeeMoreButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 20.h,),
+        SizedBox(height: 30.h,),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -37,7 +37,8 @@ class SeeMoreButton extends StatelessWidget {
               ),
             ),
           ],
-        )
+        ),
+        SizedBox(height: 16.h,),
       ],
     );
   }

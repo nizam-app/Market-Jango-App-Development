@@ -1,0 +1,38 @@
+[
+{
+"title": "Clothing",
+"images": [
+"assets/images/clothing1.jpg",
+"assets/images/clothing2.jpg",
+"assets/images/clothing3.jpg",
+"assets/images/clothing4.jpg"
+]
+},
+{
+"title": "Shoes",
+"images": [
+"assets/images/shoes1.jpg",
+"assets/images/shoes2.jpg",
+"assets/images/shoes3.jpg",
+"assets/images/shoes4.jpg"
+]
+},
+{
+"title": "Watch",
+"images": [
+"assets/images/watch1.jpg",
+"assets/images/watch2.jpg",
+"assets/images/watch3.jpg",
+"assets/images/watch4.jpg"
+]
+},
+{
+"title": "Hoodies",
+"images": [
+"assets/images/hoodie1.jpg",
+"assets/images/hoodie2.jpg",
+"assets/images/hoodie3.jpg",
+"assets/images/hoodie4.jpg"
+]
+}
+]

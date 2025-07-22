@@ -4,9 +4,11 @@ import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
+import 'package:market_jango/features/auth/screens/password_screen.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
 
@@ -71,8 +73,17 @@ GoRoute(path:EmailScreen.routeName,
     name: 'emailScreen',
     builder: (context,state)=>const EmailScreen(), 
      ),
+GoRoute(path:PasswordScreen.routeName, 
+    name: 'passwordScreen',
+    builder: (context,state)=>const PasswordScreen(), 
+     ),
+ 
 
-
+GoRoute(path:VendorRequestFrom.routeName, 
+    name: 'vendorRequstFrom',
+    builder: (context,state)=>const VendorRequestFrom(), 
+     ),
+ 
     
     GoRoute(
       path: BuyerHomeScreen.routeName,

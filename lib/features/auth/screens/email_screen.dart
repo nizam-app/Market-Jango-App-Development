@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/password_screen.dart';
 
 class EmailScreen extends StatelessWidget {
   const EmailScreen({super.key});
@@ -15,7 +16,10 @@ class EmailScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [EmailScreen(), NextBotton()]),
+            child: Column(children: [
+              
+              EmailText(),
+             NextBotton()]),
           ),
         ),
       ),
@@ -41,14 +45,24 @@ class EmailText extends StatelessWidget {
         ),
         SizedBox(height: 20.h),
         Center(child: Text("Your email ", style: textTheme.titleLarge)),
-        SizedBox(height: 24.h),
-        SizedBox(height: 16.h),
+        SizedBox(height: 14.h),
         Center(
           child: Text(
-            "Don't lose access to your account, verify your email ",
+            "Don't lose access to your account, verify \nyour email ",
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
+
+        SizedBox(height: 24.h),
+        TextFormField(
+      decoration: InputDecoration(
+        hintText: "Email",
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+      ),
+    ),
+
       ],
     );
   }
@@ -70,10 +84,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToEmailScreen(context);
+    goToPasswordScreen(context);
   }
 
-  void goToEmailScreen(BuildContext context) {
-    context.push(EmailScreen.routeName);
+  void goToPasswordScreen(BuildContext context) {
+    context.push(PasswordScreen.routeName);
   }
 }

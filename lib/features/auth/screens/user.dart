@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
-
+   
 class UserScreen extends StatelessWidget {
   const UserScreen({super.key});
   static const String routeName = '/userScreen';
-
+           
   @override
   Widget build(BuildContext context) {
     return Scaffold(

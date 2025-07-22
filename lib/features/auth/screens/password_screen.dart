@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/code_screen.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 
-class PhoneNumberScreen extends StatelessWidget {
-  const PhoneNumberScreen({super.key});
-  static final String routeName = '/phoneNumberScreen';
+class PasswordScreen extends StatelessWidget {
+  const PasswordScreen({super.key});
+  static final String routeName = '/passwordScreen';
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +16,7 @@ class PhoneNumberScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [NumberText(), NextBotton()]),
+            child: Column(children: [PasswordText(), NextBotton()]),
           ),
         ),
       ),
@@ -25,8 +24,8 @@ class PhoneNumberScreen extends StatelessWidget {
   }
 }
 
-class NumberText extends StatelessWidget {
-  const NumberText({super.key});
+class PasswordText extends StatelessWidget {
+  const PasswordText({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,40 +38,24 @@ class NumberText extends StatelessWidget {
           onPressed: () {
             context.pop();
           },
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
         SizedBox(height: 20.h),
-
+        Center(child: Text("Create New Password", style: textTheme.titleLarge)),
+        SizedBox(height: 20.h),
         Center(
           child: Text(
-            "Can we get to your \n number?",
-            style: textTheme.titleLarge,
-          ),
-        ),
-        SizedBox(height: 28.h),
-
-        IntlPhoneField(
-          decoration: InputDecoration(
-            labelText: 'Phone Number',
-            border: OutlineInputBorder(borderSide: BorderSide()),
-          ),
-          initialCountryCode: 'BD', // Bangladesh
-          onChanged: (phone) {
-            print(phone.completeNumber); // Full number with country code
-          },
-        ),
-        SizedBox(height: 28.h),
-        Center(
-          child: Text(
-            "we'll text you a cde to verify you're really you \n Message and data rates may apply. \n What happens if lyour number changes? ",
+            "Type and confirm a secure new password for your amount",
             style: textTheme.titleSmall,
           ),
         ),
-        SizedBox(height: 24.h),
+        SizedBox(height: 20.h),
       ],
     );
   }
 }
+
+
 
 class NextBotton extends StatelessWidget {
   const NextBotton({super.key});
@@ -90,10 +73,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCodeScreen(context);
+    goToVendorRequestFrom(context);
   }
 
-  void goToCodeScreen(BuildContext context) {
-    context.push(CodeScreen.routeName);
+  void goToVendorRequestFrom(BuildContext context) {
+    context.push(VendorRequestFrom.routeName);
   }
 }

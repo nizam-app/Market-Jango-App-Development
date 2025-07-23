@@ -31,7 +31,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 PromoSlider(),
                 SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
                 Categories_list(),
-                SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
+                SeeMoreButton(name:"Top Products",seeMoreAction: (){goToTopProducts();},),
+                
           
           
               ],
@@ -41,9 +42,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
       ),
     );
   }
-  void goToCategoriesPage() {
-
-  }
+  void goToCategoriesPage() {}
+  void goToTopProducts( ) {}
 }
 
 class Categories_list extends ConsumerWidget{

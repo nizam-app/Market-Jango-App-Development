@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
@@ -82,6 +83,11 @@ GoRoute(path:PasswordScreen.routeName,
 GoRoute(path:VendorRequestFrom.routeName, 
     name: 'vendorRequstFrom',
     builder: (context,state)=>const VendorRequestFrom(), 
+     ),
+ 
+ GoRoute(path:CongratulationScreen.routeName, 
+    name: 'congratulationScreen',
+    builder: (context,state)=>const CongratulationScreen(), 
      ),
  
     

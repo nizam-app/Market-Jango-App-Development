@@ -17,7 +17,7 @@ import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
 
-  initialLocation: SplashScreen.routeName,
+  initialLocation: BuyerHomeScreen.routeName,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Error: ${state.error } '),
@@ -60,31 +60,29 @@ final GoRouter router = GoRouter(
      ),
      GoRoute(path:PhoneNumberScreen.routeName, 
     name: 'phoneNumberScreen',
-    builder: (context,state)=>const PhoneNumberScreen(), 
-
+    builder: (context,state)=>const PhoneNumberScreen(),
      ),
 
-    GoRoute(path:CodeScreen.routeName, 
+
+    GoRoute(path:CodeScreen.routeName,
     name: 'codeScreen',
-    builder: (context,state)=>const CodeScreen(), 
+    builder: (context,state)=>const CodeScreen(),
      ),
 
-GoRoute(path:EmailScreen.routeName, 
+GoRoute(path:EmailScreen.routeName,
     name: 'emailScreen',
-    builder: (context,state)=>const EmailScreen(), 
+    builder: (context,state)=>const EmailScreen(),
      ),
-GoRoute(path:PasswordScreen.routeName, 
+GoRoute(path:PasswordScreen.routeName,
     name: 'passwordScreen',
-    builder: (context,state)=>const PasswordScreen(), 
+    builder: (context,state)=>const PasswordScreen(),
      ),
- 
 
-GoRoute(path:VendorRequestFrom.routeName, 
+
+GoRoute(path:VendorRequestFrom.routeName,
     name: 'vendorRequstFrom',
-    builder: (context,state)=>const VendorRequestFrom(), 
+    builder: (context,state)=>const VendorRequestFrom(),
      ),
- 
-    
     GoRoute(
       path: BuyerHomeScreen.routeName,
       name: 'buyer_home',

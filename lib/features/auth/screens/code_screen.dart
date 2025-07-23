@@ -1,36 +1,186 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:market_jango/core/widget/custom_auth_button.dart';
+// import 'package:market_jango/core/widget/sreeen_brackground.dart';
+// import 'package:market_jango/features/auth/screens/email_screen.dart';
+// import 'package:pin_code_fields/pin_code_fields.dart';
+
+// class CodeScreen extends StatelessWidget {
+//   const CodeScreen({super.key});
+//   static final String routeName = '/codeScreen';
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: ScreenBackground(
+//         child: SingleChildScrollView(
+//           child: Padding(
+//             padding: EdgeInsets.symmetric(horizontal: 20.w),
+//             child: Column(children: [CodeText(), OTPPin(), NextBotton(), NsextBotton()]),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// class CodeText extends StatelessWidget {
+//   const CodeText({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final textTheme = Theme.of(context).textTheme;
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         SizedBox(height: 30.h),
+//         IconButton(
+//           onPressed: () {
+//             context.pop();
+//           },
+//           icon: Icon(Icons.arrow_back_ios),
+//         ),
+//         SizedBox(height: 20.h),
+//         Center(child: Text("Enter your Code ", style: textTheme.titleLarge)),
+//         SizedBox(height: 16.h),
+//         Center(
+//           child: Text(
+//             "011 221 333 56 Resend?",
+//             style: Theme.of(context).textTheme.titleSmall,
+//           ),
+//         ),
+//         SizedBox(height: 20.h),
+//       ],
+//     );
+//   }
+// }
+
+
+// class OTPPin extends StatelessWidget {
+//   const OTPPin({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: EdgeInsets.symmetric(horizontal: 24.w),
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           PinCodeTextField(
+//             appContext: context,
+//             length: 6,
+//             onChanged: (value) {},
+//             onCompleted: (code) {
+//               print("OTP Entered: $code");
+//             },
+//             pinTheme: PinTheme(
+//               shape: PinCodeFieldShape.box,
+//               borderRadius: BorderRadius.circular(8),
+//               fieldHeight: 52.h,
+//               fieldWidth: 44.w,
+//               activeFillColor: Colors.grey.shade200,
+//               inactiveFillColor: Colors.grey.shade200,
+//               selectedFillColor: Colors.grey.shade300,
+//               activeColor: Colors.transparent,
+//              inactiveColor: Colors.transparent,
+//               selectedColor: Colors.transparent,
+//             ),
+//             keyboardType: TextInputType.number,
+//             enableActiveFill: true,
+//           ),
+//           SizedBox(height: 197.h),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+
+// class NsextBotton extends StatelessWidget {
+//   const NsextBotton({super.key});
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         SizedBox(height: 465.h),
+//         CustomAuthButton(
+//           buttonText: "Next",
+//           onTap: () => nextButonDone(context),
+//         ),
+//       ],
+//     );
+//   }
+
+//   void nextButonDone(BuildContext context) {
+//     goToEmailScreen(context);
+//   }
+
+//   void goToEmailScreen(BuildContext context) {
+//     context.push(EmailScreen.routeName);
+//   }
+// }
+
+
+
+// class NextBotton extends StatelessWidget {
+//   const NextBotton({super.key});
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         SizedBox(height: 120.h),
+//         CustomAuthButton(
+//           buttonText: "Next",
+//           onTap: () => nextButonDone(context),
+//         ),
+//       ],
+//     );
+//   }
+
+//   void nextButonDone(BuildContext context) {
+//     goToEmailScreen(context);
+//   }
+
+//   void goToEmailScreen(BuildContext context) {
+//     context.push(EmailScreen.routeName);
+//   }
+// }
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 class CodeScreen extends StatelessWidget {
   const CodeScreen({super.key});
-  static final String routeName = '/codeScreen';  
+  static final String routeName = '/codeScreen';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: ScreenBackground(
-        
         child: SingleChildScrollView(
-          child: Padding(padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              CodeText(),
-              NextBotton(),
-
-            ],
-          ),),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: const [
+                CodeText(),
+                OTPPin(),
+                NextButton(), // Only one Next button
+              ],
+            ),
+          ),
         ),
       ),
-
     );
   }
 }
-
 
 class CodeText extends StatelessWidget {
   const CodeText({super.key});
@@ -46,45 +196,75 @@ class CodeText extends StatelessWidget {
           onPressed: () {
             context.pop();
           },
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
         SizedBox(height: 20.h),
-        Center(child: Text("Enter your Code ", style: textTheme.titleLarge)),
+        Center(child: Text("Enter your Code", style: textTheme.titleLarge)),
         SizedBox(height: 16.h),
-          Center(
-            child: Text(
+        Center(
+          child: Text(
             "011 221 333 56 Resend?",
-            style: Theme.of(context).textTheme.titleSmall,
-                    ),
+            style: textTheme.titleSmall,
           ),
-        SizedBox(height: 24.h),
-        
+        ),
+        SizedBox(height: 20.h),
       ],
     );
   }
 }
- 
- 
-class NextBotton extends StatelessWidget {
-  const NextBotton({super.key});
+
+class OTPPin extends StatelessWidget {
+  const OTPPin({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          PinCodeTextField(
+            appContext: context,
+            length: 6,
+            onChanged: (value) {},
+            onCompleted: (code) {
+              print("OTP Entered: $code");
+            },
+            pinTheme: PinTheme(
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(8),
+              fieldHeight: 52.h,
+              fieldWidth: 44.w,
+              activeFillColor: Colors.grey.shade200,
+              inactiveFillColor: Colors.grey.shade200,
+              selectedFillColor: Colors.grey.shade300,
+              activeColor: Colors.transparent,
+              inactiveColor: Colors.transparent,
+              selectedColor: Colors.transparent,
+            ),
+            keyboardType: TextInputType.number,
+            enableActiveFill: true,
+          ),
+          SizedBox(height: 50.h), // Reduced height for better layout
+        ],
+      ),
+    );
+  }
+}
+
+class NextButton extends StatelessWidget {
+  const NextButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 120.h),
+        SizedBox(height: 50.h),
         CustomAuthButton(
           buttonText: "Next",
-          onTap: () => nextButonDone(context),
+          onTap: () => context.push(EmailScreen.routeName),
         ),
       ],
     );
-  }
-
-  void nextButonDone(BuildContext context) {
-    goToEmailScreen(context);
-  }
-
-  void goToEmailScreen(BuildContext context) {
-    context.push(EmailScreen.routeName);
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
+import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 class BuyerHomeScreen extends StatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -29,7 +30,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 BuyerHomeSearchBar(),
                 PromoSlider(),
                 SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
-                Categories_list()
+                Categories_list(),
+                SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
           
           
               ],
@@ -44,59 +46,87 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   }
 }
 
-class Categories_list extends StatelessWidget {
+class Categories_list extends ConsumerWidget{
    Categories_list({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 10.h,
-        crossAxisSpacing: 10.w,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: 8, // Example item count
-      itemBuilder: (context, index) {
-        return Card(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 4.h,
-                  crossAxisSpacing: 4.w,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: 1, // Example item count for images
-                itemBuilder: (context, imgIndex) {
-                  return Image.asset(
-                    "assets/images/product.jpg", // Example image path
-                    fit: BoxFit.cover,
-                    height: 100.h,
-                    width: double.infinity,
-                  );
-                },
-              ),
-              SizedBox(height: 10.h),
-              Text('Category ${index + 1}', style: TextStyle(fontSize: 16.sp)),
-            ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categories = ref.watch(Category.loadCategories);
+    return categories.when(
+      data: (categories) {
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10.h,
+            crossAxisSpacing: 10.w,
+            childAspectRatio: 0.8,
           ),
+          itemCount: 4,
+          // Example item count
+          itemBuilder: (context, index) {
+           final category = categories[index];
+            return InkWell(
+              onTap: () {
+               goToCategoriesPage();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(blurRadius: 5, color: Colors.black12)
+                  ],
+                ),
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 4,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 4,
+                          crossAxisSpacing: 4,
+                        ),
+                        itemBuilder: (context, indexImg) {
+                          final imagePath = category.images[indexImg];
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child:
+                            Image.asset(
+                              imagePath,
+                              fit: BoxFit.cover,
+                            )
+                            ,
+                          );
+                        },
+                      ),
+                    ),
+              
+                    Padding(
+                      padding: EdgeInsets.all(8.0.r),
+                      child: Text(
+                        "${categories[index].title}",
+                        style:Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 16.sp)),
+                    ),
+              
+                  ],
+                ),
+              ),
+            );
+          },
         );
-      },
+      },loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, stack) => Center(child: Text('Error: $e')),
     );
   }
-  List<CategoryModel> categories = [];
-  Future<void> loadCategories() async {
-    // Load categories from JSON or API
-    // Example: categories = await Category.loadCategories();
+  void goToCategoriesPage() {
   }
 }
 

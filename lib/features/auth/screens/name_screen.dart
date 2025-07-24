@@ -13,21 +13,15 @@ class NameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   elevation: 0,
-      //   backgroundColor: Colors.transparent,
-      //   leading:IconButton(
-      //     onPressed: () {
-      //       context.pop();
-      //     },
-      //     icon: Icon(Icons.arrow_back_ios),
-      //   ), 
-      // ),
+    
       body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [NameText(), NextBotton()]),
+            child: Column(children: [
+               SizedBox(height: 30.h),
+               CustomBackButton(),
+              NameText(), NextBotton()]),
           ),
         ),
       ),
@@ -44,13 +38,8 @@ class NameText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-      SizedBox(height: 30.h),
-        IconButton(
-          onPressed: () {
-            context.pop();
-          },
-          icon: Icon(Icons.arrow_back_ios),
-        ), 
+     
+        
         SizedBox(height: 20.h),
         Center(child: Text("What's your name", style: textTheme.titleLarge)),
         SizedBox(height: 24.h),

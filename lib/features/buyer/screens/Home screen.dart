@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
@@ -32,6 +33,7 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
                 Categories_list(),
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){goToTopProducts();},),
+                TopProducts()
                 
           
           
@@ -46,16 +48,46 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   void goToTopProducts( ) {}
 }
 
-class Categories_list extends ConsumerWidget{
-   Categories_list({
+class TopProducts extends ConsumerWidget {
+  const TopProducts({
     super.key,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final topProducts = ref.watch(Category.loadCategories);
+    return SizedBox(
+      height: 50.h,
+      width: double.infinity,
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: AlwaysScrollableScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        itemCount: 20, // Example item count
+        itemBuilder: (context, index) {
+          return CircleAvatar(radius: 25.r,
+          child: CircleAvatar(radius: 20,
+          backgroundColor: Colors.green,),);
+        },
+      ),
+    );
+  }
+}
+
+class Categories_list extends ConsumerWidget{
+   Categories_list({
+    super.key,
+  });
+
+
+
+   @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(Category.loadCategories);
     return categories.when(
       data: (categories) {
+        final imageMap = buildCategoryImageMap(categories);
+        final titles = imageMap.keys.toList();
         return GridView.builder(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
@@ -68,7 +100,8 @@ class Categories_list extends ConsumerWidget{
           itemCount: 4,
           // Example item count
           itemBuilder: (context, index) {
-           final category = categories[index];
+           final title = titles[index];
+           final images = imageMap[title]!;
             return InkWell(
               onTap: () {
                goToCategoriesPage();
@@ -94,13 +127,12 @@ class Categories_list extends ConsumerWidget{
                           mainAxisSpacing: 4,
                           crossAxisSpacing: 4,
                         ),
-                        itemBuilder: (context, indexImg) {
-                          final imagePath = category.images[indexImg];
+                        itemBuilder: (context, indexImg) {// Default image if not found
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child:
                             Image.asset(
-                              imagePath,
+                              images[indexImg],
                               fit: BoxFit.cover,
                             )
                             ,
@@ -112,7 +144,7 @@ class Categories_list extends ConsumerWidget{
                     Padding(
                       padding: EdgeInsets.all(8.0.r),
                       child: Text(
-                        "${categories[index].title}",
+                        "${title}",
                         style:Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 16.sp)),
                     ),
               
@@ -128,6 +160,24 @@ class Categories_list extends ConsumerWidget{
   }
   void goToCategoriesPage() {
   }
+   Map<String, List<String>> buildCategoryImageMap(List<ProductModel> products) {
+     final Map<String, List<String>> categoryImageMap = {};
+
+     for (var product in products) {
+       final category = product.category;
+       final image = product.image;
+
+       if (categoryImageMap.containsKey(category)) {
+         categoryImageMap[category]!.add(image);
+       } else {
+         categoryImageMap[category] = [image];
+       }
+     }
+     Logger().i("Category Image Map: $categoryImageMap");
+     return categoryImageMap;
+   }
+
+
 }
 
 class BuyerHomeSearchBar extends StatelessWidget {

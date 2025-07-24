@@ -1,77 +1,261 @@
-
-
-
 [
   {
-    "title": "Clothing",
-    "images": [
-      "assets/images/clothing1.jpg",
-      "assets/images/clothing2.jpg",
-      "assets/images/clothing3.jpg",
-      "assets/images/clothing4.jpg"
-    ]
+    "title": "Classic Cotton T-Shirt",
+    "description": "Soft and breathable cotton t-shirt perfect for summer.",
+    "price": 19.99,
+    "size": ["S", "M", "L", "XL"],
+    "color": ["White", "Black"],
+    "image": "assets/images/clothing1.jpg",
+    "category": "Clothing",
+    "shop": "Urban Styles",
+    "vendor": "StyleWear Inc",
+    "buyer_tips": "Great for casual daily wear.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 10,
+    "added_at": "2025-07-24T10:00:00"
   },
   {
-    "title": "Shoes",
-    "images": [
-      "assets/images/shoes1.jpg",
-      "assets/images/shoes2.jpg",
-      "assets/images/shoes3.jpg",
-      "assets/images/shoes4.jpg"
-    ]
+    "title": "Minimalist T-Shirt",
+    "description": "Simple yet elegant cotton tee for men.",
+    "price": 17.50,
+    "size": ["M", "L"],
+    "color": ["Gray", "Black"],
+    "image": "assets/images/clothing2.jpg",
+    "category": "Clothing",
+    "shop": "Minimal Mode",
+    "vendor": "Basics Ltd.",
+    "buyer_tips": "Layer with jackets or open shirts.",
+    "top_product": false,
+    "flash_sale": false,
+    "discount_percent": 0,
+    "added_at": "2025-07-23T17:45:00"
   },
   {
-    "title": "Watch",
-    "images": [
-      "assets/images/watch1.jpg",
-      "assets/images/watch2.jpg",
-      "assets/images/watch3.jpg",
-      "assets/images/watch4.jpg"
-    ]
+    "title": "Striped Polo Shirt",
+    "description": "Smart striped polo for semi-casual looks.",
+    "price": 24.99,
+    "size": ["M", "L", "XL"],
+    "color": ["Navy", "White"],
+    "image": "assets/images/clothing3.jpg",
+    "category": "Clothing",
+    "shop": "SmartWear",
+    "vendor": "Polo Factory",
+    "buyer_tips": "Perfect for weekend meetups.",
+    "top_product": false,
+    "flash_sale": true,
+    "discount_percent": 12,
+    "added_at": "2025-07-22T15:00:00"
   },
   {
-    "title": "Hoodies",
-    "images": [
-      "assets/images/hoodies1.jpg",
-      "assets/images/hoodies2.jpg",
-      "assets/images/hoodies3.jpg",
-      "assets/images/hoodies4.jpg"
-    ]
+    "title": "Denim Jacket",
+    "description": "Stylish denim jacket for all seasons.",
+    "price": 39.99,
+    "size": ["L", "XL"],
+    "color": ["Blue"],
+    "image": "assets/images/clothing4.jpg",
+    "category": "Clothing",
+    "shop": "Street Denim",
+    "vendor": "JeanMakers",
+    "buyer_tips": "Pair with white T-shirt and boots.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 8,
+    "added_at": "2025-07-21T12:00:00"
+  },
+
+  {
+    "title": "Running Shoes",
+    "description": "Durable and flexible shoes for running.",
+    "price": 74.00,
+    "size": ["7", "8", "9", "10"],
+    "color": ["Black", "Orange"],
+    "image": "assets/images/shoes1.jpg",
+    "category": "Shoes",
+    "shop": "Runner's Point",
+    "vendor": "SpeedMax",
+    "buyer_tips": "Provides excellent heel support.",
+    "top_product": true,
+    "flash_sale": true,
+    "discount_percent": 25,
+    "added_at": "2025-07-22T09:30:00"
   },
   {
-    "title": "Clothing",
-    "images": [
-      "assets/images/clothing1.jpg",
-      "assets/images/clothing2.jpg",
-      "assets/images/clothing3.jpg",
-      "assets/images/clothing4.jpg"
-    ]
+    "title": "Sport Sneakers",
+    "description": "Lightweight and stylish sneakers for everyday use.",
+    "price": 59.99,
+    "size": ["8", "9", "10", "11"],
+    "color": ["White", "Blue"],
+    "image": "assets/images/shoes2.jpg",
+    "category": "Shoes",
+    "shop": "FitFeet",
+    "vendor": "SneakerWorks",
+    "buyer_tips": "Best paired with joggers or denim.",
+    "top_product": false,
+    "flash_sale": true,
+    "discount_percent": 20,
+    "added_at": "2025-07-24T11:30:00"
   },
   {
-    "title": "Shoes",
-    "images": [
-      "assets/images/shoes1.jpg",
-      "assets/images/shoes2.jpg",
-      "assets/images/shoes3.jpg",
-      "assets/images/shoes4.jpg"
-    ]
+    "title": "Canvas Casuals",
+    "description": "Breathable canvas shoes for summer.",
+    "price": 42.50,
+    "size": ["7", "8", "9"],
+    "color": ["Beige", "Gray"],
+    "image": "assets/images/shoes3.jpg",
+    "category": "Shoes",
+    "shop": "Canvas World",
+    "vendor": "SoftStep",
+    "buyer_tips": "Use invisible socks for best look.",
+    "top_product": false,
+    "flash_sale": false,
+    "discount_percent": 5,
+    "added_at": "2025-07-20T13:00:00"
   },
   {
-    "title": "Watch",
-    "images": [
-      "assets/images/watch1.jpg",
-      "assets/images/watch2.jpg",
-      "assets/images/watch3.jpg",
-      "assets/images/watch4.jpg"
-    ]
+    "title": "Leather Formal Shoes",
+    "description": "Polished leather shoes for formal attire.",
+    "price": 89.99,
+    "size": ["8", "9", "10"],
+    "color": ["Brown", "Black"],
+    "image": "assets/images/shoes4.jpg",
+    "category": "Shoes",
+    "shop": "Elite Footwear",
+    "vendor": "Formals Co.",
+    "buyer_tips": "Shine before every use for class.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 15,
+    "added_at": "2025-07-19T10:00:00"
+  },
+
+  {
+    "title": "Digital Sports Watch",
+    "description": "Water-resistant digital watch with multiple features.",
+    "price": 89.50,
+    "size": [],
+    "color": ["Black"],
+    "image": "assets/images/watch1.jpg",
+    "category": "Watch",
+    "shop": "TimeZone",
+    "vendor": "WatchKing",
+    "buyer_tips": "Suitable for both gym and casual use.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 15,
+    "added_at": "2025-07-24T13:00:00"
   },
   {
-    "title": "Hoodies",
-    "images": [
-      "assets/images/hoodie1.jpg",
-      "assets/images/hoodie2.jpg",
-      "assets/images/hoodie3.jpg",
-      "assets/images/hoodie4.jpg"
-    ]
+    "title": "Classic Analog Watch",
+    "description": "Leather strap analog watch for office wear.",
+    "price": 99.99,
+    "size": [],
+    "color": ["Brown"],
+    "image": "assets/images/watch2.jpg",
+    "category": "Watch",
+    "shop": "TickTock",
+    "vendor": "Timely Ltd.",
+    "buyer_tips": "Pair with suits or formal wear.",
+    "top_product": false,
+    "flash_sale": false,
+    "discount_percent": 10,
+    "added_at": "2025-07-22T11:00:00"
+  },
+  {
+    "title": "Smart Fitness Watch",
+    "description": "Tracks heart rate, steps, sleep, and more.",
+    "price": 119.00,
+    "size": [],
+    "color": ["Black", "Green"],
+    "image": "assets/images/watch3.jpg",
+    "category": "Watch",
+    "shop": "GearUp",
+    "vendor": "TechTrek",
+    "buyer_tips": "Sync with your mobile for tracking.",
+    "top_product": true,
+    "flash_sale": true,
+    "discount_percent": 30,
+    "added_at": "2025-07-21T08:00:00"
+  },
+  {
+    "title": "Luxury Gold Watch",
+    "description": "Gold-plated luxury watch for special occasions.",
+    "price": 250.00,
+    "size": [],
+    "color": ["Gold"],
+    "image": "assets/images/watch4.jpg",
+    "category": "Watch",
+    "shop": "GoldenTime",
+    "vendor": "RoyalTime",
+    "buyer_tips": "Wear with formal or ceremonial dress.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 5,
+    "added_at": "2025-07-20T15:30:00"
+  },
+
+  {
+    "title": "Oversized Hoodie",
+    "description": "Thick and cozy oversized hoodie for winter chill.",
+    "price": 49.99,
+    "size": ["L", "XL", "XXL"],
+    "color": ["Red", "Olive", "Navy"],
+    "image": "assets/images/hoodies1.jpg",
+    "category": "Hoodies",
+    "shop": "CozyWear",
+    "vendor": "HoodieHouse",
+    "buyer_tips": "Match with joggers for comfort style.",
+    "top_product": false,
+    "flash_sale": false,
+    "discount_percent": 5,
+    "added_at": "2025-07-23T14:15:00"
+  },
+  {
+    "title": "Street Style Hoodie",
+    "description": "Trendy hoodie with street-style graphics.",
+    "price": 52.00,
+    "size": ["M", "L", "XL"],
+    "color": ["Black", "Yellow"],
+    "image": "assets/images/hoodies2.jpg",
+    "category": "Hoodies",
+    "shop": "UrbanLooks",
+    "vendor": "Graphik Threads",
+    "buyer_tips": "Layer with bomber jackets for bold fashion.",
+    "top_product": false,
+    "flash_sale": true,
+    "discount_percent": 18,
+    "added_at": "2025-07-21T16:00:00"
+  },
+  {
+    "title": "Zipper Hoodie",
+    "description": "Front zipper hoodie with kangaroo pockets.",
+    "price": 44.90,
+    "size": ["M", "L"],
+    "color": ["Gray", "Navy"],
+    "image": "assets/images/hoodies3.jpg",
+    "category": "Hoodies",
+    "shop": "ZipFit",
+    "vendor": "ComfortZone",
+    "buyer_tips": "Zip it open for relaxed layering.",
+    "top_product": true,
+    "flash_sale": false,
+    "discount_percent": 12,
+    "added_at": "2025-07-22T13:45:00"
+  },
+  {
+    "title": "Printed Hoodie",
+    "description": "Cotton hoodie with artistic front prints.",
+    "price": 47.50,
+    "size": ["L", "XL"],
+    "color": ["Black", "White"],
+    "image": "assets/images/hoodies4.jpg",
+    "category": "Hoodies",
+    "shop": "InkStyle",
+    "vendor": "CreativeThreads",
+    "buyer_tips": "Perfect for college wear.",
+    "top_product": false,
+    "flash_sale": true,
+    "discount_percent": 10,
+    "added_at": "2025-07-20T11:00:00"
   }
 ]

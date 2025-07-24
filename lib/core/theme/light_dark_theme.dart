@@ -12,7 +12,7 @@ ThemeData themeMood(){
   brightness:brightness,
   colorScheme: ColorScheme.light(
     brightness: brightness,
-      primary: ThemeColorController.green,
+      primary: ThemeColorController.white,
       onPrimary:_themeController.isDarkMode.value?  ThemeColorController.white :ThemeColorController.black,
       secondary:ThemeColorController.green,
       onSecondary:_themeController.isDarkMode.value? ThemeColorController.white:ThemeColorController.black,

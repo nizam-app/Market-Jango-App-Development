@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
+import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
 
-class PasswordScreen extends StatelessWidget {
-  const PasswordScreen({super.key});
-  static final String routeName = '/passwordScreen';
+class CongratulationScreen extends StatelessWidget {
+  const CongratulationScreen({super.key});
+  static final String routeName = '/congratulationScreen';
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,12 @@ class PasswordScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [PasswordText(), NextBotton()]),
+            child: Column(
+              children: [
+                WelcomeText(),
+                NextBotton(),
+              ],
+            ),
           ),
         ),
       ),
@@ -24,8 +30,8 @@ class PasswordScreen extends StatelessWidget {
   }
 }
 
-class PasswordText extends StatelessWidget {
-  const PasswordText({super.key});
+class WelcomeText extends StatelessWidget {
+  const WelcomeText({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,39 +39,29 @@ class PasswordText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 30.h),
+         SizedBox(height: 20.h),
         IconButton(
           onPressed: () {
             context.pop();
           },
           icon: const Icon(Icons.arrow_back_ios),
         ),
-        SizedBox(height: 20.h),
-        Center(child: Text("Create New Password", style: textTheme.titleLarge)),
+         
+          SvgPicture.asset(
+                  "assets/images/congratulations.svg",
+                  height: 393.h,
+                  width: 396.w,
+                  fit: BoxFit.cover,
+                ),
+        SizedBox(height: 56.h),
+        Center(child: Text("Congratulations ", style: textTheme.titleLarge)),
         SizedBox(height: 20.h),
         Center(
           child: Text(
-            "Type and confirm a secure new password for your amount",
+            "Your account has been successfully created.",
             style: textTheme.bodySmall,
           ),
         ),
-        SizedBox(height: 56.h),
-        TextFormField(
-          decoration: InputDecoration(
-            hintText: 'New Password',
-            suffixIcon: Icon(Icons.visibility_off_outlined)
-          ),
-          obscureText: true,
-        ),
-        SizedBox(height: 30.h,),
-        TextFormField(
-          decoration: InputDecoration(
-              hintText: 'Confirm Password',
-              suffixIcon: Icon(Icons.visibility_off_outlined)
-          ),
-          obscureText: true,
-        ),
-        
       ],
     );
   }
@@ -77,9 +73,9 @@ class NextBotton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 30.h),
+        SizedBox(height: 20.h),
         CustomAuthButton(
-          buttonText: "Save",
+          buttonText: "Go to Home ",
           onTap: () => nextButonDone(context),
         ),
       ],
@@ -87,10 +83,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToVendorRequestFrom(context);
+    goToBuyerHomeScreen(context);
   }
 
-  void goToVendorRequestFrom(BuildContext context) {
-    context.push(VendorRequestFrom.routeName);
+  void goToBuyerHomeScreen(BuildContext context) {
+    context.push(BuyerHomeScreen.routeName);
   }
 }

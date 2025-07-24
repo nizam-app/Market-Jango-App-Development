@@ -7,36 +7,32 @@ import 'package:market_jango/features/auth/screens/Congratulation.dart';
 
 class VendorRequestFrom extends StatelessWidget {
   const VendorRequestFrom({super.key});
-  static final String routeName ='/vendorRequstFrom'; 
+  static final String routeName = '/vendorRequstFrom';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:  ScreenBackground(
+      body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [
-              VendorRequestText(), 
-              VendorBusinessText(),
-              NextBotton(), 
-
-
-
-              
-            ]),
+            child: Column(
+              children: [
+                SizedBox(height: 30.h),
+                CustomBackButton(),
+                VendorRequestText(),
+                VendorBusinessText(),
+                NextBotton(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
 }
 
-
-
-
 class VendorBusinessText extends StatefulWidget {
- const VendorBusinessText({super.key});
+  const VendorBusinessText({super.key});
 
   @override
   State<VendorBusinessText> createState() => _VendorBusinessTextState();
@@ -66,63 +62,60 @@ class _VendorBusinessTextState extends State<VendorBusinessText> {
             suffixIcon: Icon(Icons.arrow_drop_down),
           ),
           onTap: () async {
-  final String? result = await showDialog<String>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: const Text("Your Business Type"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: userTypes.entries.expand((entry) {
-              return [
-                // Show the main category (Vendor)
-                Container(
-                  color: Colors.orange.shade200,
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+            final String? result = await showDialog<String>(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  title: const Text("Your Business Type"),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: userTypes.entries.expand((entry) {
+                        return [
+                          // Show the main category (Vendor)
+                          Container(
+                            color: Colors.orange.shade200,
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              entry.key,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          // Show the subtypes (Buyer, Transporter)
+                          ...entry.value.map(
+                            (subType) => ListTile(
+                              title: Text(subType),
+                              onTap: () {
+                                Navigator.pop(context, subType);
+                              },
+                            ),
+                          ),
+                        ];
+                      }).toList(),
                     ),
                   ),
-                ),
-                // Show the subtypes (Buyer, Transporter)
-                ...entry.value.map(
-                  (subType) => ListTile(
-                    title: Text(subType),
-                    onTap: () {
-                      Navigator.pop(context, subType);
-                    },
-                  ),
-                ),
-              ];
-            }).toList(),
-          ),
-        ),
-      );
-    },
-  );
+                );
+              },
+            );
 
-  if (result != null) {
-    setState(() {
-      selectedUserType = result;
-    });
-  }
-},
-
+            if (result != null) {
+              setState(() {
+                selectedUserType = result;
+              });
+            }
+          },
         ),
       ],
     );
   }
 }
-
-
 
 class VendorRequestText extends StatelessWidget {
   const VendorRequestText({super.key});
@@ -133,13 +126,6 @@ class VendorRequestText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 30.h),
-        IconButton(
-          onPressed: () {
-            context.pop();
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
         SizedBox(height: 20.h),
         Center(child: Text("Request an account", style: textTheme.titleLarge)),
         SizedBox(height: 20.h),
@@ -151,14 +137,9 @@ class VendorRequestText extends StatelessWidget {
         ),
         SizedBox(height: 56.h),
         TextFormField(
-          decoration: InputDecoration(
-            hintText: 'Enter your business name',
-          ),
+          decoration: InputDecoration(hintText: 'Enter your business name'),
           obscureText: true,
         ),
-      
-      
-        
       ],
     );
   }

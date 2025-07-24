@@ -18,7 +18,7 @@ import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
 
-  initialLocation: BuyerHomeScreen.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Error: ${state.error } '),

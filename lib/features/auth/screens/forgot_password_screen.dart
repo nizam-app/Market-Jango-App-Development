@@ -18,6 +18,8 @@ class ForgotPasswordScreen extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
+                    SizedBox(height: 30.h), 
+                    CustomBackButton(),
                   forgetUpperText(),
                   EmailBox()
                   // Add your input fields and buttons here

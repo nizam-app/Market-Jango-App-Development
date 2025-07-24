@@ -19,6 +19,8 @@ class CongratulationScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               children: [
+                 SizedBox(height: 30.h),
+                 CustomBackButton(),
                 WelcomeText(),
                 NextBotton(),
               ],
@@ -39,14 +41,6 @@ class WelcomeText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         SizedBox(height: 20.h),
-        IconButton(
-          onPressed: () {
-            context.pop();
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
-         
           SvgPicture.asset(
                   "assets/images/congratulations.svg",
                   height: 393.h,

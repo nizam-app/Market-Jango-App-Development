@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 class CustomAuthButton extends StatelessWidget {
 
@@ -54,6 +55,29 @@ class SplashSignUpButton extends StatelessWidget {
           child: Text("${buttonText}",style: Theme.of(context).textTheme.titleSmall!.copyWith(fontSize: 16.sp, color: Colors.white),),
         ),
       ),
+    );
+  }
+}
+
+
+
+class CustomBackButton extends StatelessWidget {
+  const CustomBackButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topLeft,
+     
+        
+        child: IconButton(
+          onPressed: () {
+            context.pop();
+          },
+          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black87),
+          tooltip: 'Back',
+        ),
+    
     );
   }
 }

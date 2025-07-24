@@ -16,7 +16,10 @@ class PasswordScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [PasswordText(), NextBotton()]),
+            child: Column(children: [
+              SizedBox(height: 30.h,),
+                 CustomBackButton(),
+              PasswordText(), NextBotton()]),
           ),
         ),
       ),

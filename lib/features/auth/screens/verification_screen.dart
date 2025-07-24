@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:pinput/pinput.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
+
 
 import 'new_password_screen.dart';
 class VerificationScreen extends StatelessWidget {
@@ -19,6 +20,8 @@ class VerificationScreen extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
+              SizedBox(height: 30.h),
+              CustomBackButton(),
               VerifiUpperText(),
               OTPPin(),
               CustomAuthButton(buttonText: "Verify", onTap: (){gotoNextScreen(context);},),
@@ -35,57 +38,99 @@ class VerificationScreen extends StatelessWidget {
   }
 }
 
+
 class OTPPin extends StatelessWidget {
-  const OTPPin({
-    super.key,
-  });
+  const OTPPin({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Form(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: 50.h,
-              ),
-              Directionality(// Specify direction if desired
-                textDirection: TextDirection.ltr,
-                child: Pinput(
-                  // You can pass your own SmsRetriever implementation based on any package
-                  // in this example we are using the SmartAuth
-                  separatorBuilder: (index) =>  SizedBox(width: 12.w),
-                  hapticFeedbackType: HapticFeedbackType.lightImpact,
-                  onCompleted: (pin) {
-                    debugPrint('onCompleted: $pin');
-                  },
-                  onChanged: (value) {
-                    debugPrint('onChanged: $value');
-                  },
-                  cursor: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 9),
-                        width: 22,
-                        height: 1,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          PinCodeTextField(
+            appContext: context,
+            length: 6,
+            onChanged: (value) {},
+            onCompleted: (code) {
+              print("OTP Entered: $code");
+            },
+            pinTheme: PinTheme(
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(8),
+              fieldHeight: 52.h,
+              fieldWidth: 44.w,
+              activeFillColor: Colors.grey.shade200,
+              inactiveFillColor: Colors.grey.shade200,
+              selectedFillColor: Colors.grey.shade300,
+              activeColor: Colors.transparent,
+              inactiveColor: Colors.transparent,
+              selectedColor: Colors.transparent,
+            ),
+            keyboardType: TextInputType.number,
+            enableActiveFill: true,
           ),
-        ),
-        SizedBox(
-          height: 30.h,
-        ),
-      ],
+          SizedBox(height: 50.h), // Reduced height for better layout
+        ],
+      ),
     );
   }
 }
+
+
+
+// class OTPPin extends StatelessWidget {
+//   const OTPPin({
+//     super.key,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         Form(
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             children: [
+//               SizedBox(
+//                 height: 50.h,
+//               ),
+//               Directionality(// Specify direction if desired
+//                 textDirection: TextDirection.ltr,
+//                 child: Pinput(
+//                   // You can pass your own SmsRetriever implementation based on any package
+//                   // in this example we are using the SmartAuth
+//                   separatorBuilder: (index) =>  SizedBox(width: 12.w),
+//                   hapticFeedbackType: HapticFeedbackType.lightImpact,
+//                   onCompleted: (pin) {
+//                     debugPrint('onCompleted: $pin');
+//                   },
+//                   onChanged: (value) {
+//                     debugPrint('onChanged: $value');
+//                   },
+//                   cursor: Column(
+//                     mainAxisAlignment: MainAxisAlignment.end,
+//                     children: [
+//                       Container(
+//                         margin: const EdgeInsets.only(bottom: 9),
+//                         width: 22,
+//                         height: 1,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//         SizedBox(
+//           height: 30.h,
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 class VerifiUpperText extends StatelessWidget {
   const VerifiUpperText({

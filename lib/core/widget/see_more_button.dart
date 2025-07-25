@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 class SeeMoreButton extends StatelessWidget {
-  const SeeMoreButton({super.key, required this.name, required this.seeMoreAction});
+  const SeeMoreButton({super.key, required this.name, required this.seeMoreAction,this.isSeeMore = true});
   final String name;
   final VoidCallback seeMoreAction;
+  final bool isSeeMore;
 
   @override
   Widget build(BuildContext context) {
@@ -14,27 +16,20 @@ class SeeMoreButton extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Padding(
-              padding: EdgeInsets.only(right: 20.w),
-              child: Text(
-                '$name',
-               style:Theme.of(context).textTheme.titleLarge!.copyWith(
-                  fontSize: 24.sp,
-              )
-            ),),
+            HomePorductTitel(name: name),
             Spacer(),
             TextButton(
               onPressed:
                 seeMoreAction
               ,
-              child: Text(
+              child:isSeeMore? Text(
                 'See More',
                 style: TextStyle(
                   color: AllColor.yellow500,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
-              ),
+              ):SizedBox()
             ),
           ],
         ),
@@ -43,3 +38,5 @@ class SeeMoreButton extends StatelessWidget {
     );
   }
 }
+
+

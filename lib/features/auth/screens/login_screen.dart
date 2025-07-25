@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/name_screen.dart';
+import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
 
 import 'forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
@@ -21,11 +23,11 @@ class LoginScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               children: [
+                 SizedBox(height: 30.h,),
+                 CustomBackButton(),
                 LoginHereText(),
                 LoginTextFormField(),
                 LoginBotton()
-          
-          
               ],
             ),
           ),
@@ -45,7 +47,7 @@ class LoginBotton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 30.h,),
+         SizedBox(height: 30.h,),
         InkWell(
           onTap: () {
             goToForgotPasswordScreen(context);
@@ -53,7 +55,7 @@ class LoginBotton extends StatelessWidget {
             child: Text("Forgot your Password?",style: Theme.of(context).textTheme.titleSmall,)),
         SizedBox(height: 30.h,),
        CustomAuthButton(buttonText:"Login",onTap: (){
-         loginDone();
+       loginDone(context);
          },),
         SizedBox(height: 50.h,),
         Text.rich(
@@ -77,13 +79,21 @@ class LoginBotton extends StatelessWidget {
       ],
     );
   }
-void loginDone() {}
+
+
+void loginDone(BuildContext context) {
+    context.push('/buyerHomeScreen');
+  }
+
+void gotoHomeScreen(BuildContext content){
+  content.push(BuyerHomeScreen.routeName); 
+}
 
 void goToForgotPasswordScreen(BuildContext context) {
   context.push(ForgotPasswordScreen.routeName);}
 
   void goToSignUpScreen(BuildContext context) {
-    context.push('');
+    context.push(NameScreen.routeName);
   }
 
 }
@@ -114,6 +124,7 @@ class LoginTextFormField extends StatelessWidget {
     TextFormField(
       obscureText: true,
       decoration: InputDecoration(
+        suffixIcon: Icon(Icons.visibility_off_outlined),
         hintText: "Password",
       ),
     )
@@ -135,7 +146,7 @@ class LoginHereText extends StatelessWidget {
       children: [
     
     
-    SizedBox(height: 120.h,),
+    SizedBox(height: 50.h,),
     Center(child: Text("Login Here",style:textTheme.titleLarge,)),
     SizedBox(height: 12.h,),
     Center(child: Text("Welcome back you've \n been missed!",style:textTheme.titleMedium,textAlign: TextAlign.center,))

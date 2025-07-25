@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:market_jango/core/widget/custom_auth_button.dart' show CustomAuthButton;
+import 'package:market_jango/core/widget/custom_auth_button.dart' ;
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 class NewPasswordScreen extends StatelessWidget {
   const NewPasswordScreen({super.key});
@@ -15,6 +15,8 @@ class NewPasswordScreen extends StatelessWidget {
           child: Center(
             child: Column(
               children: [
+                 SizedBox(height: 30.h,),
+                 CustomBackButton(),
                 NewPasswordTupperTest(),
                 TextBox()
               ],
@@ -70,7 +72,7 @@ class NewPasswordTupperTest extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-         SizedBox(height: 190.h),
+         SizedBox(height: 138.h),
         Text(
           'Create New Password',
           style: Theme.of(context).textTheme.titleLarge,

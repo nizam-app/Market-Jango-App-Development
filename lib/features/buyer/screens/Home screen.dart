@@ -39,7 +39,9 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){},isSeeMore: false,),
                 TopProducts(),
                 TimerScreen(),
-                DiscountProduct()
+                DiscountProduct(),
+                SeeMoreButton(name:"New Items",seeMoreAction: (){goToNewItemsPage();},),
+                NewItemsShow()
               ],
             ),
           ),
@@ -48,7 +50,79 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
     );
   }
   void goToCategoriesPage() {}
+  void goToNewItemsPage(){}
 
+}
+
+class NewItemsShow extends StatelessWidget {
+  const NewItemsShow({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 219.h,
+      child: GridView.builder(
+          shrinkWrap: true,
+          physics:AlwaysScrollableScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 1,
+            childAspectRatio: 0.9.h,
+          ),
+          itemCount: 6,
+          // Example item count
+          itemBuilder: (context, index) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
+                  // margin: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: AllColor.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: Stack(
+                    children: [
+                      // Image
+                      Image.asset(
+                        'assets/images/clothing3.jpg', // আপনার ইমেজ পাথ দিন এখানে
+                        fit: BoxFit.cover,
+                      ),
+                      // Discount Tag
+                      Positioned(
+                        top: 0.h,
+                        right: 0.w,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: AllColor.yellow500,
+                            borderRadius: BorderRadius.circular(5.r),
+                          ),
+                          child: Text(
+                            '-20%',
+                            style:Theme.of(context).textTheme.titleLarge!.copyWith(
+                                fontSize: 12.sp,color: AllColor.white
+                            ),
+                          ),
+                        ),
+                      ),
+      
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 5.h),
+                  child: Text("T shirt",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 16.sp),),
+                )
+              ],
+            );}
+      ),
+    );
+  }
 }
 
 class DiscountProduct extends StatelessWidget {
@@ -65,47 +139,56 @@ class DiscountProduct extends StatelessWidget {
           crossAxisCount: 3,
           mainAxisSpacing: 4.h,
           crossAxisSpacing: 4.w,
-          childAspectRatio: 0.9.h,
+          childAspectRatio: 0.7.h,
         ),
         itemCount: 6,
         // Example item count
         itemBuilder: (context, index) {
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
-        // margin: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
-        decoration: BoxDecoration(
-          color: AllColor.white,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: Stack(
-          children: [
-            // Image
-            Image.asset(
-              'assets/images/clothing3.jpg', // আপনার ইমেজ পাথ দিন এখানে
-              fit: BoxFit.cover,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
+            // margin: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
+            decoration: BoxDecoration(
+              color: AllColor.white,
+              borderRadius: BorderRadius.circular(8.r),
             ),
-            // Discount Tag
-            Positioned(
-              top: 0.h,
-              right: 0.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: AllColor.yellow500,
-                  borderRadius: BorderRadius.circular(5.r),
+            clipBehavior: Clip.hardEdge,
+            child: Stack(
+              children: [
+                // Image
+                Image.asset(
+                  'assets/images/clothing3.jpg', // আপনার ইমেজ পাথ দিন এখানে
+                  fit: BoxFit.cover,
                 ),
-                child: Text(
-                  '-20%',
-                  style:Theme.of(context).textTheme.titleLarge!.copyWith(
-                    fontSize: 12.sp,color: AllColor.white
+                // Discount Tag
+                Positioned(
+                  top: 0.h,
+                  right: 0.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: AllColor.yellow500,
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                    child: Text(
+                      '-20%',
+                      style:Theme.of(context).textTheme.titleLarge!.copyWith(
+                        fontSize: 12.sp,color: AllColor.white
+                      ),
+                      ),
+                    ),
                   ),
-                  ),
-                ),
-              ),
 
-          ],
-        ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 5.h),
+            child: Text("T shirt",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 16.sp),),
+          )
+        ],
       );}
     );
   }

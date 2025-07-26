@@ -25,8 +25,6 @@ class VerificationScreen extends StatelessWidget {
               VerifiUpperText(),
               OTPPin(),
               CustomAuthButton(buttonText: "Verify", onTap: (){gotoNextScreen(context);},),
-      
-      
             ],
           ),
         ),
@@ -78,60 +76,6 @@ class OTPPin extends StatelessWidget {
   }
 }
 
-
-
-// class OTPPin extends StatelessWidget {
-//   const OTPPin({
-//     super.key,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Form(
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: [
-//               SizedBox(
-//                 height: 50.h,
-//               ),
-//               Directionality(// Specify direction if desired
-//                 textDirection: TextDirection.ltr,
-//                 child: Pinput(
-//                   // You can pass your own SmsRetriever implementation based on any package
-//                   // in this example we are using the SmartAuth
-//                   separatorBuilder: (index) =>  SizedBox(width: 12.w),
-//                   hapticFeedbackType: HapticFeedbackType.lightImpact,
-//                   onCompleted: (pin) {
-//                     debugPrint('onCompleted: $pin');
-//                   },
-//                   onChanged: (value) {
-//                     debugPrint('onChanged: $value');
-//                   },
-//                   cursor: Column(
-//                     mainAxisAlignment: MainAxisAlignment.end,
-//                     children: [
-//                       Container(
-//                         margin: const EdgeInsets.only(bottom: 9),
-//                         width: 22,
-//                         height: 1,
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//         SizedBox(
-//           height: 30.h,
-//         ),
-//       ],
-//     );
-//   }
-// }
-
 class VerifiUpperText extends StatelessWidget {
   const VerifiUpperText({
     super.key,
@@ -140,7 +84,6 @@ class VerifiUpperText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-    
       children: [
          SizedBox(height: 190.h,),
         Text("Verification",style: Theme.of(context).textTheme.titleLarge,),

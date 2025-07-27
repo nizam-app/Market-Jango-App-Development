@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
 
 class CongratulationScreen extends StatelessWidget {
   const CongratulationScreen({super.key});
@@ -77,10 +77,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToBuyerHomeScreen(context);
+    goToBottomNavBar(context);
   }
 
-  void goToBuyerHomeScreen(BuildContext context) {
-    context.push(BuyerHomeScreen.routeName);
+  void goToBottomNavBar(BuildContext context) {
+    context.push(BottomNavBar.routeName);
   }
 }

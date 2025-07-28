@@ -23,6 +23,7 @@ class CongratulationScreen extends StatelessWidget {
                  CustomBackButton(),
                 WelcomeText(),
                 NextBotton(),
+               
               ],
             ),
           ),

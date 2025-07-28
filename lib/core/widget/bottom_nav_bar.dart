@@ -13,7 +13,6 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-
   final selectedIndex = 0;
 
   List<Widget> pages = [
@@ -26,7 +25,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BottomNavigationBar(
+  bottomNavigationBar:  BottomNavigationBar(
              // currentIndex: controller.selectedIndex.value,
               backgroundColor: Colors.white,
               selectedItemColor: Colors.black,

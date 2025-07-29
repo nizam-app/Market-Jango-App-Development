@@ -7,6 +7,7 @@ class AllColor {
   static final Color loginButtonColor = const Color(0xFFF9B935);
   static final Color green500 = const Color.fromRGBO(13, 50, 80, 1);
   static final Color green300 = const Color(0xFF5D768A);
-  static final Color white =Color(0xFFFFFFFF);
+ static Color white = Color(0xffffffff);
+ static final blask = Color(0xff202020);
   
 }

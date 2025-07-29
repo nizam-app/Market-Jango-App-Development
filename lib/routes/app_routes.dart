@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/features/account/screens/account_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
@@ -12,13 +14,15 @@ import 'package:market_jango/features/auth/screens/user.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
+import 'package:market_jango/features/categories/screen/categories_screen.dart';
+import 'package:market_jango/features/chat/screens/chart_screen.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
 
-  initialLocation: BuyerHomeScreen.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) => Scaffold(
     body: Center(
       child: Text('Error: ${state.error } '),
@@ -74,6 +78,7 @@ GoRoute(path:EmailScreen.routeName,
     name: 'emailScreen',
     builder: (context,state)=>const EmailScreen(),
      ),
+
 GoRoute(path:PasswordScreen.routeName,
     name: 'passwordScreen',
     builder: (context,state)=>const PasswordScreen(),
@@ -91,8 +96,30 @@ GoRoute(path:VendorRequestFrom.routeName,
     builder: (context,state)=>const CongratulationScreen(), 
      ),
  
+  GoRoute(
+      path: AccountScreen.routeName,
+      name: 'account_screen',
+      builder: (context, state) => const AccountScreen(),
+    ),
     
 
+GoRoute(
+      path: ChartScreen.routeName,
+      name: 'chart_screen',
+      builder: (context, state) => const ChartScreen(),
+    ),
+    
+    GoRoute(
+      path: CategoriesScreen.routeName,
+      name: 'categories_screen',
+      builder: (context, state) => const CategoriesScreen(),
+    ),
+    
+    GoRoute(
+      path: BottomNavBar.routeName,
+      name: 'bottom_nav_bar',
+      builder: (context, state) => const BottomNavBar(),
+    ),
     GoRoute(
       path: BuyerHomeScreen.routeName,
       name: 'buyer_home',

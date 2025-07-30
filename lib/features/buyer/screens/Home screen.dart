@@ -130,7 +130,7 @@ class CustomNewProduct extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 5.h),
           child: Column(
             children: [
-              Text("T shirt",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.blask),),
+              Text("T shirt",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),),
               Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
             ],
           ),

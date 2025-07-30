@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
-class CategoriesScreen extends StatelessWidget {
-  const CategoriesScreen({super.key});
+class NotificationsScreen extends StatelessWidget {
+  const NotificationsScreen({super.key});
   
-  static const String routeName = '/categories_screen';
+  static const String routeName = '/notifications_screen';
 
   @override
   Widget build(BuildContext context) {

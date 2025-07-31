@@ -1,10 +1,29 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
 
-class LocationFilteringTab extends StatelessWidget {
+class LocationFilteringTab extends StatefulWidget {
   const LocationFilteringTab({super.key});
 
+  @override
+  State<LocationFilteringTab> createState() => _LocationFilteringTabState();
+}
+
+class _LocationFilteringTabState extends State<LocationFilteringTab> {
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Timer(Duration(seconds: 2), () {
+      context.push(FilterScreen.routeName);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     String? selectedCountry = 'Bangladesh';

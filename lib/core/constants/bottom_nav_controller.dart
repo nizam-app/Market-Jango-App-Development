@@ -1,8 +1,10 @@
 
 import 'package:get/get.dart';
 import 'package:market_jango/features/account/screens/account_screen.dart';
-import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
-import 'package:market_jango/features/categories/screen/categories_screen.dart';
+
+import 'package:market_jango/features/buyer/screens/categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
 
 class BottomNavController extends GetxController {

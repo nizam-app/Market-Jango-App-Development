@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart' show Logger;
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
-import 'package:market_jango/features/buyer/screens/location_filter_page.dart';
+import 'package:market_jango/features/buyer/screens/location_filtering_tab.dart';
+import 'package:market_jango/features/buyer/screens/notification_screen.dart';
 import 'package:riverpod/riverpod.dart';
 class CustomCategories extends ConsumerWidget{
   CustomCategories({
@@ -112,110 +114,3 @@ class CustomCategories extends ConsumerWidget{
 
 }
 
-class BuyerHomeSearchBar extends StatelessWidget {
-  const BuyerHomeSearchBar({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 20.h,),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Search for products',
-                  prefixIcon: Icon(Icons.search,),
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12.h,),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide(color: Colors.grey), // ফোকাসে যেটা দেখাতে চান
-                  ),
-                ), // থিম ইনহেরিট না করার জন্য
-              ),
-            ),
-            SizedBox(width: 8.w),
-            // Menu Icon
-            Container(
-              height: 35.h,
-              width: 35.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4.sp,
-                    offset: Offset(0, 0.5.sp),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(Icons.filter_list, size: 20.sp),
-                onPressed: () {
-                  openingFilter(context);
-
-                },
-              ),
-            ),
-
-            SizedBox(width: 8.w),
-
-            // Notification Icon
-            InkWell(
-              onTap: () {
-              },
-              child: Container(
-                height: 35.h,
-                width: 35.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0,0.5.sp),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.notifications, size: 20.sp),
-                  onPressed: () {},
-                ),
-              ),
-            ),
-
-          ],
-        ),
-      ],
-    );
-  }
-  void goToNotificationScreen(BuildContext context) {
-  }
-  void openingFilter(BuildContext context) {
-    Logger().e("Don't work'");
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const LocationFilterPage(),
-    );
-
-  }
-}

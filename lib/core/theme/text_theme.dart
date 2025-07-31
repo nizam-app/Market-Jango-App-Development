@@ -12,7 +12,7 @@ TextTheme get textTheme {
       fontSize: 12.sp,
       color: AllColor.green300,
       fontWeight: FontWeight.w400,
-      letterSpacing: 1
+      // letterSpacing: 1
     ),
     titleSmall: TextStyle(
       fontSize: 17.sp,

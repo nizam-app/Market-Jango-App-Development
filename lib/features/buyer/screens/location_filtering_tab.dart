@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
-class LocationFilterPage extends StatelessWidget {
-  const LocationFilterPage({super.key});
+class LocationFilteringTab extends StatelessWidget {
+  const LocationFilteringTab({super.key});
 
   @override
   Widget build(BuildContext context) {

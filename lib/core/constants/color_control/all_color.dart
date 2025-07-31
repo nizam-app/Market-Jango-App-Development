@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AllColor {
  static final Color yellow50 = const Color(0xFFFEF8EB);
   static final Color yellow500 = const Color(0xFFF9B935);
+  static final Color yellow700 =  Color(0xffB18326);
   static final Color textBorderColor = const Color(0xFFFAC75D);
   static final Color textHintColor = const Color(0xFF3D5B73);
   static final Color loginButtonColor = const Color(0xFFF9B935);
@@ -11,6 +12,9 @@ class AllColor {
  static Color white = Color(0xffffffff);
  static final black = Color(0xff202020);
  static final gray100 = Colors.grey.shade100;
+ static final gray300 = Colors.grey.shade300;
  static final dropDown = const Color(0xffD9E8F4);
+ static final blue50 = Colors.blue.shade50;
+ static final blue = Colors.blue;
   
 }

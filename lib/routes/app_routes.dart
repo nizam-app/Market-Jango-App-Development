@@ -13,8 +13,11 @@ import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
-import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
-import 'package:market_jango/features/categories/screen/categories_screen.dart';
+import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
+import 'package:market_jango/features/buyer/screens/categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/buyer/screens/notification_screen.dart';
+
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
@@ -125,6 +128,18 @@ GoRoute(
       name: 'buyer_home',
       builder: (context, state) => const BuyerHomeScreen(),
     ),
+    GoRoute(
+      path: NotificationsScreen.routeName,
+      name: 'notification_screen',
+      builder: (context, state) =>  NotificationsScreen(),
+    ),
+    GoRoute(
+      path: FilterScreen.routeName,
+      name: 'filter_screen',
+      builder: (context, state) =>  FilterScreen(),
+    ),
+
+
 
 
   ],

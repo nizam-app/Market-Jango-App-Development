@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
-import 'package:market_jango/features/account/screens/account_screen.dart';
+import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
@@ -13,13 +13,11 @@ import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
+import 'package:market_jango/features/notifications/screen/Notifications.dart';
 import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
-import 'package:market_jango/features/buyer/screens/categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-import 'package:market_jango/features/buyer/screens/notification_screen.dart';
-
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
-
+import 'package:market_jango/features/transport/screens/transport.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
@@ -100,9 +98,9 @@ GoRoute(path:VendorRequestFrom.routeName,
      ),
  
   GoRoute(
-      path: AccountScreen.routeName,
-      name: 'account_screen',
-      builder: (context, state) => const AccountScreen(),
+      path: SettingScreen.routeName,
+      name: 'settings_screen',
+      builder: (context, state) => const SettingScreen(),
     ),
     
 
@@ -113,9 +111,9 @@ GoRoute(
     ),
     
     GoRoute(
-      path: CategoriesScreen.routeName,
-      name: 'categories_screen',
-      builder: (context, state) => const CategoriesScreen(),
+      path: NotificationsScreen.routeName,
+      name: 'notifications_screen',
+      builder: (context, state) => const NotificationsScreen(),
     ),
     
     GoRoute(
@@ -128,6 +126,15 @@ GoRoute(
       name: 'buyer_home',
       builder: (context, state) => const BuyerHomeScreen(),
     ),
+
+    
+    GoRoute(
+      path: TransportScreen.routeName,
+      name: 'transport',
+      builder: (context, state) => const TransportScreen(),
+    ),
+   
+
     GoRoute(
       path: NotificationsScreen.routeName,
       name: 'notification_screen',
@@ -138,8 +145,6 @@ GoRoute(
       name: 'filter_screen',
       builder: (context, state) =>  FilterScreen(),
     ),
-
-
 
 
   ],

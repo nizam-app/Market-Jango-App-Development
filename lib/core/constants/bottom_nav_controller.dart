@@ -1,11 +1,9 @@
-
 import 'package:get/get.dart';
-import 'package:market_jango/features/account/screens/account_screen.dart';
-
-import 'package:market_jango/features/buyer/screens/categori_screen.dart';
+import 'package:market_jango/features/settings/screens/settings_screen.dart';
+import 'package:market_jango/features/notifications/screen/Notifications.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
+import 'package:market_jango/features/transport/screens/transport.dart';
 
 class BottomNavController extends GetxController {
   var selectedIndex = 0.obs;
@@ -17,7 +15,8 @@ class BottomNavController extends GetxController {
   final pages = [
     const BuyerHomeScreen(),
     const ChartScreen(),
-    const CategoriesScreen(),
-    const AccountScreen(),
+    const NotificationsScreen(),
+    const TransportScreen(),
+    const SettingScreen(),
   ];
 }

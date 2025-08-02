@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/features/buyer/screens/notification_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
@@ -13,7 +14,6 @@ import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
-import 'package:market_jango/features/notifications/screen/Notifications.dart';
 import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
@@ -109,13 +109,6 @@ GoRoute(
       name: 'chart_screen',
       builder: (context, state) => const ChartScreen(),
     ),
-    
-    GoRoute(
-      path: NotificationsScreen.routeName,
-      name: 'notifications_screen',
-      builder: (context, state) => const NotificationsScreen(),
-    ),
-    
     GoRoute(
       path: BottomNavBar.routeName,
       name: 'bottom_nav_bar',

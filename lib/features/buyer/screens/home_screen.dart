@@ -449,9 +449,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
             ),
 
             SizedBox(width: 8.w),
-
             // Notification Icon
-
             Container(
               height: 35.h,
               width: 35.w,

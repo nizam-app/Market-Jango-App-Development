@@ -6,7 +6,6 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/data/notification_list.dart';
 class NotificationsScreen extends StatelessWidget {
    NotificationsScreen({super.key});
-
   static final routeName = "/notificationScreen";
   @override
   Widget build(BuildContext context) {

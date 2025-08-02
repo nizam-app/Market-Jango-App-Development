@@ -116,7 +116,7 @@ class VerificationResendText extends StatelessWidget {
               TextSpan(
                 text: "Resend", 
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AllColor.blask,
+                  color: AllColor.black,
                   fontWeight: FontWeight.w700,),
                 onEnter: (_){
                   context.pop();

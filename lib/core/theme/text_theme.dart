@@ -12,14 +12,17 @@ TextTheme get textTheme {
       fontSize: 12.sp,
       color: AllColor.green300,
       fontWeight: FontWeight.w400,
-      letterSpacing: 1
+      // letterSpacing: 1
     ),
     titleSmall: TextStyle(
       fontSize: 17.sp,
       fontWeight: FontWeight.w600,
       color: AllColor.green500
     ),
-    headlineMedium: TextStyle(fontSize: 16, color: Colors.grey),
+    headlineMedium: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w400
+       ),
 
 
   );

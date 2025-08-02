@@ -5,7 +5,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
-import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
 
 import 'forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {

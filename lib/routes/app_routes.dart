@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
@@ -140,6 +142,19 @@ GoRoute(
       name: 'notification_screen',
       builder: (context, state) =>  NotificationsScreen(),
     ),
+
+    GoRoute(
+      path: VendorRequestScreen.routeName,
+      name: 'vendor_request',
+      builder: (context, state) =>  VendorRequestScreen(),
+    ),
+
+GoRoute(
+      path: CarInfoScreen.routeName,
+      name: 'car_info',
+      builder: (context, state) =>  CarInfoScreen(),
+    ), 
+
     GoRoute(
       path: FilterScreen.routeName,
       name: 'filter_screen',

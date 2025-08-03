@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/user.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
 class NameScreen extends StatelessWidget {
   const NameScreen({super.key});
@@ -72,7 +72,7 @@ class NextBotton extends StatelessWidget {
         Text(
           "Can't change it letter ",
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: AllColor.loginButtonColor,
+            color: AllColor.loginButtomColor,
             fontWeight: FontWeight.w300,
           ),
         ),
@@ -88,10 +88,10 @@ class NextBotton extends StatelessWidget {
 
 
   void nextButonDone(BuildContext context) {
-    goToUserScreen(context);
+    goToPhoneNumberScreen(context);
 
   }
-      void goToUserScreen(BuildContext context) {
-    context.push(UserScreen.routeName);
+      void goToPhoneNumberScreen(BuildContext context) {
+    context.push(PhoneNumberScreen.routeName);
   }
   }

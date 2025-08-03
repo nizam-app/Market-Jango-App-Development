@@ -3,12 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
-   
+import 'package:market_jango/features/auth/screens/name_screen.dart';
+
 class UserScreen extends StatelessWidget {
   const UserScreen({super.key});
   static const String routeName = '/userScreen';
-           
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,10 +16,14 @@ class UserScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [
-              SizedBox(height: 30.h),
-              CustomBackButton(),
-              UserText(), NextBotton()]),
+            child: Column(
+              children: [
+                SizedBox(height: 30.h),
+                CustomBackButton(),
+                UserText(),
+                NextBotton(),
+              ],
+            ),
           ),
         ),
       ),
@@ -28,7 +32,7 @@ class UserScreen extends StatelessWidget {
 }
 
 class UserText extends StatefulWidget {
-  UserText({super.key});
+  const UserText({super.key});
 
   @override
   State<UserText> createState() => _UserTextState();
@@ -37,82 +41,76 @@ class UserText extends StatefulWidget {
 class _UserTextState extends State<UserText> {
   String? selectedUserType;
 
-  final Map<String, List<String>> userTypes = {
-    'Vendor': ['Buyer', 'Transporter'],
-  };
+  final List<String> userTypes = ['Vendor', 'Buyer', 'Transport', 'Driver'];
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        
-       
-        SizedBox(height: 20.h),
+        const SizedBox(height: 20),
         Center(child: Text("User Type Selection", style: textTheme.titleLarge)),
-        SizedBox(height: 24.h),
-        TextFormField(
-          keyboardType: TextInputType.name,
-          controller: TextEditingController(text: selectedUserType ?? ""),
-          decoration: InputDecoration(
-            hintText: "Choose one",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            suffixIcon: Icon(Icons.arrow_drop_down),
+        const SizedBox(height: 24),
+
+        Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF8E7),
+            borderRadius: BorderRadius.circular(20),
           ),
-          onTap: () async {
-  final String? result = await showDialog<String>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: const Text("Select User Type"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: userTypes.entries.expand((entry) {
-              return [
-                // Show the main category (Vendor)
-                Container(
-                  color: Colors.orange.shade200,
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              hint: const Text("Choose one"),
+              value: selectedUserType,
+              icon: const Icon(Icons.arrow_drop_down),
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              selectedItemBuilder: (context) {
+                return userTypes.map((type) {
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      type,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16,
+                      ),
+                    ),
+                  );
+                }).toList();
+              },
+              items: userTypes.map((type) {
+                return DropdownMenuItem<String>(
+                  value: type,
+                  child: Container(
+                    width: double.infinity,
+                    color: selectedUserType == type
+                        ? Colors.orange
+                        : Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      type,
+                      style: TextStyle(
+                        color: selectedUserType == type
+                            ? Colors.white
+                            : Colors.black87,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-                // Show the subtypes (Buyer, Transporter)
-                ...entry.value.map(
-                  (subType) => ListTile(
-                    title: Text(subType),
-                    onTap: () {
-                      Navigator.pop(context, subType);
-                    },
-                  ),
-                ),
-              ];
-            }).toList(),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedUserType = value;
+                });
+              },
+            ),
           ),
-        ),
-      );
-    },
-  );
-
-  if (result != null) {
-    setState(() {
-      selectedUserType = result;
-    });
-  }
-},
-
         ),
       ],
     );
@@ -125,7 +123,7 @@ class NextBotton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 465.h),
+        SizedBox(height: 460.h),
         CustomAuthButton(
           buttonText: "Next",
           onTap: () => nextButonDone(context),
@@ -135,10 +133,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToPhoneNumber(context);
+    goToNameScreen(context);
   }
 
-  void goToPhoneNumber(BuildContext context) {
-    context.push(PhoneNumberScreen.routeName);
+  void goToNameScreen(BuildContext context) {
+    context.push(NameScreen.routeName);
   }
 }

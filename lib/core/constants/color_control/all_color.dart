@@ -1,4 +1,4 @@
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 class AllColor {
  static final Color yellow50 = const Color(0xFFFEF8EB);
@@ -7,9 +7,10 @@ class AllColor {
 
 
 
+
   static final Color textBorderColor = const Color(0xFFFAC75D);
   static final Color textHintColor = const Color(0xFF3D5B73);
-  static final Color loginButtonColor = const Color(0xFFF9B935);
+  static final Color loginButtomColor = const Color(0xFFFF8C00);
 
 
  static final Color green300 = const Color(0xFF5D768A);

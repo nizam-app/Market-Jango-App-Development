@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 
-class PasswordScreen extends StatelessWidget {
-  const PasswordScreen({super.key});
-  static final String routeName = '/passwordScreen';
+class VendorRequestScreen extends StatelessWidget {
+  const VendorRequestScreen({super.key});
+  static final String routeName = '/vendor_request';
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(children: [
               SizedBox(height: 30.h,),
-                 CustomBackButton(),
-              PasswordText(), NextBotton()]),
+              CustomBackButton(), 
+              VendorRequestText(), 
+
+                
+            ] 
           ),
         ),
       ),
+    )
     );
+    
   }
 }
 
-class PasswordText extends StatelessWidget {
-  const PasswordText({super.key});
+
+class VendorRequestText extends StatelessWidget {
+  const VendorRequestText({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +41,11 @@ class PasswordText extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 20.h),
-        Center(child: Text("Create New Password", style: textTheme.titleLarge)),
+        Center(child: Text("Create Store", style: textTheme.titleLarge)),
         SizedBox(height: 20.h),
         Center(
           child: Text(
-            "Type and confirm a secure new password for your amount",
+            "Get started with your access in just a few steps",
             style: textTheme.bodySmall,
           ),
         ),
@@ -66,27 +70,4 @@ class PasswordText extends StatelessWidget {
     );
   }
 }
-
-class NextBotton extends StatelessWidget {
-  const NextBotton({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 30.h),
-        CustomAuthButton(
-          buttonText: "Save",
-          onTap: () => nextButonDone(context),
-        ),
-      ],
-    );
-  }
-
-  void nextButonDone(BuildContext context) {
-    goToVendorRequestFrom(context);
-  }
-
-  void goToVendorRequestFrom(BuildContext context) {
-    context.push(VendorRequestFrom.routeName);
-  }
-}
+ 

@@ -36,13 +36,6 @@ class PasswordText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 30.h),
-        IconButton(
-          onPressed: () {
-            context.pop();
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
         SizedBox(height: 20.h),
         Center(child: Text("Create New Password", style: textTheme.titleLarge)),
         SizedBox(height: 20.h),

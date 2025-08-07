@@ -20,7 +20,7 @@ class CustomAuthButton extends StatelessWidget {
         width: double.infinity,
         height: 55.h,
         decoration: BoxDecoration(
-          color: AllColor.loginButtonColor,
+          color: AllColor.loginButtomColor,
           borderRadius: BorderRadius.circular(50.r),
         ),
         child: Center(

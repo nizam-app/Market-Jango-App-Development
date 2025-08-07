@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login_screen.dart';
-import 'package:market_jango/features/auth/screens/name_screen.dart';
+import 'package:market_jango/features/auth/screens/user.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -67,7 +67,7 @@ class SplashScreenText extends StatelessWidget {
           child: Text(
             "Trouble signing in?",
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AllColor.loginButtonColor,
+              color: AllColor.loginButtomColor,
               fontWeight: FontWeight.w300,
             ),
           ),
@@ -89,10 +89,10 @@ class SplashScreenText extends StatelessWidget {
   }
 
   void signupDone(BuildContext context) {
-    goToNameScreen(context);
+    goToUserScreen(context);
   }
 
-  void goToNameScreen(BuildContext context) {
-    context.push(NameScreen.routeName);
+  void goToUserScreen(BuildContext context) {
+    context.push(UserScreen.routeName);
   }
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 
 class NameScreen extends StatelessWidget {
   const NameScreen({super.key});
@@ -21,7 +21,8 @@ class NameScreen extends StatelessWidget {
             child: Column(children: [
                SizedBox(height: 30.h),
                CustomBackButton(),
-              NameText(), NextBotton()]),
+              NameText(), 
+              NextBotton()]),
           ),
         ),
       ),
@@ -88,10 +89,15 @@ class NextBotton extends StatelessWidget {
 
 
   void nextButonDone(BuildContext context) {
-    goToPhoneNumberScreen(context);
+    goToVendorRequestScreen(context);
 
   }
-      void goToPhoneNumberScreen(BuildContext context) {
-    context.push(PhoneNumberScreen.routeName);
+  //     void goToPhoneNumberScreen(BuildContext context) {
+  //   context.push(PhoneNumberScreen.routeName);
+  // }
+
+    void goToVendorRequestScreen(BuildContext context) {
+    context.push(VendorRequestScreen.routeName);
   }
+
   }

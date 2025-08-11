@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/%20business_logic/models/chat_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
 class BuyerMassageScreen extends StatelessWidget {
@@ -22,21 +23,25 @@ class BuyerMassageScreen extends StatelessWidget {
                 'Messages',
                 style: theme.titleLarge,
               ),
-               SizedBox(height: 16),
+               SizedBox(height: 16.h),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Search',
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
-                  fillColor: const Color(0xFFF1F1F1),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  fillColor: AllColor.gray300,
+                  contentPadding: EdgeInsets.symmetric(vertical: 0.h),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.r),
                     borderSide: BorderSide.none,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+               SizedBox(height: 16.h),
               const Expanded(child: ChatListView()),
             ],
           ),
@@ -49,106 +54,103 @@ class BuyerMassageScreen extends StatelessWidget {
 class ChatListView extends StatelessWidget {
   const ChatListView({super.key});
 
-  final List<Map<String, dynamic>> chatData = const [
-    {
-      'avatar': 'https://via.placeholder.com/40?text=LOGO',
-      'name': 'Company Name',
-      'message':
+  final List<ChatModel> chatData = const [
+    ChatModel(
+      avatar: 'https://avatars.githubusercontent.com/u/1?v=4', // Example valid avatar link
+      name: 'Company Name',
+      message:
       'That’s great, I can help you with that! What type of product are you...',
-      'time': '9:40 AM',
-      'unread': false,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person1.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': true,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person2.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': false,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person3.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': true,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person4.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': false,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person5.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': false,
-    },
-    {
-      'avatar':
-      'https://raw.githubusercontent.com/flutter/plugins/master/packages/image_picker/image_picker/example/assets/person1.png',
-      'name': 'Stephen Yustiono',
-      'message': "I don't know why people are so anti pineapple pizza. I kind of like it.",
-      'time': '9:36 AM',
-      'unread': false,
-    },
+      time: '9:40 AM',
+      unread: false,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/2?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: true,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/3?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: false,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/4?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: true,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/5?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: false,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/6?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: false,
+    ),
+    ChatModel(
+      avatar:
+      'https://avatars.githubusercontent.com/u/7?v=4', // Example valid avatar link
+      name: 'Stephen Yustiono',
+      message: "I don't know why people are so anti pineapple pizza. I kind of like it.",
+      time: '9:36 AM',
+      unread: false,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
       itemCount: chatData.length,
-      separatorBuilder: (context, index) => const Divider(height: 24),
+      separatorBuilder: (context, index) =>  Divider(height: 24.h),
       itemBuilder: (context, index) {
         final chat = chatData[index];
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: Stack(
-            clipBehavior: Clip.none,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min, // Add this line
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundImage: NetworkImage(chat['avatar']),
-              ),
-              if (chat['unread'])
-                Positioned(
-                  top: -2,
-                  left: -2,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.blue,
-                    ),
+              if (chat.unread)
+                Container(
+                  width: 10.w,
+                  height: 10.h,
+                  decoration:  BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AllColor.blue500,
                   ),
                 ),
+              SizedBox(width: 5.w), // Add some space between the dot and avatar
+              CircleAvatar(
+                radius: 22.r,
+                backgroundImage: NetworkImage(chat.avatar),
+              ),
             ],
           ),
           title: Text(
-            chat['name'],
+            chat.name,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
-            chat['message'],
+            chat.message,
             overflow: TextOverflow.ellipsis,
           ),
           trailing: Text(
-            chat['time'],
+            chat.time,
             style: const TextStyle(fontSize: 12),
           ),
           onTap: () {},

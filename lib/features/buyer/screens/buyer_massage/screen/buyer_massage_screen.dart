@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/chat_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 
 class BuyerMassageScreen extends StatelessWidget {
   const BuyerMassageScreen({super.key});
@@ -11,11 +13,9 @@ class BuyerMassageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFD6CAC5),
       body: SafeArea(
         child: Container(
           padding:  EdgeInsets.symmetric(horizontal: 15.w,vertical: 15.h),
-          color: AllColor.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -117,7 +117,7 @@ class ChatListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       itemCount: chatData.length,
-      separatorBuilder: (context, index) =>  Divider(height: 24.h),
+      separatorBuilder: (context, index) =>  Divider(height: 22.h,color: AllColor.gray500),
       itemBuilder: (context, index) {
         final chat = chatData[index];
         return ListTile(
@@ -141,19 +141,34 @@ class ChatListView extends StatelessWidget {
               ),
             ],
           ),
-          title: Text(
-            chat.name,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          title: Row(
+            children: [
+              Text(
+                chat.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Spacer(),
+              FittedBox(
+                child: Row(
+                  children: [
+                    Text(
+                      chat.time,textAlign: TextAlign.start,
+                      style:  TextStyle(fontSize: 11.sp),
+
+                    ),
+                    SizedBox(width: 5.w,),
+                    Icon(Icons.arrow_forward_ios_outlined,size: 15.sp,)
+                  ],
+                ),
+              )
+            ],
           ),
           subtitle: Text(
             chat.message,
             overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
-          trailing: Text(
-            chat.time,
-            style: const TextStyle(fontSize: 12),
-          ),
-          onTap: () {},
+          onTap: () {context.push(ChatScreen.routeName);},
         );
       },
     );

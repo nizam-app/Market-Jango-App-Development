@@ -24,6 +24,7 @@ class AllColor {
 
  static final gray100 = Colors.grey.shade100;
  static final gray300 = Colors.grey.shade300;
+ static final gray500 = Colors.grey.shade500;
 
 
  static final dropDown = const Color(0xffD9E8F4);

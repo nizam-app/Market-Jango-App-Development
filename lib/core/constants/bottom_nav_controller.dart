@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage_screen.dart';
-import 'package:market_jango/features/buyer/screens/notification_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
+import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 

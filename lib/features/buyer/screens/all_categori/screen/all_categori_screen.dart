@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 
 
@@ -18,8 +19,7 @@ class CategoriesScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Text("Categories Screen",style:Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 24) ,),
-                    SizedBox(height: 20.h,),
+                   Tuppertextandbackbutton(screenName: "All Categories"),
                     CustomCategories(categoriCount: 8,scrollableCheck: AlwaysScrollableScrollPhysics(),)
                   ],
                 ),

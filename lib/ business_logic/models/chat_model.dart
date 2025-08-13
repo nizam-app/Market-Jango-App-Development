@@ -1,48 +1,53 @@
-// lib/core/data/models/chat_model.dart
-
-import 'dart:convert'; // Required for jsonEncode and jsonDecode
-
-class ChatModel {
-  final String avatar;
-  final String name;
-  final String message;
+class ChatMessage {
+  final String? text;
+  final bool isSender;
   final String time;
-  final bool unread;
+  final bool isOrderSummary;
+  final String? orderNumber;
+  final String? deliveryType;
+  final int? itemCount;
+  final List<String>? imageUrls;
 
-  const ChatModel({
-    required this.avatar,
-    required this.name,
-    required this.message,
+
+  ChatMessage({
+    this.text,
+    required this.isSender,
     required this.time,
-    required this.unread,
-  });
+    this.isOrderSummary = false,
+    this.orderNumber,
+    this.deliveryType,
+    this.itemCount,
+    this.imageUrls,
+  }) : assert(isOrderSummary ? (orderNumber != null && deliveryType != null &&
+      itemCount != null && imageUrls != null) : text != null);
 
-  // Factory constructor to create a ChatModel from a JSON map
-  factory ChatModel.fromJson(Map<String, dynamic> json) {
-    return ChatModel(
-      avatar: json['avatar'] as String,
-      name: json['name'] as String,
-      message: json['message'] as String,
-      time: json['time'] as String,
-      unread: json['unread'] as bool,
-    );
-  }
-
-  // Method to convert a ChatModel instance to a JSON map
+  // Convert a ChatMessage instance to a JSON map.
   Map<String, dynamic> toJson() {
     return {
-      'avatar': avatar,
-      'name': name,
-      'message': message,
+      'text': text,
+      'isSender': isSender,
       'time': time,
-      'unread': unread,
+      'isOrderSummary': isOrderSummary,
+      'orderNumber': orderNumber,
+      'deliveryType': deliveryType,
+      'itemCount': itemCount,
+      'imageUrls': imageUrls,
     };
   }
 
-  // Optional: Convenience method to convert a ChatModel instance to a JSON string
-  String toJsonString() => jsonEncode(toJson());
-
-  // Optional: Convenience factory to create a ChatModel from a JSON string
-  factory ChatModel.fromJsonString(String source) =>
-      ChatModel.fromJson(jsonDecode(source) as Map<String, dynamic>);
+  // Create a ChatMessage instance from a JSON map.
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      text: json['text'],
+      isSender: json['isSender'],
+      time: json['time'],
+      isOrderSummary: json['isOrderSummary'] ?? false,
+      orderNumber: json['orderNumber'],
+      deliveryType: json['deliveryType'],
+      itemCount: json['itemCount'],
+      imageUrls: json['imageUrls'] != null
+          ? List<String>.from(json['imageUrls'])
+          : null,
+    );
+  }
 }

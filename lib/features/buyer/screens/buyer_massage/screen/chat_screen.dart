@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:market_jango/%20business_logic/models/chat_model.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/buyer/screens/buyer_massage/data/chat_data.dart';
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 static final routeName = "/chatScreen";
@@ -8,64 +13,12 @@ static final routeName = "/chatScreen";
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      text: 'Hi! I want to buy a red cotton kurti. Do you have Size M?',
-      isSender: true,
-      time: '7:15 PM',
-    ),
-    ChatMessage(
-      text:
-      'Hello! Yes, a red cotton kurti in Size M is available, I can create an order for you now if you\'d like.',
-      isSender: false,
-      time: '7:15 PM',
-    ),
-    ChatMessage(
-      text: 'Okay. What\'s the price? When will it be delivered?',
-      isSender: true,
-      time: '7:15 PM',
-    ),
-    ChatMessage(
-      text:
-      'The price is 799 Taka, delivery within 3 days. If you confirm, I\'ll place the order.',
-      isSender: false,
-      time: '7:15 PM',
-    ),
-    ChatMessage(
-      text: 'Okay, go ahead. Do you offer Cash on Delivery?',
-      isSender: true,
-      time: '7:16 PM',
-    ),
-    // Placeholder for the order summary message
-    ChatMessage(
-      isOrderSummary: true,
-      orderNumber: '#92287157',
-      deliveryType: 'Standard Delivery',
-      itemCount: 3,
-      isSender: false,
-      // Or true, depending on who sends this message
-      time: '7:16 PM',
-      imageUrls: [
-        'https://via.placeholder.com/150/92C952',
-        // Replace with your actual image URLs
-        'https://via.placeholder.com/150/771796',
-        'https://via.placeholder.com/150/24F355',
-        'https://via.placeholder.com/150/8985DC',
-      ],
-    ),
-    ChatMessage(
-      text:
-      'Lorem ipsum dolor sit amet consectetur. Diam convallis non morbi feugiat',
-      isSender: false,
-      time: '7:16 PM',
-    ),
-  ];
 
   void _handleSubmitted(String text) {
     _textController.clear();
     if (text.isEmpty) return;
     setState(() {
-      _messages.insert(
+      messages.insert(
         0,
         ChatMessage(
           text: text,
@@ -86,53 +39,58 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+          icon:  Icon(Icons.arrow_back_ios, color:AllColor.black,size: 17.sp,),
           onPressed: () {
             // Handle back button press
-            Navigator.of(context).pop();
+            context.pop();
           },
         ),
         title: Row(
           children: [
             const CircleAvatar(
               backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150'), // Replace with your avatar URL
+                  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fHww&w=1000&q=80'), // Replace with your avatar URL
             ),
-            const SizedBox(width: 10),
-            const Text(
+             SizedBox(width: 10.w),
+             Text(
               'Curtis Welsh',
-              style: TextStyle(color: Colors.black, fontSize: 18),
+              style:theme.titleLarge!.copyWith(
+                fontSize: 20.sp,
+              ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.videocam_outlined, color: Colors.black54),
+            icon: const Icon(Icons.videocam_outlined),
             onPressed: () {
               // Handle video call action
+              // handleVideoCall();
             },
           ),
           IconButton(
-            icon: const Icon(Icons.call_outlined, color: Colors.black54),
+            icon: const Icon(Icons.call_outlined),
             onPressed: () {
               // Handle call action
+              //  handleAduioCall();
             },
           ),
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: AllColor.white,
         elevation: 1,
       ),
       body: Column(
         children: <Widget>[
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(8.0),
+              padding:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 10.h),
               reverse: true,
-              itemCount: _messages.length,
-              itemBuilder: (_, int index) => _buildMessageRow(_messages[index]),
+              itemCount: messages.length,
+              itemBuilder: (_, int index) => _buildMessageRow(messages[index]),
             ),
           ),
           const Divider(height: 1.0),
@@ -155,7 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
         : MainAxisAlignment.start;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding:  EdgeInsets.symmetric(vertical: 4.0.h),
       child: Column(
         crossAxisAlignment: messageAlignment,
         children: [
@@ -257,29 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class ChatMessage {
-  final String? text;
-  final bool isSender;
-  final String time;
-  final bool isOrderSummary;
-  final String? orderNumber;
-  final String? deliveryType;
-  final int? itemCount;
-  final List<String>? imageUrls;
 
-
-  ChatMessage({
-    this.text,
-    required this.isSender,
-    required this.time,
-    this.isOrderSummary = false,
-    this.orderNumber,
-    this.deliveryType,
-    this.itemCount,
-    this.imageUrls,
-  }) : assert(isOrderSummary ? (orderNumber != null && deliveryType != null &&
-      itemCount != null && imageUrls != null) : text != null);
-}
 
 class MessageBubble extends StatelessWidget {
   final ChatMessage message;

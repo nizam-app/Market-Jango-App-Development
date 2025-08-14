@@ -14,17 +14,20 @@ class CategoriesScreen extends StatelessWidget {
     return Scaffold(
       body: SingleChildScrollView(
         child: SafeArea(
-          child: Column(
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                   Tuppertextandbackbutton(screenName: "All Categories"),
-                    CustomCategories(categoriCount: 8,scrollableCheck: AlwaysScrollableScrollPhysics(),)
-                  ],
+          child: Padding(
+            padding:  EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                     Tuppertextandbackbutton(screenName: "All Categories"),
+                      CustomCategories(categoriCount: 8,scrollableCheck: AlwaysScrollableScrollPhysics(),)
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

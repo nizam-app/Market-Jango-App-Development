@@ -4,6 +4,7 @@ import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
@@ -167,6 +168,10 @@ GoRoute(
       path: ChatScreen.routeName,
       name: ChatScreen.routeName,
       builder: (context, state) => const ChatScreen(),
+    ),GoRoute(
+      path: CartScreen.routeName,
+      name: CartScreen.routeName,
+      builder: (context, state) => const CartScreen(),
     ),
 
     // Transport flow

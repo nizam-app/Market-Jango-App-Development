@@ -7,6 +7,12 @@ class AllColor {
 
 
 
+  static final Color orange =  Colors.orange;
+
+
+
+
+
   static final Color textBorderColor = const Color(0xFFFAC75D);
   static final Color textHintColor = const Color(0xFF3D5B73);
   static final Color loginButtonColor = const Color(0xFFF9B935);
@@ -19,12 +25,16 @@ class AllColor {
 
 
  static final Color white = Color(0xffffffff);
+
  static final black = Color(0xff202020);
+ static final black54 = Colors.black54;
+ static final black87 = Colors.black87;
 
 
- static final gray100 = Colors.grey.shade100;
- static final gray300 = Colors.grey.shade300;
- static final gray500 = Colors.grey.shade500;
+ static final grey = Colors.grey;
+ static final grey100 = grey.shade100;
+ static final grey300 = grey.shade300;
+ static final grey500 = grey.shade500;
 
 
  static final dropDown = const Color(0xffD9E8F4);
@@ -32,6 +42,7 @@ class AllColor {
 
  static final blue = Colors.blue;
  static final blue50 = Colors.blue.shade50;
+ static final blue200= Colors.blue.shade200;
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
 

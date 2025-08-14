@@ -1,48 +1,84 @@
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:market_jango/core/constants/bottom_nav_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/settings/screens/settings_screen.dart';
 
-class BottomNavBar extends StatelessWidget {
+final selectedIndexProvider = StateProvider<int>((ref) => 0);
+
+class BottomNavBar extends ConsumerWidget {
+  // Changed to ConsumerWidget
   const BottomNavBar({super.key});
+
   static const String routeName = '/bottom_nav_bar';
 
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(BottomNavController());
+  // Define your pages/screens here
+  final List<Widget> _pages = const [
+    // Replace with your actual screen widgets
+    BuyerHomeScreen(),
+    // Example: HomeScreen(),
+   BuyerMassageScreen(),
+    // Example: ChatScreen(),
+    CategoriesScreen(),
+    // Example: CategoriesScreen(),
+    CartScreen(),
+    // Example: CartScreen(),
+SettingScreen()
+    // Example: AccountScreen(),
+  ];
 
-    return Obx(() => Scaffold(
-          body: controller.pages[controller.selectedIndex.value],
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: controller.selectedIndex.value,
-            onTap: controller.changeIndex,
-            backgroundColor: Colors.white,
-            selectedItemColor: Colors.yellow.shade500,
-            unselectedItemColor: Colors.grey,
-            type: BottomNavigationBarType.fixed,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_rounded),
-                label: "Home",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.chat_bubble_outline_rounded),
-                label: "Chat",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.notifications_none),
-                label: "Notifications ",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.local_shipping_outlined),
-                   label: "Transport",
-              ), 
-              BottomNavigationBarItem(
-                icon: Icon( Icons.settings_outlined,),
-                label: "Settings",
-              ),
-            ],
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Added WidgetRef
+    // Watch the selectedIndexProvider
+    final selectedIndex = ref.watch(selectedIndexProvider);
+
+    return Scaffold(
+      body: _pages[selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedIndex,
+        onTap: (index) {
+          // Update the selected index using the provider's notifier
+          ref
+              .read(selectedIndexProvider.notifier)
+              .state = index;
+        },
+        backgroundColor: AllColor.white,
+        selectedItemColor: AllColor.orange,
+        // Changed to orange
+        unselectedItemColor: AllColor.grey,
+        type: BottomNavigationBarType.fixed,
+        // Keep this if you want fixed labels
+        // showSelectedLabels: true, // Optional: ensure selected label is shown
+        // showUnselectedLabels: true, // Optional: ensure unselected labels are shown
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled), // Changed Icon
+            label: "Home",
           ),
-        ));
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline_rounded),
+            // Kept similar, adjust if needed
+            label: "Chat",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.widgets_outlined),
+            // Changed Icon (example for Categories)
+            label: "Categories",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart_outlined), // Changed Icon
+            label: "Cart",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline), // Changed Icon
+            label: "Account",
+          ),
+        ],
+      ),
+    );
   }
 }

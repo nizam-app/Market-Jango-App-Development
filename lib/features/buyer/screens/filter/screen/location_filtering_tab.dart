@@ -93,7 +93,7 @@ class _LocationFilteringTabState extends State<LocationFilteringTab> {
                     decoration: buildInputDecoration()!.copyWith(
                         hintText: "Search your location",
                         prefixIcon: Icon(Icons.search_rounded,size: 27.sp,),
-                    fillColor: AllColor.gray100),
+                    fillColor: AllColor.grey100),
                   ),
 
                    SizedBox(height: 20.h),

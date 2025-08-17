@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/name_screen.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
-class UserScreen extends StatelessWidget {
-  const UserScreen({super.key});
-  static const String routeName = '/userScreen';
+class CarInfoScreen extends StatelessWidget {
+  const CarInfoScreen({super.key});
+    static final String routeName = '/car_info'; 
 
   @override
   Widget build(BuildContext context) {
@@ -16,32 +17,84 @@ class UserScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              children: [
-                SizedBox(height: 30.h),
-                CustomBackButton(),
-                UserText(),
-                NextBotton(),
-              ],
-            ),
+            child: Column(children: [
+              SizedBox(height: 30.h,),
+              CustomBackButton(), 
+              CarInfoText(), 
+              CarInfoDriverRoute(),
+              NextBotton(),  
+
+                
+            ] 
           ),
         ),
       ),
+    )
     );
   }
 }
 
-class UserText extends StatefulWidget {
-  const UserText({super.key});
+
+class CarInfoText extends StatelessWidget {
+  const CarInfoText({super.key});
 
   @override
-  State<UserText> createState() => _UserTextState();
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 20.h),
+        Center(child: Text("Car Information", style: textTheme.titleLarge)),
+        SizedBox(height: 20.h),
+        Center(
+          child: Text(
+            "Get started with your access in just a few steps",
+            style: textTheme.bodySmall,
+          ),
+        ),
+        SizedBox(height: 40.h),
+        TextFormField(
+          decoration: InputDecoration(
+            hintText: 'Enter your Car Brand Name',
+           
+          ),
+       
+        ),
+        SizedBox(height: 30.h,),
+        TextFormField(
+          decoration: InputDecoration(
+              hintText: 'Enter your brand model ',
+           
+          ),
+         
+        ),
+        
+        SizedBox(height: 30.h,),
+        TextFormField(
+          decoration: InputDecoration(
+              hintText: 'Enter your Location ',
+           
+          ),
+          
+        ),
+      ],
+    );
+  }
+}
+  
+  
+class CarInfoDriverRoute extends StatefulWidget {
+  const CarInfoDriverRoute({super.key});
+
+  @override
+  State<CarInfoDriverRoute> createState() => _CarInfoDriverRoute();
 }
 
-class _UserTextState extends State<UserText> {
+class _CarInfoDriverRoute extends State<CarInfoDriverRoute> {
   String? selectedUserType;
 
-  final List<String> userTypes = ['Vendor', 'Buyer', 'Transport', 'Driver'];
+  final List<String> driginRoute = ['Rampura', 'Jomuna', 'Airport', 'Uttora'];
 
   @override
   Widget build(BuildContext context) {
@@ -50,27 +103,25 @@ class _UserTextState extends State<UserText> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
-        Center(child: Text("User Type Selection", style: textTheme.titleLarge)),
-        const SizedBox(height: 24),
-
+         SizedBox(height: 28.h),
         Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: const Color(0xFFFEF8E7),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AllColor.outerAlinment),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
-              hint: const Text("Choose one"),
+              hint: const Text("Enter your driving route"),
               value: selectedUserType,
               icon: const Icon(Icons.arrow_drop_down),
               dropdownColor: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(30),
               selectedItemBuilder: (context) {
-                return userTypes.map((type) {
+                return driginRoute.map((type) {
                   return Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -83,7 +134,7 @@ class _UserTextState extends State<UserText> {
                   );
                 }).toList();
               },
-              items: userTypes.map((type) {
+              items: driginRoute.map((type) {
                 return DropdownMenuItem<String>(
                   value: type,
                   child: Container(
@@ -112,20 +163,35 @@ class _UserTextState extends State<UserText> {
             ),
           ),
         ),
+
+       
+
+        
+        SizedBox(height: 28.h),
+        Text("Upload your driging license & other documents", style: textTheme.bodyMedium),
+        SizedBox(height: 12.h),
+        TextFormField(
+          decoration: InputDecoration(
+            hintText: 'Upload Multiple Images ',
+            suffixIcon: Icon(Icons.upload_file),
+          ),
+        ),
       ],
     );
   }
 }
 
+
+  
 class NextBotton extends StatelessWidget {
   const NextBotton({super.key});
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 460.h),
+        SizedBox(height: 40.h),
         CustomAuthButton(
-          buttonText: "Next",
+          buttonText: "Confrim",
           onTap: () => nextButonDone(context),
         ),
       ],
@@ -133,10 +199,11 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToNameScreen(context);
+    goToPhoneNumberScreen(context);
   }
 
-  void goToNameScreen(BuildContext context) {
-    context.push(NameScreen.routeName);
+  void goToPhoneNumberScreen(BuildContext context) {
+    context.push(PhoneNumberScreen.routeName);
   }
 }
+ 

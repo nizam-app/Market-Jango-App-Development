@@ -64,17 +64,17 @@ final GoRouter router = GoRouter(
 
 
     // Auth flow
-    GoRoute(path:SplashScreen.routeName, 
+    GoRoute(path:SplashScreen.routeName,
     name: 'splashScreen',
-    builder: (context,state)=>const SplashScreen(), 
+    builder: (context,state)=>const SplashScreen(),
      ),
-     GoRoute(path:NameScreen.routeName, 
+     GoRoute(path:NameScreen.routeName,
     name: 'nameScreen',
-    builder: (context,state)=>const NameScreen(), 
+    builder: (context,state)=>const NameScreen(),
      ),
     GoRoute(path:UserScreen.routeName,
     name: 'userScreen',
-    builder: (context,state)=>const UserScreen(), 
+    builder: (context,state)=>const UserScreen(),
      ),
     GoRoute(path:PhoneNumberScreen.routeName,
     name: 'phoneNumberScreen',
@@ -94,9 +94,9 @@ final GoRouter router = GoRouter(
      ),
     GoRoute(path:CongratulationScreen.routeName,
     name: 'congratulationScreen',
-    builder: (context,state)=>const CongratulationScreen(), 
+    builder: (context,state)=>const CongratulationScreen(),
      ),
- 
+
   // Seller flow
   // This section is for routes related to the seller functionality.
   // Add GoRoute widgets here for seller-specific screens.
@@ -134,15 +134,17 @@ GoRoute(
       name: 'buyer_home',
       builder: (context, state) => const BuyerHomeScreen(),
     ),
+    
+
     GoRoute(
       path: NotificationsScreen.routeName,
       name: 'notification_screen',
-      builder: (context, state) =>  NotificationsScreen(),
+      builder: (context, state) => NotificationsScreen(),
     ),
     GoRoute(
       path: FilterScreen.routeName,
       name: 'filter_screen',
-      builder: (context, state) =>  FilterScreen(),
+      builder: (context, state) => FilterScreen(),
     ),
 GoRoute(
       path: CategoriesScreen.routeName,

@@ -15,8 +15,6 @@ class CongratulationScreen extends StatelessWidget {
     return Scaffold(
       body: ScreenBackground(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               children: [
                  SizedBox(height: 30.h),
@@ -28,7 +26,7 @@ class CongratulationScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
+     
     );
   }
 }
@@ -66,14 +64,17 @@ class NextBotton extends StatelessWidget {
   const NextBotton({super.key});
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(height: 20.h),
-        CustomAuthButton(
-          buttonText: "Go to Home ",
-          onTap: () => nextButonDone(context),
-        ),
-      ],
+    return Padding(
+      padding:  EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: [
+          SizedBox(height: 20.h),
+          CustomAuthButton(
+            buttonText: "Go to Home ",
+            onTap: () => nextButonDone(context),
+          ),
+        ],
+      ),
     );
   }
 

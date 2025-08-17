@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart' show Logger;
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
-import 'package:market_jango/features/buyer/screens/location_filtering_tab.dart';
-import 'package:market_jango/features/buyer/screens/notification_screen.dart';
 import 'package:riverpod/riverpod.dart';
 class CustomCategories extends ConsumerWidget{
   CustomCategories({

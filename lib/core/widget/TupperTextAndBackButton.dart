@@ -18,7 +18,7 @@ final String screenName;
                 onTap: (){backButton(context);},
                 child: CircleAvatar(
                     radius: 15.r,
-                    backgroundColor: AllColor.gray300,
+                    backgroundColor: AllColor.grey300,
                     child: Icon(Icons.arrow_back_ios, size: 8.sp,color: AllColor.black,)),
               ),
               Spacer(),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 
 class LocationFilteringTab extends StatefulWidget {
   const LocationFilteringTab({super.key});
@@ -93,7 +93,7 @@ class _LocationFilteringTabState extends State<LocationFilteringTab> {
                     decoration: buildInputDecoration()!.copyWith(
                         hintText: "Search your location",
                         prefixIcon: Icon(Icons.search_rounded,size: 27.sp,),
-                    fillColor: AllColor.gray100),
+                    fillColor: AllColor.grey100),
                   ),
 
                    SizedBox(height: 20.h),

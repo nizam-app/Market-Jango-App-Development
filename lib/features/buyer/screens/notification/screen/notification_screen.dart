@@ -6,7 +6,6 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/data/notification_list.dart';
 class NotificationsScreen extends StatelessWidget {
    NotificationsScreen({super.key});
-
   static final routeName = "/notificationScreen";
   @override
   Widget build(BuildContext context) {
@@ -57,7 +56,7 @@ class NotificationTile extends StatelessWidget {
       margin:  EdgeInsets.only(bottom: 16.h),
       padding:  EdgeInsets.symmetric(horizontal: 16.w,vertical: 16.h),
       decoration: BoxDecoration(
-        color:isUnread ? AllColor.gray100:AllColor.white,
+        color:isUnread ? AllColor.grey100:AllColor.white,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(

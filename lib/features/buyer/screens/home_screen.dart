@@ -4,18 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/constants/image_control/image_path.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
-import 'package:market_jango/features/auth/screens/login_screen.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
+import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
+import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
-import 'categori_screen.dart';
-import 'location_filtering_tab.dart';
-import 'notification_screen.dart';
+import 'all_categori/screen/all_categori_screen.dart';
+import 'filter/screen/location_filtering_tab.dart';
+import 'notification/screen/notification_screen.dart';
 class BuyerHomeScreen extends StatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';
@@ -41,8 +42,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                 CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,),
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){},isSeeMore: false,),
                 TopProducts(),
-                TimerScreen(),
-                DiscountProduct(),
+                // TimerScreen(),
+                // DiscountProduct(),
                 SeeMoreButton(name:"New Items",seeMoreAction: (){goToNewItemsPage();},),
                 NewItemsShow(),
                 SeeMoreButton(name:"Just For you",seeMoreAction: (){goToJustForYouPage();},),
@@ -57,8 +58,8 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   void goToCategoriesPage() {
     context.push(CategoriesScreen.routeName);
   }
-  void goToNewItemsPage(){}
-  void goToJustForYouPage(){}
+  void goToNewItemsPage(){context.push(SeeNewItemsScreen.routeName);}
+  void goToJustForYouPage(){context.push(SeeJustForYouScreen.routeName);}
 
 }
 
@@ -77,10 +78,10 @@ class JustForYouProduct extends StatelessWidget {
           crossAxisSpacing: 8.w,
           childAspectRatio: 0.6.h,
         ),
-        itemCount: 4,
+        itemCount: 20,
         // Example item count
         itemBuilder: (context, index) {
-      return CustomNewProduct(width: 162.w, height: 172.h);
+      return CustomNewProduct(width: 162.w, height: 175.h);
         });
   }
 }
@@ -101,7 +102,7 @@ class NewItemsShow extends StatelessWidget {
           itemCount: 6,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 140.w, height: 140.h);}
+            return CustomNewProduct(width: 130.w, height: 138.h);}
       ),
     );
   }
@@ -126,33 +127,38 @@ class CustomNewProduct extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             color: AllColor.white,
-            borderRadius: BorderRadius.circular(8.r),
+            borderRadius: BorderRadius.circular(7.r),
+
           ),
           clipBehavior: Clip.hardEdge,
           child: Column(
             children: [
-              // Image
-              Image.asset(
-                'assets/images/clothing3.jpg', // আপনার ইমেজ পাথ দিন এখানে
-                fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.r),
+                child: Image.asset(
+                  '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
+                  fit: BoxFit.contain,
+
+                ),
               ),
               // Discount Tag
-    
+
             ],
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10.w,vertical: 5.h),
+          padding: EdgeInsets.only(top: 10.h,left: 15.w),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 5.h,),
-              Text("T shirt",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),),
+              SizedBox(height: 3.h,),
+              Text("New T-shirt, sun-glass".length > 12 ? "New T-shirt," : "New T-shirt, sun-glass",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
               SizedBox(height: 5.h,),
               Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
             ],
           ),
         ),
-    
+
       ],
     );
   }
@@ -449,9 +455,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
             ),
 
             SizedBox(width: 8.w),
-
             // Notification Icon
-
             Container(
               height: 35.h,
               width: 35.w,

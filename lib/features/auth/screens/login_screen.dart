@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
-import 'package:market_jango/features/buyer/screens/Home%20screen.dart';
-
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -66,7 +66,7 @@ class LoginBotton extends StatelessWidget {
               TextSpan(
                 text: "Sign up",
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AllColor.loginButtonColor,
+                  color: AllColor.loginButtomColor,
                   fontWeight: FontWeight.w300,),
                 onEnter: (_){
                   goToSignUpScreen(context);
@@ -82,7 +82,7 @@ class LoginBotton extends StatelessWidget {
 
 
 void loginDone(BuildContext context) {
-    context.push('/buyerHomeScreen');
+    context.push(BottomNavBar.routeName);
   }
 
 void gotoHomeScreen(BuildContext content){

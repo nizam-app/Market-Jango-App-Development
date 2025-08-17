@@ -146,7 +146,7 @@ GoRoute(
     ),
 GoRoute(
       path: CategoriesScreen.routeName,
-      name: 'categories_screen',
+      name: CategoriesScreen.routeName,
       builder: (context, state) =>  CategoriesScreen(),
     ),
     GoRoute(

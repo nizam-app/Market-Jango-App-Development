@@ -1,0 +1,29 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+
+class CustomSeeAllProduct extends StatelessWidget {
+  const CustomSeeAllProduct({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GridView.builder(shrinkWrap: true,
+          physics: AlwaysScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            // mainAxisSpacing: 0.h,
+            crossAxisSpacing: 8.w,
+            childAspectRatio: 0.6.h,
+          ),
+          itemCount: 20,
+          // Example item count
+          itemBuilder: (context, index) {
+            return CustomNewProduct(width: 162.w, height: 175.h);
+          })
+      ,
+    );
+  }
+}

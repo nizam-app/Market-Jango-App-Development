@@ -27,6 +27,7 @@ class AllColor {
 
 
  static final Color white = Color(0xffffffff);
+ static final Color white70 = Colors.white70;
 
  static final black = Color(0xff202020);
  static final black54 = Colors.black54;

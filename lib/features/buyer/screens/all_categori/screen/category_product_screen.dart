@@ -37,7 +37,7 @@ class CategoryProductScreen extends StatelessWidget {
               child: Row(
                 children: [
                   const VendorListSection(),
-                  Expanded(child: const ProductGridSection()),
+                  const Expanded(child: ProductGridSection()),
                 ],
               ),
             ),

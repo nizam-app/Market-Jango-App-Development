@@ -16,12 +16,14 @@ class EmailScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(children: [
+            child: Column(
+              children: [
                 SizedBox(height: 30.h),
-                CustomBackButton(), 
-              
-              EmailText(),
-             NextBotton()]),
+                CustomBackButton(),
+                EmailText(),
+                NextBotton(),
+              ],
+            ),
           ),
         ),
       ),
@@ -36,30 +38,27 @@ class EmailText extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-      
-       
         SizedBox(height: 20.h),
         Center(child: Text("Your email ", style: textTheme.titleLarge)),
         SizedBox(height: 14.h),
+
         Center(
+        
           child: Text(
-            "Don't lose access to your account, verify \nyour email ",
+            "Don't lose access to your account, verify\n your email ",
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
-
         SizedBox(height: 24.h),
         TextFormField(
-      decoration: InputDecoration(
-        hintText: "Email",
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          decoration: InputDecoration(
+            hintText: "Email",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+          ),
         ),
-      ),
-    ),
-
       ],
     );
   }

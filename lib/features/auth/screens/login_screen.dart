@@ -66,7 +66,7 @@ class LoginBotton extends StatelessWidget {
               TextSpan(
                 text: "Sign up",
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AllColor.loginButtonColor,
+                  color: AllColor.loginButtomColor,
                   fontWeight: FontWeight.w300,),
                 onEnter: (_){
                   goToSignUpScreen(context);

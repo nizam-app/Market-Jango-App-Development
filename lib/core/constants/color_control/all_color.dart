@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 class AllColor {
+ static final Color transparent =  Colors.transparent;
  static final Color yellow50 = const Color(0xFFFEF8EB);
   static final Color yellow500 = const Color(0xFFF9B935);
   static final Color yellow700 =  Color(0xffB18326);
@@ -36,6 +37,7 @@ class AllColor {
 
  static final grey = Colors.grey;
  static final grey100 = grey.shade100;
+ static final grey200 = grey.shade200;
  static final grey300 = grey.shade300;
  static final grey500 = grey.shade500;
 
@@ -48,6 +50,9 @@ class AllColor {
  static final blue200= Colors.blue.shade200;
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
+ static final lightBlue = Colors.lightBlue;
+
+
 
   
 }

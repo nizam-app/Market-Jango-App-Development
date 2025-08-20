@@ -3,309 +3,342 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
-
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
+
   static const String routeName = '/cartScreen';
 
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  late List<CartItemModel> items;
-
-  @override
-  void initState() {
-    super.initState();
-    items = List<CartItemModel>.from(dummyCartItems);
-  }
-
-  double get totalPrice {
-    double t = 0;
-    for (final i in items) {
-      t += i.price * i.quantity;
+  double _calculateTotalPrice(List<CartItemModel> items) {
+    double total = 0;
+    for (var item in items) {
+      total += item.price * item.quantity;
     }
-    return t;
+    return total;
   }
-
-  // ---- money formatter: "17,00"
-  String _formatMoney(double v) {
-    final s = v.toStringAsFixed(2);
-    return '\$${s.replaceAll('.', ',')}';
-  }
-
-  void _inc(int index) => setState(() {
-    items[index].quantity++;
-  });
-
-  void _dec(int index) => setState(() {
-    if (items[index].quantity > 1) items[index].quantity--;
-  });
-
-  void _remove(int index) => setState(() => items.removeAt(index));
 
   @override
   Widget build(BuildContext context) {
+    final double totalPrice = _calculateTotalPrice(dummyCartItems);
+    final theme = Theme.of(context).textTheme;
+
     return Scaffold(
-      appBar: _buildCartAppBar(context, items.length),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
           children: [
-            SizedBox(height: 16.h),
-            _buildShippingAddressCard(context),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (_, i) => _buildCartItemCard(items[i], i),
-              ),
+            Text(
+              'Cart',
+              style:theme.titleLarge!.copyWith(fontSize: 22.sp),
             ),
-            _buildBottomCheckoutBar(),
+            SizedBox(width: 20.w), // Using ScreenUtil for width
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              // Using ScreenUtil
+              decoration: BoxDecoration(
+                color: AllColor.blue200, // Example color from AllColor
+                borderRadius: BorderRadius.circular(
+                    20.r), // Using ScreenUtil for radius
+              ),
+              child: Text(
+                dummyCartItems.length.toString(),
+                style: theme.titleLarge!.copyWith(fontSize: 14.sp),
+                ),
+              ),
+
           ],
         ),
       ),
-    );
-  }
-
-//####################################################################################################################
-// Custom Codebase
-//####################################################################################################################
-
-  AppBar _buildCartAppBar(BuildContext context, int itemCount) {
-    final theme = Theme.of(context).textTheme;
-    return AppBar(
-      elevation: 0,
-      centerTitle: false,
-      title: Row(
+      body: Column(
         children: [
-          Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
-          SizedBox(width: 10.w),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: AllColor.blue200,
-              borderRadius: BorderRadius.circular(18.r),
-            ),
-            child: Text(
-              itemCount.toString(),
-              style: theme.titleMedium!.copyWith(fontSize: 14.sp, color: AllColor.black),
+          SizedBox(height: 20.h),
+          Padding(
+            padding:  EdgeInsets.all(8.0.r),
+            child: _buildShippingAddress(context),
+          ),
+          SizedBox(height: 20.h),
+          Expanded(
+            child: ListView.builder(
+              itemCount: dummyCartItems.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding:  EdgeInsets.symmetric(horizontal: 15.w),
+                  child: _buildCartItemCard(dummyCartItems[index],context),
+                );
+              },
             ),
           ),
+          _buildTotalCheckoutSection(totalPrice),
         ],
       ),
     );
   }
 
-  // ===== top shipping card =====
-  Widget _buildShippingAddressCard(BuildContext context) {
+  Widget _buildShippingAddress(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Container(
-      padding: EdgeInsets.all(12.r),
+      padding: EdgeInsets.all(10.r),
       decoration: BoxDecoration(
         color: AllColor.grey100,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(5.r),
         boxShadow: [
-          BoxShadow(color: AllColor.grey.withOpacity(0.15), blurRadius: 8, offset: Offset(0, 2.h)),
+          BoxShadow(
+            color: AllColor.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 2.h),
+          ),
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Shipping Address', style: theme.titleMedium!.copyWith(fontSize: 14.sp, color: AllColor.black)),
-              SizedBox(height: 4.h),
-              Text(
-                '26, Duong So 2, Thao Dien Ward, An Phu, District 2, Ho Chi Minh city',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11.sp, color: AllColor.black),
-              ),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shipping Address',
+                  style:theme.titleLarge!.copyWith(fontSize: 14.sp) ,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  '26, Duong So 2, Thao Dien Ward, An Phu, District 2, Ho Chi Minh city',
+                  style: TextStyle(color: AllColor.black, fontSize: 11.sp),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 16.w),
           Container(
-            height: 28.w,
-            width: 28.w,
-            decoration: BoxDecoration(color: AllColor.orange, shape: BoxShape.circle),
-            child: Icon(Icons.edit_outlined, size: 16.sp, color: AllColor.white),
+            padding: EdgeInsets.all(8.r),
+            decoration:  BoxDecoration(
+              color: AllColor.orange, // Using AllColor
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.edit_outlined,
+              color: AllColor.white, // Using AllColor
+              size: 18.sp,
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ===== cart card (Image-2 layout) =====
-  Widget _buildCartItemCard(CartItemModel item, int index) {
+
+  Widget _buildCartItemCard(CartItemModel item ,BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return Card(
       elevation: 0,
       margin: EdgeInsets.symmetric(vertical: 8.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Container(
-        padding: EdgeInsets.all(2.r),
         decoration: BoxDecoration(
           color: AllColor.white,
           borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [BoxShadow(color: AllColor.black.withOpacity(0.08), blurRadius: 8, offset: Offset(0, 2.h))],
+          boxShadow: [
+            BoxShadow(
+              color: AllColor.black.withOpacity(0.005),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: Offset(0, 2.h),
+            ),
+          ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // image + red delete badge (bottom-left)
+            // Product Image with Delete Button
             Stack(
-              clipBehavior: Clip.none,
+              alignment: Alignment.topLeft,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.r),
                   child: Image.network(
                     item.imageUrl,
-                    width: 80.w,
-                    height: 80.w,
+                    width: 90.w,
+                    height: 90.h,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 80.w,
-                      height: 80.w,
-                      color: AllColor.grey,
-                      alignment: Alignment.center,
-                      child: Icon(Icons.image_outlined, color: AllColor.white, size: 28.sp),
-                    ),
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 90.w,
+                        height: 90.h,
+                        color: AllColor.grey,
+                        child: Icon(Icons.broken_image,
+                            color: AllColor.blue, size: 40.sp),
+                      );
+                    },
                   ),
                 ),
-                Positioned(
-                  left: -6.w,
-                  bottom: -6.w,
-                  child: InkWell(
-                    onTap: () => _remove(index),
-                    customBorder: const CircleBorder(),
-                    child: Container(
-                      padding: EdgeInsets.all(6.r),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.35), blurRadius: 6)],
-                      ),
-                      child: Icon(Icons.delete, size: 16.sp, color: AllColor.white),
-                    ),
+                Container(
+                  margin: EdgeInsets.all(2.r),
+                  padding: EdgeInsets.all(5.r),
+                  decoration: BoxDecoration(
+                    color: AllColor.white, // Red background
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete,
+                    color: AllColor.orange,
+                    size: 18.sp,
                   ),
                 ),
               ],
             ),
             SizedBox(width: 12.w),
 
-            // texts
+            // Product Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // title (2 lines max)
+                  SizedBox(height: 8.h),
                   Text(
                     item.name,
+                    style: theme.titleMedium!.copyWith(color: AllColor.black),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: AllColor.black),
                   ),
                   SizedBox(height: 4.h),
-                  // details (bold like Image-2)
-                  Text('Pink, Size M',
-                      style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AllColor.black)),
-                  SizedBox(height: 6.h),
-                  // price bold
                   Text(
-                    _formatMoney(item.price),
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, color: AllColor.black),
+                    item.details,
+                    style: TextStyle(
+                        color: AllColor.black,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold), // Bold details
                   ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    '${item.price.toStringAsFixed(2).replaceAll('.', ',')}', // 17,00
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
+                      color: AllColor.black,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
                 ],
               ),
             ),
 
-            SizedBox(width: 8.w),
+            SizedBox(width: 12.w),
 
-            // qty controls — HORIZONTAL like Image-2
-            _buildQuantityControlsRow(
-              onDec: () => _dec(index),
-              onInc: () => _inc(index),
-              qty: item.quantity,
-            ),
+            // Quantity Control
+            _buildQuantityControl(item.quantity),
+            SizedBox(width: 12.w),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuantityControlsRow({required VoidCallback onDec, required VoidCallback onInc, required int qty}) {
+// Quantity Control updated to match design
+  Widget _buildQuantityControl(int quantity) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildOutlineCircleButton(icon: Icons.remove, onTap: onDec),
-        SizedBox(width: 10.w),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(color: AllColor.grey100, borderRadius: BorderRadius.circular(8.r)),
-          child: Text('$qty', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: AllColor.black)),
+        _circleButton(Icons.remove, () {}),
+        SizedBox(width: 8.w),
+        Text(
+          '$quantity',
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
         ),
-        SizedBox(width: 10.w),
-        _buildOutlineCircleButton(icon: Icons.add, onTap: onInc),
+        SizedBox(width: 8.w),
+        _circleButton(Icons.add, () {}),
       ],
     );
   }
 
-  Widget _buildOutlineCircleButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _circleButton(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      customBorder: const CircleBorder(),
       child: Container(
-        width: 32.w,
-        height: 32.w,
-        alignment: Alignment.center,
+        padding: EdgeInsets.all(4.r),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AllColor.white,
-          border: Border.all(color: AllColor.grey, width: 1.2),
+          border: Border.all(color: AllColor.black.withOpacity(0.8)),
+        ),
+        child: Icon(icon, size: 16.sp, color: AllColor.black),
+      ),
+    );
+  }
+
+
+
+
+  Widget _quantityButton(IconData icon, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      customBorder: const CircleBorder(),
+      child: Container(
+        padding: EdgeInsets.all(6.r),
+        decoration: BoxDecoration(
+          color: AllColor.grey,
+          shape: BoxShape.circle,
         ),
         child: Icon(icon, size: 18.sp, color: AllColor.black),
       ),
     );
   }
 
-  // ===== bottom total + checkout pill =====
-  Widget _buildBottomCheckoutBar() {
+  Widget _buildTotalCheckoutSection(double totalPrice) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: AllColor.white,
-        boxShadow: [BoxShadow(color: AllColor.black.withOpacity(0.15), blurRadius: 12, offset: Offset(0, -4.h))],
+        boxShadow: [
+          BoxShadow(
+            color: AllColor.black.withOpacity(0.2),
+            // Slightly more prominent shadow for bottom bar
+            spreadRadius: 0,
+            blurRadius: 10,
+            offset: Offset(0, -5.h),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Total
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Total', style: TextStyle(fontSize: 13.sp, color: AllColor.grey)),
-              SizedBox(height: 2.h),
               Text(
-                _formatMoney(totalPrice),
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w800, color: AllColor.black),
+                'Total',
+                style: TextStyle(
+                  color: AllColor.grey,
+                  fontSize: 14.sp,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                '\$${totalPrice.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.sp,
+                  color: AllColor.black,
+                ),
               ),
             ],
           ),
-          // Checkout (blue pill)
-          SizedBox(
-            height: 44.h,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AllColor.blue200,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-                padding: EdgeInsets.symmetric(horizontal: 28.w),
-                elevation: 0,
+          ElevatedButton(
+            onPressed: () {
+              // TODO: Implement checkout logic
+
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AllColor.black, // Using AllColor
+              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+              textStyle: TextStyle(
+                  fontSize: 16.sp, fontWeight: FontWeight.bold),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.r),
               ),
-              child: Text('Checkout',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: AllColor.white)),
             ),
+            child: Text('Checkout',
+                style: TextStyle(color: AllColor.white, fontSize: 16.sp)),
           ),
         ],
       ),

@@ -36,8 +36,8 @@ class CategoryProductScreen extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  const VendorListSection(),
-                  const Expanded(child: ProductGridSection()),
+                   VendorListSection(),
+                   Expanded(child: ProductGridSection()),
                 ],
               ),
             ),
@@ -189,6 +189,7 @@ class ProductCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Image with Discount
           Stack(

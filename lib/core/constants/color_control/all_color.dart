@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 class AllColor {
+ static final Color transparent =  Colors.transparent;
  static final Color yellow50 = const Color(0xFFFEF8EB);
   static final Color yellow500 = const Color(0xFFF9B935);
   static final Color yellow700 =  Color(0xffB18326);

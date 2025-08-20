@@ -108,23 +108,16 @@ class _CustomSizeState extends State<CustomSize> {
               ],
             ),
           ),
-          SizedBox(height: 16.h),
-          Text(
-            "Size",
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: AllColor.black,
-            ),
-          ),
-          SizedBox(height: 8.h),
+
+          buildText("Size"),
+
 
           // 🔹 Container background
           Container(
-            padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
+            padding: EdgeInsets.symmetric( horizontal: 8.w,vertical: 3.h),
             decoration: BoxDecoration(
-              color: AllColor.lightBlue.withOpacity(0.3), // light blue background
-              borderRadius: BorderRadius.circular(30.r),
+              color: AllColor.lightBlue.withOpacity(0.15), // light blue background
+              borderRadius: BorderRadius.circular(50.r),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -138,19 +131,19 @@ class _CustomSizeState extends State<CustomSize> {
                   },
                   child: Container(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
                     decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(20.r),
+                      color:isSelected? AllColor.white : AllColor.transparent,
+                      borderRadius: BorderRadius.circular(50.r),
                       border: isSelected
-                          ? Border.all(color: AllColor.blue, width: 2.w)
+                          ? Border.all(color: AllColor.blue, width: 3.w)
                           : null,
                     ),
                     child: Text(
                       sizes[index],
                       style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w500,
+                        fontSize:isSelected? 16.sp:13.sp,
+                        fontWeight:isSelected? FontWeight.bold: FontWeight.w500,
                         color: isSelected ? AllColor.blue : AllColor.black,
                       ),
                     ),
@@ -159,7 +152,103 @@ class _CustomSizeState extends State<CustomSize> {
               }),
             ),
           ),
+          buildText("Color"),
+          CustomColor()
         ],
+      ),
+    );
+  }
+
+  Widget buildText(String text) {
+    return Column(
+      children: [
+        SizedBox(height: 16.h),
+        Text(
+              "$text",
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.black,
+              ),
+            ),
+        SizedBox(height: 8.h),
+      ],
+    );
+  }
+}
+
+class CustomColor extends StatefulWidget {
+  const CustomColor({super.key});
+
+  @override
+  State<CustomColor> createState() => _CustomColorState();
+}
+
+class _CustomColorState extends State<CustomColor> {
+  final List<Color> colors = [
+    Colors.grey.shade300,
+    Colors.black,
+    Colors.blue,
+    Colors.red,
+    Colors.teal,
+    Colors.amber,
+    Colors.purple,
+  ];
+
+  int selectedIndex = 0; // default selected
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 60.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: colors.length,
+        itemBuilder: (context, index) {
+          bool isSelected = selectedIndex == index;
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedIndex = index;
+              });
+            },
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 6.w),
+              width: 50.w,
+              height: 50.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? Colors.orange : Colors.transparent,
+                  width: 3.w,
+                ),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Color Circle
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      color: colors[index],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3.w),
+                    ),
+                  ),
+                  // ✅ Check Icon if selected
+                  if (isSelected)
+                    Icon(
+                      Icons.check,
+                      size: 25.sp,
+                      color: Colors.white,
+                      weight: 900, // This makes the icon bold
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

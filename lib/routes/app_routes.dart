@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
+import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
@@ -126,7 +130,7 @@ final GoRouter router = GoRouter(
 GoRoute(
       path: BuyerMassageScreen.routeName,
       name: "buyer_massage_screen",
-      builder: (context, state) => const BuyerHomeScreen(),
+      builder: (context, state) => const BuyerMassageScreen(),
     ),
 
     GoRoute(
@@ -172,6 +176,22 @@ GoRoute(
       path: CartScreen.routeName,
       name: CartScreen.routeName,
       builder: (context, state) => const CartScreen(),
+    ),GoRoute(
+      path: CategoryProductScreen.routeName,
+      name: CategoryProductScreen.routeName,
+      builder: (context, state) => const CategoryProductScreen(),
+    ),GoRoute(
+      path: VendorProfileScreen.routeName,
+      name: VendorProfileScreen.routeName,
+      builder: (context, state) => const VendorProfileScreen(),
+    ),GoRoute(
+      path: ReviewScreen.routeName,
+      name: ReviewScreen.routeName,
+      builder: (context, state) => const ReviewScreen(),
+    ),GoRoute(
+      path: ProductDetails.routeName,
+      name: ProductDetails.routeName,
+      builder: (context, state) => const ProductDetails(),
     ),
 
     // Transport flow

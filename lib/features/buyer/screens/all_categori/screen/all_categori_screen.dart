@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
+
+import 'category_product_screen.dart';
 
 
 class CategoriesScreen extends StatelessWidget {
@@ -22,7 +25,9 @@ class CategoriesScreen extends StatelessWidget {
                   child: Column(
                     children: [
                      Tuppertextandbackbutton(screenName: "All Categories"),
-                      CustomCategories(categoriCount: 8,scrollableCheck: AlwaysScrollableScrollPhysics(),)
+                      CustomCategories(categoriCount: 8, goToCategoriesProductPage:() {
+                        goToCategoriesProductPage(context);
+                      },scrollableCheck: AlwaysScrollableScrollPhysics())
                     ],
                   ),
                 ),
@@ -32,5 +37,8 @@ class CategoriesScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+void  goToCategoriesProductPage(BuildContext context){
+context.push(CategoryProductScreen.routeName);
   }
 }

@@ -33,6 +33,7 @@ class AllColor {
 
  static final grey = Colors.grey;
  static final grey100 = grey.shade100;
+ static final grey200 = grey.shade200;
  static final grey300 = grey.shade300;
  static final grey500 = grey.shade500;
 
@@ -45,6 +46,8 @@ class AllColor {
  static final blue200= Colors.blue.shade200;
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
+
+
 
   
 }

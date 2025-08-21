@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/core/widget/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/auth/screens/car_info.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
@@ -19,12 +20,20 @@ import 'package:market_jango/features/notifications/screen/Notifications.dart';
 import 'package:market_jango/features/buyer/screens/Filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/chat/screens/chart_screen.dart';
-import 'package:market_jango/features/transport/screens/transport.dart';
+import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/profile_edit.dart';
+import 'package:market_jango/features/transport/screens/transport_booking.dart';
+import 'package:market_jango/features/transport/screens/transport_chart.dart';
+import 'package:market_jango/features/transport/screens/transport_driver.dart';
+import 'package:market_jango/features/transport/screens/transport_home.dart';
+import 'package:market_jango/features/transport/screens/transport_notifications.dart';
+import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: TransportBottomNavBar.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -131,12 +140,6 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: TransportScreen.routeName,
-      name: 'transport',
-      builder: (context, state) => const TransportScreen(),
-    ),
-
-    GoRoute(
       path: NotificationsScreen.routeName,
       name: 'notification_screen',
       builder: (context, state) => NotificationsScreen(),
@@ -159,5 +162,68 @@ final GoRouter router = GoRouter(
       name: 'filter_screen',
       builder: (context, state) => FilterScreen(),
     ),
+
+    GoRoute(
+      path: TransportHome.routeName,
+      name: 'transport_home',
+      builder: (context, state) => TransportHome(),
+    ),
+
+    GoRoute(
+      path: TransportBottomNavBar.routeName,
+      name: 'transport_bottom_nav_bar',
+      builder: (context, state) => TransportBottomNavBar(),
+    ),
+
+    GoRoute(
+      path: TransportChart.routeName,
+      name: 'transort_chat',
+      builder: (context, state) => TransportChart(),
+    ),
+
+    GoRoute(
+      path: TransportSetting.routeName,
+      name: 'transport_setting',
+      builder: (context, state) => TransportSetting(),
+    ),
+
+    GoRoute(
+      path: TransportBooking.routeName,
+      name: 'transport_booking',
+      builder: (context, state) => TransportBooking(),
+    ),
+
+GoRoute(
+      path: TransportDriver.routeName,
+      name: 'transport_driver',
+      builder: (context, state) => TransportDriver(),
+    ),
+
+    GoRoute(
+      path: DriverDetailsScreen.routeName,
+      name: 'driverDetails',
+      builder: (context, state) => DriverDetailsScreen(),
+    ),
+    
+
+    GoRoute(
+      path: AddCardScreen.routeName,
+      name: 'addCard',
+      builder: (context, state) => AddCardScreen(),
+    ),
+
+    GoRoute(
+      path: TransportNotifications.routeName,
+      name: 'transport_notificatons',
+      builder: (context, state) => TransportNotifications(),
+    ),
+    GoRoute(
+      path: EditProfilScreen.routeName,
+      name: 'editProfile',
+      builder: (context, state) => EditProfilScreen(),
+    ),
+
+
+
   ],
 );

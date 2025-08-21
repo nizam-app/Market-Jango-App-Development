@@ -17,7 +17,7 @@ class NameScreen extends StatelessWidget {
       body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.w),
             child: Column(children: [
                SizedBox(height: 30.h),
                CustomBackButton(),
@@ -39,8 +39,6 @@ class NameText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-     
-        
         SizedBox(height: 20.h),
         Center(child: Text("What's your name", style: textTheme.titleLarge)),
         SizedBox(height: 24.h),

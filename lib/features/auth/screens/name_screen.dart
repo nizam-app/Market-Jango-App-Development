@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
 class NameScreen extends StatelessWidget {
   const NameScreen({super.key});
@@ -87,15 +87,11 @@ class NextBotton extends StatelessWidget {
 
 
   void nextButonDone(BuildContext context) {
-    goToVendorRequestScreen(context);
+    goToPhoneNumberScreen(context);
 
   }
-  //     void goToPhoneNumberScreen(BuildContext context) {
-  //   context.push(PhoneNumberScreen.routeName);
-  // }
-
-    void goToVendorRequestScreen(BuildContext context) {
-    context.push(VendorRequestScreen.routeName);
+      void goToPhoneNumberScreen(BuildContext context) {
+    context.push(PhoneNumberScreen.routeName);
   }
 
   }

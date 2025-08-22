@@ -33,7 +33,7 @@ import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: TransportBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -69,6 +69,10 @@ final GoRouter router = GoRouter(
       name: 'nameScreen',
       builder: (context, state) => const NameScreen(),
     ),
+
+
+
+
     GoRoute(
       path: UserScreen.routeName,
       name: 'userScreen',
@@ -193,7 +197,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => TransportBooking(),
     ),
 
-GoRoute(
+    GoRoute(
       path: TransportDriver.routeName,
       name: 'transport_driver',
       builder: (context, state) => TransportDriver(),

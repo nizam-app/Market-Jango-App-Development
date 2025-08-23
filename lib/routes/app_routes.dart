@@ -23,6 +23,7 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/transport/screens/transport.dart';
+import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
@@ -106,6 +107,17 @@ final GoRouter router = GoRouter(
   //   name: 'seller_dashboard',
   //   builder: (context, state) => const SellerDashboardScreen(),
   // ),
+
+    GoRoute(
+      path:VendorBottomNav.routeName,
+      name: 'vendor_bottom_nav_bar',
+      builder: (context,state)=> VendorBottomNav(),
+    ),
+
+
+
+
+
    GoRoute(
      path:VendorRequestFrom.routeName,
     name: 'vendorRequstFrom',
@@ -190,5 +202,7 @@ GoRoute(
       name: 'transport',
       builder: (context, state) => const TransportScreen(),
     ),
+
+
   ],
 );

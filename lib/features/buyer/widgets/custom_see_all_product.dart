@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/core/widget/custom_new_product.dart';
 
 class CustomSeeAllProduct extends StatelessWidget {
   const CustomSeeAllProduct({

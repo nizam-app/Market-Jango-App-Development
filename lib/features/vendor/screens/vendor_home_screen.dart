@@ -8,6 +8,8 @@ import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
 
+  static const String routeName = '/vendor_home_screen';
+
   @override
   State<VendorHomeScreen> createState() => _VendorHomeScreenState();
 }
@@ -31,15 +33,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.zero,
           ),
-          child: ListView(
-            children: const [
-              DrawerHeader(
-                child: Text("Right Drawer"),
-              ),
-              ListTile(title: Text("Option A")),
-              ListTile(title: Text("Option B")),
-            ],
-          ),
+          child: buildDrawer(context),
 
         ),
         body: Builder(
@@ -95,6 +89,63 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
 
     );
+  }
+
+  Widget buildDrawer(BuildContext context) {
+    return Padding(
+          padding:  EdgeInsets.symmetric(horizontal: 10.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20.h,),
+              Padding(
+                padding:  EdgeInsets.symmetric(horizontal: 18.w),
+                child: GestureDetector(
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    height: 24.w,
+                    width: 24.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:Color(0xffF5F4F8)
+                    ),
+                    child: Icon(Icons.arrow_back_ios,color: Colors.black,size: 10.r,),
+
+
+
+                  ),
+                ),
+              ),
+               SizedBox(height: 10.h,),
+               ListTile(
+                leading: ImageIcon(AssetImage("assets/icon/bag.png"),size: 20.r,),
+                  title: Text("Order",style: TextStyle(color: AllColor.drawerTextColor,fontSize: 14.sp),),
+              trailing: Icon(Icons.arrow_forward_ios_outlined,color: Colors.black,),
+               ),
+              Divider(color: Colors.grey.shade300),
+              ListTile(
+                leading: ImageIcon(AssetImage("assets/icon/sale.png"),size: 20.r,),
+                title: Text("Sale",style: TextStyle(color: AllColor.drawerTextColor,fontSize: 14.sp)),
+                trailing: Icon(Icons.arrow_forward_ios_outlined,color: Colors.black,),
+              ),
+              Divider(color: Colors.grey.shade300),
+              ListTile(
+                leading: ImageIcon(AssetImage("assets/icon/language.png"),size: 20.r,),
+                title: Text("Language",style: TextStyle(color: AllColor.drawerTextColor,fontSize: 14.sp)),
+                trailing: Icon(Icons.arrow_forward_ios_outlined,color: Colors.black,),
+              ),
+              Divider(color: Colors.grey.shade300),
+              ListTile(
+                leading: ImageIcon(AssetImage("assets/icon/logout.png"),size: 20.r, color:Color(0xffFF3B3B) ,),
+                title: Text("Log Out",style: TextStyle(color: Color(0xffFF3B3B),fontSize: 14.sp),),
+                trailing: Icon(Icons.arrow_forward_ios_outlined,color: Colors.black,),
+              ),
+
+            ],
+          ),
+        );
   }
 
   Widget buildFilteredSection() {
@@ -190,7 +241,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                     else{
                       return Stack(
                         children: [
-                          CustomNewProduct(width: 161.w,height: 262.h,text: "Flowy summer dress", text2:  "Flowy summer dress",),
+                          CustomNewProduct(width: 161.w,height: 170.h,text: "Flowy summer dress", text2:  "Flowy summer dress",),
                           Positioned(
                               top: 20,
                               right: 20,
@@ -248,7 +299,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                     ),
                     Positioned(
                         top: 15,
-                        left: 8,
+                        left: 4,
                         child: Container(
                           height: 10.w,
                           width: 10.w,

@@ -11,14 +11,19 @@ class Edit_Widget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle
+    return GestureDetector(
+      onTap: (){
+
+      },
+      child: Container(
+        height: height,
+        width: width,
+        decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle
+        ),
+        child: ImageIcon(AssetImage("assets/icon/edit_ic.png"),size: size,),
       ),
-      child: ImageIcon(AssetImage("assets/icon/edit_ic.png"),size: size,),
     );
   }
 }

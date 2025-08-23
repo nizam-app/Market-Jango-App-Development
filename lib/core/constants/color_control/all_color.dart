@@ -51,6 +51,8 @@ class AllColor {
 
  static final Color backGroundColor = const Color(0xffA5A5A5);
  static final Color activityColor = const Color(0xff00C04A);
+ static final Color hintTextColor = const Color(0xff7C7C7C);
+ static final Color drawerTextColor = const Color(0xff454545);
 
 
   

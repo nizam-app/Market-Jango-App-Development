@@ -50,9 +50,8 @@ class CustomNewProduct extends StatelessWidget {
             children: [
               SizedBox(height: 3.h,),
               Text(text.length > 12 ? text2 : text,style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
-              SizedBox(height: 15.h,),
-              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18,fontWeight: FontWeight.bold),)
-            ],
+              SizedBox(height: 10.h,),
+              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18.sp,)),],
           ),
         ),
 

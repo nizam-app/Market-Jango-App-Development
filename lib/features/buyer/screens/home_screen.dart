@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
+import 'package:market_jango/core/widget/custom_new_product.dart';
+import 'package:market_jango/core/widget/custom_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
@@ -81,7 +83,7 @@ class JustForYouProduct extends StatelessWidget {
         itemCount: 20,
         // Example item count
         itemBuilder: (context, index) {
-      return CustomNewProduct(width: 162.w, height: 175.h);
+      return CustomNewProduct(width: 162.w, height: 175.h, text: "New T-shirt, sun-glass",text2: "New T-shirt,");
         });
   }
 }
@@ -102,67 +104,13 @@ class NewItemsShow extends StatelessWidget {
           itemCount: 6,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h);}
+            return CustomNewProduct(width: 130.w, height: 138.h,text: "New T-shirt, sun-glass",text2: "New T-shirt,",);}
       ),
     );
   }
 }
 
-class CustomNewProduct extends StatelessWidget {
-  const CustomNewProduct({
-    super.key, required this.width, required this.height
-  });
- final double width;
-  final double height;
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
-          margin: EdgeInsets.symmetric(horizontal: 5.w),
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: AllColor.white,
-            borderRadius: BorderRadius.circular(7.r),
-
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.r),
-                child: Image.asset(
-                  '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
-                  fit: BoxFit.contain,
-
-                ),
-              ),
-              // Discount Tag
-
-            ],
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 10.h,left: 15.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 3.h,),
-              Text("New T-shirt, sun-glass".length > 12 ? "New T-shirt," : "New T-shirt, sun-glass",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
-              SizedBox(height: 5.h,),
-              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
-            ],
-          ),
-        ),
-
-      ],
-    );
-  }
-}
 
 class DiscountProduct extends StatelessWidget {
   const DiscountProduct({
@@ -406,28 +354,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
           children: [
             Expanded(
               flex: 2,
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Search for products',
-                  prefixIcon: Icon(Icons.search,),
-                  isDense: true,
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12.h,),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50.r),
-                    borderSide: BorderSide(color: Colors.grey), // ফোকাসে যেটা দেখাতে চান
-                  ),
-                ), // থিম ইনহেরিট না করার জন্য
-              ),
+              child: CustomSearchBar(),
             ),
             SizedBox(width: 8.w),
             // Menu Icon

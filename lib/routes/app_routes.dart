@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/core/widget/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
@@ -26,7 +27,19 @@ import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-import 'package:market_jango/features/transport/screens/transport.dart';
+
+import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
+import 'package:market_jango/features/transport/screens/profile_edit.dart';
+import 'package:market_jango/features/transport/screens/transport_booking.dart';
+import 'package:market_jango/features/transport/screens/transport_chart.dart';
+import 'package:market_jango/features/transport/screens/transport_driver.dart';
+import 'package:market_jango/features/transport/screens/transport_home.dart';
+import 'package:market_jango/features/transport/screens/transport_message.dart';
+import 'package:market_jango/features/transport/screens/transport_notifications.dart';
+import 'package:market_jango/features/transport/screens/transport_setting.dart';
+import 'package:market_jango/features/transport/screens/transport_tracking.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
@@ -39,16 +52,21 @@ final GoRouter router = GoRouter(
     ),
   ),
 
-
-
   routes: <RouteBase>[
-
-    //Loging flow
+ 
     GoRoute(
       path: LoginScreen.routeName,
-      name: 'login',
+      name: 'splashScreen',
       builder: (context, state) => const LoginScreen(),
     ),
+
+       GoRoute(
+      path: SplashScreen.routeName,
+      name: 'login',
+      builder: (context, state) => const SplashScreen(),
+    ),
+
+
     GoRoute(
       path: ForgotPasswordScreen.routeName,
        name: 'forgot_password',
@@ -66,36 +84,43 @@ final GoRouter router = GoRouter(
     ),
 
 
+    
+    GoRoute(
+      path: NameScreen.routeName,
+      name: 'nameScreen',
+      builder: (context, state) => const NameScreen(),
+    ),
 
-    // Auth flow
-    GoRoute(path:SplashScreen.routeName,
-    name: 'splashScreen',
-    builder: (context,state)=>const SplashScreen(),
-     ),
-     GoRoute(path:NameScreen.routeName,
-    name: 'nameScreen',
-    builder: (context,state)=>const NameScreen(),
-     ),
-    GoRoute(path:UserScreen.routeName,
-    name: 'userScreen',
-    builder: (context,state)=>const UserScreen(),
-     ),
+    GoRoute(
+      path: UserScreen.routeName,
+      name: 'userScreen',
+      builder: (context, state) => const UserScreen(),
+    ),
+   
+
+
+
+
     GoRoute(path:PhoneNumberScreen.routeName,
     name: 'phoneNumberScreen',
     builder: (context,state)=>const PhoneNumberScreen(),
      ),
+
     GoRoute(path:CodeScreen.routeName,
     name: 'codeScreen',
     builder: (context,state)=>const CodeScreen(),
      ),
+
     GoRoute(path:EmailScreen.routeName,
     name: 'emailScreen',
     builder: (context,state)=>const EmailScreen(),
      ),
+
     GoRoute(path:PasswordScreen.routeName,
     name: 'passwordScreen',
     builder: (context,state)=>const PasswordScreen(),
      ),
+
     GoRoute(path:CongratulationScreen.routeName,
     name: 'congratulationScreen',
     builder: (context,state)=>const CongratulationScreen(),
@@ -125,7 +150,7 @@ final GoRouter router = GoRouter(
     ),
 
 
-    // Buyer flow
+  
 
 GoRoute(
       path: BuyerMassageScreen.routeName,
@@ -138,7 +163,9 @@ GoRoute(
       name: 'buyer_home',
       builder: (context, state) => const BuyerHomeScreen(),
     ),
+
     
+
 
     GoRoute(
       path: NotificationsScreen.routeName,
@@ -150,6 +177,91 @@ GoRoute(
       name: 'filter_screen',
       builder: (context, state) => FilterScreen(),
     ),
+
+
+    GoRoute(
+      path: TransportHome.routeName,
+      name: 'transport_home',
+      builder: (context, state) => TransportHome(),
+    ),
+
+    GoRoute(
+      path: TransportBottomNavBar.routeName,
+      name: 'transport_bottom_nav_bar',
+      builder: (context, state) => TransportBottomNavBar(),
+    ),
+
+    GoRoute(
+      path: TransportChart.routeName,
+      name: 'transort_chat',
+      builder: (context, state) => TransportChart(),
+    ),
+
+ GoRoute(
+      path: TransportMessage.routeName,
+      name: 'transort_message',
+      builder: (context, state) => TransportMessage(),
+    ),
+
+
+ GoRoute(
+      path: TransportTracking.routeName,
+      name: 'transport_tracking',
+      builder: (context, state) => TransportTracking(),
+    ),
+
+
+    GoRoute(
+      path: TransportSetting.routeName,
+      name: 'transport_setting',
+      builder: (context, state) => TransportSetting(),
+    ),
+
+    GoRoute(
+      path: TransportBooking.routeName,
+      name: 'transport_booking',
+      builder: (context, state) => TransportBooking(),
+    ),
+
+ GoRoute(
+      path: OngoingOrdersScreen.routeName,
+      name: 'ongoingOrders',
+      builder: (context, state) => OngoingOrdersScreen(),
+    ),
+
+
+    GoRoute(
+      path: TransportDriver.routeName,
+      name: 'transport_driver',
+      builder: (context, state) => TransportDriver(),
+    ),
+
+    GoRoute(
+      path: DriverDetailsScreen.routeName,
+      name: 'driverDetails',
+      builder: (context, state) => DriverDetailsScreen(),
+    ),
+    
+
+
+    GoRoute(
+      path: AddCardScreen.routeName,
+      name: 'addCard',
+      builder: (context, state) => AddCardScreen(),
+    ),
+
+    GoRoute(
+      path: TransportNotifications.routeName,
+      name: 'transport_notificatons',
+      builder: (context, state) => TransportNotifications(),
+    ),
+    GoRoute(
+      path: EditProfilScreen.routeName,
+      name: 'editProfile',
+      builder: (context, state) => EditProfilScreen(),
+    ),
+
+
 GoRoute(
       path: CategoriesScreen.routeName,
       name: CategoriesScreen.routeName,
@@ -172,7 +284,7 @@ GoRoute(
     ),
  GoRoute(
       path: ChatScreen.routeName,
-      name: ChatScreen.routeName,
+      name: ChatScreen.routeName,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
       builder: (context, state) => const ChatScreen(),
     ),GoRoute(
       path: CartScreen.routeName,
@@ -196,19 +308,6 @@ GoRoute(
       builder: (context, state) => const ProductDetails(),
     ),
 
-    // Transport flow
-    // This section is for routes related to the transport functionality.
-    // Add GoRoute widgets here for transport-specific screens.
-    // Example:
-    // GoRoute(
-    //   path: TrackOrderScreen.routeName,
-    //   name: 'track_order',
-    //   builder: (context, state) => const TrackOrderScreen(),
-    // ),
-    GoRoute(
-      path: TransportScreen.routeName,
-      name: 'transport',
-      builder: (context, state) => const TransportScreen(),
-    ),
+    
   ],
 );

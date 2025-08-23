@@ -164,8 +164,6 @@ class _CarInfoDriverRoute extends State<CarInfoDriverRoute> {
           ),
         ),
 
-       
-
         
         SizedBox(height: 28.h),
         Text("Upload your driging license & other documents", style: textTheme.bodyMedium),

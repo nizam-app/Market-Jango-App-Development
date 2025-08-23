@@ -121,7 +121,7 @@ class ChooseBusinessType extends StatefulWidget {
 class _ChooseBusinessType extends State<ChooseBusinessType> {
   String? selectedUserType;
 
-  final List<String> businessTypes = ['Vendor', 'Buyer', 'Transport', 'Driver'];
+  final List<String> businessTypes = [ 'Buyer', 'Transport', 'Vendor', 'Driver'];
 
   @override
   Widget build(BuildContext context) {

@@ -25,8 +25,12 @@ class VerificationScreen extends StatelessWidget {
               CustomBackButton(),
               VerifiUpperText(),
               OTPPin(),
+
               CustomAuthButton(buttonText: "Next", onTap: (){gotoNextScreen(context);},),
               VerificationResendText(),
+
+
+
             ],
           ),
         ),

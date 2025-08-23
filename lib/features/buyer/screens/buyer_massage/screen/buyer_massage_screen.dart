@@ -7,12 +7,12 @@ import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_sc
 import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
 
 // Screen for displaying a list of buyer messages.
-class TransportChart extends StatelessWidget {
+class BuyerMassageScreen extends StatelessWidget {
   // Constructor for BuyerMassageScreen.
-  const TransportChart({super.key});
+  const BuyerMassageScreen({super.key});
 
   // Route name for navigation.
-  static final routeName = "/transort_chat";
+  static final routeName = "/buyerMassageScreen";
 
   @override
   Widget build(BuildContext context) {

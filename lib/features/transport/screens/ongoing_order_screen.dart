@@ -2,29 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-class TransportBooking extends StatefulWidget {
-  const TransportBooking({super.key});
-  static const String routeName = "/transport_booking";
+class OngoingOrdersScreen extends StatefulWidget {
+  const OngoingOrdersScreen({super.key});
+  static const String routeName = "/ongoingOrders";
 
   @override
-  State<TransportBooking> createState() => _TransportBookingState();
+  State<OngoingOrdersScreen> createState() => _OngoingOrdersScreenState();
 }
 
-class _TransportBookingState extends State<TransportBooking> {
-  String selectedTab = "All";
-
+class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
+  String selectedTab = "Ongoing";
   final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-   
+      appBar: AppBar(
+        title:
+            Text("Ongoing", style: TextStyle(fontSize: 16.sp, color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: Column(
         children: [
-          SizedBox(height: 30.h,), 
-          /// Tabs Row
+          /// Tabs Row 
           SizedBox(
-            height: 60.h,
+            height: 55.h,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -33,7 +37,6 @@ class _TransportBookingState extends State<TransportBooking> {
               itemBuilder: (context, index) {
                 final tab = tabs[index];
                 final bool isActive = selectedTab == tab;
-
                 return GestureDetector(
                   onTap: () => setState(() => selectedTab = tab),
                   child: Container(
@@ -43,8 +46,7 @@ class _TransportBookingState extends State<TransportBooking> {
                       color: isActive ? Colors.orange : Colors.white,
                       borderRadius: BorderRadius.circular(30.r),
                       border: Border.all(
-                          color:
-                              isActive ? Colors.orange : Colors.grey.shade400),
+                          color: isActive ? Colors.orange : Colors.grey.shade400),
                     ),
                     child: Center(
                       child: Text(
@@ -64,25 +66,16 @@ class _TransportBookingState extends State<TransportBooking> {
 
           /// Booking List
           Expanded(
-            child: ListView(
+            child: ListView.builder(
               padding: EdgeInsets.all(16.w),
-              children: [
-                if (selectedTab == "All" || selectedTab == "Ongoing")
-                  _bookingCard(
-                      status: "Ongoing",
-                      statusColor: Colors.blue,
-                      showTrack: true),
-                if (selectedTab == "All" || selectedTab == "Completed")
-                  _bookingCard(
-                      status: "Completed",
-                      statusColor: Colors.green,
-                      showTrack: false),
-                if (selectedTab == "All" || selectedTab == "Cancelled")
-                  _bookingCard(
-                      status: "Cancelled",
-                      statusColor: Colors.red,
-                      showTrack: false),
-              ],
+              itemCount: 3, // example count
+              itemBuilder: (context, index) {
+                return _bookingCard(
+                  status: "Ongoing",
+                  statusColor: Colors.blue,
+                  showTrack: true,
+                );
+              },
             ),
           ),
         ],
@@ -219,7 +212,7 @@ class _TransportBookingState extends State<TransportBooking> {
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                     ),
                     onPressed: () {
-                      context.push("/ongoingOrders");
+                      context.push("/transportTracking");
                     },
                     child: Text("Track order",
                         style: TextStyle(fontSize: 13.sp, color: Colors.white)),

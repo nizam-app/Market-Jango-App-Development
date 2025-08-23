@@ -5,10 +5,12 @@ import 'package:market_jango/core/constants/image_control/image_path.dart';
 
 class CustomNewProduct extends StatelessWidget {
   const CustomNewProduct({
-    super.key, required this.width, required this.height
+    super.key, required this.width, required this.height, required this.text, required this.text2
   });
   final double width;
   final double height;
+  final String text;
+  final String text2;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +49,9 @@ class CustomNewProduct extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 3.h,),
-              Text("New T-shirt, sun-glass".length > 12 ? "New T-shirt," : "New T-shirt, sun-glass",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
-              SizedBox(height: 5.h,),
-              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
+              Text(text.length > 12 ? text2 : text,style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
+              SizedBox(height: 15.h,),
+              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18,fontWeight: FontWeight.bold),)
             ],
           ),
         ),

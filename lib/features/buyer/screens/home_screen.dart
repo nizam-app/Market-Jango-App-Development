@@ -83,7 +83,7 @@ class JustForYouProduct extends StatelessWidget {
         itemCount: 20,
         // Example item count
         itemBuilder: (context, index) {
-      return CustomNewProduct(width: 162.w, height: 175.h);
+      return CustomNewProduct(width: 162.w, height: 175.h, text: "New T-shirt, sun-glass",text2: "New T-shirt,");
         });
   }
 }
@@ -104,7 +104,7 @@ class NewItemsShow extends StatelessWidget {
           itemCount: 6,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h);}
+            return CustomNewProduct(width: 130.w, height: 138.h,text: "New T-shirt, sun-glass",text2: "New T-shirt,",);}
       ),
     );
   }

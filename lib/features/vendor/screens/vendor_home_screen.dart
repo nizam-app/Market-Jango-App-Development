@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/custom_search_bar.dart';
 
 class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
@@ -14,15 +15,23 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-      
-          children: [
-            SizedBox(height: 25.h),
-            buildProfileScetion()
+        backgroundColor: Colors.white24,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding:  EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                SizedBox(height: 25.h),
+                buildProfileScetion(),
+                SizedBox(height: 30.h),
+                CustomSearchBar(),
 
 
-          ],
+
+
+              ],
+            ),
+          ),
         ),
       
       ),

@@ -5,6 +5,8 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
+import '../widgets/custom_back_button.dart';
+
 class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
 
@@ -100,23 +102,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
               SizedBox(height: 20.h,),
               Padding(
                 padding:  EdgeInsets.symmetric(horizontal: 18.w),
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: 24.w,
-                    width: 24.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:Color(0xffF5F4F8)
-                    ),
-                    child: Icon(Icons.arrow_back_ios,color: Colors.black,size: 10.r,),
+                child: CustomBackButton(),
 
-
-
-                  ),
-                ),
               ),
                SizedBox(height: 10.h,),
                ListTile(
@@ -323,5 +310,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           );
   }
 }
+
+
 
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
 
 class Edit_Widget extends StatelessWidget {
   const Edit_Widget({
@@ -13,7 +15,7 @@ class Edit_Widget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){
-
+        editProductScreen(context);
       },
       child: Container(
         height: height,
@@ -25,5 +27,10 @@ class Edit_Widget extends StatelessWidget {
         child: ImageIcon(AssetImage("assets/icon/edit_ic.png"),size: size,),
       ),
     );
+  }
+
+  void editProductScreen(BuildContext context){
+    context.push(ProductEditScreen.routeName);
+
   }
 }

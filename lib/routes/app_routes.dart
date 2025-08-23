@@ -111,13 +111,13 @@ final GoRouter router = GoRouter(
 
     GoRoute(
       path:VendorBottomNav.routeName,
-      name: 'vendor_bottom_nav_bar',
+      name: 'vendorBottomNavBar',
       builder: (context,state)=> VendorBottomNav(),
     ),
 
     GoRoute(
       path:ProductEditScreen.routeName,
-      name: 'vendor_product_edit',
+      name: 'vendorProductEdit',
       builder: (context,state)=> ProductEditScreen(),
     ),
 

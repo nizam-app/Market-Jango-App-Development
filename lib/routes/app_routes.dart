@@ -30,46 +30,46 @@ import 'package:market_jango/features/buyer/screens/home_screen.dart';
 
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/language_screen.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
 import 'package:market_jango/features/transport/screens/profile_edit.dart';
 import 'package:market_jango/features/transport/screens/transport_booking.dart';
+import 'package:market_jango/features/transport/screens/transport_cancelled.dart';
+import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 import 'package:market_jango/features/transport/screens/transport_chart.dart';
+import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
+import 'package:market_jango/features/transport/screens/transport_completed.dart';
 import 'package:market_jango/features/transport/screens/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking.dart';
+import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
 final GoRouter router = GoRouter(
-
   initialLocation: SplashScreen.routeName,
-  errorBuilder: (context, state) => Scaffold(
-    body: Center(
-      child: Text('Error: ${state.error } '),
-    ),
-  ),
+  errorBuilder: (context, state) =>
+      Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
   routes: <RouteBase>[
- 
     GoRoute(
       path: LoginScreen.routeName,
       name: 'splashScreen',
       builder: (context, state) => const LoginScreen(),
     ),
 
-       GoRoute(
+    GoRoute(
       path: SplashScreen.routeName,
       name: 'login',
       builder: (context, state) => const SplashScreen(),
     ),
 
-
     GoRoute(
       path: ForgotPasswordScreen.routeName,
-       name: 'forgot_password',
+      name: 'forgot_password',
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
@@ -83,8 +83,6 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const NewPasswordScreen(),
     ),
 
-
-    
     GoRoute(
       path: NameScreen.routeName,
       name: 'nameScreen',
@@ -96,51 +94,51 @@ final GoRouter router = GoRouter(
       name: 'userScreen',
       builder: (context, state) => const UserScreen(),
     ),
-   
 
+    GoRoute(
+      path: PhoneNumberScreen.routeName,
+      name: 'phoneNumberScreen',
+      builder: (context, state) => const PhoneNumberScreen(),
+    ),
 
+    GoRoute(
+      path: CodeScreen.routeName,
+      name: 'codeScreen',
+      builder: (context, state) => const CodeScreen(),
+    ),
 
+    GoRoute(
+      path: EmailScreen.routeName,
+      name: 'emailScreen',
+      builder: (context, state) => const EmailScreen(),
+    ),
 
-    GoRoute(path:PhoneNumberScreen.routeName,
-    name: 'phoneNumberScreen',
-    builder: (context,state)=>const PhoneNumberScreen(),
-     ),
+    GoRoute(
+      path: PasswordScreen.routeName,
+      name: 'passwordScreen',
+      builder: (context, state) => const PasswordScreen(),
+    ),
 
-    GoRoute(path:CodeScreen.routeName,
-    name: 'codeScreen',
-    builder: (context,state)=>const CodeScreen(),
-     ),
+    GoRoute(
+      path: CongratulationScreen.routeName,
+      name: 'congratulationScreen',
+      builder: (context, state) => const CongratulationScreen(),
+    ),
 
-    GoRoute(path:EmailScreen.routeName,
-    name: 'emailScreen',
-    builder: (context,state)=>const EmailScreen(),
-     ),
-
-    GoRoute(path:PasswordScreen.routeName,
-    name: 'passwordScreen',
-    builder: (context,state)=>const PasswordScreen(),
-     ),
-
-    GoRoute(path:CongratulationScreen.routeName,
-    name: 'congratulationScreen',
-    builder: (context,state)=>const CongratulationScreen(),
-     ),
-
-  // Seller flow
-  // This section is for routes related to the seller functionality.
-  // Add GoRoute widgets here for seller-specific screens.
-  // Example:
-  // GoRoute(
-  //   path: SellerDashboardScreen.routeName,
-  //   name: 'seller_dashboard',
-  //   builder: (context, state) => const SellerDashboardScreen(),
-  // ),
-   GoRoute(
-     path:VendorRequestFrom.routeName,
-    name: 'vendorRequstFrom',
-    builder: (context,state)=>const VendorRequestFrom(),
-     ),
-
+    // Seller flow
+    // This section is for routes related to the seller functionality.
+    // Add GoRoute widgets here for seller-specific screens.
+    // Example:
+    // GoRoute(
+    //   path: SellerDashboardScreen.routeName,
+    //   name: 'seller_dashboard',
+    //   builder: (context, state) => const SellerDashboardScreen(),
+    // ),
+    GoRoute(
+      path: VendorRequestFrom.routeName,
+      name: 'vendorRequstFrom',
+      builder: (context, state) => const VendorRequestFrom(),
+    ),
 
     // Settings Flow
     GoRoute(
@@ -149,10 +147,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const SettingScreen(),
     ),
 
-
-  
-
-GoRoute(
+    GoRoute(
       path: BuyerMassageScreen.routeName,
       name: "buyer_massage_screen",
       builder: (context, state) => const BuyerMassageScreen(),
@@ -164,9 +159,6 @@ GoRoute(
       builder: (context, state) => const BuyerHomeScreen(),
     ),
 
-    
-
-
     GoRoute(
       path: NotificationsScreen.routeName,
       name: 'notification_screen',
@@ -177,7 +169,6 @@ GoRoute(
       name: 'filter_screen',
       builder: (context, state) => FilterScreen(),
     ),
-
 
     GoRoute(
       path: TransportHome.routeName,
@@ -197,19 +188,17 @@ GoRoute(
       builder: (context, state) => TransportChart(),
     ),
 
- GoRoute(
+    GoRoute(
       path: TransportMessage.routeName,
       name: 'transort_message',
       builder: (context, state) => TransportMessage(),
     ),
 
-
- GoRoute(
+    GoRoute(
       path: TransportTracking.routeName,
       name: 'transport_tracking',
       builder: (context, state) => TransportTracking(),
     ),
-
 
     GoRoute(
       path: TransportSetting.routeName,
@@ -223,12 +212,48 @@ GoRoute(
       builder: (context, state) => TransportBooking(),
     ),
 
- GoRoute(
+    GoRoute(
+      path: TransportTrackingScreen.routeName,
+      name: 'transport_booking3',
+      builder: (context, state) => TransportTrackingScreen(),
+    ),
+
+    GoRoute(
       path: OngoingOrdersScreen.routeName,
       name: 'ongoingOrders',
       builder: (context, state) => OngoingOrdersScreen(),
     ),
 
+    GoRoute(
+      path: TransportCompleted.routeName,
+      name: 'completedOrders',
+      builder: (context, state) => TransportCompleted(),
+    ),
+
+      GoRoute(
+      path: TransportCompetedDetails.routeName,
+      name: 'completedDetails',
+      builder: (context, state) => TransportCompetedDetails(),
+    ),
+
+      GoRoute(
+      path: TransportCancelled.routeName,
+      name: 'cancelledOrders',
+      builder: (context, state) => TransportCancelled(),
+    ), 
+
+    GoRoute(
+      path: TransportCancelledDetails.routeName,
+      name: 'cancelledDetails',
+      builder: (context, state) => TransportCancelledDetails(),
+    ), 
+
+
+    GoRoute(
+      path: LanguageScreen.routeName,
+      name: 'language',
+      builder: (context, state) => LanguageScreen(),
+    ), 
 
     GoRoute(
       path: TransportDriver.routeName,
@@ -241,8 +266,6 @@ GoRoute(
       name: 'driverDetails',
       builder: (context, state) => DriverDetailsScreen(),
     ),
-    
-
 
     GoRoute(
       path: AddCardScreen.routeName,
@@ -255,17 +278,17 @@ GoRoute(
       name: 'transport_notificatons',
       builder: (context, state) => TransportNotifications(),
     ),
+
     GoRoute(
       path: EditProfilScreen.routeName,
       name: 'editProfile',
       builder: (context, state) => EditProfilScreen(),
     ),
 
-
-GoRoute(
+    GoRoute(
       path: CategoriesScreen.routeName,
       name: CategoriesScreen.routeName,
-      builder: (context, state) =>  CategoriesScreen(),
+      builder: (context, state) => CategoriesScreen(),
     ),
     GoRoute(
       path: BottomNavBar.routeName,
@@ -282,32 +305,35 @@ GoRoute(
       name: SeeJustForYouScreen.routeName,
       builder: (context, state) => const SeeJustForYouScreen(),
     ),
- GoRoute(
+    GoRoute(
       path: ChatScreen.routeName,
-      name: ChatScreen.routeName,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+      name: ChatScreen.routeName,
       builder: (context, state) => const ChatScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: CartScreen.routeName,
       name: CartScreen.routeName,
       builder: (context, state) => const CartScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: CategoryProductScreen.routeName,
       name: CategoryProductScreen.routeName,
       builder: (context, state) => const CategoryProductScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: VendorProfileScreen.routeName,
       name: VendorProfileScreen.routeName,
       builder: (context, state) => const VendorProfileScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: ReviewScreen.routeName,
       name: ReviewScreen.routeName,
       builder: (context, state) => const ReviewScreen(),
-    ),GoRoute(
+    ),
+    GoRoute(
       path: ProductDetails.routeName,
       name: ProductDetails.routeName,
       builder: (context, state) => const ProductDetails(),
     ),
-
-    
   ],
 );

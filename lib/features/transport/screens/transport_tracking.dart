@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class TransportTracking extends StatelessWidget {
   const TransportTracking({super.key});
@@ -8,22 +10,15 @@ class TransportTracking extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text("To Receive",
-            style: TextStyle(fontSize: 16.sp, color: Colors.black)),
-        centerTitle: false,
-      ),
+      
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 20.h,), 
+            CustomBackButton(), 
+            SizedBox(height: 10.h,), 
             /// Avatar + Title
             Row(
               children: [
@@ -97,11 +92,16 @@ class TransportTracking extends StatelessWidget {
               time: "April.19 12:31",
               active: true,
             ),
-            _timelineItem(
-              title: "On the Way to Logistic Facility",
-              desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-              time: "April.19 16:20",
-              active: true,
+            InkWell(
+              onTap: (){
+                context.push("/transport_booking3"); 
+              },
+              child: _timelineItem(
+                title: "On the Way to Logistic Facility",
+                desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
+                time: "April.19 16:20",
+                active: true,
+              ),
             ),
             _timelineItem(
               title: "Arrived at Logistic Facility",

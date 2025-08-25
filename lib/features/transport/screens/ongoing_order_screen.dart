@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class OngoingOrdersScreen extends StatefulWidget {
   const OngoingOrdersScreen({super.key});
@@ -17,15 +18,12 @@ class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title:
-            Text("Ongoing", style: TextStyle(fontSize: 16.sp, color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      
       body: Column(
         children: [
+           SizedBox(height: 20.h,), 
+            CustomBackButton(), 
+            SizedBox(height: 10.h,), 
           /// Tabs Row 
           SizedBox(
             height: 55.h,
@@ -182,7 +180,6 @@ class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-
           /// Buttons
           Row(
             children: [

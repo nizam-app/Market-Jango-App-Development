@@ -1,0 +1,386 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
+
+class TransportCompleted extends StatefulWidget {
+  const TransportCompleted({super.key});
+  static const String routeName = "/completedOrders";
+
+  @override
+  State<TransportCompleted> createState() => _TransportCompletedState();
+}
+
+class _TransportCompletedState extends State<TransportCompleted> {
+  String selectedTab = "Completed";
+  final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      
+      body: Column(
+        children: [
+          SizedBox(height: 20.h,), 
+            CustomBackButton(), 
+            SizedBox(height: 10.h,), 
+
+          /// Tabs Row
+          SizedBox(
+            height: 55.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              itemCount: tabs.length,
+              separatorBuilder: (_, __) => SizedBox(width: 10.w),
+              itemBuilder: (context, index) {
+                final tab = tabs[index];
+                final bool isActive = selectedTab == tab;
+                return GestureDetector(
+                  onTap: () => setState(() => selectedTab = tab),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: isActive ? Colors.orange : Colors.white,
+                      borderRadius: BorderRadius.circular(30.r),
+                      border: Border.all(
+                          color: isActive ? Colors.orange : Colors.grey.shade400),
+                    ),
+                    child: Center(
+                      child: Text(
+                        tab,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                          color: isActive ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          /// Booking List
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.all(16.w),
+              itemCount: 3, // example count
+              itemBuilder: (context, index) {
+                return _bookingCard(
+                  status: "Completed",
+                  statusColor: Colors.green,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Booking Card Widget
+  Widget _bookingCard({
+    required String status,
+    required Color statusColor,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Order ID + Status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Order #12345",
+                  style: TextStyle(
+                      fontSize: 14.sp, fontWeight: FontWeight.w600)),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+
+          /// Item + Driver Info
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// Product Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.r),
+                child: Image.network(
+                  "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png",
+                  height: 80.h,
+                  width: 80.w,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              /// Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Driver Rahim Hossain",
+                        style: TextStyle(
+                            fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    SizedBox(height: 4.h),
+                    Text("July 24,2025",
+                        style:
+                            TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
+                    SizedBox(height: 6.h),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on,
+                            size: 14.sp, color: Colors.grey),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: Text("Dhanmondi, Dhaka",
+                              style: TextStyle(
+                                  fontSize: 12.sp, color: Colors.grey[700])),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.flag, size: 14.sp, color: Colors.grey),
+                        SizedBox(width: 4.w),
+                        Expanded(
+                          child: Text("Agartala, India",
+                              style: TextStyle(
+                                  fontSize: 12.sp, color: Colors.grey[700])),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+
+          /// Buttons
+          Row(
+            children: [
+              /// See Details Button
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  onPressed: () {
+                    context.push("/completedDetails"); 
+                  },
+                  child: Text("See details",
+                      style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+                ),
+              ),
+              SizedBox(width: 10.w),
+
+              /// Review Button (outlined)
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.orange, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  onPressed: () {
+                    ReviewDialog.show(context); 
+                  },
+                  child: Text("Review",
+                      style: TextStyle(fontSize: 13.sp, color: Colors.orange)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+class ReviewDialog {
+  static void show(BuildContext context) {
+    final TextEditingController nameCtrl = TextEditingController();
+    final TextEditingController emailCtrl = TextEditingController();
+    final TextEditingController commentCtrl = TextEditingController();
+    double rating = 0;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // must press submit or close
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Padding(
+            padding: EdgeInsets.all(20.w),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Title
+                      Text(
+                        "Add your review",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      /// Name Field
+                      TextField(
+                        controller: nameCtrl,
+                        decoration: InputDecoration(
+                          hintText: "Enter your name",
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 18.h),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+
+                      /// Email Field
+                      TextField(
+                        controller: emailCtrl,
+                        decoration: InputDecoration(
+                          hintText: "email",
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 18.h),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+
+                      /// Comment Field
+                      TextField(
+                        controller: commentCtrl,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: "Comment",
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 18.h),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      /// Rating Bar
+                      RatingBar.builder(
+                        initialRating: rating,
+                        minRating: 1,
+                        direction: Axis.horizontal,
+                        itemCount: 5,
+                        itemSize: 28.sp,
+                        unratedColor: Colors.grey.shade300,
+                        itemBuilder: (context, _) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate: (value) {
+                          setState(() => rating = value);
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+
+                      /// Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color: Colors.grey.shade400, width: 1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text("Cancel",
+                                  style: TextStyle(
+                                      fontSize: 14.sp, color: Colors.black)),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                              ),
+                              onPressed: () {
+                                // TODO: Handle submit (API call)
+                                Navigator.pop(context);
+                              },
+                              child: Text("Submit",
+                                  style: TextStyle(
+                                      fontSize: 14.sp, color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

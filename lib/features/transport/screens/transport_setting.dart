@@ -7,16 +7,15 @@ class TransportSetting extends StatelessWidget {
 
   static const String routeName = '/transport_setting';
 
-
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-     body: SafeArea(
+    return Scaffold(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children:  [
               SettingTitle(),
               SizedBox(height: 24),
               ProfileSection(),
@@ -28,8 +27,12 @@ class TransportSetting extends StatelessWidget {
               SettingItem(
                 icon: Icons.language,
                 text: "Language",
-                onTap: null, // Replace with callback if needed
+                onTap:(){
+                  context.push("/language");
+                },
               ),
+
+
               Divider(height: 32),
               SettingItem(
                 icon: Icons.logout,
@@ -46,7 +49,6 @@ class TransportSetting extends StatelessWidget {
   }
 }
 
-
 class SettingTitle extends StatelessWidget {
   const SettingTitle({super.key});
 
@@ -54,10 +56,7 @@ class SettingTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Text(
       "My Settings",
-      style: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
     );
   }
 }
@@ -85,11 +84,8 @@ class ProfileSection extends StatelessWidget {
                 color: Colors.white,
               ),
               padding: const EdgeInsets.all(4),
-              child: const Icon(
-                Icons.camera_alt,
-                size: 16,
-              ),
-            )
+              child: const Icon(Icons.camera_alt, size: 16),
+            ),
           ],
         ),
         const SizedBox(width: 16),
@@ -99,10 +95,7 @@ class ProfileSection extends StatelessWidget {
             children: [
               const Text(
                 "Mirable Lily",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
               Row(
@@ -114,7 +107,9 @@ class ProfileSection extends StatelessWidget {
                   const SizedBox(width: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.amber.shade600,
                       borderRadius: BorderRadius.circular(12),
@@ -127,9 +122,9 @@ class ProfileSection extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                  )
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -183,10 +178,7 @@ class SettingItem extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: iconColor ?? Colors.grey),
-      title: Text(
-        text,
-        style: TextStyle(color: textColor ?? Colors.black),
-      ),
+      title: Text(text, style: TextStyle(color: textColor ?? Colors.black)),
       trailing: Icon(Icons.arrow_forward_ios, size: 16, color: textColor),
       onTap: onTap,
     );

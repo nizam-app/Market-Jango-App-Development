@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportBooking extends StatefulWidget {
-  const TransportBooking({super.key});
-  static const String routeName = "/transport_booking";
+class TransportCancelled extends StatefulWidget {
+  const TransportCancelled({super.key});
+  static const String routeName = "/cancelledOrders";
 
   @override
-  State<TransportBooking> createState() => _TransportBookingState();
+  State<TransportCancelled> createState() => _TransportCancelledState();
 }
 
-class _TransportBookingState extends State<TransportBooking> {
-  String selectedTab = "All";
-
+class _TransportCancelledState extends State<TransportCancelled> {
+  String selectedTab = "Cancelled";
   final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-   
+     
       body: Column(
         children: [
-          SizedBox(height: 30.h,), 
+          SizedBox(height: 20.h,), 
+            CustomBackButton(), 
+            SizedBox(height: 10.h,), 
           /// Tabs Row
           SizedBox(
             height: 55.h,
@@ -33,7 +35,6 @@ class _TransportBookingState extends State<TransportBooking> {
               itemBuilder: (context, index) {
                 final tab = tabs[index];
                 final bool isActive = selectedTab == tab;
-
                 return GestureDetector(
                   onTap: () => setState(() => selectedTab = tab),
                   child: Container(
@@ -43,8 +44,7 @@ class _TransportBookingState extends State<TransportBooking> {
                       color: isActive ? Colors.orange : Colors.white,
                       borderRadius: BorderRadius.circular(30.r),
                       border: Border.all(
-                          color:
-                              isActive ? Colors.orange : Colors.grey.shade400),
+                          color: isActive ? Colors.orange : Colors.grey.shade400),
                     ),
                     child: Center(
                       child: Text(
@@ -64,35 +64,15 @@ class _TransportBookingState extends State<TransportBooking> {
 
           /// Booking List
           Expanded(
-            child: ListView(
+            child: ListView.builder(
               padding: EdgeInsets.all(16.w),
-              children: [
-                if (selectedTab == "All" || selectedTab == "Ongoing")
-                  _bookingCard(
-                      status: "Ongoing",
-                      statusColor: Colors.blue,
-                      showTrack: true),
-                if (selectedTab == "All" || selectedTab == "Completed")
-                  InkWell(
-                    onTap: (){
-                      context.push("/completedOrders"); 
-                    },
-                    child: _bookingCard(
-                        status: "Completed",
-                        statusColor: Colors.green,
-                        showTrack: false),
-                  ),
-                if (selectedTab == "All" || selectedTab == "Cancelled")
-                  InkWell(
-                    onTap: (){
-                      context.push("/cancelledOrders");
-                    },
-                    child: _bookingCard(
-                        status: "Cancelled",
-                        statusColor: Colors.red,
-                        showTrack: false),
-                  ),
-              ],
+              itemCount: 3, // Example count
+              itemBuilder: (context, index) {
+                return _bookingCard(
+                  status: "Cancelled",
+                  statusColor: Colors.red,
+                );
+              },
             ),
           ),
         ],
@@ -101,10 +81,10 @@ class _TransportBookingState extends State<TransportBooking> {
   }
 
   /// Booking Card Widget
-  Widget _bookingCard(
-      {required String status,
-      required Color statusColor,
-      bool showTrack = false}) {
+  Widget _bookingCard({
+    required String status,
+    required Color statusColor,
+  }) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(12.w),
@@ -200,44 +180,23 @@ class _TransportBookingState extends State<TransportBooking> {
           ),
           SizedBox(height: 12.h),
 
-          /// Buttons
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                  onPressed: () {
-                    //context.push("/completedOrders"); 
-                  },
-                  child: Text("See details",
-                      style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+          /// Only See Details Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.r),
                 ),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
               ),
-              SizedBox(width: 10.w),
-              if (showTrack)
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                      ),
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                    ),
-                    onPressed: () {
-                      context.push("/ongoingOrders");
-                    },
-                    child: Text("Track order",
-                        style: TextStyle(fontSize: 13.sp, color: Colors.white)),
-                  ),
-                ),
-            ],
+              onPressed: () {
+                context.push("/cancelledDetails");
+              },
+              child: Text("See details",
+                  style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+            ),
           ),
         ],
       ),

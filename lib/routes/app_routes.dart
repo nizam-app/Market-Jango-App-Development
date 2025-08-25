@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/core/widget/driver_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
@@ -13,6 +14,10 @@ import 'package:market_jango/features/buyer/screens/product/product_details.dart
 import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_chat.dart';
+import 'package:market_jango/features/driver/screen/driver_home.dart';
+import 'package:market_jango/features/driver/screen/driver_order.dart';
+import 'package:market_jango/features/driver/screen/driver_setting.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
@@ -295,6 +300,39 @@ final GoRouter router = GoRouter(
       name: 'bottom_nav_bar',
       builder: (context, state) => const BottomNavBar(),
     ),
+
+     GoRoute(
+      path: DriverBottomNavBar.routeName,
+      name: 'driver_bottom_nav_bar',
+      builder: (context, state) => const DriverBottomNavBar(),
+    ),
+
+     GoRoute(
+      path: DriverChat.routeName,
+      name: 'driverChat',
+      builder: (context, state) => const DriverChat(),
+    ),
+    
+     GoRoute(
+      path: DriverOrder.routeName,
+      name: 'driverOrder',
+      builder: (context, state) => const DriverOrder(),
+    ),
+    
+     GoRoute(
+      path: DriverSetting.routeName,
+      name: 'driverSetting',
+      builder: (context, state) => const DriverSetting(),
+    ),
+    
+     GoRoute(
+      path: DriverHome.routeName,
+      name: 'driverHome',
+      builder: (context, state) => const DriverHome(),
+    ),
+    
+
+    
     GoRoute(
       path: SeeNewItemsScreen.routeName,
       name: SeeNewItemsScreen.routeName,

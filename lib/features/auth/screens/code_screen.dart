@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:market_jango/features/auth/screens/password_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class CodeScreen extends StatelessWidget {
@@ -104,9 +104,10 @@ class NextButton extends StatelessWidget {
     return Column(
       children: [
         SizedBox(height: 50.h),
+
         CustomAuthButton(
           buttonText: "Next",
-          onTap: () => context.push(EmailScreen.routeName),
+          onTap: () => context.push(PasswordScreen.routeName),
         ),
       ],
     );

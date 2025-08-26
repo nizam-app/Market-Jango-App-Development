@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/driver_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/transport_bottom_nav_bar.dart';
+import 'package:market_jango/features/auth/screens/car_info.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
@@ -15,8 +16,11 @@ import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
+import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
 import 'package:market_jango/features/driver/screen/driver_home.dart';
+import 'package:market_jango/features/driver/screen/driver_notificatons.dart';
 import 'package:market_jango/features/driver/screen/driver_order.dart';
+import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_setting.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
@@ -128,6 +132,13 @@ final GoRouter router = GoRouter(
       path: CongratulationScreen.routeName,
       name: 'congratulationScreen',
       builder: (context, state) => const CongratulationScreen(),
+    ),
+
+
+     GoRoute(
+      path: CarInfoScreen.routeName,
+      name: 'car_info',
+      builder: (context, state) => const CarInfoScreen(),
     ),
 
     // Seller flow
@@ -331,6 +342,24 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const DriverHome(),
     ),
     
+    GoRoute(
+      path: OrderDetailsScreen.routeName,
+      name: 'orderDetails',
+      builder: (context, state) => const OrderDetailsScreen(),
+    ),
+
+    GoRoute(
+      path: DriverEditProfile.routeName,
+      name: 'driverEidtProfile',
+      builder: (context, state) => const DriverEditProfile(),
+    ),
+
+     GoRoute(
+      path: DriverNotificatons.routeName,
+      name: 'driverNotifications',
+      builder: (context, state) => const DriverNotificatons(),
+    ),
+
 
     
     GoRoute(

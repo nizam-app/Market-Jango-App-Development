@@ -11,10 +11,6 @@ class AllColor {
   static final Color orange =  Colors.orange;
 
 
-
-
-
-
   static final Color textBorderColor = const Color(0xFFFAC75D);
   static final Color textHintColor = const Color(0xFF3D5B73);
   static final Color loginButtomColor = const Color(0xFFFF8C00);
@@ -51,8 +47,7 @@ class AllColor {
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
  static final lightBlue = Colors.lightBlue;
-
-
-
   
+
+ 
 }

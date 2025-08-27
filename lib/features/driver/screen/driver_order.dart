@@ -228,14 +228,18 @@ class _OrderCard extends StatelessWidget {
                     children: [
                       _FilledBtn(
                         label: "See details",
-                        onTap: () {}, // TODO
+                        onTap: () {
+                          
+                        }, // TODO
                         bg: AllColor.loginButtomColor,
                         fg: AllColor.white,
                       ),
                       SizedBox(width: 10.w),
                       _OutlineBtn(
                         label: "Track order",
-                        onTap: () {}, // TODO
+                        onTap: () {
+
+                        }, // TODO
                         border: AllColor.blue500,
                         text: AllColor.blue500,
                       ),

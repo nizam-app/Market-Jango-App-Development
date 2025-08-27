@@ -22,6 +22,7 @@ import 'package:market_jango/features/driver/screen/driver_notificatons.dart';
 import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_setting.dart';
+import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
@@ -359,6 +360,16 @@ final GoRouter router = GoRouter(
       name: 'driverNotifications',
       builder: (context, state) => const DriverNotificatons(),
     ),
+
+
+     GoRoute(
+      path: DriverTrakingScreen.routeName,
+      name: 'driverTrackingScreen',
+      builder: (context, state) => const  DriverTrakingScreen() ,
+    ),
+
+
+
 
 
     

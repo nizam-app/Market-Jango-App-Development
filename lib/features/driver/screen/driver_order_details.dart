@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
-  
-
   const OrderDetailsScreen({super.key, });
   static final routeName = "/orderDetails"; 
 
@@ -17,7 +18,6 @@ class OrderDetailsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 30,),
            CustomBackButton(),
             SizedBox(height: 10,),
             _DetailsContent(
@@ -34,9 +34,15 @@ class OrderDetailsScreen extends StatelessWidget {
             ),
             _BottomActions(
               onMessage: () {
-
+                context.push(
+                  ChatScreen.routeName, 
+                  
+                );
               },
               onStartDelivery: () {
+                context.push(
+                  DriverTrakingScreen.routeName
+                ); 
 
               },
             ),
@@ -218,7 +224,7 @@ class _BottomActions extends StatelessWidget {
          SizedBox(height: 12,),
           _FilledButton(
             label: "Start Delivery",
-            bg: AllColor.loginButtomColor, // orange from your palette
+            bg: AllColor.loginButtomColor, 
             fg: AllColor.white,
             onTap: onStartDelivery,
           ),

@@ -30,7 +30,7 @@ class BuyerMassageScreen extends StatelessWidget {
               // Title text for the screen.
               Text(
                 'Messages',
-                style: theme.titleLarge,
+                style : theme.titleLarge,
               ),
               SizedBox(height: 16.h), // Spacing.
               // Custom text field for searching messages.

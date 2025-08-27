@@ -38,6 +38,11 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 
+import 'package:market_jango/features/transport/screens/transport.dart';
+import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
+
+
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
@@ -56,6 +61,7 @@ import 'package:market_jango/features/transport/screens/transport_notifications.
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
+
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
@@ -104,12 +110,71 @@ final GoRouter router = GoRouter(
       name: 'userScreen',
       builder: (context, state) => const UserScreen(),
     ),
+    // Auth flow
+    GoRoute(path:SplashScreen.routeName,
+    name: 'splashScreen',
+    builder: (context,state)=>const SplashScreen(),
+     ),
+     GoRoute(path:NameScreen.routeName,
+    name: 'nameScreen',
+    builder: (context,state)=>const NameScreen(),
+     ),
+    GoRoute(path:UserScreen.routeName,
+    name: 'userScreen',
+    builder: (context,state)=>const UserScreen(),
+     ),
+    GoRoute(path:PhoneNumberScreen.routeName,
+    name: 'phoneNumberScreen',
+    builder: (context,state)=>const PhoneNumberScreen(),
+     ),
+    GoRoute(path:CodeScreen.routeName,
+    name: 'codeScreen',
+    builder: (context,state)=>const CodeScreen(),
+     ),
+    GoRoute(path:EmailScreen.routeName,
+    name: 'emailScreen',
+    builder: (context,state)=>const EmailScreen(),
+     ),
+    GoRoute(path:PasswordScreen.routeName,
+    name: 'passwordScreen',
+    builder: (context,state)=>const PasswordScreen(),
+     ),
+    GoRoute(path:CongratulationScreen.routeName,
+    name: 'congratulationScreen',
+    builder: (context,state)=>const CongratulationScreen(),
+     ),
+
+  // Seller flow
+  // This section is for routes related to the seller functionality.
+  // Add GoRoute widgets here for seller-specific screens.
+  // Example:
+  // GoRoute(
+  //   path: SellerDashboardScreen.routeName,
+  //   name: 'seller_dashboard',
+  //   builder: (context, state) => const SellerDashboardScreen(),
+  // ),
 
     GoRoute(
-      path: PhoneNumberScreen.routeName,
-      name: 'phoneNumberScreen',
-      builder: (context, state) => const PhoneNumberScreen(),
+      path:VendorBottomNav.routeName,
+      name: 'vendorBottomNavBar',
+      builder: (context,state)=> VendorBottomNav(),
     ),
+
+    GoRoute(
+      path:ProductEditScreen.routeName,
+      name: 'vendorProductEdit',
+      builder: (context,state)=> ProductEditScreen(),
+    ),
+
+
+
+
+
+   GoRoute(
+     path:VendorRequestFrom.routeName,
+    name: 'vendorRequstFrom',
+    builder: (context,state)=>const VendorRequestFrom(),
+     ),
 
     GoRoute(
       path: CodeScreen.routeName,
@@ -413,5 +478,7 @@ final GoRouter router = GoRouter(
       name: ProductDetails.routeName,
       builder: (context, state) => const ProductDetails(),
     ),
+
+
   ],
 );

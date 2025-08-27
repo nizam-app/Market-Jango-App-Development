@@ -6,22 +6,23 @@ import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_m
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home_screen.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
-class BottomNavBar extends ConsumerWidget {
+class VendorBottomNav extends ConsumerWidget {
   // Changed to ConsumerWidget
-   const BottomNavBar({super.key});
+  VendorBottomNav({super.key});
 
-  static const String routeName = '/bottom_nav_bar';
+  static const String routeName = '/vendor_bottom_nav_bar';
 
 
   // Define your pages/screens here
   final List<Widget> _pages = const [
     // Replace with your actual screen widgets
-    BuyerHomeScreen(),
+    VendorHomeScreen(),
     // Example: HomeScreen(),
-   BuyerMassageScreen(),
+    BuyerMassageScreen(),
     // Example: ChatScreen(),
     CategoriesScreen(),
     // Example: CategoriesScreen(),
@@ -61,22 +62,22 @@ class BottomNavBar extends ConsumerWidget {
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline_rounded),
+            icon: Icon(Icons.chat_outlined),
             // Kept similar, adjust if needed
             label: "Chat",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.widgets_outlined),
+            icon: Icon(Icons.notifications_none),
             // Changed Icon (example for Categories)
-            label: "Categories",
+            label: "Notification",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined), // Changed Icon
-            label: "Cart",
+            icon: Icon(Icons.emoji_transportation), // Changed Icon
+            label: "Transport",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline), // Changed Icon
-            label: "Account",
+            icon: Icon(Icons.settings), // Changed Icon
+            label: "Settings",
           ),
         ],
       ),

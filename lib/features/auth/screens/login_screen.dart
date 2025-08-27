@@ -7,6 +7,7 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/user.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
 import 'forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -82,7 +83,7 @@ class LoginBotton extends StatelessWidget {
 
 
 void loginDone(BuildContext context) {
-    context.push(BottomNavBar.routeName);
+    context.push(VendorBottomNav.routeName);
   }
 
 void gotoHomeScreen(BuildContext content){

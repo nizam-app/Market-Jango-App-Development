@@ -11,7 +11,6 @@ class DriverDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.w,vertical: 10.h ),
         child: Column(

@@ -49,24 +49,27 @@ class CartScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: Padding(
-        padding:  EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          children: [
-            SizedBox(height: 20.h),
-            _buildShippingAddress(context),
-            SizedBox(height: 20.h),
-            Expanded(
-              child: ListView.builder(
-                itemCount: dummyCartItems.length,
-                itemBuilder: (context, index) {
-                  return _buildCartItemCard(dummyCartItems[index]);
-                },
-              ),
+      body: Column(
+        children: [
+          SizedBox(height: 20.h),
+          Padding(
+            padding:  EdgeInsets.all(8.0.r),
+            child: _buildShippingAddress(context),
+          ),
+          SizedBox(height: 20.h),
+          Expanded(
+            child: ListView.builder(
+              itemCount: dummyCartItems.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding:  EdgeInsets.symmetric(horizontal: 15.w),
+                  child: _buildCartItemCard(dummyCartItems[index],context),
+                );
+              },
             ),
-            _buildTotalCheckoutSection(totalPrice),
-          ],
-        ),
+          ),
+          _buildTotalCheckoutSection(totalPrice),
+        ],
       ),
     );
   }
@@ -126,27 +129,29 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItemCard(CartItemModel item) {
+
+  Widget _buildCartItemCard(CartItemModel item ,BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return Card(
       elevation: 0,
       margin: EdgeInsets.symmetric(vertical: 8.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Container(
-        padding: EdgeInsets.all(12.r),
         decoration: BoxDecoration(
           color: AllColor.white,
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: AllColor.black.withOpacity(0.1),
+              color: AllColor.black.withOpacity(0.005),
               spreadRadius: 1,
-              blurRadius: 5,
+              blurRadius: 4,
               offset: Offset(0, 2.h),
             ),
           ],
         ),
         child: Row(
           children: [
+            // Product Image with Delete Button
             Stack(
               alignment: Alignment.topLeft,
               children: [
@@ -154,97 +159,114 @@ class CartScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8.r),
                   child: Image.network(
                     item.imageUrl,
-                    width: 80.w,
-                    height: 80.w, // Typically square for product images
+                    width: 90.w,
+                    height: 90.h,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        width: 80.w,
-                        height: 80.w,
+                        width: 90.w,
+                        height: 90.h,
                         color: AllColor.grey,
-                        child: Icon(
-                            Icons.broken_image, color: AllColor.grey,
-                            size: 40.sp),
+                        child: Icon(Icons.broken_image,
+                            color: AllColor.blue, size: 40.sp),
                       );
                     },
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.all(4.r),
-                  padding: EdgeInsets.all(4.r),
-                  decoration:  BoxDecoration(
-                    color: AllColor.white, // Using AllColor
+                  margin: EdgeInsets.all(2.r),
+                  padding: EdgeInsets.all(5.r),
+                  decoration: BoxDecoration(
+                    color: AllColor.white, // Red background
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.delete_outline,
-                    color: AllColor.white, // Using AllColor
-                    size: 16.sp,
+                    Icons.delete,
+                    color: AllColor.orange,
+                    size: 18.sp,
                   ),
                 ),
               ],
             ),
             SizedBox(width: 12.w),
+
+            // Product Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: 8.h),
                   Text(
                     item.name,
-                    style: TextStyle(fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AllColor.black),
+                    style: theme.titleMedium!.copyWith(color: AllColor.black),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     item.details,
-                    style: TextStyle(color: AllColor.grey, fontSize: 12.sp),
+                    style: TextStyle(
+                        color: AllColor.black,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold), // Bold details
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '\$${item.price.toStringAsFixed(2)}',
+                    '${item.price.toStringAsFixed(2).replaceAll('.', ',')}', // 17,00
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
+                      fontSize: 18.sp,
                       color: AllColor.black,
                     ),
                   ),
+                  SizedBox(height: 8.h),
                 ],
               ),
             ),
+
             SizedBox(width: 12.w),
+
+            // Quantity Control
             _buildQuantityControl(item.quantity),
+            SizedBox(width: 12.w),
           ],
         ),
       ),
     );
   }
 
+// Quantity Control updated to match design
   Widget _buildQuantityControl(int quantity) {
     return Row(
       children: [
-        _quantityButton(Icons.remove, () {
-          // TODO: Implement decrement quantity logic
-          print("Decrement");
-        }),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w),
-          child: Text(
-            quantity.toString(),
-            style: TextStyle(fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-                color: AllColor.black),
-          ),
+        _circleButton(Icons.remove, () {}),
+        SizedBox(width: 8.w),
+        Text(
+          '$quantity',
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
         ),
-        _quantityButton(Icons.add, () {
-          // TODO: Implement increment quantity logic
-          print("Increment");
-        }),
+        SizedBox(width: 8.w),
+        _circleButton(Icons.add, () {}),
       ],
     );
   }
+
+  Widget _circleButton(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(4.r),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AllColor.black.withOpacity(0.8)),
+        ),
+        child: Icon(icon, size: 16.sp, color: AllColor.black),
+      ),
+    );
+  }
+
+
+
 
   Widget _quantityButton(IconData icon, VoidCallback onPressed) {
     return InkWell(
@@ -304,7 +326,7 @@ class CartScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               // TODO: Implement checkout logic
-              print("Checkout tapped");
+
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AllColor.black, // Using AllColor
@@ -312,7 +334,7 @@ class CartScreen extends StatelessWidget {
               textStyle: TextStyle(
                   fontSize: 16.sp, fontWeight: FontWeight.bold),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.r),
+                borderRadius: BorderRadius.circular(25.r),
               ),
             ),
             child: Text('Checkout',

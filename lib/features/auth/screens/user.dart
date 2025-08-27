@@ -41,7 +41,7 @@ class UserText extends StatefulWidget {
 class _UserTextState extends State<UserText> {
   String? selectedUserType;
 
-  final List<String> userTypes = ['Vendor', 'Buyer', 'Transport', 'Driver'];
+  final List<String> userTypes = [ 'Buyer', 'Transport', 'Vendor','Driver'];
 
   @override
   Widget build(BuildContext context) {
@@ -140,3 +140,5 @@ class NextBotton extends StatelessWidget {
     context.push(NameScreen.routeName);
   }
 }
+
+

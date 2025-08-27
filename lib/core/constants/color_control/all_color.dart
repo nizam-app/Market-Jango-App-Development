@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 class AllColor {
+ static final Color transparent =  Colors.transparent;
  static final Color yellow50 = const Color(0xFFFEF8EB);
   static final Color yellow500 = const Color(0xFFF9B935);
   static final Color yellow700 =  Color(0xffB18326);
@@ -8,10 +9,6 @@ class AllColor {
 
 
   static final Color orange =  Colors.orange;
-
-
-
-
 
 
   static final Color textBorderColor = const Color(0xFFFAC75D);
@@ -27,6 +24,7 @@ class AllColor {
 
 
  static final Color white = Color(0xffffffff);
+ static final Color white70 = Colors.white70;
 
  static final black = Color(0xff202020);
  static final black54 = Colors.black54;
@@ -35,6 +33,7 @@ class AllColor {
 
  static final grey = Colors.grey;
  static final grey100 = grey.shade100;
+ static final grey200 = grey.shade200;
  static final grey300 = grey.shade300;
  static final grey500 = grey.shade500;
 
@@ -49,11 +48,16 @@ class AllColor {
  static final blue900 = Colors.blue.shade900;
 
 
+
  static final Color backGroundColor = const Color(0xffA5A5A5);
  static final Color activityColor = const Color(0xff00C04A);
  static final Color hintTextColor = const Color(0xff7C7C7C);
  static final Color drawerTextColor = const Color(0xff454545);
 
 
+ static final lightBlue = Colors.lightBlue;
+
   
+
+ 
 }

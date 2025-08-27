@@ -12,11 +12,14 @@ import 'package:market_jango/core/widget/custom_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
+import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'all_categori/screen/all_categori_screen.dart';
+import 'all_categori/screen/category_product_screen.dart';
 import 'filter/screen/location_filtering_tab.dart';
 import 'notification/screen/notification_screen.dart';
 class BuyerHomeScreen extends StatefulWidget {
@@ -40,8 +43,10 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
           
                 BuyerHomeSearchBar(),
                 PromoSlider(),
-                SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
-                CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,),
+                SeeMoreButton(name:"Categories",seeMoreAction: (){goToAllCategoriesPage();},),
+                CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,goToCategoriesProductPage:() {
+                  goToCategoriesProductPage(context);
+                } ,),
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){},isSeeMore: false,),
                 TopProducts(),
                 // TimerScreen(),
@@ -57,12 +62,14 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
       ),
     );
   }
-  void goToCategoriesPage() {
+  void goToAllCategoriesPage() {
     context.push(CategoriesScreen.routeName);
   }
   void goToNewItemsPage(){context.push(SeeNewItemsScreen.routeName);}
   void goToJustForYouPage(){context.push(SeeJustForYouScreen.routeName);}
-
+ void goToCategoriesProductPage(BuildContext context) {
+context.push(CategoryProductScreen.routeName);
+}
 }
 
 class JustForYouProduct extends StatelessWidget {
@@ -96,7 +103,7 @@ class NewItemsShow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200.h,
+      height: 220.h,
       child: ListView.builder(
           shrinkWrap: true,
           physics:AlwaysScrollableScrollPhysics(),
@@ -110,6 +117,62 @@ class NewItemsShow extends StatelessWidget {
   }
 }
 
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
+          margin: EdgeInsets.symmetric(horizontal: 5.w),
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AllColor.white,
+            borderRadius: BorderRadius.circular(7.r),
+
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: (){ goToDetailsScreen(context);},
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.asset(
+                    '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
+                    fit: BoxFit.contain,
+                
+                  ),
+                ),
+              ),
+              // Discount Tag
+
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: 10.h,left: 15.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 3.h,),
+              Text("New T-shirt, sun-glass".length > 12 ? "New T-shirt.." : "New T-shirt, sun-glass",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
+              SizedBox(height: 5.h,),
+              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
+            ],
+          ),
+        ),
+
+      ],
+    );
+  }
+  void goToDetailsScreen(BuildContext context) {
+    context.push(ProductDetails.routeName);
+  }
+}
 
 
 class DiscountProduct extends StatelessWidget {
@@ -150,23 +213,7 @@ class DiscountProduct extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
                 // Discount Tag
-                Positioned(
-                  top: 0.h,
-                  right: 0.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: AllColor.yellow500,
-                      borderRadius: BorderRadius.circular(5.r),
-                    ),
-                    child: Text(
-                      '-20%',
-                      style:Theme.of(context).textTheme.titleLarge!.copyWith(
-                        fontSize: 12.sp,color: AllColor.white
-                      ),
-                      ),
-                    ),
-                  ),
+                CustomDiscountCord(),
 
               ],
             ),
@@ -180,6 +227,8 @@ class DiscountProduct extends StatelessWidget {
     );
   }
 }
+
+
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({Key? key}) : super(key: key);

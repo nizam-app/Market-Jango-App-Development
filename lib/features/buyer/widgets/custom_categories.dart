@@ -6,10 +6,12 @@ import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:riverpod/riverpod.dart';
 class CustomCategories extends ConsumerWidget{
   CustomCategories({
-    super.key,this.scrollableCheck,required this.categoriCount
+    super.key,this.scrollableCheck,required this.categoriCount, required this.goToCategoriesProductPage
   });
   final scrollableCheck;
   final int categoriCount;
+  final VoidCallback goToCategoriesProductPage;
+
 
 
   @override
@@ -34,9 +36,8 @@ class CustomCategories extends ConsumerWidget{
             final title = titles[index];
             final images = imageMap[title]!;
             return InkWell(
-              onTap: () {
-                goToCategoriesPage();
-              },
+              onTap:
+                goToCategoriesProductPage,
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -89,8 +90,7 @@ class CustomCategories extends ConsumerWidget{
       error: (e, stack) => Center(child: Text('Error: $e')),
     );
   }
-  void goToCategoriesPage() {
-  }
+
   Map<String, List<String>> buildCategoryImageMap(List<ProductModel> products) {
     final Map<String, List<String>> categoryImageMap = {};
 
@@ -109,4 +109,3 @@ class CustomCategories extends ConsumerWidget{
 
 
 }
-

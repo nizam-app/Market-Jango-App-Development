@@ -48,8 +48,11 @@ dependencies:
   pin_code_fields: ^8.0.1
 
   flutter_hooks: ^0.21.3
+  flutter_rating: ^2.0.2
 
   country_picker: ^2.0.21
+  flutter_rating_bar: ^4.0.1
+  google_maps_flutter: ^2.7.0
 
 
 

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
+import 'package:market_jango/features/auth/screens/Congratulation.dart';
 
 class PasswordScreen extends StatelessWidget {
   const PasswordScreen({super.key});
@@ -75,7 +75,7 @@ class NextBotton extends StatelessWidget {
       children: [
         SizedBox(height: 30.h),
         CustomAuthButton(
-          buttonText: "Save",
+          buttonText: "Confirm",
           onTap: () => nextButonDone(context),
         ),
       ],
@@ -83,10 +83,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToVendorRequestFrom(context);
+    goToCongratulationScreen(context);
   }
 
-  void goToVendorRequestFrom(BuildContext context) {
-    context.push(VendorRequestFrom.routeName);
+  void goToCongratulationScreen(BuildContext context) {
+    context.push(CongratulationScreen.routeName);
   }
 }

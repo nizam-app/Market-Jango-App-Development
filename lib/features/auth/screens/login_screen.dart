@@ -5,7 +5,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/name_screen.dart';
+import 'package:market_jango/features/auth/screens/user.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
 import 'forgot_password_screen.dart';
@@ -94,7 +94,7 @@ void goToForgotPasswordScreen(BuildContext context) {
   context.push(ForgotPasswordScreen.routeName);}
 
   void goToSignUpScreen(BuildContext context) {
-    context.push(NameScreen.routeName);
+    context.push(UserScreen.routeName);
   }
 
 }

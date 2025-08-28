@@ -1,35 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/features/driver/screen/driver_order_details.dart';
+import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+
 class DriverOrder extends StatefulWidget {
   const DriverOrder({super.key});
-  static final routeName ="/driverOrder"; 
+  static const routeName = "/driverOrder";
 
   @override
   State<DriverOrder> createState() => _DriverOrderState();
 }
 
 class _DriverOrderState extends State<DriverOrder> {
-  String _query = "";
-  _Tab _selected = _Tab.all;
+  final _search = TextEditingController();
+  int _tab = 0; // 0=All, 1=Pending, 2=On the way, 3=Delivered
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final items = _demoOrders
+        .where((e) {
+          switch (_tab) {
+            case 1:
+              return e.status == OrderStatus.pending;
+            case 2:
+              return e.status == OrderStatus.onTheWay;
+            case 3:
+              return e.status == OrderStatus.delivered;
+            default:
+              return true;
+          }
+        })
+        .where(
+          (e) =>
+              _search.text.trim().isEmpty ||
+              e.orderId.toLowerCase().contains(_search.text.toLowerCase()),
+        )
+        .toList();
+
     return Scaffold(
-   
+      backgroundColor: AllColor.white,
       body: SafeArea(
         child: Column(
           children: [
-            _SearchBox(
-              hint: "Search order",
-              value: _query,
-              onChanged: (v) => setState(() => _query = v),
+            // Search
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: _SearchField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+              ),
             ),
-            _FilterTabs(
-              selected: _selected,
-              onSelect: (t) => setState(() => _selected = t),
+            SizedBox(height: 12.h),
+
+            // Filter chips
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: _FilterChips(
+                selectedIndex: _tab,
+                onChanged: (i) => setState(() => _tab = i),
+              ),
             ),
-            _OrdersList(search: _query, tab: _selected),
+            SizedBox(height: 12.h),
+
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.w),
+                physics: const BouncingScrollPhysics(),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                itemBuilder: (_, i) => _OrderCard(
+                  data: items[i],
+                  
+                  onSeeDetails: () => context.push(
+                    '${OrderDetailsScreen.routeName}?id=${items[i].orderId}',
+                  ),
+                 
+                  onTrackOrder: items[i].status == OrderStatus.delivered
+                      ? null
+                      : () => context.push(
+                        '${DriverTrakingScreen.routeName}?id =${items[i].orderId}',
+                          
+                        ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -37,259 +99,227 @@ class _DriverOrderState extends State<DriverOrder> {
   }
 }
 
-/* ------------------------------ Custom Codebase ------------------------------ */
+/* ===================== Models & Demo Data ===================== */
 
+enum OrderStatus { delivered, pending, onTheWay }
 
-class _SearchBox extends StatelessWidget {
-  const _SearchBox({
-    required this.hint,
-    required this.value,
-    required this.onChanged,
+class OrderItem {
+  final String orderId;
+  final String pickup;
+  final String destination;
+  final double price;
+  final OrderStatus status;
+
+  const OrderItem({
+    required this.orderId,
+    required this.pickup,
+    required this.destination,
+    required this.price,
+    required this.status,
   });
-  final String hint;
-  final String value;
-  final ValueChanged<String> onChanged;
+}
+
+const _demoOrders = <OrderItem>[
+  OrderItem(
+    orderId: 'ORD12345',
+    pickup: 'Urban tech store',
+    destination: 'Alex Hossain',
+    price: 7.50,
+    status: OrderStatus.delivered,
+  ),
+  OrderItem(
+    orderId: 'ORD12345',
+    pickup: 'Urban tech store',
+    destination: 'Alex Hossain',
+    price: 7.50,
+    status: OrderStatus.pending,
+  ),
+  OrderItem(
+    orderId: 'ORD12345',
+    pickup: 'Urban tech store',
+    destination: 'Alex Hossain',
+    price: 7.50,
+    status: OrderStatus.onTheWay,
+  ),
+  OrderItem(
+    orderId: 'ORD12345',
+    pickup: 'Urban tech store',
+    destination: 'Alex Hossain',
+    price: 7.50,
+    status: OrderStatus.pending,
+  ),
+  OrderItem(
+    orderId: 'ORD12345',
+    pickup: 'Urban tech store',
+    destination: 'Alex Hossain',
+    price: 7.50,
+    status: OrderStatus.onTheWay,
+  ),
+];
+
+/* ===================== Reusable Widgets ===================== */
+
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
+  const _SearchField({required this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 2.h, 16.w, 8.h),
-      child: TextField(
-        onChanged: onChanged,
-        controller: TextEditingController(text: value)
-          ..selection = TextSelection.fromPosition(
-            TextPosition(offset: value.length),
-          ),
-        style: TextStyle(fontSize: 14.sp, color: AllColor.black87),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: AllColor.black54, fontSize: 13.sp),
-          prefixIcon: Icon(Icons.search, color: AllColor.black54, size: 20.sp),
-          filled: true,
-          fillColor: AllColor.white,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(color: AllColor.grey200, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(color: AllColor.grey200, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(color: AllColor.blue500, width: 1),
-          ),
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: 'Search order',
+        hintStyle: TextStyle(color: AllColor.textHintColor),
+        filled: true,
+        fillColor: AllColor.grey100,
+        prefixIcon: Icon(Icons.search, color: AllColor.black54),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 12.w),
+        isDense: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AllColor.grey200),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AllColor.grey200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AllColor.blue500),
         ),
       ),
     );
   }
 }
 
-enum _Tab { all, pending, onTheWay, delivered }
-
-class _FilterTabs extends StatelessWidget {
-  const _FilterTabs({required this.selected, required this.onSelect});
-  final _Tab selected;
-  final ValueChanged<_Tab> onSelect;
+class _FilterChips extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+  const _FilterChips({required this.selectedIndex, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final items = const [
-      (_Tab.all, "All"),
-      (_Tab.pending, "Pending"),
-      (_Tab.onTheWay, "On the way"),
-      (_Tab.delivered, "Delivered"),
-    ];
-    return SizedBox(
-      height: 42.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.only(left: 16.w, right: 16.w),
-        itemBuilder: (_, i) {
-          final (tab, label) = items[i];
-          final bool isSelected = tab == selected;
-          return InkWell(
-            onTap: () => onSelect(tab),
-            borderRadius: BorderRadius.circular(20.r),
+    final tabs = ['All', 'Pending', 'On the way', 'Delivered'];
+    return Row(
+      children: List.generate(tabs.length, (i) {
+        final selected = i == selectedIndex;
+        return Padding(
+          padding: EdgeInsets.only(right: i == tabs.length - 1 ? 0 : 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => onChanged(i),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w),
-              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 8.w),
               decoration: BoxDecoration(
-                color: isSelected ? AllColor.yellow500 : AllColor.white,
-                borderRadius: BorderRadius.circular(20.r),
+                color: selected ? AllColor.loginButtomColor : AllColor.grey100,
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AllColor.yellow500 : AllColor.grey200,
-                  width: 1,
+                  color: selected
+                      ? AllColor.loginButtomColor
+                      : AllColor.grey200,
                 ),
               ),
               child: Text(
-                label,
+                tabs[i],
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? AllColor.white : AllColor.black87,
+                  color: selected ? AllColor.white : AllColor.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
                 ),
               ),
             ),
-          );
-        },
-        separatorBuilder: (_, __) => SizedBox(width: 8.w),
-        itemCount: items.length,
-      ),
-    );
-  }
-}
-
-class _OrdersList extends StatelessWidget {
-  const _OrdersList({required this.search, required this.tab});
-  final String search;
-  final _Tab tab;
-
-  @override
-  Widget build(BuildContext context) {
-    final data = _OrdersListData.list.where((o) {
-      final q = search.trim().toLowerCase();
-      final matchQ = q.isEmpty ||
-          o.id.toLowerCase().contains(q) ||
-          o.pickup.toLowerCase().contains(q) ||
-          o.destination.toLowerCase().contains(q);
-      final matchTab = switch (tab) {
-        _Tab.all => true,
-        _Tab.pending => o.state == _State.pending,
-        _Tab.onTheWay => o.state == _State.onTheWay,
-        _Tab.delivered => o.state == _State.delivered,
-      };
-      return matchQ && matchTab;
-    }).toList();
-
-    return Expanded(
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
-        itemBuilder: (_, i) => _OrderCard(order: data[i]),
-        separatorBuilder: (_, __) => SizedBox(height: 12.h),
-        itemCount: data.length,
-      ),
+          ),
+        );
+      }),
     );
   }
 }
 
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
-  final _OrderModel order;
+  final OrderItem data;
+  final VoidCallback onSeeDetails;
+  final VoidCallback? onTrackOrder;
+
+  const _OrderCard({
+    required this.data,
+    required this.onSeeDetails,
+    this.onTrackOrder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final pill = _pillStyle(order.state);
+    final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
+
     return Container(
       decoration: BoxDecoration(
         color: AllColor.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: AllColor.black.withOpacity(.06),
-            blurRadius: 12.r,
-            offset: Offset(0, 6.h),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AllColor.grey200),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // status + price
+          Row(
+            children: [
+              _StatusPill(status: data.status),
+              const Spacer(),
+              Text(
+                priceText,
+                style: TextStyle(
+                  color: AllColor.black,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22.sp,
+                  letterSpacing: .1,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            'Order ID ${data.orderId}',
+            style: TextStyle(
+              color: AllColor.black,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          _kvBold('Pick up location: ', data.pickup),
+          SizedBox(height: 8.h),
+          _kvBold('Destination: ', data.destination),
+          SizedBox(height: 14.h),
+
+          // buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _PrimaryButton(text: 'See details', onTap: onSeeDetails),
+            
+              if (onTrackOrder != null)
+                _SecondaryButton(text: 'Track order', onTap: onTrackOrder!),
+            ],
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(14.r),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _StatusPill(
-                    text: order.state.label,
-                    bg: pill.bg,
-                    border: pill.border,
-                    fg: pill.fg,
-                  ),
-                  SizedBox(height: 10.h),
-                  Text(
-                    "Order ID ${order.id}",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AllColor.black54,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  _KVRow(k: "Pick up location:", v: order.pickup, boldValue: true),
-                  SizedBox(height: 4.h),
-                  _KVRow(k: "Destination:", v: order.destination, boldValue: true),
-                  SizedBox(height: 12.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _FilledBtn(
-                        label: "See details",
-                        onTap: () {
-                          
-                        }, // TODO
-                        bg: AllColor.loginButtomColor,
-                        fg: AllColor.white,
-                      ),
-                      SizedBox(width: 10.w),
-                      _OutlineBtn(
-                        label: "Track order",
-                        onTap: () {
-
-                        }, // TODO
-                        border: AllColor.blue500,
-                        text: AllColor.blue500,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Right price
-            SizedBox(width: 8.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                SizedBox(height: 6.h),
-                Text(
-                  _formatPrice(order.price),
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AllColor.black,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
-}
 
-class _KVRow extends StatelessWidget {
-  const _KVRow({required this.k, required this.v, this.boldValue = false});
-  final String k;
-  final String v;
-  final bool boldValue;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _kvBold(String k, String v) {
     return RichText(
       text: TextSpan(
-        text: "$k ",
-        style: TextStyle(fontSize: 12.sp, color: AllColor.black54),
+        text: k,
+        style: TextStyle(color: AllColor.black, fontSize: 14.sp),
         children: [
           TextSpan(
             text: v,
             style: TextStyle(
-              fontSize: 12.sp,
               color: AllColor.black,
-              fontWeight: boldValue ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -299,173 +329,94 @@ class _KVRow extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({
-    required this.text,
-    required this.bg,
-    required this.border,
-    required this.fg,
-  });
-
-  final String text;
-  final Color bg;
-  final Color border;
-  final Color fg;
+  final OrderStatus status;
+  const _StatusPill({required this.status});
 
   @override
   Widget build(BuildContext context) {
+    late Color border;
+    late String text;
+    switch (status) {
+      case OrderStatus.delivered:
+        border = AllColor.green500;
+        text = 'Delivered';
+        break;
+      case OrderStatus.pending:
+        border = AllColor.blue500;
+        text = 'Pending';
+        break;
+      case OrderStatus.onTheWay:
+        border = AllColor.yellow500;
+        text = 'On the way';
+        break;
+    }
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: border, width: 1),
+        color: border.withOpacity(.10),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: border),
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 10.sp, color: fg, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-}
-
-class _FilledBtn extends StatelessWidget {
-  const _FilledBtn({
-    required this.label,
-    required this.onTap,
-    required this.bg,
-    required this.fg,
-  });
-  final String label;
-  final VoidCallback onTap;
-  final Color bg;
-  final Color fg;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10.r)),
-        child: Text(label,
-            style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 12.sp)),
-      ),
-    );
-  }
-}
-
-class _OutlineBtn extends StatelessWidget {
-  const _OutlineBtn({
-    required this.label,
-    required this.onTap,
-    required this.border,
-    required this.text,
-  });
-  final String label;
-  final VoidCallback onTap;
-  final Color border;
-  final Color text;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(
-          color: AllColor.white,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: border, width: 1),
+        style: TextStyle(
+          color: border,
+          fontWeight: FontWeight.w700,
+          fontSize: 12.sp,
         ),
-        child: Text(label,
-            style: TextStyle(color: text, fontWeight: FontWeight.w700, fontSize: 12.sp)),
       ),
     );
   }
 }
 
-/* ------------------------------ Data / Helpers ------------------------------ */
+class _PrimaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onTap;
+  const _PrimaryButton({required this.text, required this.onTap});
 
-enum _State { accepted, pending, onTheWay, delivered }
-
-extension on _State {
-  String get label => switch (this) {
-        _State.accepted => "Accepted",
-        _State.pending => "Pending",
-        _State.onTheWay => "On the way",
-        _State.delivered => "Delivered",
-      };
-}
-
-({Color bg, Color border, Color fg}) _pillStyle(_State s) {
-  switch (s) {
-    case _State.accepted:
-      return (bg: AllColor.yellow50, border: AllColor.yellow500, fg: AllColor.yellow700);
-    case _State.pending:
-      return (bg: AllColor.blue50, border: AllColor.blue500, fg: AllColor.blue500);
-    case _State.onTheWay:
-      return (bg: AllColor.dropDown, border: AllColor.blue200, fg: AllColor.blue900);
-    case _State.delivered:
-      return (bg: AllColor.grey100, border: AllColor.grey300, fg: AllColor.black54);
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AllColor.loginButtomColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
   }
 }
 
-class _OrderModel {
-  final String id;
-  final String pickup;
-  final String destination;
-  final double price;
-  final _State state;
+class _SecondaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onTap;
+  const _SecondaryButton({required this.text, required this.onTap});
 
-  _OrderModel({
-    required this.id,
-    required this.pickup,
-    required this.destination,
-    required this.price,
-    required this.state,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36.h,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: AllColor.blue500, width: 1),
+          backgroundColor: AllColor.blue500,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: EdgeInsets.symmetric(horizontal: 16.h),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
 }
-
-class _OrdersListData {
-  static final list = <_OrderModel>[
-    _OrderModel(
-      id: "ORD12345",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-      state: _State.accepted,
-    ),
-    _OrderModel(
-      id: "ORD12346",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-      state: _State.pending,
-    ),
-    _OrderModel(
-      id: "ORD12347",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-      state: _State.pending,
-    ),
-    _OrderModel(
-      id: "ORD12348",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-      state: _State.pending,
-    ),
-    _OrderModel(
-      id: "ORD12349",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-      state: _State.accepted,
-    ),
-  ];
-}
-
-String _formatPrice(double v) => "\$${v.toStringAsFixed(2)}";

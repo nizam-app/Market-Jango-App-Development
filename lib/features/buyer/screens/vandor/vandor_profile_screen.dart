@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_rating/flutter_rating.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
-import 'package:market_jango/features/buyer/widgets/custom_see_all_product.dart';
 class VendorProfileScreen extends StatelessWidget {
   const VendorProfileScreen({super.key});
   static final String routeName = '/vendorProfileScreen';
@@ -148,7 +147,7 @@ class FashionProduct extends StatelessWidget {
           itemCount: 10,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h);}
+            return CustomNewProduct(width: 130.w, height: 138.h, text: '', text2: '',);}
       ),
     );
   }
@@ -171,7 +170,7 @@ class PopularProduct extends StatelessWidget {
         itemCount: 4,
         // Example item count
         itemBuilder: (context, index) {
-          return CustomNewProduct(width: 162.w, height: 172.h);
+          return CustomNewProduct(width: 162.w, height: 172.h, text: '', text2: '',);
         });
   }
 }

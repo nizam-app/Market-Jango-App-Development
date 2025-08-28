@@ -121,6 +121,8 @@ class NewItemsShow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var width;
+    var height;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,7 +174,7 @@ class NewItemsShow extends StatelessWidget {
   void goToDetailsScreen(BuildContext context) {
     context.push(ProductDetails.routeName);
   }
-}
+
 
 
 class DiscountProduct extends StatelessWidget {

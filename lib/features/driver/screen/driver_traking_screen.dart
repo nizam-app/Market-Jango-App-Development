@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/driver/widgets/bottom_sheet.dart';
 
 class DriverTrakingScreen extends StatelessWidget {
   const DriverTrakingScreen({super.key});
@@ -63,7 +64,14 @@ class DriverTrakingScreen extends StatelessWidget {
                           'Lorem ipsum dolor sit amet, consectetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
                       onTap: () {},
                       badgeText: 'Not Delivery',
-                      onBadgeTap: () {},
+                      onBadgeTap: () async {
+                        final result = await showNotDeliveryBottomSheet(
+                          context,
+                        );
+                        if (result != null) {
+                          print("User selected: $result");
+                        }
+                      },
                     ),
 
                     const SizedBox(height: 18),
@@ -85,8 +93,6 @@ class DriverTrakingScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            const _BottomGrabber(),
           ],
         ),
       ),
@@ -142,12 +148,13 @@ class _Header extends StatelessWidget {
 class _ProgressStepper extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
+
   const _ProgressStepper({required this.currentStep, required this.totalSteps});
 
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final trackLeft = 24.0, trackRight = 24.0;
+    const trackLeft = 24.0, trackRight = 24.0;
     final usable = w - (trackLeft + trackRight);
     final segment = usable / (totalSteps - 1);
     final progressW = (currentStep - 1) * segment;
@@ -159,6 +166,7 @@ class _ProgressStepper extends StatelessWidget {
         child: Stack(
           alignment: Alignment.centerLeft,
           children: [
+            // Background track
             Positioned(
               left: trackLeft,
               right: trackRight,
@@ -170,6 +178,7 @@ class _ProgressStepper extends StatelessWidget {
                 ),
               ),
             ),
+            // Progress bar
             Positioned(
               left: trackLeft,
               child: Container(
@@ -181,16 +190,13 @@ class _ProgressStepper extends StatelessWidget {
                 ),
               ),
             ),
-            // Dots
-            Positioned(left: trackLeft - 8, child: _stepDot(active: true)),
-            Positioned(
-              left: trackLeft - 8 + segment,
-              child: _stepDot(active: currentStep >= 2),
-            ),
-            Positioned(
-              left: trackLeft - 8 + 2 * segment,
-              child: _stepDot(active: currentStep >= 3),
-            ),
+            // Dynamic dots (Spread operator ব্যবহার করা হয়েছে)
+            ...List.generate(totalSteps, (i) {
+              return Positioned(
+                left: trackLeft - 8 + i * segment,
+                child: _stepDot(active: currentStep >= (i + 1)),
+              );
+            }),
           ],
         ),
       ),
@@ -280,24 +286,19 @@ class _TrackingNumberCard extends StatelessWidget {
   }
 }
 
-
 class _StatusTile extends StatefulWidget {
   final bool checked; // initial value
   final String title;
   final String time;
   final String body;
 
-  /// পুরো টাইল ট্যাপ করলে কোথায় যাবে
   final VoidCallback onTap;
 
-  /// ব্যাজের টেক্সট/ট্যাপ
   final String? badgeText;
   final VoidCallback? onBadgeTap;
 
-  /// ব্যাজের রং (Not Delivery color change)
   final Color? badgeColor;
 
-  /// টগল হলে জানতে চাইলে (ঐচ্ছিক)
   final ValueChanged<bool>? onChanged;
 
   const _StatusTile({
@@ -337,7 +338,7 @@ class _StatusTileState extends State<_StatusTile> {
       color: AllColor.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap, // টাইল নেভিগেট করবে
+        onTap: widget.onTap,
         child: Container(
           decoration: BoxDecoration(
             color: AllColor.white,
@@ -351,7 +352,6 @@ class _StatusTileState extends State<_StatusTile> {
               // Title row
               Row(
                 children: [
-                  // শুধু চেকবক্সে ট্যাপ করলে টগল হবে (টাইল নেভিগেট করবে না)
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: _toggle,
@@ -548,28 +548,6 @@ class _RoundIcon extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Icon(icon, color: fg, size: 20),
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomGrabber extends StatelessWidget {
-  const _BottomGrabber();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AllColor.white,
-      padding: const EdgeInsets.only(bottom: 12, top: 6),
-      child: Center(
-        child: Container(
-          height: 5,
-          width: 120,
-          decoration: BoxDecoration(
-            color: AllColor.grey200,
-            borderRadius: BorderRadius.circular(100),
-          ),
         ),
       ),
     );

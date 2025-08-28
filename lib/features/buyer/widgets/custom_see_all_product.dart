@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:market_jango/core/widget/custom_new_product.dart';
 
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 
@@ -28,7 +27,7 @@ class CustomSeeAllProduct extends StatelessWidget {
           itemBuilder: (context, index) {
             return Stack(
               children: [
-                CustomNewProduct(width: 162.w, height: 160.h),
+                CustomNewProduct(width: 162.w, height: 160.h, text: '', text2: '',),
                 CustomDiscountCord()
               ],
             );

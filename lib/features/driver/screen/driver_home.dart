@@ -3,10 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
+import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 
 class DriverHome extends StatelessWidget {
   const DriverHome({super.key});
-  static final routeName ="/driverHome"; 
+  static final routeName = "/driverHome";
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class DriverHome extends StatelessWidget {
               name: "John",
               subtitle: "Keep going! You're doing great today.",
             ),
-           SizedBox(height: 12,),  
+            SizedBox(height: 12),
             _StatsGrid(
               stats: const [
                 _StatItem(title: "Total Active Orders", value: "490"),
@@ -28,9 +29,9 @@ class DriverHome extends StatelessWidget {
                 _StatItem(title: "Delivered Today", value: "200"),
               ],
             ),
-            SizedBox(height: 16,), 
+            SizedBox(height: 16),
             const _SectionTitle(title: "New Orders"),
-            SizedBox(height: 10,), 
+            SizedBox(height: 10),
             const _OrdersList(),
           ],
         ),
@@ -84,13 +85,17 @@ class _HeaderSection extends StatelessWidget {
               ],
             ),
           ),
-         
+
           InkWell(
-            onTap: (){
+            onTap: () {
               context.push("/driverNotifications");
             },
-            child: Icon(Icons.notifications, color: AllColor.black, size: 22.sp)),
-       
+            child: Icon(
+              Icons.notifications,
+              color: AllColor.black,
+              size: 22.sp,
+            ),
+          ),
         ],
       ),
     );
@@ -135,21 +140,25 @@ class _StatTile extends StatelessWidget {
             color: AllColor.black.withOpacity(.04),
             blurRadius: 10.r,
             offset: Offset(0, 4.h),
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(fontSize: 11.sp, color: AllColor.black54)),
+          Text(
+            title,
+            style: TextStyle(fontSize: 11.sp, color: AllColor.black54),
+          ),
           SizedBox(height: 6.h),
-          Text(value,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-                color: AllColor.black,
-              )),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
         ],
       ),
     );
@@ -232,28 +241,34 @@ class _OrderCard extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  _KVRow(k: "Pick up location:", v: order.pickup, boldValue: true),
+                  _KVRow(
+                    k: "Pick up location:",
+                    v: order.pickup,
+                    boldValue: true,
+                  ),
                   SizedBox(height: 4.h),
-                  _KVRow(k: "Destination:", v: order.destination, boldValue: true),
+                  _KVRow(
+                    k: "Destination:",
+                    v: order.destination,
+                    boldValue: true,
+                  ),
                   SizedBox(height: 12.h),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _FilledBtn(
                         label: "See details",
-                        onTap: (
-                        ) => _onSeeDetails(context, order),
+                        onTap: () => _onSeeDetails(context, order),
                         bg: AllColor.loginButtomColor,
                         fg: AllColor.white,
                       ),
 
                       _FilledBtn(
-                        label: "Track order", 
-                         onTap: (
-                        ) => _onTrack(order),
-                          bg: AllColor.blue500,
-                           fg: AllColor.white),
-
+                        label: "Track order",
+                        onTap: () => _onTrack(context, order),
+                        bg: AllColor.blue500,
+                        fg: AllColor.white,
+                      ),
                     ],
                   ),
                 ],
@@ -281,15 +296,12 @@ class _OrderCard extends StatelessWidget {
     );
   }
 
- void _onSeeDetails(BuildContext context, _OrderModel order) {
-  
-  context.push(
-    OrderDetailsScreen.routeName,
-    extra: order,   
-  );
-}
-  void _onTrack(_OrderModel o) {
-    // TODO: Navigate to tracking screen
+  void _onSeeDetails(BuildContext context, _OrderModel order) {
+    context.push(OrderDetailsScreen.routeName, extra: order);
+  }
+
+  void _onTrack(BuildContext context, _OrderModel order) {
+    context.push(DriverTrakingScreen.routeName);
   }
 }
 
@@ -364,10 +376,17 @@ class _FilledBtn extends StatelessWidget {
       borderRadius: BorderRadius.circular(10.r),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10.r)),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
         child: Text(
           label,
-          style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 12.sp),
+          style: TextStyle(
+            color: fg,
+            fontWeight: FontWeight.w700,
+            fontSize: 12.sp,
+          ),
         ),
       ),
     );

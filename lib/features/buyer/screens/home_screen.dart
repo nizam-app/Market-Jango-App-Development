@@ -15,6 +15,8 @@ import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
+import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'all_categori/screen/all_categori_screen.dart';
 import 'all_categori/screen/category_product_screen.dart';
@@ -46,11 +48,11 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                   goToCategoriesProductPage(context);
                 } ,),
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){},isSeeMore: false,),
-                TopProducts(),
+                CustomTopProducts(),
                 // TimerScreen(),
                 // DiscountProduct(),
                 SeeMoreButton(name:"New Items",seeMoreAction: (){goToNewItemsPage();},),
-                NewItemsShow(),
+                CustomNewItemsShow(),
                 SeeMoreButton(name:"Just For you",seeMoreAction: (){goToJustForYouPage();},),
                 JustForYouProduct()
               ],
@@ -93,27 +95,7 @@ class JustForYouProduct extends StatelessWidget {
   }
 }
 
-class NewItemsShow extends StatelessWidget {
-  const NewItemsShow({
-    super.key,
-  });
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220.h,
-      child: ListView.builder(
-          shrinkWrap: true,
-          physics:AlwaysScrollableScrollPhysics(),
-          scrollDirection: Axis.horizontal,
-          itemCount: 6,
-          // Example item count
-          itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h);}
-      ),
-    );
-  }
-}
 
 class CustomNewProduct extends StatelessWidget {
   const CustomNewProduct({
@@ -284,39 +266,7 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 }
 
-class TopProducts extends ConsumerWidget {
-   TopProducts({
-    super.key,
-  });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final allProducts = ref.watch(Category.loadCategories);
-    return SizedBox(
-      height: 55.h,
-      width: double.infinity,
-      child:allProducts.when(data: (product) {
-        List<ProductModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
-        return ListView.builder(
-        shrinkWrap: true,
-        physics: AlwaysScrollableScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        itemCount: topProducts.length, // Example item count
-        itemBuilder: (context, index) {
-          final allTopProduct = topProducts[index];
-          return CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
-              child: CircleAvatar(
-                radius: 24.r,
-                backgroundImage: AssetImage("${allTopProduct.image}"),
-                ),
-              );
-              }
-      );}, error: (error, stack) => Text('Something went wrong'),
-        loading: () => CircularProgressIndicator(),
-    ));
-  }
-
-}
 
 
 

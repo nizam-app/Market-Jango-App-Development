@@ -114,63 +114,12 @@ class JustForYouProduct extends StatelessWidget {
       ),
     );
   }
-}
 
 
 
 
-  @override
-  Widget build(BuildContext context) {
-    var width;
-    var height;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 5.w,vertical: 5.h),
-          margin: EdgeInsets.symmetric(horizontal: 5.w),
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: AllColor.white,
-            borderRadius: BorderRadius.circular(7.r),
 
-          ),
-          clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: (){ goToDetailsScreen(context);},
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: Image.asset(
-                    '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
-                    fit: BoxFit.contain,
-                
-                  ),
-                ),
-              ),
-              // Discount Tag
 
-            ],
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 10.h,left: 15.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 3.h,),
-              Text("New T-shirt, sun-glass".length > 12 ? "New T-shirt.." : "New T-shirt, sun-glass",style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black),maxLines: 1,overflow: TextOverflow.ellipsis,),
-              SizedBox(height: 5.h,),
-              Text("\$17,00",style: Theme.of(context).textTheme.titleLarge!.copyWith(fontSize: 18),)
-            ],
-          ),
-        ),
-
-      ],
-    );
-  }
   void goToDetailsScreen(BuildContext context) {
     context.push(ProductDetails.routeName);
   }

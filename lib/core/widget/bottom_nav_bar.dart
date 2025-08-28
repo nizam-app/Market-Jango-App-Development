@@ -11,9 +11,10 @@ final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
 class BottomNavBar extends ConsumerWidget {
   // Changed to ConsumerWidget
-  const BottomNavBar({super.key});
+   const BottomNavBar({super.key});
 
   static const String routeName = '/bottom_nav_bar';
+
 
   // Define your pages/screens here
   final List<Widget> _pages = const [
@@ -26,7 +27,7 @@ class BottomNavBar extends ConsumerWidget {
     // Example: CategoriesScreen(),
     CartScreen(),
     // Example: CartScreen(),
-SettingScreen()
+    SettingScreen()
     // Example: AccountScreen(),
   ];
 

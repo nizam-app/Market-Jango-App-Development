@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
+import 'package:market_jango/features/auth/screens/car_info.dart';
 
 class NameScreen extends StatelessWidget {
   const NameScreen({super.key});
@@ -17,7 +17,7 @@ class NameScreen extends StatelessWidget {
       body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.w),
             child: Column(children: [
                SizedBox(height: 30.h),
                CustomBackButton(),
@@ -39,8 +39,6 @@ class NameText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-     
-        
         SizedBox(height: 20.h),
         Center(child: Text("What's your name", style: textTheme.titleLarge)),
         SizedBox(height: 24.h),
@@ -89,15 +87,11 @@ class NextBotton extends StatelessWidget {
 
 
   void nextButonDone(BuildContext context) {
-    goToVendorRequestScreen(context);
+    goToCarInfoScreen(context);
 
   }
-  //     void goToPhoneNumberScreen(BuildContext context) {
-  //   context.push(PhoneNumberScreen.routeName);
-  // }
-
-    void goToVendorRequestScreen(BuildContext context) {
-    context.push(VendorRequestScreen.routeName);
+      void goToCarInfoScreen(BuildContext context) {
+    context.push(CarInfoScreen.routeName);
   }
 
   }

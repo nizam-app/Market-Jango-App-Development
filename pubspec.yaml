@@ -39,10 +39,10 @@ dependencies:
   logger: ^2.6.0
   shared_preferences: ^2.5.3
   flutter_screenutil: ^5.9.3
-  go_router: ^16.0.0
+  go_router:
   flutter_svg: ^2.2.0
   pinput: ^5.0.1
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod:
   carousel_slider: ^5.1.1
   intl_phone_field: ^3.2.0
   pin_code_fields: ^8.0.1
@@ -51,6 +51,8 @@ dependencies:
   flutter_rating: ^2.0.2
 
   country_picker: ^2.0.21
+  flutter_rating_bar: ^4.0.1
+  google_maps_flutter: ^2.7.0
 
 
 
@@ -80,6 +82,7 @@ flutter:
   assets:
      - assets/images/
      - assets/json/
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

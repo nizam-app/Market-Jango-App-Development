@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/driver_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 
 class CongratulationScreen extends StatelessWidget {
@@ -79,10 +79,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToBottomNavBar(context);
+    goToDriverBottomNavBar(context);
   }
 
-  void goToBottomNavBar(BuildContext context) {
-    context.push(BottomNavBar.routeName);
+  void goToDriverBottomNavBar(BuildContext context) {
+    context.push(DriverBottomNavBar.routeName);
   }
 }

@@ -12,10 +12,6 @@ class AllColor {
   static final Color orange200 =  Colors.orange.shade200;
 
 
-
-
-
-
   static final Color textBorderColor = const Color(0xFFFAC75D);
   static final Color textHintColor = const Color(0xFF3D5B73);
   static final Color loginButtomColor = const Color(0xFFFF8C00);
@@ -51,9 +47,19 @@ class AllColor {
  static final blue200= Colors.blue.shade200;
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
+
+
+
+ static final Color backGroundColor = const Color(0xffA5A5A5);
+ static final Color activityColor = const Color(0xff00C04A);
+ static final Color hintTextColor = const Color(0xff7C7C7C);
+ static final Color drawerTextColor = const Color(0xff454545);
+
+
  static final lightBlue = Colors.lightBlue;
 
-
-
   
+
 }
+
+

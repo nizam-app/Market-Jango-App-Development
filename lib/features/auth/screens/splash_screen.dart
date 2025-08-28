@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -17,16 +16,14 @@ class SplashScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 60.h),
+            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 55.h),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SvgPicture.asset(
-                  "assets/images/logo.svg",
-                  height: 333.h,
-                  width: 303.w,
-                  fit: BoxFit.cover,
-                ),
+                Image.asset("assets/images/logos.png",
+                height: 333.h,
+                width: 300.w,
+                fit: BoxFit.contain,),
                 SplashScreenText(),
               ],
             ),

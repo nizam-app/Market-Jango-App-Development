@@ -9,6 +9,7 @@ class AllColor {
 
 
   static final Color orange =  Colors.orange;
+  static final Color orange200 =  Colors.orange.shade200;
 
 
   static final Color textBorderColor = const Color(0xFFFAC75D);
@@ -59,5 +60,6 @@ class AllColor {
 
   
 
- 
 }
+
+

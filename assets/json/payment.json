@@ -1,0 +1,25 @@
+{
+  "status": "Success",
+  "message": "product getting",
+  "data": {
+    "shippingAddress": [
+      "56 Clerkenwell Road, London EC1M 5PX,",
+      "United Kingdom"
+    ],
+    "contact": [
+      "MTS UK Office, +44 20 7946 0123,",
+      "example@gmail.com"
+    ],
+    "items": [
+      { "title": "Item A lorem ipsum dolor", "price": 17.0, "image": "assets/images/promo2.jpg" },
+      { "title": "Item B lorem ipsum dolor", "price": 23.0, "image": "assets/images/promo2.jpg" }
+    ],
+    "shippingOptions": [
+      { "id": "delivery", "label": "Delivery charge", "price": 8.0 },
+      { "id": "pickup", "label": "Own Pick up", "price": 0.0 }
+    ],
+    "selectedShippingId": "delivery",
+    "paymentMethods": ["card", "gpay", "paypal", "cod"],
+    "selectedPaymentMethod": "card"
+  }
+}

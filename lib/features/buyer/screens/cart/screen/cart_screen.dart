@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
+import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -68,7 +70,7 @@ class CartScreen extends StatelessWidget {
               },
             ),
           ),
-          _buildTotalCheckoutSection(totalPrice),
+          _buildTotalCheckoutSection(totalPrice, context),
         ],
       ),
     );
@@ -283,7 +285,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalCheckoutSection(double totalPrice) {
+  Widget _buildTotalCheckoutSection(double totalPrice,BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       decoration: BoxDecoration(
@@ -325,7 +327,7 @@ class CartScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement checkout logic
+              context.push(BuyerPaymentScreen.routeName) ;
 
             },
             style: ElevatedButton.styleFrom(

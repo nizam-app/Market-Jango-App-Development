@@ -2,26 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/see_more_button.dart';
+import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
+import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
+import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 class ProductDetails extends StatelessWidget {
   const ProductDetails({super.key});
-static final String routeName = '/productDetails';
+  static final String routeName = '/productDetails';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-      SafeArea(child:
-      SingleChildScrollView(
-        child: Column(
-          children: [
-            ProductImage(),
-            CustomSize()
-        ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ProductImage(),
+              CustomSize(),
+              ProductMaterialAndStoreInfo(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.w),
+                child: Column(
+                  children: [
+                    const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
+                    CustomTopProducts(),
+                    const SeeMoreButton(name: "New Items", seeMoreAction: null),
+                    const CustomNewItemsShow(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+
+      // 🔶 Bottom bar you wanted
+      bottomNavigationBar: QuantityBuyBar(
+        onBuyNow: (qty) {
+          // TODO: handle buy action
+          // e.g. context.push('/checkout?qty=$qty');
+        },
       ),
     );
   }
 }
+
 class ProductImage extends StatelessWidget {
   const ProductImage({super.key});
 
@@ -109,7 +134,7 @@ class _CustomSizeState extends State<CustomSize> {
             ),
           ),
 
-          buildText("Size"),
+          SizeColorAnd(text: "Size"),
 
 
           // 🔹 Container background
@@ -152,14 +177,24 @@ class _CustomSizeState extends State<CustomSize> {
               }),
             ),
           ),
-          buildText("Color"),
+          SizeColorAnd(text: "Color"),
           CustomColor()
         ],
       ),
     );
   }
+}
 
-  Widget buildText(String text) {
+class SizeColorAnd extends StatelessWidget {
+  const SizeColorAnd({
+    super.key,
+    required this.text,
+  });
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(height: 16.h),
@@ -171,7 +206,7 @@ class _CustomSizeState extends State<CustomSize> {
                 color: AllColor.black,
               ),
             ),
-        SizedBox(height: 8.h),
+        SizedBox(height: 10.h),
       ],
     );
   }
@@ -249,6 +284,268 @@ class _CustomColorState extends State<CustomColor> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+class ProductMaterialAndStoreInfo extends StatelessWidget {
+  const ProductMaterialAndStoreInfo({
+    super.key,
+    this.materials = const [
+      MaterialChip(text: 'Cotton 95%'),
+      MaterialChip(text: 'Nylon 5%'),
+    ],
+    this.storeName = 'R2A Store',
+    this.rating = 4.6,
+    this.reviewCount = 56,
+    this.onChatTap,
+  });
+
+  final List<MaterialChip> materials;
+  final String storeName;
+  final double rating;
+  final int reviewCount;
+  final VoidCallback? onChatTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding:  EdgeInsets.symmetric(horizontal:20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Materials row
+          SizeColorAnd(text: "Specifications",)  ,
+          
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: materials
+                .map((m) => _MaterialPill(text: m.text))
+                .toList(),
+          ),
+          SizedBox(height: 14.h),
+
+          // Store + chat
+          Row(
+            children: [
+              CircleAvatar(radius: 25,
+              backgroundImage: AssetImage("assets/images/promo2.jpg"),),
+              SizedBox(width: 20.w,)    ,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    storeName,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AllColor.black,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  // Rating line
+                  Row(
+                    children: [
+                      Icon(Icons.star, size: 14.r, color: AllColor.orange),
+                      SizedBox(width: 4.w),
+
+                      // Numeric rating
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AllColor.black,
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+
+                      // Small badge around review count like in screenshot
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          // color: AllColor.badgeBg,
+                          borderRadius: BorderRadius.circular(6.r),
+                          border: Border.all(color: AllColor.black, width: 0.8),
+                        ),
+                        child: Text(
+                          '$reviewCount reviews',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: AllColor.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                ],
+              ),
+              Spacer(),
+              InkWell(
+                onTap: onChatTap,
+                borderRadius: BorderRadius.circular(6.r),
+                child: Padding(
+                  padding: EdgeInsets.all(4.r),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_outline,
+                        size: 16.r,
+                        color: AllColor.blue,
+                      ),
+                      SizedBox(width: 5.w,),
+                      Text("Chat naw",style: TextStyle(color: Colors.blue,fontSize: 12),)
+                    ],
+                  ),
+                ),
+              ),
+              
+            ],
+          ),
+        
+        ],
+      ),
+    );
+  }
+}
+
+/// Single yellow rounded pill
+class _MaterialPill extends StatelessWidget {
+  const _MaterialPill({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: AllColor.orange200,
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w600,
+          color: AllColor.black,
+        ),
+      ),
+    );
+  }
+}
+
+/// Helper to pass materials easily
+class MaterialChip {
+  final String text;
+  const MaterialChip({required this.text});
+}
+class QuantityBuyBar extends StatefulWidget {
+  const QuantityBuyBar({
+    super.key,
+    this.min = 1,
+    this.max = 99,
+    required this.onBuyNow,
+  });
+
+  final int min;
+  final int max;
+  final void Function(int qty) onBuyNow;
+
+  @override
+  State<QuantityBuyBar> createState() => _QuantityBuyBarState();
+}
+
+class _QuantityBuyBarState extends State<QuantityBuyBar> {
+  int qty = 1;
+
+  void _dec() {
+    if (qty > widget.min) setState(() => qty--);
+  }
+
+  void _inc() {
+    if (qty < widget.max) setState(() => qty++);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 8.r,
+            offset: Offset(0, -3.h),
+            color: Colors.black.withOpacity(0.05),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // — qty +
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                _QtyIcon(onTap: _dec, child: Text('−', style: TextStyle(fontSize: 16.sp))),
+                SizedBox(width: 10.w),
+                Text('$qty', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                SizedBox(width: 10.w),
+                _QtyIcon(onTap: _inc, child: Text('+', style: TextStyle(fontSize: 16.sp))),
+              ],
+            ),
+          ),
+       Spacer() ,
+
+          // 🔶 Buy now button (vertically same, horizontally smaller)
+          SizedBox(
+            width: 180.w,   // ⬅️ fixed width, not Expanded → horizontally smaller
+            height: 44.h,   // ⬅️ vertical same as আগে
+            child: ElevatedButton(
+              onPressed: () => widget.onBuyNow(qty),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AllColor.orange,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Buy now',
+                style: TextStyle(
+                  color: AllColor.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QtyIcon extends StatelessWidget {
+  const _QtyIcon({required this.onTap, required this.child});
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+        child: child,
       ),
     );
   }

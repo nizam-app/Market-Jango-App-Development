@@ -11,7 +11,7 @@ import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_m
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
-import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
@@ -436,7 +436,7 @@ final GoRouter router = GoRouter(
     ),GoRoute(
       path: BuyerPaymentScreen.routeName,
       name: BuyerPaymentScreen.routeName,
-      builder: (context, state) => const BuyerPaymentScreen(),
+      builder: (context, state) =>  BuyerPaymentScreen(),
     ),
     
 

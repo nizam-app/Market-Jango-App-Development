@@ -25,7 +25,7 @@ class SeeMoreButton extends StatelessWidget {
               child:isSeeMore? Text(
                 'See More',
                 style: TextStyle(
-                  color: AllColor.yellow500,
+                  color: AllColor.orange500,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),

@@ -83,7 +83,7 @@ class _VendorRequestTextState extends State<VendorRequestText> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
-              color: AllColor.yellow50,
+              color: AllColor.orange50,
               border: Border.all(color: AllColor.outerAlinment),
               borderRadius: BorderRadius.circular(30.r),
             ),

@@ -3,8 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
-import 'package:market_jango/features/buyer/screens/cart/widget/total_checkout_section.dart';
-import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
+import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -70,7 +70,7 @@ class CartScreen extends StatelessWidget {
               },
             ),
           ),
-          TotalCheckoutSection(totalPrice: totalPrice, context: context),
+          CustomTotalCheckoutSection(totalPrice: totalPrice, context: context),
         ],
       ),
     );

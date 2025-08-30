@@ -110,7 +110,7 @@ class NotificationTile extends StatelessWidget {
               if (isUnread)
                  CircleAvatar(
                   radius: 5.r,
-                  backgroundColor: AllColor.yellow700,
+                  backgroundColor: AllColor.orange700,
                 )
             ],
           )

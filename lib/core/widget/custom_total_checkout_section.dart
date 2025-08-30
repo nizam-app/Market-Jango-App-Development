@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 
-class TotalCheckoutSection extends StatelessWidget {
-  const TotalCheckoutSection({
+class CustomTotalCheckoutSection extends StatelessWidget {
+  const CustomTotalCheckoutSection({
     super.key,
     required this.totalPrice,
     required this.context,

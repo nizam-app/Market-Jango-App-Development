@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/global_save_botton.dart';
 // import your AllColor class
 
 /* ========================= BOTTOM SHEET ========================= */
@@ -80,28 +81,7 @@ void showShippingAddressSheet(BuildContext context) {
                     SizedBox(height: 20.h),
 
                     // Save button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => context.pop(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AllColor.orange,
-                          foregroundColor: AllColor.white,
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Save Changes',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                    GlobalSaveBotton(bottonName: 'Save Changes',),
                   ],
                 ),
               ),
@@ -113,7 +93,8 @@ void showShippingAddressSheet(BuildContext context) {
   );
 }
 
-/* ===================== REUSABLE TEXT FIELD ====================== */
+
+
 class CustomTextFormField extends StatelessWidget {
   const CustomTextFormField({
     super.key,

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
+import 'package:market_jango/core/widget/global_save_botton.dart';
+import 'package:market_jango/features/buyer/screens/prement/widget/custom_payment_method.dart';
+
+import '../../buyer/screens/prement/data/prement_data.dart';
 
 class AddCardScreen extends StatefulWidget {
   const AddCardScreen({super.key});
@@ -28,31 +33,15 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 30.h),
-          
-                      /// ✅ Payment Method Tabs
-          
-                      Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildTab(
-                      method: "Card",
-                      icon: Icons.credit_card,
-                    ),
-                    _buildTab(
-                      method: "G Pay",
-                      asset: "assets/images/google_pay.svg",
-                    ),
-                    _buildTab(
-                      method: "PayPal",
-                      asset: "assets/images/paypal.svg",
-                    ),
-                    _buildTab(
-                      method: "Cash",
-                      icon: Icons.attach_money,
-                    ),
-                  ],
-                ),
+                   Tuppertextandbackbutton(screenName: "Add Card"),
+
+                  CustomPaymentMethod(
+                 options: paymentOptions,
+                 initialIndex: 0,
+                 onChanged: (i) {
+                   // handle selected method index
+                 },
+               ),
           
                       SizedBox(height: 20.h),
           
@@ -142,25 +131,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                     SizedBox(height: 6.h),
                     _summaryRow("Subtotal", "\$100.00"),
                     SizedBox(height: 20.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.r),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                        ),
-                        onPressed: () {
-                          debugPrint("Selected Method: $selectedMethod ✅");
-                        },
-                        child: Text(
-                          "Pay now",
-                          style: TextStyle(fontSize: 15.sp, color: Colors.black),
-                        ),
-                      ),
-                    ),
+                    GlobalSaveBotton(bottonName: 'Pay Now',)
                   ],
                 ),
               ),

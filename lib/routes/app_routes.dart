@@ -11,9 +11,11 @@ import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_m
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
-import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
+import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
+import 'package:market_jango/features/buyer/screens/profile/vandor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
@@ -26,7 +28,7 @@ import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_setting.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
-import 'package:market_jango/features/settings/screens/settings_screen.dart';
+import 'package:market_jango/core/screen/global_profile_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
@@ -40,11 +42,8 @@ import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-
 import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
 import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
-
-
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
@@ -63,7 +62,6 @@ import 'package:market_jango/features/transport/screens/transport_notifications.
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
-
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 
@@ -420,9 +418,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const CategoryProductScreen(),
     ),
     GoRoute(
-      path: VendorProfileScreen.routeName,
-      name: VendorProfileScreen.routeName,
-      builder: (context, state) => const VendorProfileScreen(),
+      path: VandorProfileScreen.routeName,
+      name: VandorProfileScreen.routeName,
+      builder: (context, state) => const VandorProfileScreen(),
     ),
     GoRoute(
       path: ReviewScreen.routeName,
@@ -437,6 +435,14 @@ final GoRouter router = GoRouter(
       path: BuyerPaymentScreen.routeName,
       name: BuyerPaymentScreen.routeName,
       builder: (context, state) =>  BuyerPaymentScreen(),
+    ),GoRoute(
+      path: BuyerProfileEditScreen.routeName,
+      name: BuyerProfileEditScreen.routeName,
+      builder: (context, state) =>  BuyerProfileEditScreen(),
+    ),GoRoute(
+      path: BuyerOrderPage.routeName,
+      name: BuyerOrderPage.routeName,
+      builder: (context, state) =>  BuyerOrderPage(),
     ),
     
 

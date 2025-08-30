@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
+import 'package:market_jango/features/buyer/screens/prement/data/prement_data.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/custom_payment_method.dart';
+import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 
 import '../widget/show_shipping_address_sheet.dart';
 
@@ -55,7 +58,7 @@ class BuyerPaymentScreen extends ConsumerWidget {
                     },
                     currency: '\$',
                   ),
-                  buildPaymentMethodText(theme),
+                  buildPaymentMethodText(theme,context),
                   SizedBox(height: 12.h),
                   CustomPaymentMethod(
                     options: paymentOptions,
@@ -74,7 +77,7 @@ class BuyerPaymentScreen extends ConsumerWidget {
     );
   }
 
-  Row buildPaymentMethodText(TextTheme theme) {
+  Row buildPaymentMethodText(TextTheme theme, BuildContext context) {
     return Row(
                   children: [
                     Expanded(
@@ -84,7 +87,7 @@ class BuyerPaymentScreen extends ConsumerWidget {
 
                       ),
                     ),
-                    AddressEditIcon(tiBg: AllColor.blue500, onEdit: (){})
+                    AddressEditIcon(tiBg: AllColor.blue500, onEdit: (){context.push(AddCardScreen.routeName);})
                     ,
                    
                   ],
@@ -99,12 +102,6 @@ class BuyerPaymentScreen extends ConsumerWidget {
     ShippingOption(title: 'Delivery charge', cost: 5.00),
     ShippingOption(title: 'Own Pick up', cost: 0.0),
   ];
-   final paymentOptions = [
-     PaymentOption(label: 'Card', icon: Icons.credit_card),
-     PaymentOption(label: 'G Pay', asset: 'assets/icon/google.jpg'),
-     PaymentOption(label: 'PayPal', asset: 'assets/icon/paypal.png'),
-     PaymentOption(label: 'Cash', icon: Icons.attach_money),
-   ];
 
 }
 

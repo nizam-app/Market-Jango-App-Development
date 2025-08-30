@@ -33,28 +33,34 @@ class _CustomPaymothodMethodState extends State<CustomPaymentMethod> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 10.h,),
-        Wrap(
-          spacing: 12.w,
-          runSpacing: 12.h,
-          children: List.generate(widget.options.length, (i) {
-            final selected = _selected == i;
-            final opt = widget.options[i];
+        SizedBox(height: 10.h),
+        SizedBox(
+          height: 40.h, // fixed height so chips don’t expand
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.options.length,
+            separatorBuilder: (_, __) => SizedBox(width: 12.w),
+            itemBuilder: (context, i) {
+              final selected = _selected == i;
+              final opt = widget.options[i];
 
-            return _PaymentChip(
-              label: opt.label,
-              icon: opt.icon,
-              asset: opt.asset,
-              selected: selected,
-              onTap: () {
-                setState(() => _selected = i);
-                widget.onChanged?.call(i);
-              },
-            );
-          }),
+              return _PaymentChip(
+                label: opt.label,
+                icon: opt.icon,
+                asset: opt.asset,
+                selected: selected,
+                onTap: () {
+                  setState(() => _selected = i);
+                  widget.onChanged?.call(i);
+                },
+              );
+            },
+          ),
         ),
+        SizedBox(height: 10.h,)
       ],
-    );
+    )
+    ;
   }
 }
 

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
+import 'package:market_jango/features/auth/screens/password_screen.dart';
 
 class EmailScreen extends StatelessWidget {
   const EmailScreen({super.key});
@@ -80,10 +80,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToPhoneNumberScreen(context);
+    goToPasswordScreen(context);
   }
 
-  void goToPhoneNumberScreen(BuildContext context) {
-    context.push(PhoneNumberScreen.routeName);
+  void goToPasswordScreen(BuildContext context) {
+    context.push(PasswordScreen.routeName);
   }
 }

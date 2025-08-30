@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
+import 'package:market_jango/features/auth/screens/account_request.dart';
 
 class PasswordScreen extends StatelessWidget {
   const PasswordScreen({super.key});
@@ -83,10 +84,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCongratulationScreen(context);
+    goToAccountRequest(context);
   }
 
-  void goToCongratulationScreen(BuildContext context) {
-    context.push(CongratulationScreen.routeName);
+  void goToAccountRequest(BuildContext context) {
+    context.push(AccountRequest.routeName);
   }
 }

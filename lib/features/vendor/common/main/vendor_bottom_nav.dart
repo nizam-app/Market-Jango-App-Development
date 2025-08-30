@@ -4,7 +4,6 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home_screen.dart';
 

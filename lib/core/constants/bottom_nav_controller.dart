@@ -4,7 +4,6 @@ import 'package:market_jango/features/buyer/screens/notification/screen/notifica
 import 'package:market_jango/features/settings/screens/settings_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 
-import 'package:market_jango/features/transport/screens/transport.dart';
 
 class BottomNavController extends GetxController {
   var selectedIndex = 0.obs;
@@ -15,9 +14,12 @@ class BottomNavController extends GetxController {
 
   final pages = [
     const BuyerHomeScreen(),
+
+     NotificationsScreen(),
+   // const TransportScreen(),
+
     const BuyerMassageScreen(),
     NotificationsScreen(),
-    const TransportScreen(),
     const SettingScreen(),
   ];
 }

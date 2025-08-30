@@ -12,11 +12,16 @@ import 'package:market_jango/core/widget/custom_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
+import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
+import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'all_categori/screen/all_categori_screen.dart';
+import 'all_categori/screen/category_product_screen.dart';
 import 'filter/screen/location_filtering_tab.dart';
 import 'notification/screen/notification_screen.dart';
 class BuyerHomeScreen extends StatefulWidget {
@@ -40,14 +45,16 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
           
                 BuyerHomeSearchBar(),
                 PromoSlider(),
-                SeeMoreButton(name:"Categories",seeMoreAction: (){goToCategoriesPage();},),
-                CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,),
+                SeeMoreButton(name:"Categories",seeMoreAction: (){goToAllCategoriesPage();},),
+                CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,goToCategoriesProductPage:() {
+                  goToCategoriesProductPage(context);
+                } ,),
                 SeeMoreButton(name:"Top Products",seeMoreAction: (){},isSeeMore: false,),
-                TopProducts(),
+                CustomTopProducts(),
                 // TimerScreen(),
                 // DiscountProduct(),
                 SeeMoreButton(name:"New Items",seeMoreAction: (){goToNewItemsPage();},),
-                NewItemsShow(),
+                CustomNewItemsShow(),
                 SeeMoreButton(name:"Just For you",seeMoreAction: (){goToJustForYouPage();},),
                 JustForYouProduct()
               ],
@@ -57,12 +64,14 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
       ),
     );
   }
-  void goToCategoriesPage() {
+  void goToAllCategoriesPage() {
     context.push(CategoriesScreen.routeName);
   }
   void goToNewItemsPage(){context.push(SeeNewItemsScreen.routeName);}
   void goToJustForYouPage(){context.push(SeeJustForYouScreen.routeName);}
-
+ void goToCategoriesProductPage(BuildContext context) {
+context.push(CategoryProductScreen.routeName);
+}
 }
 
 class JustForYouProduct extends StatelessWidget {
@@ -88,15 +97,12 @@ class JustForYouProduct extends StatelessWidget {
   }
 }
 
-class NewItemsShow extends StatelessWidget {
-  const NewItemsShow({
-    super.key,
-  });
+
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200.h,
+      height: 220.h,
       child: ListView.builder(
           shrinkWrap: true,
           physics:AlwaysScrollableScrollPhysics(),
@@ -108,7 +114,15 @@ class NewItemsShow extends StatelessWidget {
       ),
     );
   }
-}
+
+
+
+
+
+
+  void goToDetailsScreen(BuildContext context) {
+    context.push(ProductDetails.routeName);
+  }
 
 
 
@@ -150,23 +164,7 @@ class DiscountProduct extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
                 // Discount Tag
-                Positioned(
-                  top: 0.h,
-                  right: 0.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: AllColor.yellow500,
-                      borderRadius: BorderRadius.circular(5.r),
-                    ),
-                    child: Text(
-                      '-20%',
-                      style:Theme.of(context).textTheme.titleLarge!.copyWith(
-                        fontSize: 12.sp,color: AllColor.white
-                      ),
-                      ),
-                    ),
-                  ),
+                CustomDiscountCord(),
 
               ],
             ),
@@ -180,6 +178,8 @@ class DiscountProduct extends StatelessWidget {
     );
   }
 }
+
+
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({Key? key}) : super(key: key);
@@ -233,39 +233,7 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 }
 
-class TopProducts extends ConsumerWidget {
-   TopProducts({
-    super.key,
-  });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final allProducts = ref.watch(Category.loadCategories);
-    return SizedBox(
-      height: 55.h,
-      width: double.infinity,
-      child:allProducts.when(data: (product) {
-        List<ProductModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
-        return ListView.builder(
-        shrinkWrap: true,
-        physics: AlwaysScrollableScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        itemCount: topProducts.length, // Example item count
-        itemBuilder: (context, index) {
-          final allTopProduct = topProducts[index];
-          return CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
-              child: CircleAvatar(
-                radius: 24.r,
-                backgroundImage: AssetImage("${allTopProduct.image}"),
-                ),
-              );
-              }
-      );}, error: (error, stack) => Text('Something went wrong'),
-        loading: () => CircularProgressIndicator(),
-    ));
-  }
-
-}
 
 
 

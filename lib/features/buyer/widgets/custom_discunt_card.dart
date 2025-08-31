@@ -16,7 +16,7 @@ class CustomDiscountCord extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
         decoration: BoxDecoration(
-          color: AllColor.yellow500,
+          color: AllColor.orange500,
           borderRadius: BorderRadius.circular(5.r),
         ),
         child: Text(

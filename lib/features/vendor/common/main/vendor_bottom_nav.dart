@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
+
+import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/core/screen/global_profile_screen.dart';
+
 import 'package:market_jango/features/vendor/screens/vendor_home_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_settings.dart';

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
-import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/profile/vandor_profile_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 class CategoryProductScreen extends StatelessWidget {
   const CategoryProductScreen({super.key});
@@ -120,7 +119,7 @@ class VendorListSection extends StatelessWidget {
     );
   }
   void goToVendorProfileScreen(BuildContext context) {
-    context.push( VendorProfileScreen.routeName);
+    context.push( VandorProfileScreen.routeName);
   }
 }
 

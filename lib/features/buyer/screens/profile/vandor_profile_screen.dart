@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
-class VendorProfileScreen extends StatelessWidget {
-  const VendorProfileScreen({super.key});
+class VandorProfileScreen extends StatelessWidget {
+  const VandorProfileScreen({super.key});
   static final String routeName = '/vendorProfileScreen';
 
   @override

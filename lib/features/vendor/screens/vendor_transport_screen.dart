@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list.dart';
 
 class VendorTransportScreen extends StatefulWidget {
   const VendorTransportScreen({super.key});
@@ -88,27 +92,10 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
               left: 16,
               right: 16,
               bottom: 18 + MediaQuery.of(context).padding.bottom,
-              child: SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _onSearch,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AllColor.loginButtomColor,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                  ),
-                  child: Text(
-                    'Search',
-                    style: TextStyle(
-                      color: AllColor.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
+              child: CustomAuthButton(buttonText: "Save", onTap:  () => nextButonDone(context),
+              
             ),
-
+            )
             
           ],
         ),
@@ -116,12 +103,15 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
     );
   }
 
-  void _onSearch() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Searching…')),
-    );
+    void nextButonDone(BuildContext context) {
+    goToVendorDriverList(context);
+  }
+
+  void goToVendorDriverList(BuildContext context) {
+    context.push(VendorDriverList.routeName);
   }
 }
+
 
 /* -------------------- Custom pieces -------------------- */
 

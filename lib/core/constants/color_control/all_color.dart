@@ -6,6 +6,7 @@ class AllColor {
   static final Color yellow500 = const Color(0xFFF9B935);
   static final Color yellow700 =  Color(0xffB18326);
   static final Color outerAlinment =  Color(0xffFAC75D);
+  static final Color red =  Colors.red;
 
 
   static final Color orange =  Colors.orange;

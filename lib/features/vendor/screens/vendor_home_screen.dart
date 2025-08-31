@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
@@ -96,64 +97,84 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           SizedBox(height: 20.h),
           CustomBackButton(),
           SizedBox(height: 10.h),
-          ListTile(
-            leading: ImageIcon(
-              const AssetImage("assets/icon/bag.png"),
-              size: 20.r,
-            ),
-            title: Text(
-              "Order",
-              style: TextStyle(color: Colors.black, fontSize: 14.sp),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_outlined,
-              color: Colors.black,
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          ListTile(
-            leading: ImageIcon(
-              const AssetImage("assets/icon/sale.png"),
-              size: 20.r,
-            ),
-            title: Text(
-              "Sale",
-              style: TextStyle(color: Colors.black, fontSize: 14.sp),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_outlined,
-              color: Colors.black,
+          InkWell(
+            onTap: (){
+              context.push("/vendorOrderPending"); 
+            },
+            child: ListTile(
+              leading: ImageIcon(
+                const AssetImage("assets/icon/bag.png"),
+                size: 20.r,
+              ),
+              title: Text(
+                "Order",
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
             ),
           ),
           Divider(color: Colors.grey.shade300),
-          ListTile(
-            leading: ImageIcon(
-              const AssetImage("assets/icon/language.png"),
-              size: 20.r,
-            ),
-            title: Text(
-              "Language",
-              style: TextStyle(color: Colors.black, fontSize: 14.sp),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_outlined,
-              color: Colors.black,
+          InkWell(
+            onTap: (){
+              context.push("/vendorSalePlatform");
+            },
+            child: ListTile(
+              leading: ImageIcon(
+                const AssetImage("assets/icon/sale.png"),
+                size: 20.r,
+              ),
+              title: Text(
+                "Sale",
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
             ),
           ),
           Divider(color: Colors.grey.shade300),
-          ListTile(
-            leading: ImageIcon(
-              const AssetImage("assets/icon/logout.png"),
-              size: 20.r,
-              color: const Color(0xffFF3B3B),
+          InkWell(
+            onTap: (){
+              context.push("/language");
+            },
+            child: ListTile(
+              leading: ImageIcon(
+                const AssetImage("assets/icon/language.png"),
+                size: 20.r,
+              ),
+              title: Text(
+                "Language",
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
             ),
-            title: Text(
-              "Log Out",
-              style: TextStyle(color: const Color(0xffFF3B3B), fontSize: 14.sp),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios_outlined,
-              color: Colors.black,
+          ),
+          Divider(color: Colors.grey.shade300),
+          InkWell(
+            onTap:(){
+
+            },
+            child: ListTile(
+              leading: ImageIcon(
+                const AssetImage("assets/icon/logout.png"),
+                size: 20.r,
+                color: const Color(0xffFF3B3B),
+              ),
+              title: Text(
+                "Log Out",
+                style: TextStyle(color: const Color(0xffFF3B3B), fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
             ),
           ),
         ],

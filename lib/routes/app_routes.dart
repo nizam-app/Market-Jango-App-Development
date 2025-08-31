@@ -65,8 +65,14 @@ import 'package:market_jango/features/transport/screens/transport_notifications.
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking.dart';
 import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_assigned_order.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notifications.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_cancel.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_complete.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_pending.dart';
+import 'package:market_jango/features/vendor/screens/vendor_sale_platform.dart';
 import 'package:market_jango/features/vendor/screens/vendor_settings.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_screen.dart';
 
@@ -184,6 +190,42 @@ GoRoute(
     builder: (context,state)=>const VendorTransportScreen(),
      ),
 
+     GoRoute(
+     path:VendorOrderPending.routeName,
+    name: 'vendorOrderPending',
+    builder: (context,state)=>const VendorOrderPending(),
+     ),
+
+     GoRoute(
+     path:VendorAssignedOrder.routeName,
+    name: 'vendorOrderAssigned',
+    builder: (context,state)=>const VendorAssignedOrder(),
+     ),
+    
+         GoRoute(
+     path:VendorOrderComplete.routeName,
+    name: 'vendorOrderCompleted',
+    builder: (context,state)=>const VendorOrderComplete(),
+     ),
+ 
+  GoRoute(
+     path:VendorOrderCancel.routeName,
+    name: 'vendorOrderCancel',
+    builder: (context,state)=>const VendorOrderCancel(),
+     ),
+
+      GoRoute(
+     path:VendorSalePlatformScreen.routeName,
+    name: 'vendorSalePlatform',
+    builder: (context,state)=>const VendorSalePlatformScreen(),
+     ),
+
+     
+      GoRoute(
+     path:VendorDriverList.routeName,
+    name: 'vendorDriverList',
+    builder: (context,state)=>const VendorDriverList(),
+     ), 
 
     GoRoute(
       path: CodeScreen.routeName,

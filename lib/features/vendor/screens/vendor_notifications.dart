@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/data/notification_list.dart';
 
 class VendorNotifications extends StatefulWidget {
@@ -22,7 +21,10 @@ class _VendorNotificationsState extends State<VendorNotifications> {
           padding:  EdgeInsets.symmetric(horizontal: 10.w),
           child: Column(
             children: [
-              Tuppertextandbackbutton(screenName: "Notification"),
+              //Tuppertextandbackbutton(screenName: "Notification"),
+              Align(
+                alignment: Alignment.center,
+                child: Text("Notification",style:TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),), 
               Expanded(
                 child: ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),

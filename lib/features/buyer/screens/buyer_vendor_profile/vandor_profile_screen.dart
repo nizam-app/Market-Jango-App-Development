@@ -5,8 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
-class VandorProfileScreen extends StatelessWidget {
-  const VandorProfileScreen({super.key});
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
+class VendorProfileScreen extends StatelessWidget {
+  const VendorProfileScreen({super.key});
   static final String routeName = '/vendorProfileScreen';
 
   @override
@@ -20,7 +21,7 @@ class VandorProfileScreen extends StatelessWidget {
               padding:  EdgeInsets.symmetric(horizontal: 10.w),
               child: Column(
                 children: [
-                  SeeMoreButton(name: "All Products", isSeeMore: false, ),
+                  SeeMoreButton(name: "Populer", isSeeMore: false, ),
                   PopularProduct(),
         
                   SeeMoreButton(name: "Fashion", seeMoreAction: () {}, ),
@@ -139,7 +140,7 @@ class FashionProduct extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200.h,
+      height: 210.h,
       child: ListView.builder(
           shrinkWrap: true,
           physics:AlwaysScrollableScrollPhysics(),
@@ -147,7 +148,7 @@ class FashionProduct extends StatelessWidget {
           itemCount: 10,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h, text: '', text2: '',);}
+            return CustomNewProduct(width: 130.w, height: 138.h, text: 'Product Name', text2: 'prices',);}
       ),
     );
   }
@@ -170,7 +171,11 @@ class PopularProduct extends StatelessWidget {
         itemCount: 4,
         // Example item count
         itemBuilder: (context, index) {
-          return CustomNewProduct(width: 162.w, height: 172.h, text: '', text2: '',);
+          return Stack(
+            children: [
+              CustomNewProduct(width: 162.w, height: 175.h, text: 'Product Name', text2: 'price',),
+            ],
+          );
         });
   }
 }

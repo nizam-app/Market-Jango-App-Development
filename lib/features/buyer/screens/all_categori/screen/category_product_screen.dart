@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
-import 'package:market_jango/features/buyer/screens/profile/vandor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+import '../../buyer_vendor_profile/vandor_profile_screen.dart';
 class CategoryProductScreen extends StatelessWidget {
   const CategoryProductScreen({super.key});
   static final String routeName = '/categoryProductScreen';
@@ -119,7 +120,7 @@ class VendorListSection extends StatelessWidget {
     );
   }
   void goToVendorProfileScreen(BuildContext context) {
-    context.push( VandorProfileScreen.routeName);
+    context.push( VendorProfileScreen.routeName);
   }
 }
 
@@ -174,84 +175,87 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AllColor.white,
-        borderRadius: BorderRadius.circular(4.r),
-        boxShadow: [
-          BoxShadow(
-            color: AllColor.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: Offset(0, 3.h),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Image with Discount
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
-                child: Image.network(
-                  imageUrl,
-                  height: 130.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 8.h,
-                right: 8.w,
-                child: CustomDiscountCord(), // ✅ Custom widget
-              ),
-            ],
-          ),
-
-          // Text + Store Info
-          Padding(
-            padding: EdgeInsets.all(10.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: (){context.push(ProductDetails.routeName);},
+      child: Container(
+        decoration: BoxDecoration(
+          color: AllColor.white,
+          borderRadius: BorderRadius.circular(4.r),
+          boxShadow: [
+            BoxShadow(
+              color: AllColor.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: Offset(0, 3.h),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Image with Discount
+            Stack(
               children: [
-                Text(title,
-                    style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black)),
-                SizedBox(height: 3.h),
-                Text(
-                  "\$$price",
-                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.bold),
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(4.r)),
+                  child: Image.network(
+                    imageUrl,
+                    height: 130.h,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                SizedBox(height: 3.h),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 8.r,
-                      backgroundImage: NetworkImage(storeImage),
-                    ),
-                    SizedBox(width: 8.w),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(storeName,
-                            style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,color: AllColor.black)),
-                        Text(
-                            memberSince.length > 12
-                                ? '${memberSince.substring(0, 12)}...'
-                                : memberSince,
-                            style: TextStyle(
-                                fontSize: 10.sp, color: AllColor.grey)),
-                      ],
-                    )
-                  ],
-                )
+                Positioned(
+                  top: 8.h,
+                  right: 8.w,
+                  child: CustomDiscountCord(), // ✅ Custom widget
+                ),
               ],
             ),
-          ),
-        ],
+      
+            // Text + Store Info
+            Padding(
+              padding: EdgeInsets.all(10.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(color: AllColor.black)),
+                  SizedBox(height: 3.h),
+                  Text(
+                    "\$$price",
+                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 3.h),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 8.r,
+                        backgroundImage: NetworkImage(storeImage),
+                      ),
+                      SizedBox(width: 8.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(storeName,
+                              style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,color: AllColor.black)),
+                          Text(
+                              memberSince.length > 12
+                                  ? '${memberSince.substring(0, 12)}...'
+                                  : memberSince,
+                              style: TextStyle(
+                                  fontSize: 10.sp, color: AllColor.grey)),
+                        ],
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

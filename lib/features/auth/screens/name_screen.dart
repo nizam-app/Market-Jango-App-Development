@@ -64,7 +64,7 @@ class NextBotton extends StatelessWidget {
       children: [
         SizedBox(height: 12.h),
         Text(
-          "This is ho it'll appear on your profile  ",
+          "This is ho it'll appear on your buyer_vendor_profile  ",
           style: Theme.of(context).textTheme.titleSmall,
         ),
 

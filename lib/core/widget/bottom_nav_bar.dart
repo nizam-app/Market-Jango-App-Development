@@ -9,9 +9,9 @@ import 'package:market_jango/core/screen/global_profile_screen.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
-class BottomNavBar extends ConsumerWidget {
+class BuyerBottomNavBar extends ConsumerWidget {
   // Changed to ConsumerWidget
-   const BottomNavBar({super.key});
+   const BuyerBottomNavBar({super.key});
 
   static const String routeName = '/bottom_nav_bar';
 

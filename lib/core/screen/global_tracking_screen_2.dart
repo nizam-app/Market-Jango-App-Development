@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/global_success_popup.dart';
 
-class TransportTrackingScreen extends StatelessWidget {
-  const TransportTrackingScreen({super.key});
+class GlobalTrackingScreen2 extends StatelessWidget {
+  const GlobalTrackingScreen2({super.key});
   static const String routeName = "/transport_booking3";
 
   @override
@@ -268,7 +269,7 @@ class DeliveryFailedPopup {
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
                   onPressed: () {
-                    BookingSuccessPopup.show(context); 
+                    BookingSuccessPopup.show(context, "Your Booking\nHas been Successfull");
                   
                   },
                   child: Text("Chat Now",
@@ -277,70 +278,6 @@ class DeliveryFailedPopup {
               ),
               SizedBox(height: 50.h),
             ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-
-
-class BookingSuccessPopup {
-  static void show(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // user must click button
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-              
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.orange, width: 2),
-                  ),
-                  child: Icon(Icons.check, size: 28.sp, color: Colors.orange),
-                ),
-                SizedBox(height: 16.h),
-
-                /// Success Text
-                Text(
-                  "Your Booking\nHas been Successfull",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 20.h),
-
-               
-                GestureDetector(
-                  onTap: () {
-                    context.push("/transport_bottom_nav_bar"); 
-                    
-                  },
-                  child: Text(
-                    "Go to Home",
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         );
       },

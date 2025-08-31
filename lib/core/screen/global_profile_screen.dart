@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/buyer/screens/order/buyer_order_page.dart';
-
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
+import 'package:market_jango/features/transport/screens/language_screen.dart';
 import 'global_profile_edit_screen.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
@@ -46,13 +47,13 @@ class _SettingScreenState extends State<SettingScreen> {
           _SettingsTile(
             leadingIcon: Icons.event_note_outlined,
             title: "Order history",
-            onTap: () {},
+            onTap: () {context.push(BuyerOrderHistoryScreen.routeName);},
           ),
           _DividerLine(),
           _SettingsTile(
             leadingIcon: Icons.language_outlined,
             title: "Language",
-            onTap: () {},
+            onTap: () {context.push(LanguageScreen.routeName);},
           ),
           _DividerLine(),
 

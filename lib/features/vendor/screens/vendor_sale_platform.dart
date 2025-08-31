@@ -318,14 +318,14 @@ class _SalesCard extends StatelessWidget {
               ),
               SizedBox(width: 70.w),
 
-              _LegendDot(color: AllColor.yellow500),
+              _LegendDot(color: AllColor.orange500),
               SizedBox(width: 4.w),
               Text(
                 'Previous Period',
                 style: TextStyle(color: AllColor.black54, fontSize: 12.sp),
               ),
               const SizedBox(width: 16),
-              _LegendDot(color: AllColor.yellow700),
+              _LegendDot(color: AllColor.orange700),
               SizedBox(width: 4.w),
               Text(
                 'Previous Period',
@@ -408,15 +408,15 @@ class _AreaChartPainter extends CustomPainter {
     ..color = Colors.black12
     ..strokeWidth = 0.5;
   final _line1 = Paint()
-    ..color = AllColor.yellow700
+    ..color = AllColor.orange700
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2;
   final _line2 = Paint()
-    ..color = AllColor.yellow500
+    ..color = AllColor.orange500
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2;
-  final _fill1 = Paint()..color = AllColor.yellow50;
-  final _fill2 = Paint()..color = AllColor.yellow500.withOpacity(.12);
+  final _fill1 = Paint()..color = AllColor.orange50;
+  final _fill2 = Paint()..color = AllColor.orange500.withOpacity(.12);
 
   @override
   void paint(Canvas canvas, Size size) {

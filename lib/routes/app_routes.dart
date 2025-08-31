@@ -13,7 +13,8 @@ import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_m
 import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
-import 'package:market_jango/features/buyer/screens/order/buyer_order_page.dart';
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
@@ -62,8 +63,8 @@ import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
-import 'package:market_jango/features/transport/screens/transport_tracking.dart';
-import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_2.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_edit_profile.dart';
@@ -309,9 +310,10 @@ GoRoute(
     ),
 
     GoRoute(
-      path: TransportTracking.routeName,
-      name: 'transport_tracking',
-      builder: (context, state) => TransportTracking(),
+      path: '${GlobalTrackingScreen1.routeName}/:screenName',
+      name: GlobalTrackingScreen1.routeName,
+      builder: (context, state) =>
+          GlobalTrackingScreen1(screenName: state.pathParameters['screenName']!),
     ),
 
     GoRoute(
@@ -327,9 +329,9 @@ GoRoute(
     ),
 
     GoRoute(
-      path: TransportTrackingScreen.routeName,
+      path: GlobalTrackingScreen2.routeName,
       name: 'transport_booking3',
-      builder: (context, state) => TransportTrackingScreen(),
+      builder: (context, state) => GlobalTrackingScreen2(),
     ),
 
     GoRoute(
@@ -531,8 +533,12 @@ GoRoute(
       path: BuyerOrderPage.routeName,
       name: BuyerOrderPage.routeName,
       builder: (context, state) =>  BuyerOrderPage(),
+    ),GoRoute(
+      path: BuyerOrderHistoryScreen.routeName,
+      name: BuyerOrderHistoryScreen.routeName,
+      builder: (context, state) =>  BuyerOrderHistoryScreen(),
     ),
-    
+
 
 
   ],

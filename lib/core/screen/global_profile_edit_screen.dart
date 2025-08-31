@@ -70,8 +70,8 @@ class BuyerProfileEditScreen extends StatelessWidget {
                     controller: locationC,
                     hintText: "Enter Location",
                   ),
-                  SizedBox(height: 20.h,)     ,
-                  GlobalSaveBotton(bottonName: "Save Changes")
+                  SizedBox(height: 30.h,)     ,
+                  GlobalSaveBotton(bottonName: "Save Changes", onPressed: () {  },),
                 ],
 
                     ),

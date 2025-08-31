@@ -5,16 +5,17 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 
 class GlobalSaveBotton extends StatelessWidget {
   const GlobalSaveBotton({
-    super.key, required this.bottonName,
+    super.key, required this.bottonName,required this.onPressed,
   });
   final String bottonName;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => context.pop(),
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AllColor.orange700,
           foregroundColor: AllColor.white,

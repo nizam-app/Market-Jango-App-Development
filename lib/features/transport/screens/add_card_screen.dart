@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
+import 'package:market_jango/core/widget/global_success_popup.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/custom_payment_method.dart';
 
 import '../../buyer/screens/prement/data/prement_data.dart';
@@ -131,7 +132,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                     SizedBox(height: 6.h),
                     _summaryRow("Subtotal", "\$100.00"),
                     SizedBox(height: 20.h),
-                    GlobalSaveBotton(bottonName: 'Pay Now',)
+                    GlobalSaveBotton(bottonName: 'Pay Now', onPressed: () {BookingSuccessPopup.show(context,"Your Order\nHas been Successfull");},)
                   ],
                 ),
               ),

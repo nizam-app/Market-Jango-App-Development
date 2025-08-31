@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
 
 // ✅ use the ONE true model
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart' as m;
-import 'data/orders_data.dart'; // contains List<OrderSummary> from the same model
-
+import '../data/orders_data.dart'; // contains List<OrderSummary> from the same model
 class BuyerOrderPage extends StatelessWidget {
-  const BuyerOrderPage({super.key});
+  const BuyerOrderPage({super.key,});
   static const routeName = "/buyerOrderPage";
 
   @override
@@ -87,7 +88,12 @@ class _OrderCard extends StatelessWidget {
             _Collage(o.imageUrls),
             SizedBox(width: 14.w),
             Expanded(child: _Texts(o)),
-            _Track(onTap: o.onTrack),
+    _Track(onTap: () {
+    context.pushNamed(
+    GlobalTrackingScreen1.routeName,                 // <- NAME, not path
+    pathParameters: {'screenName': BuyerOrderPage.routeName},
+    );
+    }),
           ],
         ),
       ),

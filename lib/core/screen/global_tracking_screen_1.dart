@@ -1,24 +1,52 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportTracking extends StatelessWidget {
-  const TransportTracking({super.key});
+import '../../features/buyer/screens/order/screen/buyer_order_page.dart';
+import '../../features/vendor/widgets/custom_back_button.dart';
+import 'global_tracking_screen_2.dart';
+
+
+class GlobalTrackingScreen1 extends StatefulWidget {
+  const GlobalTrackingScreen1({super.key, required this.screenName});
   static const String routeName = "/transportTracking";
+  final String screenName;
+
+  @override
+  State<GlobalTrackingScreen1> createState() => _GlobalTrackingScreen1State();
+}
+
+
+
+class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
+  Timer? _redirectTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _redirectTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      // replace = true (current screen replace করবে)
+      context.push(
+        GlobalTrackingScreen2.routeName,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
+
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20.h,), 
-            CustomBackButton(), 
-            SizedBox(height: 10.h,), 
+            SizedBox(height: 20.h,),
+            CustomBackButton(),
+            SizedBox(height: 10.h,),
             /// Avatar + Title
             Row(
               children: [
@@ -94,7 +122,7 @@ class TransportTracking extends StatelessWidget {
             ),
             InkWell(
               onTap: (){
-                context.push("/transport_booking3"); 
+                context.push("/transport_booking3");
               },
               child: _timelineItem(
                 title: "On the Way to Logistic Facility",
@@ -117,52 +145,56 @@ class TransportTracking extends StatelessWidget {
               shipped: true,
             ),
             SizedBox(height: 20.h),
+if (widget.screenName != BuyerOrderPage.routeName)
+           Column(
+             children: [
+               Text("Driver Information",
+                   style: TextStyle(
+                       fontSize: 16.sp, fontWeight: FontWeight.bold)),
+               SizedBox(height: 10.h),
+               Container(
+                 padding: EdgeInsets.all(12.w),
+                 decoration: BoxDecoration(
+                   color: Colors.white,
+                   borderRadius: BorderRadius.circular(12.r),
+                   border: Border.all(color: Colors.grey.shade300),
+                 ),
+                 child: Row(
+                   children: [
+                     CircleAvatar(
+                       radius: 20.r,
+                       backgroundImage: const NetworkImage(
+                           "https://randomuser.me/api/portraits/men/43.jpg"),
+                     ),
+                     SizedBox(width: 12.w),
+                     Expanded(
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           Text("Mr John Doe",
+                               style: TextStyle(
+                                   fontSize: 14.sp,
+                                   fontWeight: FontWeight.w600)),
+                           Text("01780053624",
+                               style: TextStyle(
+                                   fontSize: 12.sp, color: Colors.grey[600])),
+                         ],
+                       ),
+                     ),
+                     IconButton(
+                       icon: const Icon(Icons.message, color: Colors.blue),
+                       onPressed: () {},
+                     ),
+                     IconButton(
+                       icon: const Icon(Icons.call, color: Colors.green),
+                       onPressed: () {},
+                     ),
+                   ],
+                 ),
+               ),
+             ],
+           )
 
-            /// Driver Info
-            Text("Driver Information",
-                style: TextStyle(
-                    fontSize: 16.sp, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20.r,
-                    backgroundImage: const NetworkImage(
-                        "https://randomuser.me/api/portraits/men/43.jpg"),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Mr John Doe",
-                            style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600)),
-                        Text("01780053624",
-                            style: TextStyle(
-                                fontSize: 12.sp, color: Colors.grey[600])),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.message, color: Colors.blue),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.call, color: Colors.green),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

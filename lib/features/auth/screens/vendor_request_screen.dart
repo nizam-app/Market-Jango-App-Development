@@ -3,11 +3,10 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/countries.dart' hide Country;
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
 class VendorRequestScreen extends StatelessWidget {
   const VendorRequestScreen({super.key});
@@ -225,10 +224,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCarInfoScreen(context);
+    goToPhoneNumberScreen(context);
   }
 
-  void goToCarInfoScreen(BuildContext context) {
-    context.push(CarInfoScreen.routeName);
+  void goToPhoneNumberScreen(BuildContext context) {
+    context.push(PhoneNumberScreen.routeName);
   }
 }

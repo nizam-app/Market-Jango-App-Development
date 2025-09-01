@@ -27,8 +27,10 @@ class CustomSeeAllProduct extends StatelessWidget {
           itemBuilder: (context, index) {
             return Stack(
               children: [
-                CustomNewProduct(width: 162.w, height: 160.h, text: '', text2: '',),
-                CustomDiscountCord()
+                CustomNewProduct(width: 162.w, height: 178.h, text: 'Product Name', text2: '',),
+                Positioned(
+                  right: 10.w,
+                    child: CustomDiscountCord())
               ],
             );
 

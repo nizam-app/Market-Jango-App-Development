@@ -83,7 +83,7 @@ class LoginBotton extends StatelessWidget {
 
 
 void loginDone(BuildContext context) {
-    context.push(BottomNavBar.routeName);
+    context.push(BuyerBottomNavBar.routeName);
   }
 
 void gotoHomeScreen(BuildContext content){

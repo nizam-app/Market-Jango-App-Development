@@ -21,6 +21,7 @@ class AllColor {
 
  static final Color green300 = const Color(0xFF5D768A);
  static final Color green500 = const Color.fromRGBO(13, 50, 80, 1);
+ static final Color green =  const Color.fromARGB(255, 12, 88, 14);
 
 
 

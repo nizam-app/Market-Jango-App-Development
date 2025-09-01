@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-import 'package:market_jango/features/auth/screens/email_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_driver_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 
 class VendorTransportScreen extends StatefulWidget {
   const VendorTransportScreen({super.key});
@@ -28,11 +28,9 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: SafeArea(
         child: Stack(
           children: [
-            
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -41,8 +39,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 child: FittedBox(
                   fit: BoxFit.cover,
                   child: Image.network(
-                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uzX55GPbTMW9EXGX_QsxtqbBdWw-N0gq_rQ1khtjoye4YxsHBrvAUIEyCLF1ME9ZB4c&usqp=CAU', 
-                    
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uzX55GPbTMW9EXGX_QsxtqbBdWw-N0gq_rQ1khtjoye4YxsHBrvAUIEyCLF1ME9ZB4c&usqp=CAU',
                   ),
                 ),
               ),
@@ -56,17 +53,23 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                   
                     const SizedBox(height: 6),
 
-                    // Toggle (Request transport / Track shipments)
                     _SegmentedToggle(
                       leftText: 'Request transport',
                       rightText: 'Track shipments',
                       value: _tab,
-                      onChanged: (v) => setState(() => _tab = v),
+                      onChanged: (v) {
+                        setState(() => _tab = v);
+                        if (v == 0) {
+                          context.push('/requestTransport');
+                        } else {
+                          context.push('/vendortrack_shipments');
+                        }
+                      },
                     ),
-                    const SizedBox(height: 12),
+
+                    SizedBox(height: 12.h),
 
                     // Pickup field
                     _LocationField(
@@ -74,7 +77,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                       hint: 'Enter Pickup location',
                       icon: Icons.near_me_rounded,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
 
                     // Destination field
                     _LocationField(
@@ -92,18 +95,18 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
               left: 16,
               right: 16,
               bottom: 18 + MediaQuery.of(context).padding.bottom,
-              child: CustomAuthButton(buttonText: "Save", onTap:  () => nextButonDone(context),
-              
+              child: CustomAuthButton(
+                buttonText: "Save",
+                onTap: () => nextButonDone(context),
+              ),
             ),
-            )
-            
           ],
         ),
       ),
     );
   }
 
-    void nextButonDone(BuildContext context) {
+  void nextButonDone(BuildContext context) {
     goToVendorDriverList(context);
   }
 
@@ -111,7 +114,6 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
     context.push(VendorDriverList.routeName);
   }
 }
-
 
 /* -------------------- Custom pieces -------------------- */
 
@@ -145,7 +147,13 @@ class _SegmentedToggle extends StatelessWidget {
                 color: active ? AllColor.loginButtomColor : AllColor.grey200,
               ),
               boxShadow: active
-                  ? [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 2))]
+                  ? [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/bottom_nav_bar.dart';
 
 class BookingSuccessPopup {
   static void show(BuildContext context,String massage) {
@@ -43,7 +44,7 @@ class BookingSuccessPopup {
 
                 GestureDetector(
                   onTap: () {
-                    context.push("/transport_bottom_nav_bar");
+                    context.push(BuyerBottomNavBar.routeName);
 
                   },
                   child: Text(

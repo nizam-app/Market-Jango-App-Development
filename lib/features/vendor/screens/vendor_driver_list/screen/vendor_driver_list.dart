@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-// import 'package:go_router/go_router.dart'; // Uncomment if you want navigation
 
 class VendorDriverList extends StatefulWidget {
   const VendorDriverList({super.key});
@@ -83,18 +83,15 @@ class _VendorDriverListState extends State<VendorDriverList> {
                 itemBuilder: (_, i) => _DriverCard(
                   data: filtered[i],
                   onAssign: () {
-                    // context.go('/vendor/order/assign?driver=${filtered[i].id}');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Assigned to ${filtered[i].name}'),
-                      ),
-                    );
+
+                    //
+                    context.push("/assign_order_driver");
+                    
                   },
                   onChat: () {
                     // context.go('/chat?to=${filtered[i].id}');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Chat with ${filtered[i].name}')),
-                    );
+                    
+                    context.push("/vendorTransportDetails");
                   },
                 ),
               ),
@@ -263,9 +260,12 @@ class _DriverCard extends StatelessWidget {
                     ),
                     SizedBox(height: 6.h),
                     Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(data.phone, style: TextStyle(color: AllColor.black54)),
+                        Text(
+                          data.phone,
+                          style: TextStyle(color: AllColor.black54),
+                        ),
                         Text(
                           '\$${data.price.toStringAsFixed(0)}',
                           style: TextStyle(
@@ -283,66 +283,57 @@ class _DriverCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 10.h),
-          
-                    SizedBox(width: 6.h),
-                
-                   
-          
+
                   ],
-          
-          
                 ),
               ),
-          
-               
             ],
           ),
-       
-       Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          height: 36.h,
-                          child: ElevatedButton(
-                            onPressed: onAssign,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AllColor.loginButtomColor,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 16.h),
-                            ),
-                            child: Text(
-                              'Assign to order',
-                              style: TextStyle(
-                                color: AllColor.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-          
-                        SizedBox(
-                          height: 40,
-                          width: 40,
-                          child: Material(
-                            color: AllColor.blue500,
-                            borderRadius: BorderRadius.circular(10),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(10),
-                              onTap: onChat,
-                              child: Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                size: 20,
-                                color: AllColor.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                height: 36.h,
+                child: ElevatedButton(
+                  onPressed: onAssign,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AllColor.loginButtomColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-          
+                    padding: EdgeInsets.symmetric(horizontal: 16.h),
+                  ),
+                  child: Text(
+                    'Assign to order',
+                    style: TextStyle(
+                      color: AllColor.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(
+                height: 40.h,
+                width: 40.w,
+                child: Material(
+                  color: AllColor.blue500,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: onChat,
+                    child: Icon(
+                      Icons.chat,
+                      size: 20.sp,
+                      color: AllColor.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
 
-import '../widgets/custom_back_button.dart';
+import '../../../widgets/custom_back_button.dart';
 
 class ProductEditScreen extends StatefulWidget {
   const ProductEditScreen({super.key});
@@ -15,9 +15,6 @@ class ProductEditScreen extends StatefulWidget {
 }
 
 class _ProductEditScreenState extends State<ProductEditScreen> {
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +165,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                     )
                   ),
                   child: Text("Save"))
-              
-
             ],
           ),
         ),

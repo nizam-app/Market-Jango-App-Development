@@ -281,7 +281,7 @@ class _OrderCard extends StatelessWidget {
                     },
                     child: _StatusPill(
                       text: 'Complete',
-                      color: AllColor.green500,
+                      color: AllColor.black,
                     ),
                   ),
                 ],
@@ -376,9 +376,10 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(.12),
+        color: Colors.green,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: color),
+      
       ),
       child: Text(
         text,

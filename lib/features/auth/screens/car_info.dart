@@ -5,6 +5,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
 class CarInfoScreen extends StatelessWidget {
   const CarInfoScreen({super.key});
@@ -197,11 +198,8 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToEmailScreen(context);
+    context.push(PhoneNumberScreen.routeName);
   }
 
-  void goToEmailScreen(BuildContext context) {
-    context.push(EmailScreen.routeName);
-  }
+  
 }
- 

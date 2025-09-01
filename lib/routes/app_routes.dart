@@ -82,7 +82,7 @@ import 'package:market_jango/features/vendor/screens/vendor_transport/screen/ven
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
-import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/login/screen/login_screen.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: SplashScreen.routeName,
@@ -93,7 +93,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: LoginScreen.routeName,
       name: 'loginScreen',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) =>  LoginScreen(),
     ),
 
     GoRoute(
@@ -119,11 +119,16 @@ final GoRouter router = GoRouter(
     ),
 
 
- 
-     GoRoute(path:NameScreen.routeName,
-    name: 'nameScreen',
-    builder: (context,state)=>const NameScreen(),
-     ),
+
+    GoRoute(
+      path: '${NameScreen.routeName}/:role',
+      name: NameScreen.routeName,
+      builder: (context, state) {
+        final role = state.pathParameters['role'] ?? '';
+        return NameScreen(roleName: role);
+      },
+
+    ),
     GoRoute(path:UserScreen.routeName,
     name: 'userScreen',
     builder: (context,state)=>const UserScreen(),

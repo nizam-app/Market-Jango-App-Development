@@ -55,7 +55,15 @@ dependencies:
   fl_chart: ^0.69.0
 
 
+  flutter_launcher_icons: ^0.14.4
 #  google_maps_flutter: ^2.7.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFF"
 
 
 

@@ -16,10 +16,10 @@ class User {
 
 // Demo list (API দিলে এটা বাদ দিন)
 final users = <User>[
-  User('buyer@mail.com',  '+15550001', '123456', Role.buyer),
-  User('vendor@mail.com', '+15550002', '123456', Role.vendor),
-  User('driver@mail.com', '+15550003', '123456', Role.driver),
-  User('transport@mail.com',  '+15550004', 'pass@123456', Role.transport),
+  User('buyer@mail.com',  '+15550001', 'buyer123', Role.buyer),
+  User('vendor@mail.com', '+15550002', 'vendor123', Role.vendor),
+  User('driver@mail.com', '+15550003', 'driver123', Role.driver),
+  User('transport@mail.com',  '+15550004', 'transport123', Role.transport),
 ];
 
 String _digits(String s) => s.replaceAll(RegExp(r'\D'), '');

@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 
 class AccountRequest extends StatelessWidget {
@@ -70,7 +71,7 @@ class NextBotton extends StatelessWidget {
         children: [
           SizedBox(height: 20.h),
           CustomAuthButton(
-            buttonText: "Close App ",
+            buttonText: "Go To Login",
             onTap: () => nextButonDone(context),
           ),
         ],
@@ -79,10 +80,8 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToVendorBottomNav(context);
+    context.go(LoginScreen.routeName);
   }
 
-  void goToVendorBottomNav(BuildContext context) {
-    context.push(VendorBottomNav.routeName);
-  }
+
 }

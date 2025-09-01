@@ -21,7 +21,7 @@ class UserScreen extends StatelessWidget {
                 SizedBox(height: 30.h),
                 CustomBackButton(),
                 UserText(),
-                NextBotton(),
+               
               ],
             ),
           ),
@@ -30,6 +30,7 @@ class UserScreen extends StatelessWidget {
     );
   }
 }
+
 
 class UserText extends StatefulWidget {
   const UserText({super.key});
@@ -41,7 +42,7 @@ class UserText extends StatefulWidget {
 class _UserTextState extends State<UserText> {
   String? selectedUserType;
 
-  final List<String> userTypes = [ 'Buyer', 'Transport', 'Vendor','Driver'];
+  final List<String> userTypes = ['Buyer', 'Transport', 'Vendor', 'Driver'];
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +89,11 @@ class _UserTextState extends State<UserText> {
                   value: type,
                   child: Container(
                     width: double.infinity,
+                    height: double.infinity,
                     color: selectedUserType == type
                         ? Colors.orange
                         : Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10,),
                     child: Text(
                       type,
                       style: TextStyle(
@@ -112,13 +114,17 @@ class _UserTextState extends State<UserText> {
             ),
           ),
         ),
+
+        const SizedBox(height: 24),
+        NextButton(role: selectedUserType?? "Buyer"), // <-- এখানে value পাঠাচ্ছি
       ],
     );
   }
 }
 
-class NextBotton extends StatelessWidget {
-  const NextBotton({super.key});
+class NextButton extends StatelessWidget {
+  const NextButton({super.key, required this.role});
+  final String role;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -126,19 +132,16 @@ class NextBotton extends StatelessWidget {
         SizedBox(height: 460.h),
         CustomAuthButton(
           buttonText: "Next",
-          onTap: () => nextButonDone(context),
+          onTap: () => nextButonDone(context,role),
         ),
       ],
     );
   }
 
-  void nextButonDone(BuildContext context) {
-    goToNameScreen(context);
-  }
 
-  void goToNameScreen(BuildContext context) {
-    context.push(NameScreen.routeName);
+
+  void nextButonDone(BuildContext context,String role) {
+    context.pushNamed(NameScreen.routeName,
+      pathParameters: {"role": role});
   }
 }
-
-

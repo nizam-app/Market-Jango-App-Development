@@ -27,16 +27,16 @@ class _VendorOrderPendingState extends State<VendorOrderPending> {
     final items = _demoOrders
         .where(
           (e) => _tab == 0
-              ? e.status == OrderStatus.pending
-              : _tab == 1
-              ? e.status == OrderStatus.assigned
-              : e.status == OrderStatus.completed,
-        )
+          ? e.status == OrderStatus.pending
+          : _tab == 1
+          ? e.status == OrderStatus.assigned
+          : e.status == OrderStatus.completed,
+    )
         .where(
           (e) =>
-              _search.text.isEmpty ||
-              e.orderNo.toLowerCase().contains(_search.text.toLowerCase()),
-        )
+      _search.text.isEmpty ||
+          e.orderNo.toLowerCase().contains(_search.text.toLowerCase()),
+    )
         .toList();
 
     return Scaffold(
@@ -120,7 +120,7 @@ const _demoOrders = <OrderData>[
     date: '10 july 2025',
     price: 120,
     imageUrl:
-        'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600', // placeholder tee
+    'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600', // placeholder tee
     status: OrderStatus.pending,
   ),
   OrderData(
@@ -132,7 +132,7 @@ const _demoOrders = <OrderData>[
     date: '10 july 2025',
     price: 120,
     imageUrl:
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=600',
+    'https://images.unsplash.com/photo-1519741497674-611481863552?w=600',
     status: OrderStatus.pending,
   ),
   OrderData(
@@ -144,7 +144,7 @@ const _demoOrders = <OrderData>[
     date: '10 july 2025',
     price: 120,
     imageUrl:
-        'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600',
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600',
     status: OrderStatus.pending,
   ),
 
@@ -157,7 +157,7 @@ const _demoOrders = <OrderData>[
     date: '10 july 2025',
     price: 120,
     imageUrl:
-        'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600',
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600',
     status: OrderStatus.pending,
   ),
 ];

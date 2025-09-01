@@ -3,9 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
-import 'package:market_jango/core/widget/bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/logic/login_check.dart';
 import 'package:market_jango/features/auth/screens/user.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'forgot_password_screen.dart';
@@ -13,11 +14,12 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
   static const String routeName = '/loginScreen';
 
+
   @override
   Widget build(BuildContext context) {
-
+    TextEditingController controllerEmail = TextEditingController();
+    TextEditingController controllerPassword = TextEditingController();
     return Scaffold(
-
       body: ScreenBackground(
         child: SingleChildScrollView(
           child: Padding(
@@ -27,8 +29,8 @@ class LoginScreen extends StatelessWidget {
                  SizedBox(height: 30.h,),
                  CustomBackButton(),
                 LoginHereText(),
-                LoginTextFormField(),
-                LoginBotton()
+                LoginTextFormField(controllerEmail: controllerEmail ,controllerPassword: controllerPassword,),
+                LoginButton(controllerEmail: controllerEmail,controllerPassword: controllerPassword,)
               ],
             ),
           ),
@@ -39,10 +41,12 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class LoginBotton extends StatelessWidget {
-  const LoginBotton({
-    super.key,
+class LoginButton extends StatelessWidget {
+  const LoginButton({
+    super.key, required this.controllerEmail, required this.controllerPassword,
   });
+  final TextEditingController controllerEmail ;
+  final TextEditingController controllerPassword ;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,7 @@ class LoginBotton extends StatelessWidget {
             child: Text("Forgot your Password?",style: Theme.of(context).textTheme.titleSmall,)),
         SizedBox(height: 30.h,),
        CustomAuthButton(buttonText:"Login",onTap: (){
-       loginDone(context);
+       loginDone(context: context,email:controllerEmail.text, password:controllerPassword.text );
          },),
         SizedBox(height: 50.h,),
         Text.rich(
@@ -82,8 +86,8 @@ class LoginBotton extends StatelessWidget {
   }
 
 
-void loginDone(BuildContext context) {
-    context.push(BuyerBottomNavBar.routeName);
+void loginDone({required BuildContext context,required String email, required String password}) async{
+  final roles = await loginAndGoSingleRole(context, id:email , password:password, );
   }
 
 void gotoHomeScreen(BuildContext content){
@@ -103,8 +107,10 @@ void goToForgotPasswordScreen(BuildContext context) {
 
 class LoginTextFormField extends StatelessWidget {
   const LoginTextFormField({
-    super.key,
+    super.key, required this.controllerEmail, required this.controllerPassword,
   });
+  final TextEditingController controllerEmail;
+  final TextEditingController controllerPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +120,7 @@ class LoginTextFormField extends StatelessWidget {
     
     SizedBox(height: 28.h,),
     TextFormField(
+      controller: controllerEmail,
       decoration: InputDecoration(
         hintText: "Email or Phone number",
         border: OutlineInputBorder(
@@ -123,6 +130,7 @@ class LoginTextFormField extends StatelessWidget {
     ),
     SizedBox(height: 29.h,),
     TextFormField(
+      controller: controllerPassword,
       obscureText: true,
       decoration: InputDecoration(
         suffixIcon: Icon(Icons.visibility_off_outlined),

@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 
 class AccountRequest extends StatelessWidget {
   const AccountRequest({super.key});

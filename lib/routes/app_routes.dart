@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/widget/bottom_nav_bar.dart';
-import 'package:market_jango/core/widget/driver_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/vandor_profile_screen.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
@@ -45,7 +45,7 @@ import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
@@ -232,18 +232,18 @@ GoRoute(
     builder: (context,state)=>const VendorDriverList(),
      ), 
 
-     
+
       GoRoute(
      path:VendorTransportDetails.routeName,
     name: 'vendorTransportDetails',
     builder: (context,state)=>const VendorTransportDetails(),
-     ), 
-    
+     ),
+
       GoRoute(
      path:VendorShipmentsScreen.routeName,
     name: 'vendortrack_shipments',
     builder: (context,state)=>const VendorShipmentsScreen(),
-     ), 
+     ),
 
     GoRoute(
     path:VendorPendingScreen.routeName,
@@ -256,16 +256,16 @@ GoRoute(
      path:VendorCancelledScreen.routeName,
     name: 'vendorCancelledScreen',
     builder: (context,state)=>const VendorCancelledScreen(),
-     ), 
+     ),
 
-    
+
     GoRoute(
     path:VendorMyProductScreen.routeName,
     name: 'vendorMyProductScreen',
     builder: (context,state)=>const VendorMyProductScreen(),
-     ), 
+     ),
 
- 
+
 
 
     GoRoute(

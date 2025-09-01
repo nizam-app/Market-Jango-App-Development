@@ -4,8 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
-
-
 class CustomSeeAllProduct extends StatelessWidget {
   const CustomSeeAllProduct({
     super.key,

@@ -14,7 +14,6 @@ import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
-import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
@@ -67,8 +66,10 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   void goToAllCategoriesPage() {
     context.push(CategoriesScreen.routeName);
   }
-  void goToNewItemsPage(){context.push(SeeNewItemsScreen.routeName);}
-  void goToJustForYouPage(){context.push(SeeJustForYouScreen.routeName);}
+  void goToNewItemsPage(){context.pushNamed(
+      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}
+  void goToJustForYouPage(){context.pushNamed(
+      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "Just For You"});}
  void goToCategoriesProductPage(BuildContext context) {
 context.push(CategoryProductScreen.routeName);
 }

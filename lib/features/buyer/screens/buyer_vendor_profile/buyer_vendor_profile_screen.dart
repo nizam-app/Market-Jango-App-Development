@@ -6,8 +6,10 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-class VendorProfileScreen extends StatelessWidget {
-  const VendorProfileScreen({super.key});
+import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
+import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+class BuyerVendorProfileScreen extends StatelessWidget {
+  const BuyerVendorProfileScreen({super.key});
   static final String routeName = '/vendorProfileScreen';
 
   @override
@@ -24,9 +26,11 @@ class VendorProfileScreen extends StatelessWidget {
                   SeeMoreButton(name: "Populer", isSeeMore: false, ),
                   PopularProduct(),
         
-                  SeeMoreButton(name: "Fashion", seeMoreAction: () {}, ),
+                  SeeMoreButton(name: "Fashion", seeMoreAction: () {context.pushNamed(
+                      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "Fashion"});}, ),
                   FashionProduct(),
-                  SeeMoreButton(name: "Electronics", seeMoreAction: () {}, ),
+                  SeeMoreButton(name: "Electronics", seeMoreAction: () {context.pushNamed(
+                      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "Electronics"});}, ),
                   FashionProduct()
         
                 ],
@@ -148,7 +152,7 @@ class FashionProduct extends StatelessWidget {
           itemCount: 10,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 138.h, text: 'Product Name', text2: 'prices',);}
+            return CustomNewProduct(width: 130.w, height: 142.h, text: 'Product Name', text2: 'prices',);}
       ),
     );
   }
@@ -166,7 +170,7 @@ class PopularProduct extends StatelessWidget {
           crossAxisCount: 2,
           // mainAxisSpacing: 0.h,
           crossAxisSpacing: 8.w,
-          childAspectRatio: 0.62.h,
+          childAspectRatio: 0.68.h,
         ),
         itemCount: 4,
         // Example item count
@@ -174,6 +178,11 @@ class PopularProduct extends StatelessWidget {
           return Stack(
             children: [
               CustomNewProduct(width: 162.w, height: 175.h, text: 'Product Name', text2: 'price',),
+              Positioned(
+                top: 10,
+                  right: 30,
+                  child: CustomDiscountCord())
+              
             ],
           );
         });

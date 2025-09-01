@@ -10,20 +10,16 @@ class CustomDiscountCord extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: 0.h,
-      right: 0.w,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
-        decoration: BoxDecoration(
-          color: AllColor.orange500,
-          borderRadius: BorderRadius.circular(5.r),
-        ),
-        child: Text(
-          '-20%',
-          style:Theme.of(context).textTheme.titleLarge!.copyWith(
-              fontSize: 12.sp,color: AllColor.white
-          ),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: AllColor.orange500,
+        borderRadius: BorderRadius.circular(5.r),
+      ),
+      child: Text(
+        '-20%',
+        style:Theme.of(context).textTheme.titleLarge!.copyWith(
+            fontSize: 12.sp,color: AllColor.white
         ),
       ),
     );

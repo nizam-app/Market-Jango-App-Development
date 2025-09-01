@@ -27,7 +27,8 @@ class CustomSeeAllProduct extends StatelessWidget {
               children: [
                 CustomNewProduct(width: 162.w, height: 178.h, text: 'Product Name', text2: '',),
                 Positioned(
-                  right: 10.w,
+                  top: 10.h,
+                  right: 15.w,
                     child: CustomDiscountCord())
               ],
             );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
-import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/vandor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
 import 'package:market_jango/features/auth/screens/car_info.dart';
@@ -20,7 +20,6 @@ import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
-import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -526,17 +525,12 @@ GoRoute(
     ),
 
 
-
-
+    
     GoRoute(
-      path: SeeNewItemsScreen.routeName,
-      name: SeeNewItemsScreen.routeName,
-      builder: (context, state) => const SeeNewItemsScreen(),
-    ),
-    GoRoute(
-      path: SeeJustForYouScreen.routeName,
+      path: "${SeeJustForYouScreen.routeName}/:screenName",
       name: SeeJustForYouScreen.routeName,
-      builder: (context, state) => const SeeJustForYouScreen(),
+      
+      builder: (context, state) =>  SeeJustForYouScreen(screenName: state.pathParameters["screenName"] ?? "Just for you",),
     ),
     GoRoute(
       path: ChatScreen.routeName,
@@ -554,9 +548,9 @@ GoRoute(
       builder: (context, state) => const CategoryProductScreen(),
     ),
     GoRoute(
-      path: VendorProfileScreen.routeName,
-      name: VendorProfileScreen.routeName,
-      builder: (context, state) => const VendorProfileScreen(),
+      path: BuyerVendorProfileScreen.routeName,
+      name: BuyerVendorProfileScreen.routeName,
+      builder: (context, state) => const BuyerVendorProfileScreen(),
     ),
     GoRoute(
       path: ReviewScreen.routeName,

@@ -46,7 +46,7 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
-import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
@@ -65,16 +65,19 @@ import 'package:market_jango/features/transport/screens/transport_notifications.
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_2.dart';
-import 'package:market_jango/features/vendor/screens/vendor_assigned_order.dart';
-import 'package:market_jango/features/vendor/screens/vendor_driver_list.dart';
-import 'package:market_jango/features/vendor/screens/vendor_edit_profile.dart';
-import 'package:market_jango/features/vendor/screens/vendor_notifications.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_cancel.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_complete.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_pending.dart';
-import 'package:market_jango/features/vendor/screens/vendor_sale_platform.dart';
-import 'package:market_jango/features/vendor/screens/vendor_settings.dart';
-import 'package:market_jango/features/vendor/screens/vendor_transport_screen.dart';
+import 'package:market_jango/features/vendor/screens/dendor_assigned_order/screen/vendor_assigned_order.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
+import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
+import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
+import 'package:market_jango/features/vendor/screens/vendor_setting/screen/vendor_settings.dart';
+import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
+import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
@@ -226,6 +229,29 @@ GoRoute(
     name: 'vendorDriverList',
     builder: (context,state)=>const VendorDriverList(),
      ), 
+
+     
+      GoRoute(
+     path:VendorTransportDetails.routeName,
+    name: 'vendorTransportDetails',
+    builder: (context,state)=>const VendorTransportDetails(),
+     ), 
+    
+      GoRoute(
+     path:VendorTrackShipment.routeName,
+    name: 'vendortrack_shipments',
+    builder: (context,state)=>const VendorTrackShipment(),
+     ), 
+
+
+
+
+    GoRoute(
+    path:AsignToOrderDriver.routeName,
+    name: 'assign_order_driver',
+    builder: (context,state)=>const AsignToOrderDriver(),
+     ), 
+
 
     GoRoute(
       path: CodeScreen.routeName,

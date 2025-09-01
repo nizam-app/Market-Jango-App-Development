@@ -65,26 +65,25 @@ class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
               ),
             ),
             SizedBox(height: 12.h),
-
-            // List
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
                 physics: const BouncingScrollPhysics(),
                 itemCount: items.length,
                 separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemBuilder: (_, i) => _AssignedSection(
-                  driverName: 'MR. John doe',
-                  child: _AssignedCard(
-                    data: items[i],
-                    onSeeDetails: () {
-                      // TODO: replace with your route
-                      // context.go('/vendor/orders/assigned/details?id=${items[i].orderId}');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('See Details tapped')),
-                      );
-                    },
-                  ),
+                itemBuilder: (_, i) => _AssignedCard(
+                  driverName: "Mr. John doe ${i+1}",
+                  data: items[i],
+                  onSeeDetails: () {
+                    // এখানে আপনি navigation বা API call দিতে পারবেন
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'See Details tapped for Order ${items[i].orderId}',
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -100,6 +99,7 @@ class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
 enum OrderStatus { pending, assigned, completed }
 
 class AssignedOrderData {
+  final String driverName;
   final String orderId;
   final String pickup;
   final String destination;
@@ -107,6 +107,7 @@ class AssignedOrderData {
   final OrderStatus status;
 
   const AssignedOrderData({
+    required this.driverName,
     required this.orderId,
     required this.pickup,
     required this.destination,
@@ -117,6 +118,7 @@ class AssignedOrderData {
 
 const _demoOrders = <AssignedOrderData>[
   AssignedOrderData(
+    driverName: 'MR. John doe',
     orderId: 'ORD12345',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
@@ -124,6 +126,7 @@ const _demoOrders = <AssignedOrderData>[
     status: OrderStatus.assigned,
   ),
   AssignedOrderData(
+    driverName: 'MR. John doe',
     orderId: 'ORD12345',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
@@ -131,6 +134,7 @@ const _demoOrders = <AssignedOrderData>[
     status: OrderStatus.assigned,
   ),
   AssignedOrderData(
+    driverName: 'MR. John doe',
     orderId: 'ORD12345',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
@@ -138,6 +142,7 @@ const _demoOrders = <AssignedOrderData>[
     status: OrderStatus.assigned,
   ),
   AssignedOrderData(
+    driverName: 'MR. John doe',
     orderId: 'ORD12345',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
@@ -246,35 +251,16 @@ class _Tabs extends StatelessWidget {
   }
 }
 
-class _AssignedSection extends StatelessWidget {
-  final String driverName;
-  final Widget child;
-  const _AssignedSection({required this.driverName, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Assigned Driver: $driverName',
-          style: TextStyle(
-            color: AllColor.black54,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        child,
-      ],
-    );
-  }
-}
-
 class _AssignedCard extends StatelessWidget {
   final AssignedOrderData data;
   final VoidCallback onSeeDetails;
+  final String driverName;
 
-  const _AssignedCard({required this.data, required this.onSeeDetails});
+  const _AssignedCard({
+    required this.driverName,
+    required this.data,
+    required this.onSeeDetails,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +282,13 @@ class _AssignedCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // price at right
+            Text(
+              'Assigned Driver: $driverName',
+              style: TextStyle(
+                color: AllColor.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             Row(
               children: [
                 Expanded(

@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
@@ -6,8 +7,6 @@ import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 class VendorSalePlatformScreen extends StatelessWidget {
   const VendorSalePlatformScreen({super.key});
   static const routeName = "/vendorSalePlatform";
-
-  get sp => null;
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +109,7 @@ class VendorSalePlatformScreen extends StatelessWidget {
 
               SizedBox(height: 14.h),
 
-              _SalesCard(),
+              SalesChart(),
 
               SizedBox(height: 18.h),
               // Top Selling table
@@ -288,59 +287,129 @@ class _KpiCard extends StatelessWidget {
 
 /* ------------------------------ Sales ------------------------------ */
 
-class _SalesCard extends StatelessWidget {
-  _SalesCard({super.key});
-
-  // two series (Mon..Sun)
-  final List<double> _current = const [120, 180, 140, 200, 220, 240, 260];
-  final List<double> _previous = const [100, 150, 130, 180, 200, 210, 230];
+class SalesChart extends StatelessWidget {
+  const SalesChart({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AllColor.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AllColor.grey200),
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Sales',
-                style: TextStyle(
-                  color: AllColor.black,
-                  fontWeight: FontWeight.w700,
-                ),
+                "Sales",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
               ),
-              SizedBox(width: 70.w),
-
-              _LegendDot(color: AllColor.orange500),
-              SizedBox(width: 4.w),
-              Text(
-                'Previous Period',
-                style: TextStyle(color: AllColor.black54, fontSize: 12.sp),
-              ),
-              const SizedBox(width: 16),
-              _LegendDot(color: AllColor.orange700),
-              SizedBox(width: 4.w),
-              Text(
-                'Previous Period',
-                style: TextStyle(color: AllColor.black54, fontSize: 12.sp),
-              ),
+              SizedBox(width: 80.w),
+              _LegendItem(color: Colors.orange, text: "Previous Period"),
+              SizedBox(width: 10.w),
+              _LegendItem(color: Colors.grey, text: "Previous Period"),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
+
+          // Chart
           SizedBox(
-            height: 170,
-            child: _AreaChart(
-              current: _current,
-              previous: _previous,
-              yLabels: const ['\$300', '\$200', '\$100', '\$00'],
-              xLabels: const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            height: 200.h,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(show: true, drawVerticalLine: false),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, _) {
+                        if (value % 100 != 0) return Container();
+                        return Text("\$${value.toInt()}");
+                      },
+                    ),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1, // 🔹 Add this line
+                      getTitlesWidget: (value, _) {
+                        const days = [
+                          "Mon",
+                          "Tue",
+                          "Wed",
+                          "Thu",
+                          "Fri",
+                          "Sat",
+                          "Sun",
+                        ];
+                        if (value.toInt() >= 0 && value.toInt() < days.length) {
+                          return Text(days[value.toInt()]);
+                        }
+                        return Container();
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                minX: 0,
+                maxX: 6,
+                minY: 0,
+                maxY: 400,
+                lineBarsData: [
+                  // Yellow line
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 300),
+                      FlSpot(1, 320),
+                      FlSpot(2, 360),
+                      FlSpot(3, 330),
+                      FlSpot(4, 350),
+                      FlSpot(5, 370),
+                      FlSpot(6, 340),
+                    ],
+                    isCurved: true,
+                    color: Colors.orange,
+                    barWidth: 2,
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Colors.orange.withOpacity(0.2),
+                    ),
+                    dotData: FlDotData(show: false),
+                  ),
+                  // Grey line
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 200),
+                      FlSpot(1, 210),
+                      FlSpot(2, 220),
+                      FlSpot(3, 215),
+                      FlSpot(4, 225),
+                      FlSpot(5, 230),
+                      FlSpot(6, 220),
+                    ],
+                    isCurved: true,
+                    color: Colors.grey,
+                    barWidth: 2,
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Colors.grey.withOpacity(0.1),
+                    ),
+                    dotData: FlDotData(show: false),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -349,176 +418,20 @@ class _SalesCard extends StatelessWidget {
   }
 }
 
-class _LegendDot extends StatelessWidget {
+class _LegendItem extends StatelessWidget {
   final Color color;
-  const _LegendDot({required this.color});
+  final String text;
+  const _LegendItem({required this.color, required this.text});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 10.h,
-      width: 10.w,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return Row(
+      children: [
+        CircleAvatar(radius: 6, backgroundColor: color),
+        SizedBox(width: 4.w),
+        Text(text, style: TextStyle(fontSize: 12.sp)),
+      ],
     );
-  }
-}
-
-/// Simple custom area chart with two series (no packages).
-class _AreaChart extends StatelessWidget {
-  final List<double> current;
-  final List<double> previous;
-  final List<String> xLabels;
-  final List<String> yLabels;
-  const _AreaChart({
-    required this.current,
-    required this.previous,
-    required this.xLabels,
-    required this.yLabels,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _AreaChartPainter(
-        current: current,
-        previous: previous,
-        xLabels: xLabels,
-        yLabels: yLabels,
-      ),
-      size: Size.infinite,
-    );
-  }
-}
-
-class _AreaChartPainter extends CustomPainter {
-  final List<double> current, previous;
-  final List<String> xLabels, yLabels;
-
-  _AreaChartPainter({
-    required this.current,
-    required this.previous,
-    required this.xLabels,
-    required this.yLabels,
-  });
-
-  final _axis = Paint()
-    ..color = Colors.black12
-    ..strokeWidth = 1;
-  final _grid = Paint()
-    ..color = Colors.black12
-    ..strokeWidth = 0.5;
-  final _line1 = Paint()
-    ..color = AllColor.orange700
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 2;
-  final _line2 = Paint()
-    ..color = AllColor.orange500
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 2;
-  final _fill1 = Paint()..color = AllColor.orange50;
-  final _fill2 = Paint()..color = AllColor.orange500.withOpacity(.12);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const leftPad = 36.0;
-    const rightPad = 10.0;
-    const topPad = 8.0;
-    const bottomPad = 28.0;
-
-    final chart = Rect.fromLTWH(
-      leftPad,
-      topPad,
-      size.width - leftPad - rightPad,
-      size.height - topPad - bottomPad,
-    );
-
-    // Y grid (4 rows)
-    for (int i = 0; i < 4; i++) {
-      final dy = chart.top + chart.height * (i / 3);
-      canvas.drawLine(
-        Offset(chart.left, dy),
-        Offset(chart.right, dy),
-        i == 3 ? _axis : _grid,
-      );
-    }
-
-    // X grid baseline
-    canvas.drawLine(
-      Offset(chart.left, chart.bottom),
-      Offset(chart.right, chart.bottom),
-      _axis,
-    );
-
-    // Scale
-    final maxY = ([
-      ...current,
-      ...previous,
-      300, // to match labels
-    ]).reduce((a, b) => a > b ? a : b);
-
-    Path pathFor(List<double> data) {
-      final path = Path();
-      for (int i = 0; i < data.length; i++) {
-        final t = i / (data.length - 1);
-        final dx = chart.left + chart.width * t;
-        final dy = chart.bottom - (data[i] / maxY) * chart.height;
-        if (i == 0) {
-          path.moveTo(dx, dy);
-        } else {
-          path.lineTo(dx, dy);
-        }
-      }
-      return path;
-    }
-
-    // Lines
-    final p1 = pathFor(previous);
-    final p2 = pathFor(current);
-
-    // Fills (close to bottom)
-    final area1 = Path.from(p1)
-      ..lineTo(chart.right, chart.bottom)
-      ..lineTo(chart.left, chart.bottom)
-      ..close();
-    final area2 = Path.from(p2)
-      ..lineTo(chart.right, chart.bottom)
-      ..lineTo(chart.left, chart.bottom)
-      ..close();
-
-    canvas.drawPath(area2, _fill2);
-    canvas.drawPath(area1, _fill1);
-
-    canvas.drawPath(p1, _line2);
-    canvas.drawPath(p2, _line1);
-
-    // Y labels
-    final tpStyle = TextStyle(color: AllColor.black54, fontSize: 10);
-    for (int i = 0; i < yLabels.length; i++) {
-      final dy = chart.top + chart.height * (i / (yLabels.length - 1));
-      final tp = TextPainter(
-        text: TextSpan(text: yLabels[i], style: tpStyle),
-        textAlign: TextAlign.right,
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: leftPad - 6);
-      tp.paint(canvas, Offset(0, dy - tp.height / 2));
-    }
-
-    // X labels
-    for (int i = 0; i < xLabels.length; i++) {
-      final t = i / (xLabels.length - 1);
-      final dx = chart.left + chart.width * t;
-      final tp = TextPainter(
-        text: TextSpan(text: xLabels[i], style: tpStyle),
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: 40);
-      tp.paint(canvas, Offset(dx - tp.width / 2, chart.bottom + 6));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _AreaChartPainter old) {
-    return old.current != current || old.previous != previous;
   }
 }
 
@@ -528,6 +441,7 @@ class _TopRow {
   final String product;
   final int units;
   final double revenue;
+
   const _TopRow(this.product, this.units, this.revenue);
 }
 
@@ -556,7 +470,7 @@ class _TopSellingTable extends StatelessWidget {
         children: [
           // header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 10.w),
             decoration: BoxDecoration(
               color: AllColor.grey100,
               borderRadius: const BorderRadius.vertical(
@@ -580,7 +494,7 @@ class _TopSellingTable extends StatelessWidget {
           // rows
           ...rows.map(
             (r) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12.h, vertical: 12.w),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: AllColor.grey200)),
               ),

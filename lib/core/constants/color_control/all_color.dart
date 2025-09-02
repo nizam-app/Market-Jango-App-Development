@@ -7,6 +7,7 @@ class AllColor {
   static final Color orange700 =  Colors.orange.shade700;
   static final Color outerAlinment =  Color(0xffFAC75D);
   static final Color red =  Colors.red;
+  static final Color red200 =  Colors.red.shade200;
 
 
   static final Color orange =  Colors.orange;

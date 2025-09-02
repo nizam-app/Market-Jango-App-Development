@@ -4,8 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
-
-
 class CustomSeeAllProduct extends StatelessWidget {
   const CustomSeeAllProduct({
     super.key,
@@ -29,7 +27,8 @@ class CustomSeeAllProduct extends StatelessWidget {
               children: [
                 CustomNewProduct(width: 162.w, height: 178.h, text: 'Product Name', text2: '',),
                 Positioned(
-                  right: 10.w,
+                  top: 10.h,
+                  right: 15.w,
                     child: CustomDiscountCord())
               ],
             );

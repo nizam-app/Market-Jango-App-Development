@@ -5,7 +5,8 @@ import 'package:market_jango/features/buyer/widgets/custom_see_all_product.dart'
 
 import 'home_screen.dart';
 class SeeJustForYouScreen extends StatelessWidget {
-  const SeeJustForYouScreen({super.key});
+  const SeeJustForYouScreen({super.key, required this.screenName});
+  final String screenName;
   static const String routeName = '/seeJustForYouScreen';
 
   @override
@@ -16,7 +17,7 @@ class SeeJustForYouScreen extends StatelessWidget {
               padding:  EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 children: [
-                  Tuppertextandbackbutton(screenName: "Just For You"),
+                  Tuppertextandbackbutton(screenName: "$screenName"),
                   CustomSeeAllProduct()
 
 
@@ -26,5 +27,3 @@ class SeeJustForYouScreen extends StatelessWidget {
     );
   }
 }
-
-

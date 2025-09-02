@@ -16,4 +16,15 @@ InputDecorationTheme inputDecorationTheme = InputDecorationTheme(
 enabledBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(50),
     borderSide: BorderSide(color: AllColor.textBorderColor, width: 0.5.sp),
-  ),);
+  ),
+  errorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(50),
+    borderSide: BorderSide(color: AllColor.red200, width: 0.5.sp),
+  ),
+  focusedErrorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(50),
+    borderSide: BorderSide(color: AllColor.red200, width: 0.5.sp),
+  ),
+  errorStyle: TextStyle(fontSize: 12.sp, color: Colors.red),
+
+);

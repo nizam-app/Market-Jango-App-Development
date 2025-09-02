@@ -15,7 +15,7 @@ class VendorOrderCancel extends StatefulWidget {
 
 class _VendorOrderCancelState extends State<VendorOrderCancel> {
   final _search = TextEditingController();
-  int _tab = 2; 
+  int _tab = 2;
   @override
   void dispose() {
     _search.dispose();
@@ -26,18 +26,18 @@ class _VendorOrderCancelState extends State<VendorOrderCancel> {
   Widget build(BuildContext context) {
     final items = _demoOrders
         .where((e) =>
-            _search.text.trim().isEmpty ||
-            e.orderNo.toLowerCase().contains(_search.text.toLowerCase()))
+    _search.text.trim().isEmpty ||
+        e.orderNo.toLowerCase().contains(_search.text.toLowerCase()))
         .toList();
 
     return Scaffold(
       backgroundColor: AllColor.white,
-      
+
       body: SafeArea(
 
         child: Column(
           children: [
-            CustomBackButton(), 
+            CustomBackButton(),
             SizedBox(height: 20.h,),
             Padding(
               padding:  EdgeInsets.symmetric(horizontal: 16.h),
@@ -47,7 +47,7 @@ class _VendorOrderCancelState extends State<VendorOrderCancel> {
                 onChanged: (_) => setState(() {}),
               ),
             ),
-             SizedBox(height: 12.h),
+            SizedBox(height: 12.h),
 
             // Tabs
             Padding(
@@ -60,7 +60,7 @@ class _VendorOrderCancelState extends State<VendorOrderCancel> {
                 },
               ),
             ),
-             SizedBox(height: 12.h),
+            SizedBox(height: 12.h),
 
             // List
             Expanded(
@@ -211,9 +211,9 @@ class _Tabs extends StatelessWidget {
     return Row(
       children: [
         chip('Assigned order', 0),
-         SizedBox(width: 8.w),
+        SizedBox(width: 8.w),
         chip('Completed', 1),
-         SizedBox(width: 8.w),
+        SizedBox(width: 8.w),
         chip('Canceled', 2),
       ],
     );
@@ -242,11 +242,11 @@ class _OrderCard extends StatelessWidget {
             children: [
               Text('Order #${data.orderNo}',
                   style: TextStyle(color: AllColor.black, fontWeight: FontWeight.w700)),
-           
+
               _CancelPill(),
             ],
           ),
-           SizedBox(height: 10.h),
+          SizedBox(height: 10.h),
           // Middle: image + info + price
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,21 +274,21 @@ class _OrderCard extends StatelessWidget {
                   ],
                 ),
               ),
-               SizedBox(width: 8.w),
-             
+              SizedBox(width: 8.w),
+
             ],
           ),
 
-           SizedBox(height: 10.h),
+          SizedBox(height: 10.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Qty: ${data.qty}', style: TextStyle(color: AllColor.black54)),
-               Text('\$${data.price.toStringAsFixed(0)}',
+              Text('\$${data.price.toStringAsFixed(0)}',
                   style: TextStyle(color: AllColor.black, fontWeight: FontWeight.w800, fontSize: 18)),
             ],
           ),
-           SizedBox(height: 6.h),
+          SizedBox(height: 6.h),
           Text('Order placed on ${data.date}',
               style: TextStyle(color: AllColor.black54, fontSize: 12)),
         ],
@@ -312,4 +312,3 @@ class _CancelPill extends StatelessWidget {
     );
   }
 }
-

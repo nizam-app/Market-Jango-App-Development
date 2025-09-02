@@ -65,9 +65,11 @@ import 'package:market_jango/features/transport/screens/transport_notifications.
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_2.dart';
-import 'package:market_jango/features/vendor/screens/dendor_assigned_order/screen/vendor_assigned_order.dart';
-import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
+import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
+import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
@@ -238,19 +240,32 @@ GoRoute(
      ), 
     
       GoRoute(
-     path:VendorTrackShipment.routeName,
+     path:VendorShipmentsScreen.routeName,
     name: 'vendortrack_shipments',
-    builder: (context,state)=>const VendorTrackShipment(),
+    builder: (context,state)=>const VendorShipmentsScreen(),
      ), 
-
-
-
 
     GoRoute(
-    path:AsignToOrderDriver.routeName,
-    name: 'assign_order_driver',
-    builder: (context,state)=>const AsignToOrderDriver(),
+    path:VendorPendingScreen.routeName,
+    name: 'vendorPendingScreen',
+    builder: (context,state)=>const VendorPendingScreen(),
+     ),
+
+
+      GoRoute(
+     path:VendorCancelledScreen.routeName,
+    name: 'vendorCancelledScreen',
+    builder: (context,state)=>const VendorCancelledScreen(),
      ), 
+
+    
+    GoRoute(
+    path:VendorMyProductScreen.routeName,
+    name: 'vendorMyProductScreen',
+    builder: (context,state)=>const VendorMyProductScreen(),
+     ), 
+
+ 
 
 
     GoRoute(

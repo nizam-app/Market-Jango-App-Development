@@ -32,7 +32,7 @@ class VendorSettings extends StatelessWidget {
                 ),
                 text: "My Product",
                 onTap: () { 
-                  context.push(" ");
+                  context.push("/vendorMyProductScreen");
                 },
                 iconColor: Colors.grey,
                 textColor: Colors.black,

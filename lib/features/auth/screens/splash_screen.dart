@@ -57,18 +57,18 @@ class SplashScreenText extends StatelessWidget {
           onTap: () => signupDone(context),
         ),
         SizedBox(height: 28.h),
-        InkWell(
-          onTap: () {
-            goToTroubleSigning(context);
-          },
-          child: Text(
-            "Trouble signing in?",
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AllColor.loginButtomColor,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-        ),
+        // InkWell(
+        //   onTap: () {
+        //     goToTroubleSigning(context);
+        //   },
+        //   child: Text(
+        //     "Trouble signing in?",
+        //     style: Theme.of(context).textTheme.titleSmall?.copyWith(
+        //       color: AllColor.loginButtomColor,
+        //       fontWeight: FontWeight.w300,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

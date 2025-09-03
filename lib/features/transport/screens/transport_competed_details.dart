@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class TransportCompetedDetails extends StatefulWidget {
@@ -187,7 +188,9 @@ class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.pop();
+                },
                 child: Text(
                   "Completed",
                   style: TextStyle(fontSize: 15.sp, color: Colors.white),

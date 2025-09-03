@@ -18,16 +18,15 @@ class _VendorNotificationsState extends State<VendorNotifications> {
     return  Scaffold(
        body: SafeArea(
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 10.w),
+          padding:  EdgeInsets.symmetric(horizontal: 16.w),
           child: Column(
             children: [
-              //Tuppertextandbackbutton(screenName: "Notification"),
               Align(
-                alignment: Alignment.center,
-                child: Text("Notification",style:TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),), 
+                alignment: Alignment.topLeft,
+                child: Text("Notification",style:TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),), 
               Expanded(
                 child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  // padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: notifications.length,
                   itemBuilder: (context, index) {
                     final item = notifications[index];

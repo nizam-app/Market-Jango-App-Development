@@ -100,7 +100,7 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
             //           ),
             //         ),
             //       },
-            //       // 👇 Add these to fix scroll conflict
+            //       //  Add these to fix scroll conflict
             //       gestureRecognizers: {
             //         Factory<OneSequenceGestureRecognizer>(
             //           () => EagerGestureRecognizer(),

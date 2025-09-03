@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 class BuyerVendorProfileScreen extends StatelessWidget {

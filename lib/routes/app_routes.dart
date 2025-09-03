@@ -45,7 +45,7 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
-import 'package:market_jango/features/vendor/screens/category_add_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
@@ -65,13 +65,15 @@ import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_color/screen/vendor_product_color.dart';
 
-import 'package:market_jango/features/vendor/screens/product_edite_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/screen/product_edite_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
 import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
@@ -85,7 +87,7 @@ import 'package:market_jango/features/vendor/screens/vendor_transport_details/sc
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
-import '../features/vendor/screens/my_product_size.dart';
+import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: SplashScreen.routeName,
@@ -271,6 +273,17 @@ GoRoute(
     path:VendorMyProductScreen.routeName,
     name: 'vendorMyProductScreen',
     builder: (context,state)=>const VendorMyProductScreen(),
+     ),
+
+  GoRoute(
+    path:VendorProductColor.routeName,
+    name: 'vendorProductColor',
+    builder: (context,state)=> VendorProductColor(),
+     ),
+  GoRoute(
+    path:VendorProductColorName.routeName,
+    name: 'vendorProductColorName',
+    builder: (context,state)=> VendorProductColorName(),
      ),
 
 

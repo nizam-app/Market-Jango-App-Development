@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_setting/screen/vendor_settings.dart';
@@ -22,7 +22,7 @@ class VendorBottomNav extends ConsumerWidget {
   final List<Widget> _pages = const [
     
     VendorHomeScreen(),
-    BuyerMassageScreen(),
+    GlobalMassageScreen(),
     VendorNotifications(),
    // CategoriesScreen(),
    VendorTransportScreen(),

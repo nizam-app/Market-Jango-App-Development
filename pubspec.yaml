@@ -56,6 +56,8 @@ dependencies:
 
 
   flutter_launcher_icons: ^0.14.4
+  flutter_colorpicker: ^1.1.0
+  image_picker: ^1.2.0
 #  google_maps_flutter: ^2.7.0
 
 flutter_launcher_icons:

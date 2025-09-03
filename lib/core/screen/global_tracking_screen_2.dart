@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-import 'package:market_jango/core/widget/global_success_popup.dart';
+import 'buyer_massage/screen/global_chat_screen.dart';
 
 class GlobalTrackingScreen2 extends StatelessWidget {
   const GlobalTrackingScreen2({super.key});
@@ -19,7 +19,7 @@ class GlobalTrackingScreen2 extends StatelessWidget {
           children: [
             SizedBox(height: 20.h,), 
             CustomBackButton(), 
-            SizedBox(height: 10.h,), 
+            SizedBox(height: 10.h,),
             /// Avatar + Title
             Row(
               children: [
@@ -269,7 +269,8 @@ class DeliveryFailedPopup {
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
                   onPressed: () {
-                    BookingSuccessPopup.show(context, "Your Booking\nHas been Successfull");
+                    context.push(ChatScreen.routeName) ;
+                    // BookingSuccessPopup.show(context, "Your Booking\nHas been Successfull");
                   
                   },
                   child: Text("Chat Now",

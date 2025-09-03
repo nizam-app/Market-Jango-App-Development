@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
 
 // ✅ use the ONE true model
@@ -179,17 +180,22 @@ class _Badge extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-    decoration: BoxDecoration(
-      color: AllColor.grey.withOpacity(0.16),
-      borderRadius: BorderRadius.circular(16.r),
+  Widget build(BuildContext context) => InkWell(
+    onTap: (){
+      context.push(CartScreen.routeName);
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: AllColor.grey.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Text(text,
+          style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: AllColor.black)),
     ),
-    child: Text(text,
-        style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: AllColor.black)),
   );
 }
 

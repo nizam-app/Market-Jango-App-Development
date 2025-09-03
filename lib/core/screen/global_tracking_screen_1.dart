@@ -73,11 +73,11 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
             /// Progress Bar
             Row(
               children: [
-                _progressCircle(true),
-                _progressLine(true),
-                _progressCircle(true),
-                _progressLine(false),
-                _progressCircle(false),
+                _glossyCircle(active: true),
+        _glossyLine(active: true),
+        _glossyCircle(active: true),
+        _glossyLine(active: false),
+        _glossyCircle(active: false),
               ],
             ),
             SizedBox(height: 20.h),
@@ -202,19 +202,164 @@ if (widget.screenName != BuyerOrderPage.routeName)
   }
 
   /// Progress Circle Widget
-  Widget _progressCircle(bool active) {
-    return CircleAvatar(
-      radius: 10.r,
-      backgroundColor: active ? Colors.blue : Colors.grey.shade300,
+  // Widget _progressCircle(bool active) {
+  //   return CircleAvatar(
+  //     radius: 10.r,
+  //     backgroundColor: active ? Colors.blue : Colors.grey.shade300,
+  //   );
+  // }
+  //
+  // /// Progress Line Widget
+  // Widget _progressLine(bool active) {
+  //   return Expanded(
+  //     child: Container(
+  //       height: 3.h,
+  //       color: active ? Colors.blue : Colors.grey.shade300,
+  //     ),
+  //   );
+  // }
+
+  Widget _glossyCircle({required bool active}) {
+    final Gradient gActive = const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF58A6FF), Color(0xFF0B3E7C)],
+    );
+    final Gradient gInactive = const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF9FB1C2), Color(0xFF6F8091)],
+    );
+
+    // Outer glow color
+    final Color glow = active
+        ? const Color(0xFF58A6FF).withOpacity(0.35)
+        : const Color(0xFF9FB1C2).withOpacity(0.30);
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // soft halo
+        Container(
+          width: 28.r,
+          height: 28.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: glow, blurRadius: 16.r, spreadRadius: 2.r),
+            ],
+          ),
+        ),
+
+        // white ring
+        Container(
+          width: 24.r,
+          height: 24.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 6.r,
+                offset: Offset(0, 2.h),
+              ),
+            ],
+          ),
+        ),
+
+        // inner glossy disc
+        Container(
+          width: 16.r,
+          height: 16.r,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: active ? gActive : gInactive,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.20),
+                blurRadius: 4.r,
+                offset: Offset(0, 2.h),
+              ),
+            ],
+            border: Border.all(color: Colors.white, width: 2.r),
+          ),
+        ),
+      ],
     );
   }
 
-  /// Progress Line Widget
-  Widget _progressLine(bool active) {
+  Widget _glossyLine({required bool active}) {
+    final Gradient gActive = const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [Color(0xFF6DB2FF), Color(0xFF0D4183)],
+    );
+    final Gradient gInactive = const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [Color(0xFFE5EBF1), Color(0xFFDDE3EA)],
+    );
+
     return Expanded(
-      child: Container(
-        height: 3.h,
-        color: active ? Colors.blue : Colors.grey.shade300,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // outer soft glow
+          Container(
+            height: 12.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: (active ? const Color(0xFF6DB2FF) : const Color(0xFFCAD4DE))
+                      .withOpacity(0.35),
+                  blurRadius: 12.r,
+                  spreadRadius: 1.r,
+                ),
+              ],
+            ),
+          ),
+
+          // main track
+          Container(
+            height: 6.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.r),
+              gradient: active ? gActive : gInactive,
+            ),
+          ),
+
+          // subtle top highlight to fake “emboss”
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(0, -0.6),
+              child: Container(
+                height: 1.2.h,
+                margin: EdgeInsets.symmetric(horizontal: 2.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(1.r),
+                ),
+              ),
+            ),
+          ),
+
+          // subtle bottom shadow line
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(0, 0.7),
+              child: Container(
+                height: 1.2.h,
+                margin: EdgeInsets.symmetric(horizontal: 2.w),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(1.r),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

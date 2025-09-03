@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
+import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 import '../../buyer_vendor_profile/buyer_vendor_profile_screen.dart';

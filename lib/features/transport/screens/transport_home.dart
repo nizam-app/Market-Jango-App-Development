@@ -283,6 +283,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/global_notification_icon.dart';
+import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/transport_driver.dart';
 
 class TransportHome extends StatelessWidget {
   const TransportHome({super.key});
@@ -302,20 +306,23 @@ class TransportHome extends StatelessWidget {
               children: [
                 /// Header
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      "Hello, Jane Cooper 👋",
+                      "Hello, Jane Cooper",
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    SizedBox(width: 10.w,),
                     InkWell(
-                      onTap: (){
-                        context.push("/transport_notificatons"); 
-                      },
-                      child: Icon(Icons.notifications_none, size: 24.sp)),
+                        onTap: (){
+                          context.push("/transport_notificatons");
+                        },
+                        child: Icon(Icons.verified, size: 20.sp,color: AllColor.blue500,)),
+                    Spacer()    ,
+                    GlobalNotificationIcon(),
                   ],
                 ),
                 Text(
@@ -327,54 +334,48 @@ class TransportHome extends StatelessWidget {
                 SizedBox(height: 20.h),
 
                 /// Search Fields
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: "Search by vendor name",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10.h),
-
-                /// Or divider
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(height: 2, width: 120.w, color: Colors.grey),
-                    Text("Or", style: TextStyle(fontSize: 16.sp)),
-                    Container(height: 2, width: 120.w, color: Colors.grey),
-                  ],
-                ),
-                SizedBox(height: 10.h),
-
-                /// Pickup & Destination
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: "Enter Pickup location",
-                        prefixIcon: const Icon(Icons.location_on_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
+                    // Search (white bg)
+                    _softField(
+                      hint: "Search by vendor name",
+                      icon: Icons.search,
+                      bg: Colors.white, // image-2 এ সার্চটা সাদা
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // Or divider (পাতলা গ্রে)
+                    Row(
+                      children: [
+                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          child: Text("Or", style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
                         ),
-                      ),
+                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // Pickup (light grey bg)
+                    _softField(
+                      hint: "Enter Pickup location",
+                      icon: Icons.location_on_outlined,
+                      bg:  AllColor.grey300, // হালকা ধূসর
                     ),
                     SizedBox(height: 10.h),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: "Destination",
-                        prefixIcon: const Icon(Icons.flag_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
+
+                    // Destination (light grey bg)
+                    _softField(
+                      hint: "Destination",
+                      icon: Icons.flag_outlined,
+                      bg: AllColor.grey300,
                     ),
                   ],
                 ),
 
-                SizedBox(height: 10.h),
+                SizedBox(height: 20.h),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -386,7 +387,7 @@ class TransportHome extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {},
-                    child: Text("Search", style: TextStyle(fontSize: 16.sp)),
+                    child: Text("Search", style: TextStyle(fontSize: 16.sp, color: AllColor.white)),
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -404,7 +405,7 @@ class TransportHome extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        context.push("/transport_driver"); 
+                        context.push(TransportDriver.routeName);
                       },
                       child: const Text("See all"),
                     ),
@@ -425,6 +426,40 @@ class TransportHome extends StatelessWidget {
       ),
     );
   }
+  Widget _softField({
+    required String hint,
+    required IconData icon,
+    Color? bg,
+  }) {
+    return TextField(
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          fontSize: 14.sp,
+          color: const Color(0xFF9BA0A6), // নরম ধূসর হিন্ট
+        ),
+        prefixIcon: Icon(icon, color: const Color(0xFF8E8E93)),
+        isDense: true,
+        filled: true,
+        fillColor: bg ?? const Color(0xFFF3F4F6),
+        contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+
+        // বর্ডার = পাতলা গ্রে, রাউন্ডেড
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18.r),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18.r),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18.r),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+      ),
+    );
+  }
 }
 
 /// Driver Card
@@ -435,6 +470,7 @@ class _DriverCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
+      color: AllColor.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
         padding: EdgeInsets.all(12.w),
@@ -444,27 +480,35 @@ class _DriverCard extends StatelessWidget {
             /// Driver Info
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20.r,
-                  backgroundImage: const NetworkImage(
-                    "https://randomuser.me/api/portraits/men/75.jpg",
+                InkWell(
+                  onTap: (){
+                    context.push(DriverDetailsScreen.routeName);
+                  },
+                  child: CircleAvatar(
+                    radius: 20.r,
+                    backgroundImage: const NetworkImage(
+                      "https://randomuser.me/api/portraits/men/75.jpg",
+                    ),
                   ),
                 ),
                 SizedBox(width: 10.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Jerome Bell",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
-                        )),
-                    Text("Porsche Taycan",
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey,
-                        )),
-                  ],
+                InkWell(
+                  onTap: (){ context.push(DriverDetailsScreen.routeName);},
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Jerome Bell",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.sp,
+                          )),
+                      Text("Porsche Taycan",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey,
+                          )),
+                    ],
+                  ),
                 ),
                 const Spacer(),
                 Container(
@@ -517,20 +561,23 @@ class _DriverCard extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                    child: Text(
-                      "See Details ",
-                      
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
+                  InkWell(
+                    onTap: (){context.push(DriverDetailsScreen.routeName);},
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: AllColor.orange700,
+                        borderRadius: BorderRadius.circular(30.r),
+                      ),
+                      child: Text(
+                        "See Details ",
+                        
+                        style: TextStyle(
+                          color: AllColor.black,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

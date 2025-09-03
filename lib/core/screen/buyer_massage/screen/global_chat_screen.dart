@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart'; // Make sure this i
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/chat_model.dart'; // Ensure ChatMessage model is compatible or adjust
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/data/chat_data.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart'; // Ensure messages data is compatible or adjust
+import 'package:market_jango/core/screen/buyer_massage/data/chat_data.dart';
+import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart'; // Ensure messages data is compatible or adjust
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -356,7 +357,7 @@ class OrderSummaryBubble extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () {
-                  // Handle Pay Now action
+                 context.push(BuyerPaymentScreen.routeName);
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(

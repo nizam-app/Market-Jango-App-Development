@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
@@ -10,8 +12,6 @@ import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -45,6 +45,8 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/category_add_page.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
@@ -63,7 +65,8 @@ import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_2.dart';
+
+import 'package:market_jango/features/vendor/screens/product_edite_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
@@ -82,6 +85,7 @@ import 'package:market_jango/features/vendor/screens/vendor_transport_details/sc
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
+import '../features/vendor/screens/my_product_size.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: SplashScreen.routeName,
@@ -308,9 +312,9 @@ GoRoute(
     ),
 
     GoRoute(
-      path: BuyerMassageScreen.routeName,
+      path: GlobalMassageScreen.routeName,
       name: "buyer_massage_screen",
-      builder: (context, state) => const BuyerMassageScreen(),
+      builder: (context, state) => const GlobalMassageScreen(),
     ),
 
     GoRoute(
@@ -371,12 +375,6 @@ GoRoute(
       path: TransportBooking.routeName,
       name: 'transport_booking',
       builder: (context, state) => TransportBooking(),
-    ),
-
-    GoRoute(
-      path: GlobalTrackingScreen2.routeName,
-      name: 'transport_booking3',
-      builder: (context, state) => GlobalTrackingScreen2(),
     ),
 
     GoRoute(
@@ -577,6 +575,24 @@ GoRoute(
       path: BuyerOrderHistoryScreen.routeName,
       name: BuyerOrderHistoryScreen.routeName,
       builder: (context, state) =>  BuyerOrderHistoryScreen(),
+    ),GoRoute(
+      path: MyProductColorScreen.routeName,
+      name: MyProductColorScreen.routeName,
+      builder: (context, state) =>  MyProductColorScreen(),
+    ),
+GoRoute(
+      path: MyProductSizeScreen.routeName,
+      name: MyProductSizeScreen.routeName,
+      builder: (context, state) =>  MyProductSizeScreen(),
+    ),
+GoRoute(
+      path: ProductEditePage.routeName,
+      name: ProductEditePage.routeName,
+      builder: (context, state) =>  ProductEditePage(),
+    ),GoRoute(
+      path: CategoryAddPage.routeName,
+      name: CategoryAddPage.routeName,
+      builder: (context, state) =>  CategoryAddPage(),
     ),
 
 

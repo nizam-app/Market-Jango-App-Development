@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/data/meassage_data.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart';
+import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
+
+import 'global_chat_screen.dart';
 
 // Screen for displaying a list of buyer messages.
-class BuyerMassageScreen extends StatelessWidget {
+class GlobalMassageScreen extends StatelessWidget {
   // Constructor for BuyerMassageScreen.
-  const BuyerMassageScreen({super.key});
+  const GlobalMassageScreen({super.key});
 
   // Route name for navigation.
   static final routeName = "/buyerMassageScreen";

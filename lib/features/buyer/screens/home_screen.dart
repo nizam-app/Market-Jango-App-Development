@@ -9,6 +9,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
+import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
@@ -352,35 +353,13 @@ class BuyerHomeSearchBar extends StatelessWidget {
 
             SizedBox(width: 8.w),
             // Notification Icon
-            Container(
-              height: 35.h,
-              width: 35.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0,0.5.sp),
-                  ),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(Icons.notifications, size: 20.sp),
-                onPressed: () {
-                  goToNotificationScreen(context);}
-                ,
-              ),
-            ),
+           GlobalNotificationIcon()
           ],
         ),
       ],
     );
   }
-  void goToNotificationScreen(BuildContext context) {
-    context.push(NotificationsScreen.routeName);
-  }
+
   void openingFilter(BuildContext context) {
     showModalBottomSheet(
       context: context,

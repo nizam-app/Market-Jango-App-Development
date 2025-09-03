@@ -65,7 +65,7 @@ import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_2.dart';
+
 import 'package:market_jango/features/vendor/screens/product_edite_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
@@ -375,12 +375,6 @@ GoRoute(
       path: TransportBooking.routeName,
       name: 'transport_booking',
       builder: (context, state) => TransportBooking(),
-    ),
-
-    GoRoute(
-      path: GlobalTrackingScreen2.routeName,
-      name: 'transport_booking3',
-      builder: (context, state) => GlobalTrackingScreen2(),
     ),
 
     GoRoute(

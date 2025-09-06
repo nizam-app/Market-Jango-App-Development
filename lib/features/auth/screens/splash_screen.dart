@@ -5,11 +5,9 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
-
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
   static const String routeName = '/splashScreen';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +31,6 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
-
 class SplashScreenText extends StatelessWidget {
   SplashScreenText({super.key});
 
@@ -72,7 +69,6 @@ class SplashScreenText extends StatelessWidget {
       ],
     );
   }
-
   void loginDone(BuildContext context) {
     context.push('/loginScreen');
   }
@@ -84,12 +80,10 @@ class SplashScreenText extends StatelessWidget {
   void goToTroubleSigning(BuildContext context) {
     context.push('/trouble-signing');
   }
-
   void signupDone(BuildContext context) {
     goToUserScreen(context);
   }
-
   void goToUserScreen(BuildContext context) {
     context.push(UserScreen.routeName);
   }
-}
+}                                                        

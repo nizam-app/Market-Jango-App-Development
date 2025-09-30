@@ -56,6 +56,7 @@ class EmailText extends StatelessWidget {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: emailValidator,
           decoration: InputDecoration(
+            isDense: true,
             hintText: "Email",
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.r),

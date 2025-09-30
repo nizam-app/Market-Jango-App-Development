@@ -93,7 +93,7 @@ class _UserTextState extends State<UserText> {
                     color: selectedUserType == type
                         ? Colors.orange
                         : Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 10,),
+                    // padding:  EdgeInsets.symmetric(vertical: ),
                     child: Text(
                       type,
                       style: TextStyle(

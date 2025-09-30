@@ -50,6 +50,7 @@ class NameText extends StatelessWidget {
         TextFormField(
           keyboardType: TextInputType.name,
           decoration: InputDecoration(
+                                                      
             hintText: "Enter your name",
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.r),

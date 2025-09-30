@@ -85,8 +85,10 @@ class LoginTextFormField extends ConsumerWidget {
             autovalidateMode: AutovalidateMode.disabled,
             validator: passwordValidator, // তোমার existing function
             obscureText: isObscure,
+           
             decoration: InputDecoration(
               hintText: "Password",
+              isDense: true,
               suffixIcon: IconButton(
                 icon: Icon(
                   isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -104,7 +106,9 @@ class LoginTextFormField extends ConsumerWidget {
                   onTap: () {
                     goToForgotPasswordScreen(context);
                   },
-                  child: Text("Forgot your Password?",style: Theme.of(context).textTheme.titleSmall,)),
+                  child: Text("Forgot your Password?",style: Theme.of(context).textTheme.titleSmall,),
+                
+              ),
               SizedBox(height: 30.h,),
               CustomAuthButton(
                 buttonText: "Login",

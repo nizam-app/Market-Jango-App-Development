@@ -224,15 +224,15 @@ class _ColorAttributeTableState extends State<ColorAttributeTable> {
               child: Row(
                 children: [
                   Container(
-                    width: 18.w,
-                    height: 18.w,
+                    width: 14.w,
+                    height: 14.w,
                     decoration: BoxDecoration(
                       color: item.color,
                       border: Border.all(color: AllColor.grey.withOpacity(0.6), width: 1),
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  SizedBox(width: 8.w),
                   Text(
                     _hex(item.color),
                     style: TextStyle(letterSpacing: 0.5, color: AllColor.black, fontSize: 14.sp),
@@ -286,42 +286,44 @@ class _ColorAttributeTableState extends State<ColorAttributeTable> {
         contentPadding: EdgeInsets.all(12.w),
         content: StatefulBuilder(
           builder: (_, setSB) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // HSV Picker (live)
-                ColorPicker(
-                  pickerColor: current,
-                  onColorChanged: (c) {
-                    setSB(() => current = c);
-                    _updateRow(index, _items[index]..color = c); // live update
-                  },
-                  enableAlpha: false, // 6-digit HEX রাখতে
-                  displayThumbColor: true,
-                ),
-                SizedBox(height: 8.h),
-
-                // Preset block picker
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Presets',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600, color: AllColor.black, fontSize: 13.sp)),
-                ),
-                SizedBox(height: 8.h),
-                BlockPicker(
-                  pickerColor: current,
-                  availableColors: _presets.map((e) => e.value).toList(),
-                  onColorChanged: (c) {
-                    _updateRow(index, _items[index]..color = c);
-                    setSB(() => current = c);
-                  },
-                ),
-
-                SizedBox(height: 6.h),
-                Text('HEX: ${_hex(current)}',
-                    style: TextStyle(fontWeight: FontWeight.w600, color: AllColor.black, fontSize: 14.sp)),
-              ],
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // HSV Picker (live)
+                  ColorPicker(
+                    pickerColor: current,
+                    onColorChanged: (c) {
+                      setSB(() => current = c);
+                      _updateRow(index, _items[index]..color = c); // live update
+                    },
+                    enableAlpha: false, // 6-digit HEX রাখতে
+                    displayThumbColor: true,
+                  ),
+                  SizedBox(height: 8.h),
+              
+                  // Preset block picker
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Presets',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, color: AllColor.black, fontSize: 13.sp)),
+                  ),
+                  SizedBox(height: 8.h),
+                  BlockPicker(
+                    pickerColor: current,
+                    availableColors: _presets.map((e) => e.value).toList(),
+                    onColorChanged: (c) {
+                      _updateRow(index, _items[index]..color = c);
+                      setSB(() => current = c);
+                    },
+                  ),
+              
+                  SizedBox(height: 6.h),
+                  Text('HEX: ${_hex(current)}',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: AllColor.black, fontSize: 14.sp)),
+                ],
+              ),
             );
           },
         ),
@@ -347,8 +349,8 @@ class _ColorAttributeTableState extends State<ColorAttributeTable> {
         content: StatefulBuilder(
           builder: (_, setSB) => SingleChildScrollView(
             child: Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
+              spacing: 6.w,
+              runSpacing: 6.h,
               children: List.generate(_presets.length, (i) {
                 final entry = _presets[i];
                 final isSel = selected.contains(i);
@@ -369,7 +371,7 @@ class _ColorAttributeTableState extends State<ColorAttributeTable> {
                           border: Border.all(color: AllColor.grey.withOpacity(0.5)),
                         ),
                       ),
-                      SizedBox(width: 6.w),
+                      SizedBox(width: 8.w),
                       Text(entry.key, style: TextStyle(color: AllColor.black, fontSize: 12.sp)),
                     ],
                   ),

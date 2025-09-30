@@ -27,8 +27,7 @@ class _TransportBookingState extends State<TransportBooking> {
             Padding(
               padding:  EdgeInsets.symmetric(horizontal: 20.w),
               child: Tuppertextandbackbutton(screenName: "My Booking"),
-            )    ,
-            SizedBox(height: 10.h,),
+            ),
             SizedBox(
               height: 55.h,
               child: ListView.separated(
@@ -39,7 +38,6 @@ class _TransportBookingState extends State<TransportBooking> {
                 itemBuilder: (context, index) {
                   final tab = tabs[index];
                   final bool isActive = selectedTab == tab;
-        
                   return GestureDetector(
                     onTap: () => setState(() => selectedTab = tab),
                     child: Container(
@@ -220,7 +218,7 @@ class _TransportBookingState extends State<TransportBooking> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
-                    //context.push("/completedOrders"); 
+                    context.push("/cancelledDetails");
                   },
                   child: Text("See details",
                       style: TextStyle(fontSize: 13.sp, color: Colors.white)),

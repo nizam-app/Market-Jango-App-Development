@@ -17,7 +17,7 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
 
   void _showAttributeMenu(BuildContext context, Offset position) async {
     final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    Overlay.of(context).context.findRenderObject() as RenderBox;
 
     final value = await showMenu<String>(
       context: context,
@@ -27,23 +27,10 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
         overlay.size.width - position.dx,
         overlay.size.height - position.dy,
       ),
-      items: [
-         PopupMenuItem(value: "Color", child: InkWell(
-          onTap: (){
-            context.push("/vendorProductColor");
-          },
-          child: Text("Color"))),
-         PopupMenuItem(value: "Size", child: InkWell(
-          onTap: (){
-            context.push("/myProductSizeScreen");
-          },
-          child: Text("Size"))),
-         PopupMenuItem(value: "Number", child: InkWell(
-          onTap: (){
-            context.push("/vendorProductColorName"); 
-          },
-          child: Text("Number"))),
-         PopupMenuItem(value: "Others", child: Text("Others")),
+      items: const [
+        PopupMenuItem(value: "Color", child: Text("Color")),
+        PopupMenuItem(value: "Size", child: Text("Size")),
+        PopupMenuItem(value: "Others", child: Text("Others")),
       ],
     );
 
@@ -52,25 +39,38 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
         attributes.add(value);
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("$value attribute added!")));
+      /// Navigation
+      if (value == "Color") {
+        context.push("/myProductColorScreen");
+      } else if (value == "Size") {
+        context.push("/myProductSizeScreen");
+      }
+     
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("$value attribute added!")),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+     
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomBackButton(),
-              Text(
-                "My Products",
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+              Row(
+                children: [
+                         CustomBackButton() , 
+                  Text(
+                    "My Products",
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
               SizedBox(height: 12.h),
 
@@ -96,9 +96,6 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
 
               /// Add custom attribute
               GestureDetector(
-                onTap: () {
-                  context.push("");
-                },
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 12.w,
@@ -111,25 +108,14 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                     Text("Add your custom attribute"),
-                      
+                      const Text("Add your custom attribute"),
                       InkWell(
-                        onTapDown: (details){
+                        onTapDown: (details) {
                           _showAttributeMenu(context, details.globalPosition);
                         },
-                        child: Container(
-                          height: 20.w,
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey,width: 1)
-                          ),
-                        ),
-                      ), 
-                      InkWell(
-                        onTap: (){
-
-                        },
-                        child: Icon(Icons.add)),
+                        child:   Icon(Icons.add),
+                      ),
+                     
                     ],
                   ),
                 ),
@@ -152,7 +138,7 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
                 itemBuilder: (context, index) {
                   return _ProductCard(
                     imageUrl:
-                        "lib/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart",
+                    "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600", // ✅ placeholder image
                     title: "Flowy summer dress",
                     category: "Fashion",
                     price: "\$65",
@@ -280,13 +266,13 @@ class _ProductCard extends StatelessWidget {
 
   void _showPopupMenu(BuildContext context, Offset position) async {
     final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    Overlay.of(context).context.findRenderObject() as RenderBox;
 
     final value = await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(
-        position.dx, // X position = icon position
-        position.dy, // Y position = icon position
+        position.dx, // X position
+        position.dy, // Y position
         overlay.size.width - position.dx,
         overlay.size.height - position.dy,
       ),
@@ -295,9 +281,9 @@ class _ProductCard extends StatelessWidget {
           value: "edit",
           child: Row(
             children: [
-              Icon(Icons.edit, color: Colors.black),
+              const Icon(Icons.edit, color: Colors.black),
               SizedBox(width: 8.w),
-              Text("Edit"),
+              const Text("Edit"),
             ],
           ),
         ),
@@ -305,9 +291,9 @@ class _ProductCard extends StatelessWidget {
           value: "delete",
           child: Row(
             children: [
-              Icon(Icons.delete, color: Colors.black),
+              const Icon(Icons.delete, color: Colors.black),
               SizedBox(width: 8.w),
-              Text("Delete"),
+              const Text("Delete"),
             ],
           ),
         ),
@@ -317,13 +303,11 @@ class _ProductCard extends StatelessWidget {
     );
 
     if (value == "edit") {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Edit clicked")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Edit clicked")));
     } else if (value == "delete") {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Delete clicked")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Delete clicked")));
     }
   }
 }

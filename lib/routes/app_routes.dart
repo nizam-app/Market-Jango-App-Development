@@ -45,6 +45,7 @@ import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
@@ -65,8 +66,6 @@ import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
-import 'package:market_jango/features/vendor/screens/vendor_product_color/screen/vendor_product_color.dart';
-
 import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/screen/product_edite_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
@@ -211,7 +210,13 @@ GoRoute(
     builder: (context,state)=>const VendorOrderPending(),
      ),
 
-     GoRoute(
+    GoRoute(
+      path:AsignToOrderDriver.routeName,
+      name: 'assign_order_driver',
+      builder: (context,state)=>const AsignToOrderDriver(),
+    ),
+
+    GoRoute(
      path:VendorAssignedOrder.routeName,
     name: 'vendorOrderAssigned',
     builder: (context,state)=>const VendorAssignedOrder(),
@@ -275,11 +280,7 @@ GoRoute(
     builder: (context,state)=>const VendorMyProductScreen(),
      ),
 
-  GoRoute(
-    path:VendorProductColor.routeName,
-    name: 'vendorProductColor',
-    builder: (context,state)=> VendorProductColor(),
-     ),
+ 
   GoRoute(
     path:VendorProductColorName.routeName,
     name: 'vendorProductColorName',

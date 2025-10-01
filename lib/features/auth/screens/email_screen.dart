@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
 import 'package:market_jango/features/auth/screens/password_screen.dart';
 
 class EmailScreen extends StatelessWidget {
@@ -52,7 +53,10 @@ class EmailText extends StatelessWidget {
         ),
         SizedBox(height: 24.h),
         TextFormField(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: emailValidator,
           decoration: InputDecoration(
+            isDense: true,
             hintText: "Email",
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.r),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 
 class Edit_Widget extends StatelessWidget {
   const Edit_Widget({

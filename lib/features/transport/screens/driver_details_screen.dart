@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class DriverDetailsScreen extends StatelessWidget {
@@ -152,7 +153,9 @@ class DriverDetailsScreen extends StatelessWidget {
                       ),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      context.push(GlobalMassageScreen.routeName) ;
+                    },
                     child: Text("Send Message",
                         style: TextStyle(fontSize: 14.sp, color: Colors.white)),
                   ),

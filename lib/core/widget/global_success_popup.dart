@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+
+import '../../features/navbar/screen/transport_bottom_nav_bar.dart';
 
 class BookingSuccessPopup {
   static void show(BuildContext context,String massage) {
@@ -43,7 +47,8 @@ class BookingSuccessPopup {
 
                 GestureDetector(
                   onTap: () {
-                    context.push("/transport_bottom_nav_bar");
+                   // context.push(BuyerBottomNavBar.routeName);
+                    context.pop(); 
 
                   },
                   child: Text(
@@ -55,6 +60,34 @@ class BookingSuccessPopup {
                     ),
                   ),
                 ),
+
+                // GestureDetector(
+                //   onTap: () {
+                //
+                //     String role = "buyer" ;
+                //     if (role == "buyer") {
+                //       context.push(BuyerBottomNavBar.routeName);
+                //     } else if (role == "vendor") {
+                //       context.push(VendorBottomNav.routeName);
+                //     } else if (role == "transport") {
+                //       context.push(TransportBottomNavBar.routeName);
+                //     } else {
+                //       // fallback
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         const SnackBar(content: Text("Invalid role")),
+                //       );
+                //     }
+                //   },
+                //   child: Text(
+                //     "Go to Home",
+                //     style: TextStyle(
+                //       fontSize: 15.sp,
+                //       fontWeight: FontWeight.w600,
+                //       color: Colors.orange,
+                //     ),
+                //   ),
+                // )
+
               ],
             ),
           ),

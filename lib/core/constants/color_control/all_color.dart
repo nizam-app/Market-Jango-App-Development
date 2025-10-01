@@ -7,6 +7,7 @@ class AllColor {
   static final Color orange700 =  Colors.orange.shade700;
   static final Color outerAlinment =  Color(0xffFAC75D);
   static final Color red =  Colors.red;
+  static final Color red200 =  Colors.red.shade200;
 
 
   static final Color orange =  Colors.orange;
@@ -21,6 +22,7 @@ class AllColor {
 
  static final Color green300 = const Color(0xFF5D768A);
  static final Color green500 = const Color.fromRGBO(13, 50, 80, 1);
+ static final Color green =  const Color.fromARGB(255, 12, 88, 14);
 
 
 

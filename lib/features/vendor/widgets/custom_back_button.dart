@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomBackButton extends StatelessWidget {
   const CustomBackButton({
@@ -10,7 +11,7 @@ class CustomBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return  GestureDetector(
         onTap: (){
-      Navigator.pop(context);
+     context.pop() ;
     },
     child: Container(
       height: 24.w,

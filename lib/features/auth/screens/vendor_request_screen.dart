@@ -102,7 +102,9 @@ class _VendorRequestTextState extends State<VendorRequestText> {
         SizedBox(height: 28.h),
 
         TextFormField(
-          decoration: InputDecoration(hintText: 'Enter your Business Name'),
+          decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Enter your Business Name'),
         ),
         SizedBox(height: 30.h),
       ],
@@ -120,7 +122,7 @@ class ChooseBusinessType extends StatefulWidget {
 class _ChooseBusinessType extends State<ChooseBusinessType> {
   String? selectedUserType;
 
-  final List<String> businessTypes = [ 'Buyer', 'Transport', 'Vendor', 'Driver'];
+  final List<String> businessTypes = [ 'E-commerce', 'Electronics ', 'Fashion & Clothing', 'Beauty & Cosmetics', 'Plumbers', 'Electricians', 'Painters'];
 
   @override
   Widget build(BuildContext context) {
@@ -192,13 +194,16 @@ class _ChooseBusinessType extends State<ChooseBusinessType> {
         SizedBox(height: 28.h),
 
         TextFormField(
-          decoration: InputDecoration(hintText: 'Enter your full address'),
+          decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Enter your full address'),
         ),
         SizedBox(height: 28.h),
         Text("Upload your documents", style: textTheme.bodyMedium),
         SizedBox(height: 12.h),
         TextFormField(
           decoration: InputDecoration(
+            isDense: true,
             hintText: 'Upload Multiple Images ',
             suffixIcon: Icon(Icons.upload_file),
           ),

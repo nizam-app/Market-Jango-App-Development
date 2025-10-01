@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomNewProduct extends StatelessWidget {
   const CustomNewProduct({
@@ -30,12 +32,15 @@ class CustomNewProduct extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           child: Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.r),
-                child: Image.asset(
-                  '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
-                  fit: BoxFit.contain,
+              InkWell(
+                onTap: (){context.push(ProductDetails.routeName);},
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.asset(
+                    '${ImagePath.justForYouImage}', // আপনার ইমেজ পাথ দিন এখানে
+                    fit: BoxFit.contain,
 
+                  ),
                 ),
               ),
               // Discount Tag

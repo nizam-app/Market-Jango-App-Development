@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+
+import 'driver_traking_screen.dart';
+
 
 class OrderDetailsScreen extends StatelessWidget {
   const OrderDetailsScreen({super.key, });
@@ -273,4 +275,3 @@ class _FilledButton extends StatelessWidget {
     );
   }
 }
-

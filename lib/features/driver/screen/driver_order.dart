@@ -346,7 +346,7 @@ class _StatusPill extends StatelessWidget {
         text = 'Pending';
         break;
       case OrderStatus.onTheWay:
-        border = AllColor.yellow500;
+        border = AllColor.orange500;
         text = 'On the way';
         break;
     }

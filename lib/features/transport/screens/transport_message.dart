@@ -3,8 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/chat_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/data/chat_data.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/widget/custom_textfromfield.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/chat_data.dart';
+import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 
 class TransportMessage extends StatefulWidget {
   const TransportMessage({super.key});

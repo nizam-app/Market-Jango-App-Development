@@ -19,6 +19,7 @@ TextTheme get textTheme {
       fontWeight: FontWeight.w600,
       color: AllColor.green500
     ),
+    headlineLarge: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w800, color: AllColor.black),
     headlineMedium: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w400

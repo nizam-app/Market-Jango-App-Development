@@ -2,10 +2,12 @@
 import 'package:flutter/material.dart';
 class AllColor {
  static final Color transparent =  Colors.transparent;
- static final Color yellow50 = const Color(0xFFFEF8EB);
-  static final Color yellow500 = const Color(0xFFF9B935);
-  static final Color yellow700 =  Color(0xffB18326);
+ static final Color orange50 =  Colors.orange.shade50;
+  static final Color orange500 =  Colors.orange.shade500;
+  static final Color orange700 =  Colors.orange.shade700;
   static final Color outerAlinment =  Color(0xffFAC75D);
+  static final Color red =  Colors.red;
+  static final Color red200 =  Colors.red.shade200;
 
 
   static final Color orange =  Colors.orange;
@@ -20,6 +22,7 @@ class AllColor {
 
  static final Color green300 = const Color(0xFF5D768A);
  static final Color green500 = const Color.fromRGBO(13, 50, 80, 1);
+ static final Color green =  const Color.fromARGB(255, 12, 88, 14);
 
 
 
@@ -47,6 +50,7 @@ class AllColor {
  static final blue200= Colors.blue.shade200;
  static final blue500 = Colors.blue.shade500;
  static final blue900 = Colors.blue.shade900;
+ static final blueGrey900 = Colors.blueGrey.shade900;
 
 
 
@@ -61,5 +65,3 @@ class AllColor {
   
 
 }
-
-

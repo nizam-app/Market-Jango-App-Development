@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/widget/bottom_nav_bar.dart';
-import 'package:market_jango/core/widget/driver_bottom_nav_bar.dart';
-import 'package:market_jango/core/widget/transport_bottom_nav_bar.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
+import 'package:market_jango/features/auth/screens/account_request.dart';
 import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/chat_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
-import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
-import 'package:market_jango/features/buyer/screens/vandor/vandor_profile_screen.dart';
+import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
-import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -26,7 +30,7 @@ import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_setting.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
-import 'package:market_jango/features/settings/screens/settings_screen.dart';
+import 'package:market_jango/core/screen/global_profile_screen.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
@@ -40,11 +44,11 @@ import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
-
-import 'package:market_jango/features/vendor/common/main/vendor_bottom_nav.dart';
-import 'package:market_jango/features/vendor/screens/product_edit_screen.dart';
-
-
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
+import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
@@ -61,11 +65,28 @@ import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
-import 'package:market_jango/features/transport/screens/transport_tracking.dart';
-import 'package:market_jango/features/transport/screens/transport_tracking_screen.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/screen/product_edite_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
+import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
+import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
+import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
+import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
+import 'package:market_jango/features/vendor/screens/vendor_setting/screen/vendor_settings.dart';
+import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
+import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
-import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/login/screen/login_screen.dart';
+import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: SplashScreen.routeName,
@@ -76,7 +97,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: LoginScreen.routeName,
       name: 'loginScreen',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) =>  LoginScreen(),
     ),
 
     GoRoute(
@@ -102,11 +123,16 @@ final GoRouter router = GoRouter(
     ),
 
 
- 
-     GoRoute(path:NameScreen.routeName,
-    name: 'nameScreen',
-    builder: (context,state)=>const NameScreen(),
-     ),
+
+    GoRoute(
+      path: '${NameScreen.routeName}/:role',
+      name: NameScreen.routeName,
+      builder: (context, state) {
+        final role = state.pathParameters['role'] ?? '';
+        return NameScreen(roleName: role);
+      },
+
+    ),
     GoRoute(path:UserScreen.routeName,
     name: 'userScreen',
     builder: (context,state)=>const UserScreen(),
@@ -121,6 +147,13 @@ final GoRouter router = GoRouter(
     name: 'passwordScreen',
     builder: (context,state)=>const PasswordScreen(),
      ),
+
+     GoRoute(
+      path:AccountRequest.routeName,
+      name: 'accountRequest',
+      builder: (context,state)=>const AccountRequest(),
+     ), 
+
   
     GoRoute(
       path:VendorBottomNav.routeName,
@@ -139,6 +172,123 @@ final GoRouter router = GoRouter(
     name: 'vendorRequstFrom',
     builder: (context,state)=>const VendorRequestFrom(),
      ),
+
+
+     GoRoute(
+     path:VendorRequestScreen.routeName,
+    name: 'vendor_request',
+    builder: (context,state)=>const VendorRequestScreen(),
+     ),
+
+GoRoute(
+     path:VendorNotifications.routeName,
+    name: 'vendor_notificatons',
+    builder: (context,state)=>const VendorNotifications(),
+     ),
+
+     GoRoute(
+     path:VendorSettings.routeName,
+    name: 'vendor_setting',
+    builder: (context,state)=>const VendorSettings(),
+     ),
+
+     GoRoute(
+     path:VendorEditProfile.routeName,
+    name: 'vendorEditProfile',
+    builder: (context,state)=>const VendorEditProfile(),
+     ),
+
+ GoRoute(
+     path:VendorTransportScreen.routeName,
+    name: 'vendorTransporter',
+    builder: (context,state)=>const VendorTransportScreen(),
+     ),
+
+     GoRoute(
+     path:VendorOrderPending.routeName,
+    name: 'vendorOrderPending',
+    builder: (context,state)=>const VendorOrderPending(),
+     ),
+
+    GoRoute(
+      path:AsignToOrderDriver.routeName,
+      name: 'assign_order_driver',
+      builder: (context,state)=>const AsignToOrderDriver(),
+    ),
+
+    GoRoute(
+     path:VendorAssignedOrder.routeName,
+    name: 'vendorOrderAssigned',
+    builder: (context,state)=>const VendorAssignedOrder(),
+     ),
+    
+         GoRoute(
+     path:VendorOrderComplete.routeName,
+    name: 'vendorOrderCompleted',
+    builder: (context,state)=>const VendorOrderComplete(),
+     ),
+ 
+  GoRoute(
+     path:VendorOrderCancel.routeName,
+    name: 'vendorOrderCancel',
+    builder: (context,state)=>const VendorOrderCancel(),
+     ),
+
+      GoRoute(
+     path:VendorSalePlatformScreen.routeName,
+    name: 'vendorSalePlatform',
+    builder: (context,state)=>const VendorSalePlatformScreen(),
+     ),
+
+     
+      GoRoute(
+     path:VendorDriverList.routeName,
+    name: 'vendorDriverList',
+    builder: (context,state)=>const VendorDriverList(),
+     ), 
+
+
+      GoRoute(
+     path:VendorTransportDetails.routeName,
+    name: 'vendorTransportDetails',
+    builder: (context,state)=>const VendorTransportDetails(),
+     ),
+
+      GoRoute(
+     path:VendorShipmentsScreen.routeName,
+    name: 'vendortrack_shipments',
+    builder: (context,state)=>const VendorShipmentsScreen(),
+     ),
+
+    GoRoute(
+    path:VendorPendingScreen.routeName,
+    name: 'vendorPendingScreen',
+    builder: (context,state)=>const VendorPendingScreen(),
+     ),
+
+
+      GoRoute(
+     path:VendorCancelledScreen.routeName,
+    name: 'vendorCancelledScreen',
+    builder: (context,state)=>const VendorCancelledScreen(),
+     ),
+
+
+    GoRoute(
+    path:VendorMyProductScreen.routeName,
+    name: 'vendorMyProductScreen',
+    builder: (context,state)=>const VendorMyProductScreen(),
+     ),
+
+ 
+  GoRoute(
+    path:VendorProductColorName.routeName,
+    name: 'vendorProductColorName',
+    builder: (context,state)=> VendorProductColorName(),
+     ),
+
+
+
 
     GoRoute(
       path: CodeScreen.routeName,
@@ -176,9 +326,9 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: BuyerMassageScreen.routeName,
+      path: GlobalMassageScreen.routeName,
       name: "buyer_massage_screen",
-      builder: (context, state) => const BuyerMassageScreen(),
+      builder: (context, state) => const GlobalMassageScreen(),
     ),
 
     GoRoute(
@@ -223,9 +373,10 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: TransportTracking.routeName,
-      name: 'transport_tracking',
-      builder: (context, state) => TransportTracking(),
+      path: '${GlobalTrackingScreen1.routeName}/:screenName',
+      name: GlobalTrackingScreen1.routeName,
+      builder: (context, state) =>
+          GlobalTrackingScreen1(screenName: state.pathParameters['screenName']!),
     ),
 
     GoRoute(
@@ -238,12 +389,6 @@ final GoRouter router = GoRouter(
       path: TransportBooking.routeName,
       name: 'transport_booking',
       builder: (context, state) => TransportBooking(),
-    ),
-
-    GoRoute(
-      path: TransportTrackingScreen.routeName,
-      name: 'transport_booking3',
-      builder: (context, state) => TransportTrackingScreen(),
     ),
 
     GoRoute(
@@ -319,9 +464,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => CategoriesScreen(),
     ),
     GoRoute(
-      path: BottomNavBar.routeName,
+      path: BuyerBottomNavBar.routeName,
       name: 'bottom_nav_bar',
-      builder: (context, state) => const BottomNavBar(),
+      builder: (context, state) => const BuyerBottomNavBar(),
     ),
 
      GoRoute(
@@ -392,17 +537,12 @@ final GoRouter router = GoRouter(
     ),
 
 
-
-
+    
     GoRoute(
-      path: SeeNewItemsScreen.routeName,
-      name: SeeNewItemsScreen.routeName,
-      builder: (context, state) => const SeeNewItemsScreen(),
-    ),
-    GoRoute(
-      path: SeeJustForYouScreen.routeName,
+      path: "${SeeJustForYouScreen.routeName}/:screenName",
       name: SeeJustForYouScreen.routeName,
-      builder: (context, state) => const SeeJustForYouScreen(),
+      
+      builder: (context, state) =>  SeeJustForYouScreen(screenName: state.pathParameters["screenName"] ?? "Just for you",),
     ),
     GoRoute(
       path: ChatScreen.routeName,
@@ -420,9 +560,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const CategoryProductScreen(),
     ),
     GoRoute(
-      path: VendorProfileScreen.routeName,
-      name: VendorProfileScreen.routeName,
-      builder: (context, state) => const VendorProfileScreen(),
+      path: BuyerVendorProfileScreen.routeName,
+      name: BuyerVendorProfileScreen.routeName,
+      builder: (context, state) => const BuyerVendorProfileScreen(),
     ),
     GoRoute(
       path: ReviewScreen.routeName,
@@ -436,9 +576,39 @@ final GoRouter router = GoRouter(
     ),GoRoute(
       path: BuyerPaymentScreen.routeName,
       name: BuyerPaymentScreen.routeName,
-      builder: (context, state) => const BuyerPaymentScreen(),
+      builder: (context, state) =>  BuyerPaymentScreen(),
+    ),GoRoute(
+      path: BuyerProfileEditScreen.routeName,
+      name: BuyerProfileEditScreen.routeName,
+      builder: (context, state) =>  BuyerProfileEditScreen(),
+    ),GoRoute(
+      path: BuyerOrderPage.routeName,
+      name: BuyerOrderPage.routeName,
+      builder: (context, state) =>  BuyerOrderPage(),
+    ),GoRoute(
+      path: BuyerOrderHistoryScreen.routeName,
+      name: BuyerOrderHistoryScreen.routeName,
+      builder: (context, state) =>  BuyerOrderHistoryScreen(),
+    ),GoRoute(
+      path: MyProductColorScreen.routeName,
+      name: MyProductColorScreen.routeName,
+      builder: (context, state) =>  MyProductColorScreen(),
     ),
-    
+GoRoute(
+      path: MyProductSizeScreen.routeName,
+      name: MyProductSizeScreen.routeName,
+      builder: (context, state) =>  MyProductSizeScreen(),
+    ),
+GoRoute(
+      path: ProductEditePage.routeName,
+      name: ProductEditePage.routeName,
+      builder: (context, state) =>  ProductEditePage(),
+    ),GoRoute(
+      path: CategoryAddPage.routeName,
+      name: CategoryAddPage.routeName,
+      builder: (context, state) =>  CategoryAddPage(),
+    ),
+
 
 
   ],

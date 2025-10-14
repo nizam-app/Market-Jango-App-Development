@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
-import 'package:market_jango/features/buyer/screens/prement/buyer_payment_screen.dart';
+import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -70,7 +69,7 @@ class CartScreen extends StatelessWidget {
               },
             ),
           ),
-          _buildTotalCheckoutSection(totalPrice, context),
+          CustomTotalCheckoutSection(totalPrice: totalPrice, context: context),
         ],
       ),
     );
@@ -285,65 +284,4 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalCheckoutSection(double totalPrice,BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-      decoration: BoxDecoration(
-        color: AllColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: AllColor.black.withOpacity(0.2),
-            // Slightly more prominent shadow for bottom bar
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: Offset(0, -5.h),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Total',
-                style: TextStyle(
-                  color: AllColor.grey,
-                  fontSize: 14.sp,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                '\$${totalPrice.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.sp,
-                  color: AllColor.black,
-                ),
-              ),
-            ],
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.push(BuyerPaymentScreen.routeName) ;
-
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AllColor.black, // Using AllColor
-              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-              textStyle: TextStyle(
-                  fontSize: 16.sp, fontWeight: FontWeight.bold),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.r),
-              ),
-            ),
-            child: Text('Checkout',
-                style: TextStyle(color: AllColor.white, fontSize: 16.sp)),
-          ),
-        ],
-      ),
-    );
-  }
 }

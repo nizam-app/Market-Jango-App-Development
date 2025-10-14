@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomTopProducts extends ConsumerWidget {
   CustomTopProducts({
@@ -27,10 +29,13 @@ class CustomTopProducts extends ConsumerWidget {
               itemCount: topProducts.length, // Example item count
               itemBuilder: (context, index) {
                 final allTopProduct = topProducts[index];
-                return CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
-                  child: CircleAvatar(
-                    radius: 24.r,
-                    backgroundImage: AssetImage("${allTopProduct.image}"),
+                return InkWell(
+                  onTap: (){context.push(ProductDetails.routeName);},
+                  child: CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
+                    child: CircleAvatar(
+                      radius: 24.r,
+                      backgroundImage: AssetImage("${allTopProduct.image}"),
+                    ),
                   ),
                 );
               }

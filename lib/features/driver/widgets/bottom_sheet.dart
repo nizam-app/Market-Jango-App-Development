@@ -107,7 +107,7 @@ class _BottomSheetState extends State<Bottom_Sheet> {
                     hintText: 'Enter your Location',
                     hintStyle: TextStyle(color: AllColor.textHintColor),
                     filled: true,
-                    fillColor: AllColor.yellow50,
+                    fillColor: AllColor.orange50,
                     contentPadding:
                          EdgeInsets.symmetric(horizontal: 18.h, vertical: 14.w),
                     enabledBorder: OutlineInputBorder(
@@ -118,7 +118,7 @@ class _BottomSheetState extends State<Bottom_Sheet> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                       borderSide:
-                          BorderSide(color: AllColor.yellow500, width: 1.6),
+                          BorderSide(color: AllColor.orange500, width: 1.6),
                     ),
                   ),
                 ),

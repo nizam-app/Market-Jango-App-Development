@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class TransportCancelledDetails extends StatefulWidget {
@@ -14,11 +14,11 @@ class TransportCancelledDetails extends StatefulWidget {
 }
 
 class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
-  GoogleMapController? mapController;
-
-  final LatLng pickupLocation = const LatLng(37.7749, -122.4194);
-
-  final LatLng dropoffLocation = const LatLng(37.8044, -122.2711);
+  // GoogleMapController? mapController;
+  //
+  // final LatLng pickupLocation = const LatLng(37.7749, -122.4194);
+  //
+  // final LatLng dropoffLocation = const LatLng(37.8044, -122.2711);
 
   @override
   Widget build(BuildContext context) {
@@ -71,47 +71,47 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
             SizedBox(height: 20.h),
 
             ///Google map Integarion 
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: SizedBox(
-                height: 200.h,
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: pickupLocation,
-                    zoom: 12,
-                  ),
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                  },
-                  markers: {
-                    Marker(
-                      markerId: const MarkerId("pickup"),
-                      position: pickupLocation,
-                      infoWindow: const InfoWindow(title: "Pickup"),
-                      icon: BitmapDescriptor.defaultMarkerWithHue(
-                        BitmapDescriptor.hueGreen,
-                      ),
-                    ),
-                    Marker(
-                      markerId: const MarkerId("dropoff"),
-                      position: dropoffLocation,
-                      infoWindow: const InfoWindow(title: "Drop-off"),
-                      icon: BitmapDescriptor.defaultMarkerWithHue(
-                        BitmapDescriptor.hueRed,
-                      ),
-                    ),
-                  },
-                  // 👇 Add these to fix scroll conflict
-                  gestureRecognizers: {
-                    Factory<OneSequenceGestureRecognizer>(
-                      () => EagerGestureRecognizer(),
-                    ),
-                  },
-                  zoomControlsEnabled: false,
-                  myLocationButtonEnabled: false,
-                ),
-              ),
-            ),
+            // ClipRRect(
+            //   borderRadius: BorderRadius.circular(12.r),
+            //   child: SizedBox(
+            //     height: 200.h,
+            //     child: GoogleMap(
+            //       initialCameraPosition: CameraPosition(
+            //         target: pickupLocation,
+            //         zoom: 12,
+            //       ),
+            //       onMapCreated: (controller) {
+            //         mapController = controller;
+            //       },
+            //       markers: {
+            //         Marker(
+            //           markerId: const MarkerId("pickup"),
+            //           position: pickupLocation,
+            //           infoWindow: const InfoWindow(title: "Pickup"),
+            //           icon: BitmapDescriptor.defaultMarkerWithHue(
+            //             BitmapDescriptor.hueGreen,
+            //           ),
+            //         ),
+            //         Marker(
+            //           markerId: const MarkerId("dropoff"),
+            //           position: dropoffLocation,
+            //           infoWindow: const InfoWindow(title: "Drop-off"),
+            //           icon: BitmapDescriptor.defaultMarkerWithHue(
+            //             BitmapDescriptor.hueRed,
+            //           ),
+            //         ),
+            //       },
+            //       //  Add these to fix scroll conflict
+            //       gestureRecognizers: {
+            //         Factory<OneSequenceGestureRecognizer>(
+            //           () => EagerGestureRecognizer(),
+            //         ),
+            //       },
+            //       zoomControlsEnabled: false,
+            //       myLocationButtonEnabled: false,
+            //     ),
+            //   ),
+            // ),
 
             SizedBox(height: 20.h),
 
@@ -173,7 +173,9 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
                   ),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.pop(); 
+                },
                 child: Text("Cancelled",
                     style:
                         TextStyle(fontSize: 15.sp, color: Colors.white)),

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import 'package:market_jango/features/buyer/screens/buyer_massage/screen/buyer_massage_screen.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
-import 'package:market_jango/features/settings/screens/settings_screen.dart';
+import 'package:market_jango/core/screen/global_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 
 
@@ -18,7 +18,7 @@ class BottomNavController extends GetxController {
      NotificationsScreen(),
    // const TransportScreen(),
 
-    const BuyerMassageScreen(),
+    const GlobalMassageScreen(),
     NotificationsScreen(),
     const SettingScreen(),
   ];

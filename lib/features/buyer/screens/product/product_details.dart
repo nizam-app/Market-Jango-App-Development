@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
-import 'package:market_jango/features/buyer/screens/see_new_items_screen.dart';
+import 'package:market_jango/features/buyer/review/review_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
+import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 class ProductDetails extends StatelessWidget {
@@ -26,7 +30,8 @@ class ProductDetails extends StatelessWidget {
                   children: [
                     const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
                     CustomTopProducts(),
-                    const SeeMoreButton(name: "New Items", seeMoreAction: null),
+                    SeeMoreButton(name: "New Items", seeMoreAction: (){context.pushNamed(
+                        SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}),
                     const CustomNewItemsShow(),
                   ],
                 ),
@@ -329,18 +334,23 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
           // Store + chat
           Row(
             children: [
-              CircleAvatar(radius: 25,
-              backgroundImage: AssetImage("assets/images/promo2.jpg"),),
+              InkWell(onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
+                child: CircleAvatar(radius: 25,
+                backgroundImage: AssetImage("assets/images/promo2.jpg"),),
+              ),
               SizedBox(width: 20.w,)    ,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    storeName,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AllColor.black,
+                  InkWell(
+                    onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
+                    child: Text(
+                      storeName,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColor.black,
+                      ),
                     ),
                   ),
                   SizedBox(height: 8.h),
@@ -362,19 +372,22 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       SizedBox(width: 6.w),
 
                       // Small badge around review count like in screenshot
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          // color: AllColor.badgeBg,
-                          borderRadius: BorderRadius.circular(6.r),
-                          border: Border.all(color: AllColor.black, width: 0.8),
-                        ),
-                        child: Text(
-                          '$reviewCount reviews',
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: AllColor.black,
-                            fontWeight: FontWeight.w500,
+                      InkWell(
+                        onTap: (){context.push(ReviewScreen.routeName);},
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            // color: AllColor.badgeBg,
+                            borderRadius: BorderRadius.circular(6.r),
+                            border: Border.all(color: AllColor.black, width: 0.8),
+                          ),
+                          child: Text(
+                            '$reviewCount reviews',
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              color: AllColor.black,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
@@ -397,7 +410,9 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                         color: AllColor.blue,
                       ),
                       SizedBox(width: 5.w,),
-                      Text("Chat naw",style: TextStyle(color: Colors.blue,fontSize: 12),)
+                      InkWell(
+                        onTap: (){context.push(ChatScreen.routeName);},
+                          child: Text("Chat naw",style: TextStyle(color: Colors.blue,fontSize: 12),))
                     ],
                   ),
                 ),
@@ -509,7 +524,7 @@ class _QuantityBuyBarState extends State<QuantityBuyBar> {
             width: 180.w,   // ⬅️ fixed width, not Expanded → horizontally smaller
             height: 44.h,   // ⬅️ vertical same as আগে
             child: ElevatedButton(
-              onPressed: () => widget.onBuyNow(qty),
+              onPressed: () {context.push(BuyerPaymentScreen.routeName);},
               style: ElevatedButton.styleFrom(
                 backgroundColor: AllColor.orange,
                 shape: RoundedRectangleBorder(

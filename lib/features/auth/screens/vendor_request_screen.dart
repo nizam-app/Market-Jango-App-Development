@@ -3,11 +3,10 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/countries.dart' hide Country;
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
 
 class VendorRequestScreen extends StatelessWidget {
   const VendorRequestScreen({super.key});
@@ -83,7 +82,7 @@ class _VendorRequestTextState extends State<VendorRequestText> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
-              color: AllColor.yellow50,
+              color: AllColor.orange50,
               border: Border.all(color: AllColor.outerAlinment),
               borderRadius: BorderRadius.circular(30.r),
             ),
@@ -103,7 +102,9 @@ class _VendorRequestTextState extends State<VendorRequestText> {
         SizedBox(height: 28.h),
 
         TextFormField(
-          decoration: InputDecoration(hintText: 'Enter your Business Name'),
+          decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Enter your Business Name'),
         ),
         SizedBox(height: 30.h),
       ],
@@ -121,7 +122,7 @@ class ChooseBusinessType extends StatefulWidget {
 class _ChooseBusinessType extends State<ChooseBusinessType> {
   String? selectedUserType;
 
-  final List<String> businessTypes = [ 'Buyer', 'Transport', 'Vendor', 'Driver'];
+  final List<String> businessTypes = [ 'E-commerce', 'Electronics ', 'Fashion & Clothing', 'Beauty & Cosmetics', 'Plumbers', 'Electricians', 'Painters'];
 
   @override
   Widget build(BuildContext context) {
@@ -193,13 +194,16 @@ class _ChooseBusinessType extends State<ChooseBusinessType> {
         SizedBox(height: 28.h),
 
         TextFormField(
-          decoration: InputDecoration(hintText: 'Enter your full address'),
+          decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Enter your full address'),
         ),
         SizedBox(height: 28.h),
         Text("Upload your documents", style: textTheme.bodyMedium),
         SizedBox(height: 12.h),
         TextFormField(
           decoration: InputDecoration(
+            isDense: true,
             hintText: 'Upload Multiple Images ',
             suffixIcon: Icon(Icons.upload_file),
           ),
@@ -225,10 +229,10 @@ class NextBotton extends StatelessWidget {
   }
 
   void nextButonDone(BuildContext context) {
-    goToCarInfoScreen(context);
+    goToPhoneNumberScreen(context);
   }
 
-  void goToCarInfoScreen(BuildContext context) {
-    context.push(CarInfoScreen.routeName);
+  void goToPhoneNumberScreen(BuildContext context) {
+    context.push(PhoneNumberScreen.routeName);
   }
 }

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl_phone_field/phone_number.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/phone_number.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
+import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 
 class NameScreen extends StatelessWidget {
-  const NameScreen({super.key});
+  const NameScreen({super.key, required this.roleName});
+  final String roleName;
   static final String routeName = '/nameScreen';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,11 +22,12 @@ class NameScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.w),
-            child: Column(children: [
+            child: Column(
+                children: [
                SizedBox(height: 30.h),
                CustomBackButton(),
               NameText(), 
-              NextBotton()]),
+              NextBotton(role: roleName,)]),
           ),
         ),
       ),
@@ -37,7 +42,7 @@ class NameText extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: 20.h),
         Center(child: Text("What's your name", style: textTheme.titleLarge)),
@@ -45,6 +50,7 @@ class NameText extends StatelessWidget {
         TextFormField(
           keyboardType: TextInputType.name,
           decoration: InputDecoration(
+                                                      
             hintText: "Enter your name",
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.r),
@@ -57,15 +63,16 @@ class NameText extends StatelessWidget {
 }
 
 class NextBotton extends StatelessWidget {
-  const NextBotton({super.key});
+  const NextBotton({super.key, required this.role});
+  final String role;
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(height: 12.h),
         Text(
-          "This is ho it'll appear on your profile  ",
-          style: Theme.of(context).textTheme.titleSmall,
+          "This is ho it'll appear on your $role profile  ",            textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleSmall,     
         ),
 
         Text(
@@ -79,19 +86,22 @@ class NextBotton extends StatelessWidget {
         SizedBox(height: 40.h),
         CustomAuthButton(
           buttonText: "Next",
-          onTap: ()=> nextButonDone(context),  
+          onTap: ()=> nextButonDone(context,role),
            ),
       ],
     );
   }
 
 
-  void nextButonDone(BuildContext context) {
-    goToCarInfoScreen(context);
+  void nextButonDone(BuildContext context,String role) {
+    if (role == "Vendor") {
+          context.push(VendorRequestScreen.routeName) ;
+    }  else if(role == "Driver") {
+      context.push(CarInfoScreen.routeName) ;
+    }  else{
+           context.push(PhoneNumberScreen.routeName);
+    }
+
 
   }
-      void goToCarInfoScreen(BuildContext context) {
-    context.push(CarInfoScreen.routeName);
-  }
-
   }

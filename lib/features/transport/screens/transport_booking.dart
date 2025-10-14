@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 
 class TransportBooking extends StatefulWidget {
   const TransportBooking({super.key});
@@ -19,83 +21,86 @@ class _TransportBookingState extends State<TransportBooking> {
   Widget build(BuildContext context) {
     return Scaffold(
    
-      body: Column(
-        children: [
-          SizedBox(height: 30.h,), 
-          /// Tabs Row
-          SizedBox(
-            height: 55.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              itemCount: tabs.length,
-              separatorBuilder: (_, __) => SizedBox(width: 10.w),
-              itemBuilder: (context, index) {
-                final tab = tabs[index];
-                final bool isActive = selectedTab == tab;
-
-                return GestureDetector(
-                  onTap: () => setState(() => selectedTab = tab),
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                    decoration: BoxDecoration(
-                      color: isActive ? Colors.orange : Colors.white,
-                      borderRadius: BorderRadius.circular(30.r),
-                      border: Border.all(
-                          color:
-                              isActive ? Colors.orange : Colors.grey.shade400),
-                    ),
-                    child: Center(
-                      child: Text(
-                        tab,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
-                          color: isActive ? Colors.white : Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding:  EdgeInsets.symmetric(horizontal: 20.w),
+              child: Tuppertextandbackbutton(screenName: "My Booking"),
+            ),
+            SizedBox(
+              height: 55.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                itemCount: tabs.length,
+                separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                itemBuilder: (context, index) {
+                  final tab = tabs[index];
+                  final bool isActive = selectedTab == tab;
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedTab = tab),
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.orange.shade700 : Colors.white,
+                        borderRadius: BorderRadius.circular(30.r),
+                        border: Border.all(
+                            color:
+                                isActive ? Colors.orange.shade700 : Colors.grey.shade400),
+                      ),
+                      child: Center(
+                        child: Text(
+                          tab,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                            color: isActive ? Colors.white : Colors.black,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-
-          /// Booking List
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(16.w),
-              children: [
-                if (selectedTab == "All" || selectedTab == "Ongoing")
-                  _bookingCard(
-                      status: "Ongoing",
-                      statusColor: Colors.blue,
-                      showTrack: true),
-                if (selectedTab == "All" || selectedTab == "Completed")
-                  InkWell(
-                    onTap: (){
-                      context.push("/completedOrders"); 
-                    },
-                    child: _bookingCard(
-                        status: "Completed",
-                        statusColor: Colors.green,
-                        showTrack: false),
-                  ),
-                if (selectedTab == "All" || selectedTab == "Cancelled")
-                  InkWell(
-                    onTap: (){
-                      context.push("/cancelledOrders");
-                    },
-                    child: _bookingCard(
-                        status: "Cancelled",
-                        statusColor: Colors.red,
-                        showTrack: false),
-                  ),
-              ],
+        
+            /// Booking List
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.all(16.w),
+                children: [
+                  if (selectedTab == "All" || selectedTab == "Ongoing")
+                    _bookingCard(
+                        status: "Ongoing",
+                        statusColor: Colors.blue,
+                        showTrack: true),
+                  if (selectedTab == "All" || selectedTab == "Completed")
+                    InkWell(
+                      onTap: (){
+                        context.push("/completedOrders"); 
+                      },
+                      child: _bookingCard(
+                          status: "Completed",
+                          statusColor: Colors.green,
+                          showTrack: false),
+                    ),
+                  if (selectedTab == "All" || selectedTab == "Cancelled")
+                    InkWell(
+                      onTap: (){
+                        context.push("/cancelledOrders");
+                      },
+                      child: _bookingCard(
+                          status: "Cancelled",
+                          statusColor: Colors.red,
+                          showTrack: false),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -206,14 +211,14 @@ class _TransportBookingState extends State<TransportBooking> {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Colors.orange.shade700,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
-                    //context.push("/completedOrders"); 
+                    context.push("/cancelledDetails");
                   },
                   child: Text("See details",
                       style: TextStyle(fontSize: 13.sp, color: Colors.white)),
@@ -231,7 +236,9 @@ class _TransportBookingState extends State<TransportBooking> {
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                     ),
                     onPressed: () {
-                      context.push("/ongoingOrders");
+                      context.pushNamed(GlobalTrackingScreen1.routeName, pathParameters: {
+                        "screenName": "transport"
+                      });
                     },
                     child: Text("Track order",
                         style: TextStyle(fontSize: 13.sp, color: Colors.white)),

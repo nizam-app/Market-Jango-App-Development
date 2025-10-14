@@ -42,7 +42,7 @@ class SplashScreenText extends StatelessWidget {
         SizedBox(height: 48.h),
         Center(
           child: Text(
-            "One Marketplace,\n Endless Possibilities",
+            "One Marketplace,\n Endless Possibilities",textAlign: TextAlign.center,
             style: textTheme.titleLarge,
           ),
         ),

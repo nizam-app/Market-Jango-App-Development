@@ -37,8 +37,8 @@ class NumberText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-       
-       
+
+
         SizedBox(height: 20.h),
 
         Center(
@@ -62,7 +62,7 @@ class NumberText extends StatelessWidget {
         SizedBox(height: 28.h),
         Center(
           child: Text(
-            "we'll text you a cde to verify you're really you \n Message and data rates may apply. \n What happens if lyour number changes? ",
+            "we'll text you a cde to verify you're really you \n Message and data rates may apply. \n What happens if lyour number changes? ",textAlign: TextAlign.center,
             style: textTheme.titleSmall,
           ),
         ),

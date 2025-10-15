@@ -7,7 +7,7 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
-import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/car_info_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
@@ -36,7 +36,7 @@ import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
-import 'package:market_jango/features/auth/screens/password_screen.dart';
+import 'package:market_jango/features/auth/screens/recover_password_screen.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user.dart';
@@ -89,7 +89,7 @@ import '../features/auth/screens/login/screen/login_screen.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: NewPasswordScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -168,9 +168,9 @@ final GoRouter router = GoRouter(
     ),
 
    GoRoute(
-     path:VendorRequestFrom.routeName,
-    name: 'vendorRequstFrom',
-    builder: (context,state)=>const VendorRequestFrom(),
+     path:VendorRequestForm.routeName,
+    name: VendorRequestForm.routeName,
+    builder: (context,state)=>const VendorRequestForm(),
      ),
 
 

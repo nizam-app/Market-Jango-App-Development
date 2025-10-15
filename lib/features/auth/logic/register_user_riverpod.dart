@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/features/auth/data/user_type_selection_token_save.dart';
 import 'package:market_jango/features/auth/model/user_type_selection_model.dart';
 
 
-final registerUrl = AuthAPIController.userTypeSelection; // <-- change
+final registerUrl = AuthAPIController.registerTypeSelection; // <-- change
 // UI selected type
 final userTypeP = StateProvider<String>((_) => 'Buyer');
 

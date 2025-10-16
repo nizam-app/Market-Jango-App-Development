@@ -1,55 +1,80 @@
-// import 'package:go_router/go_router.dart';
-import 'package:flutter/widgets.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
+import 'package:market_jango/features/driver/screen/driver_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-enum Role { buyer, transport, vendor, driver }
+import '../../../../../core/constants/api_control/auth_api.dart';
+import '../../../../../core/widget/global_snackbar.dart';
+import '../../../../buyer/screens/home_screen.dart';
+import '../../../../transport/screens/transport_home.dart';
+import '../../../../vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 
-class User {
-  final String email, phone, password;
-  final Role role;
-  const User(this.email, this.phone, this.password, this.role);
-}
+Future<void> loginAndGoSingleRole({
+  required BuildContext context,
+  required String id,
+  required String password,
+}) async {
+  try {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(AuthAPIController.login),
+    );
 
-// Demo list (API দিলে এটা বাদ দিন)
-final users = <User>[
-  User('buyer@mail.com',  '+15550001', 'buyer123', Role.buyer),
-  User('vendor@mail.com', '+15550002', 'vendor123', Role.vendor),
-  User('driver@mail.com', '+15550003', 'driver123', Role.driver),
-  User('transport@mail.com',  '+15550004', 'transport123', Role.transport),
-];
+    request.fields['email'] = id;
+    request.fields['password'] = password;
 
-String _digits(String s) => s.replaceAll(RegExp(r'\D'), '');
-String _routeFor(Role r) => switch (r) {
-  Role.buyer     => BuyerBottomNavBar.routeName,
-  Role.transport => TransportBottomNavBar.routeName,
-  Role.vendor    => VendorBottomNav.routeName,
-  Role.driver    => DriverBottomNavBar.routeName,
-};
+    final response = await request.send();
+    final body = await response.stream.bytesToString();
+    final json = jsonDecode(body);
 
-/// ✅ Single-role login + navigate
-Future<void> loginAndGoSingleRole(
-    BuildContext context, {
-      required String id,        // email or phone
-      required String password,
-    }) async {
-  id = id.trim();
-  if (id.isEmpty || password.isEmpty) throw Exception('Enter email/phone and password');
+    Logger().i("🔐 Login Response: $json");
 
-  final isEmail = id.contains('@');
+    if (response.statusCode == 200 && json['status'] == 'success') {
+      final user = json['data']['user'];
+      final token = json['token'];
+      final userType = user['user_type'];
 
-  final u = users.firstWhere(
-        (e) => isEmail
-        ? e.email.toLowerCase() == id.toLowerCase()
-        : _digits(e.phone) == _digits(id),
-    orElse: () => throw Exception('Account not found'),
-  );
+      // ✅ Save token & user_type to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      await prefs.setString('user_type', userType);
 
-  if (u.password != password) throw Exception('Wrong password');
+      GlobalSnackbar.show(
+        context,
+        title: "Success",
+        message: "Login successful!",
+        type: CustomSnackType.success,
+      );
 
-  // একটাই রোল, তাই সরাসরি ওই রুটে যাও
-  context.go(_routeFor(u.role));
+      // ✅ Navigate according to user_type
+      switch (userType.toLowerCase()) {
+        case 'buyer':
+          context.go(BuyerHomeScreen.routeName);
+          break;
+        case 'vendor':
+          context.go(VendorHomeScreen.routeName);
+          break;
+        case 'driver':
+          context.go(DriverHomeScreen.routeName);
+          break;
+        case 'transport':
+          context.go(TransportHomeScreen.routeName);
+          break;
+        default:
+          GlobalSnackbar.show(context,
+              title: "Notice",
+              message: "Unknown role: $userType",
+              type: CustomSnackType.warning);
+      }
+    } else {
+      throw Exception(json['message'] ?? 'Login failed');
+    }
+  } catch (e) {
+    Logger().e("⛔ Login Error: $e");
+    GlobalSnackbar.show(context,
+        title: "Error", message: e.toString(), type: CustomSnackType.error);
+  }
 }

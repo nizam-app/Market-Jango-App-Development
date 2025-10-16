@@ -2,6 +2,7 @@ import 'global_api.dart';
 
 class AuthAPIController {
  static String _base_api = "$api/api";
+ static String login = "$api/login";
   static String registerTypeSelection = "${_base_api}/register-type";
   static String registerName= "${_base_api}/register-name";
   static String registerPhone= "${_base_api}/register-phone";
@@ -9,6 +10,6 @@ class AuthAPIController {
   static String registerVendorRequestStore= "${_base_api}/vendor/register";
   static String registerDriverCarInfo="${_base_api}/driver/register";
   static String phoneVerifyOtp="${_base_api}/user-verify-otp";
-
-  // static String userSignUp = "${_base_api}/signup";
+  static String resetPassword="${_base_api}/reset-password";
+  static String registerPassword="${_base_api}/register-password";
 }

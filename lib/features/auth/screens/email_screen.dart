@@ -8,7 +8,7 @@ import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
-import 'package:market_jango/features/auth/screens/recover_password_screen.dart';
+import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
 import '../logic/register_email_riverpod.dart';
 
 class EmailScreen extends ConsumerStatefulWidget {

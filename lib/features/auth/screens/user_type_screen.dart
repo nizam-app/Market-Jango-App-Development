@@ -90,7 +90,9 @@ class UserScreen extends ConsumerWidget {
                             ),
                           ),
                         )).toList(),
-                        onChanged: (v) => ref.read(userTypeP.notifier).state = v ?? 'Buyer',
+                        onChanged: (v) {
+                          ref.read(userTypeP.notifier).state = v ?? 'Buyer';
+                          },
                       ),
                     ),
                   ),

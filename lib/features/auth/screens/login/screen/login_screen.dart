@@ -11,7 +11,7 @@ import 'package:market_jango/features/auth/screens/login/logic/password_validato
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/logic/login_check.dart';
-import 'package:market_jango/features/auth/screens/user.dart' show UserScreen;
+import 'package:market_jango/features/auth/screens/user_type_screen.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import '../../forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
@@ -147,7 +147,7 @@ class LoginTextFormField extends ConsumerWidget {
     );
   }
   void loginDone({required BuildContext context,required String email, required String password}) async{
-    final roles = await loginAndGoSingleRole(context, id:email , password:password, );
+    final roles = await loginAndGoSingleRole(context: context, id:email , password:password, );
     GlobalSnackbar.show(
       context,
       title: 'Logged in',

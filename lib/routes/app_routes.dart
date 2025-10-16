@@ -36,10 +36,10 @@ import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
-import 'package:market_jango/features/auth/screens/recover_password_screen.dart';
+import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
 import 'package:market_jango/features/auth/screens/phone_number.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
-import 'package:market_jango/features/auth/screens/user.dart';
+import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
 import 'package:market_jango/features/auth/screens/verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
@@ -89,7 +89,7 @@ import '../features/auth/screens/login/screen/login_screen.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: NewPasswordScreen.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -143,18 +143,18 @@ final GoRouter router = GoRouter(
      ),
    
    
-    GoRoute(path:PasswordScreen.routeName,
+    GoRoute(path:ResetPasswordScreen.routeName,
     name: 'passwordScreen',
-    builder: (context,state)=>const PasswordScreen(),
+    builder: (context,state)=>const ResetPasswordScreen(),
      ),
 
      GoRoute(
       path:AccountRequest.routeName,
       name: 'accountRequest',
       builder: (context,state)=>const AccountRequest(),
-     ), 
+     ),
 
-  
+
     GoRoute(
       path:VendorBottomNav.routeName,
       name: 'vendorBottomNavBar',
@@ -349,9 +349,9 @@ GoRoute(
     ),
 
     GoRoute(
-      path: TransportHome.routeName,
+      path: TransportHomeScreen.routeName,
       name: 'transport_home',
-      builder: (context, state) => TransportHome(),
+      builder: (context, state) => TransportHomeScreen(),
     ),
 
     GoRoute(
@@ -494,9 +494,9 @@ GoRoute(
     ),
     
      GoRoute(
-      path: DriverHome.routeName,
+      path: DriverHomeScreen.routeName,
       name: 'driverHome',
-      builder: (context, state) => const DriverHome(),
+      builder: (context, state) => const DriverHomeScreen(),
     ),
     
     GoRoute(

@@ -4,16 +4,16 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final emailRegisterProvider =
-StateNotifierProvider<EmailRegisterNotifier, AsyncValue<bool>>(
-        (ref) => EmailRegisterNotifier());
+final resetPasswordProvider =
+StateNotifierProvider<ResetPasswordNotifier, AsyncValue<bool>>(
+        (ref) => ResetPasswordNotifier());
 
-class EmailRegisterNotifier extends StateNotifier<AsyncValue<bool>> {
-  EmailRegisterNotifier() : super(const AsyncValue.data(false));
+class ResetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
+  ResetPasswordNotifier() : super(const AsyncValue.data(false));
 
-  Future<void> registerEmail({
+  Future<void> resetPassword({
     required String url,
-    required String email,
+    required String password,
   }) async {
     state = const AsyncValue.loading();
 
@@ -21,34 +21,28 @@ class EmailRegisterNotifier extends StateNotifier<AsyncValue<bool>> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
-      final request = http.MultipartRequest('POST', Uri.parse(url));
+      var request = http.MultipartRequest('POST', Uri.parse(url));
       request.headers.addAll({
         'Accept': 'application/json',
         if (token != null && token.isNotEmpty) 'token': token,
       });
-      request.fields['email'] = email;
+
+      request.fields['password'] = password;
 
       final response = await request.send();
       final body = await response.stream.bytesToString();
+      Logger().i("🔐 Reset Password Response: $body");
 
       final json = jsonDecode(body);
-      Logger().i("📩 Email Register Response: $json");
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           json['status'] == 'success') {
-        // ✅ user_type save in SharedPreferences
-        final userType = json['data']?['user_type'];
-        if (userType != null) {
-          await prefs.setString('user_type', userType);
-          Logger().i("💾 User Type saved: $userType");
-        }
-
         state = const AsyncValue.data(true);
       } else {
-        throw Exception(json['message'] ?? 'Email registration failed');
+        throw Exception(json['message'] ?? 'Password reset failed');
       }
     } catch (e, st) {
-      Logger().e("⛔ Email Register Error: $e");
+      Logger().e("⛔ Reset Password Error: $e");
       state = AsyncValue.error(e, st);
     }
   }

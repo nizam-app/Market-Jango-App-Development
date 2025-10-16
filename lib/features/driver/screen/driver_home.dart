@@ -5,8 +5,8 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 
-class DriverHome extends StatelessWidget {
-  const DriverHome({super.key});
+class DriverHomeScreen extends StatelessWidget {
+  const DriverHomeScreen({super.key});
   static final routeName = "/driverHome";
 
   @override

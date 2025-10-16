@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 
@@ -70,7 +71,7 @@ class NextBotton extends StatelessWidget {
         children: [
           SizedBox(height: 20.h),
           CustomAuthButton(
-            buttonText: "Go to Home ",
+            buttonText: "Go to Login ",
             onTap: () => nextButonDone(context),
           ),
         ],
@@ -83,6 +84,6 @@ class NextBotton extends StatelessWidget {
   }
 
   void goToDriverBottomNavBar(BuildContext context) {
-    context.push(DriverBottomNavBar.routeName);
+    context.go(LoginScreen.routeName);
   }
 }

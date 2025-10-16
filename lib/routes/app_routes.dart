@@ -37,11 +37,11 @@ import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
 import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
+import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
-import 'package:market_jango/features/auth/screens/verification_screen.dart';
+import 'package:market_jango/features/auth/screens/forget_otp_verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
@@ -112,9 +112,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
-      path: VerificationScreen.routeName,
+      path: ForgetOTPVerificationScreen.routeName,
       name: 'verification',
-      builder: (context, state) => const VerificationScreen(),
+      builder: (context, state) => const ForgetOTPVerificationScreen(),
     ),
     GoRoute(
       path: NewPasswordScreen.routeName,

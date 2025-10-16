@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final resetPasswordProvider =
 StateNotifierProvider<ResetPasswordNotifier, AsyncValue<bool>>(
-        (ref) => ResetPasswordNotifier());
+      (ref) => ResetPasswordNotifier(),
+);
 
 class ResetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
   ResetPasswordNotifier() : super(const AsyncValue.data(false));
@@ -14,6 +16,7 @@ class ResetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
   Future<void> resetPassword({
     required String url,
     required String password,
+    required String confirmPassword,
   }) async {
     state = const AsyncValue.loading();
 
@@ -28,6 +31,7 @@ class ResetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
       });
 
       request.fields['password'] = password;
+      request.fields['password_confirmation'] = confirmPassword;
 
       final response = await request.send();
       final body = await response.stream.bytesToString();
@@ -35,8 +39,7 @@ class ResetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
 
       final json = jsonDecode(body);
 
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
-          json['status'] == 'success') {
+      if (response.statusCode == 200 && json['status'] == 'success') {
         state = const AsyncValue.data(true);
       } else {
         throw Exception(json['message'] ?? 'Password reset failed');

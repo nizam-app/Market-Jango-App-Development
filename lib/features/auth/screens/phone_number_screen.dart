@@ -8,7 +8,7 @@ import '../../../core/constants/api_control/auth_api.dart';
 import '../../../core/widget/custom_auth_button.dart';
 import '../../../core/widget/global_snackbar.dart';
 import '../../../core/widget/sreeen_brackground.dart';
-import '../logic/register_name_riverpod.dart';
+import '../logic/register_name_&_phone_riverpod.dart';
 import 'code_screen.dart';
 
 class PhoneNumberScreen extends ConsumerStatefulWidget {
@@ -38,6 +38,7 @@ class _PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
       keyname: 'phone',
       value: _phone,
       url: AuthAPIController.registerPhone,
+      context: context
     );
 
     final result = ref.read(postProvider);

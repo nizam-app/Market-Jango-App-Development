@@ -147,13 +147,13 @@ class LoginTextFormField extends ConsumerWidget {
     );
   }
   void loginDone({required BuildContext context,required String email, required String password}) async{
-    final roles = await loginAndGoSingleRole(context: context, id:email , password:password, );
-    GlobalSnackbar.show(
-      context,
-      title: 'Logged in',
-      message: 'Welcome back!',
-      type: CustomSnackType.success,
-    );
+  await loginAndGoSingleRole(context: context, id:email , password:password, );
+    // GlobalSnackbar.show(
+    //   context,
+    //   title: 'Logged in',
+    //   message: 'Welcome back!',
+    //   type: CustomSnackType.success,
+    // );
   }
 
   void gotoHomeScreen(BuildContext content){

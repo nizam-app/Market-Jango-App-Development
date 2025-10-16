@@ -37,7 +37,7 @@ class RegisterPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
 
       final json = jsonDecode(body);
 
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
+      if ((response.statusCode == 200 ) &&
           json['status'] == 'success') {
         state = const AsyncValue.data(true);
       } else {

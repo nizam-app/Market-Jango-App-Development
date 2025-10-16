@@ -8,10 +8,10 @@ import '../../../core/constants/color_control/all_color.dart';
 import '../../../core/widget/custom_auth_button.dart';
 import '../../../core/widget/global_snackbar.dart';
 import '../../../core/widget/sreeen_brackground.dart';
-import '../logic/register_name_riverpod.dart';
+import '../logic/register_name_&_phone_riverpod.dart';
 import '../logic/empty_validator.dart';
 import 'car_info_screen.dart';
-import 'phone_number.dart';
+import 'phone_number_screen.dart';
 import 'vendor_request_screen.dart';
 
 class NameScreen extends ConsumerStatefulWidget {
@@ -41,6 +41,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
       keyname: "name",
       value: _nameCtrl.text.trim(),
       url: AuthAPIController.registerName,
+      context: context
     );
 
     // ✅ এখন আমরা state read করব, listen না করে

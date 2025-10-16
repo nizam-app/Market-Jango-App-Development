@@ -89,7 +89,7 @@ class JustForYouProduct extends StatelessWidget {
           crossAxisCount: 2,
           // mainAxisSpacing: 0.h,
           crossAxisSpacing: 8.w,
-          childAspectRatio: 0.6.h,
+          childAspectRatio: 0.56.h,
         ),
         itemCount: 20,
         // Example item count

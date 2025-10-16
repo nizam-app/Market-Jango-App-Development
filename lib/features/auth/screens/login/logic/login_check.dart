@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:market_jango/features/driver/screen/driver_home.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/transport/screens/transport_booking.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/constants/api_control/auth_api.dart';
 import '../../../../../core/widget/global_snackbar.dart';
 import '../../../../buyer/screens/home_screen.dart';
-import '../../../../transport/screens/transport_home.dart';
 import '../../../../vendor/screens/vendor_home/screen/vendor_home_screen.dart';
+import '../../../../driver/screen/driver_home.dart';
+import '../../../../transport/screens/transport_home.dart';
 
 Future<void> loginAndGoSingleRole({
   required BuildContext context,
@@ -30,17 +35,25 @@ Future<void> loginAndGoSingleRole({
     final body = await response.stream.bytesToString();
     final json = jsonDecode(body);
 
-    Logger().i("🔐 Login Response: $json");
+    Logger().i("💡 🔐 Login Response: $json");
 
     if (response.statusCode == 200 && json['status'] == 'success') {
-      final user = json['data']['user'];
-      final token = json['token'];
-      final userType = user['user_type'];
+      final data = json['data'];
 
-      // ✅ Save token & user_type to SharedPreferences
+      // 🔥 Handle both “user” and “uer” key safely
+      final user = data['user'] ?? data['uer'];
+
+      if (user == null) {
+        throw Exception("Invalid response: user data not found");
+      }
+
+      final userType = user['user_type'] ?? '';
+      final token = data['token'] ?? json['token'] ?? '';
+
+      // ✅ Save token & user_type safely
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', token);
-      await prefs.setString('user_type', userType);
+      if (token.isNotEmpty) await prefs.setString('auth_token', token);
+      if (userType.isNotEmpty) await prefs.setString('user_type', userType);
 
       GlobalSnackbar.show(
         context,
@@ -49,32 +62,45 @@ Future<void> loginAndGoSingleRole({
         type: CustomSnackType.success,
       );
 
-      // ✅ Navigate according to user_type
+      // ✅ Role-based navigation
       switch (userType.toLowerCase()) {
         case 'buyer':
-          context.go(BuyerHomeScreen.routeName);
+          context.go(BuyerBottomNavBar.routeName);
           break;
         case 'vendor':
-          context.go(VendorHomeScreen.routeName);
+          context.go(VendorBottomNav.routeName);
           break;
         case 'driver':
-          context.go(DriverHomeScreen.routeName);
+          context.go(DriverBottomNavBar.routeName);
           break;
         case 'transport':
-          context.go(TransportHomeScreen.routeName);
+          context.go(TransportBottomNavBar.routeName);
           break;
         default:
-          GlobalSnackbar.show(context,
-              title: "Notice",
-              message: "Unknown role: $userType",
-              type: CustomSnackType.warning);
+          GlobalSnackbar.show(
+            context,
+            title: "Notice",
+            message: "Unknown or missing user type: $userType",
+            type: CustomSnackType.warning,
+          );
       }
     } else {
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: json['message'] ?? 'Login failed',
+        type: CustomSnackType.error,
+      );
       throw Exception(json['message'] ?? 'Login failed');
+
     }
-  } catch (e) {
+  } catch (e, st) {
     Logger().e("⛔ Login Error: $e");
-    GlobalSnackbar.show(context,
-        title: "Error", message: e.toString(), type: CustomSnackType.error);
+    GlobalSnackbar.show(
+      context,
+      title: "Error",
+      message: e.toString(),
+      type: CustomSnackType.error,
+    );
   }
 }

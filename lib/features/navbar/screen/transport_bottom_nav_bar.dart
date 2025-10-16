@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../transport/screens/transport_booking.dart';
+import '../../transport/screens/transport_chart.dart';
+import '../../transport/screens/transport_home.dart';
+import '../../transport/screens/transport_setting.dart';
+
 // --- Providers ---------------------------------------------------------------
 
 // Active tab index
@@ -9,10 +14,10 @@ final transportNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap with your actual screens)
 final transportPagesProvider = Provider<List<Widget>>((_) => const [
-  _TransportHomeScreen(),
-  _TransportChatScreen(),
-  _TransportBookingsScreen(),
-  _TransportSettingsScreen(),
+  TransportHomeScreen(),
+  TransportChart(),
+  TransportBooking(),
+  TransportSetting(),
 ]);
 
 // --- Widget ------------------------------------------------------------------
@@ -66,30 +71,4 @@ class _SvgIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       SvgPicture.asset(asset, width: 24, height: 24);
-}
-
-// --- Placeholder pages (replace with real ones) ------------------------------
-
-class _TransportHomeScreen extends StatelessWidget {
-  const _TransportHomeScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Home'));
-}
-
-class _TransportChatScreen extends StatelessWidget {
-  const _TransportChatScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Chat'));
-}
-
-class _TransportBookingsScreen extends StatelessWidget {
-  const _TransportBookingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('My Bookings'));
-}
-
-class _TransportSettingsScreen extends StatelessWidget {
-  const _TransportSettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Settings'));
 }

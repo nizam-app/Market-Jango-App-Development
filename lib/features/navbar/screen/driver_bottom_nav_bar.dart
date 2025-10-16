@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/features/driver/screen/driver_chat.dart';
+
+import '../../driver/screen/driver_home.dart';
+import '../../driver/screen/driver_order.dart';
+import '../../driver/screen/driver_setting.dart';
 
 // --- Providers ---------------------------------------------------------------
 
@@ -9,10 +14,10 @@ final driverNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap these with your real screens)
 final driverPagesProvider = Provider<List<Widget>>((_) => const [
-  _DriverHomeScreen(),
-  _DriverChatScreen(),
-  _DriverOrdersScreen(),
-  _DriverSettingsScreen(),
+  DriverHomeScreen(),
+  DriverChat(),
+  DriverOrder(),
+  DriverSetting(),
 ]);
 
 // --- Widget ------------------------------------------------------------------
@@ -67,30 +72,4 @@ class _SvgIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return SvgPicture.asset(asset, width: 24, height: 24);
   }
-}
-
-// --- Placeholder pages (replace with your real ones) -------------------------
-
-class _DriverHomeScreen extends StatelessWidget {
-  const _DriverHomeScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Driver Home'));
-}
-
-class _DriverChatScreen extends StatelessWidget {
-  const _DriverChatScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Chat'));
-}
-
-class _DriverOrdersScreen extends StatelessWidget {
-  const _DriverOrdersScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Orders'));
-}
-
-class _DriverSettingsScreen extends StatelessWidget {
-  const _DriverSettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Settings'));
 }

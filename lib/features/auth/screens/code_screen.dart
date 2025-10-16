@@ -22,10 +22,10 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
   String _otp = '';
 
   Future<void> _submit() async {
-    if (_otp.length != 8) {
+    if (_otp.length != 6) {
       GlobalSnackbar.show(context,
           title: "Error",
-          message: "Enter a valid 8-digit OTP",
+          message: "Enter a valid 6-digit OTP",
           type: CustomSnackType.error);
       return;
     }
@@ -89,14 +89,14 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
               SizedBox(height: 30.h),
               PinCodeTextField(
                 appContext: context,
-                length: 8,
+                length: 6,
                 onChanged: (v) => _otp = v,
                 onCompleted: (v) => _otp = v,
                 keyboardType: TextInputType.number,
                 enableActiveFill: true,
                 pinTheme: PinTheme(
                   shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                   fieldHeight: 52.h,
                   fieldWidth: 44.w,
                   activeFillColor: Colors.grey.shade200,

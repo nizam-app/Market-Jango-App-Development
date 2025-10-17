@@ -7,6 +7,7 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:market_jango/features/auth/screens/forget_otp_verification_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../logic/phone_otp_riverpod.dart';
 
@@ -112,6 +113,7 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
                 buttonText: loading ? "Verifying..." : "Next",
                 onTap: loading ? () {} : _submit,
               ),
+              CustomVerificationResendText(onEnter: () {  },)
             ],
           ),
         ),

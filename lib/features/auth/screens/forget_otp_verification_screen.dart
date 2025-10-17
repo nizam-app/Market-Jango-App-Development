@@ -6,14 +6,18 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
+import '../logic/forget_password_reverport.dart';
+import '../logic/phone_otp_riverpod.dart';
 import '../logic/verification_reverpod.dart';
 
 class ForgetOTPVerificationScreen extends ConsumerWidget {
-  const ForgetOTPVerificationScreen({super.key});
+  const ForgetOTPVerificationScreen({super.key,});
   static const String routeName = '/verification_screen';
+  // final String? email;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loading = ref.watch(forgetPasswordProvider).isLoading;
     final otpController = TextEditingController();
 
     return Scaffold(
@@ -45,7 +49,7 @@ class ForgetOTPVerificationScreen extends ConsumerWidget {
                       }
                     },
                   ),
-                  const VerificationResendText(),
+                  CustomVerificationResendText(onEnter: onEnterWork, loading: loading,),
                 ],
               ),
             ),
@@ -53,6 +57,16 @@ class ForgetOTPVerificationScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+  void onEnterWork ({ref, context, isLoading}){
+    // final notifier = ref.read(forgetPasswordProvider.notifier);
+    // isLoading
+    //     ? (){}
+    //     : notifier.sendForgetPassword(
+    //   context: context,
+    //   email: emailController.text.trim(),
+    // );
+
   }
 }
 
@@ -114,24 +128,29 @@ class VerifiUpperText extends StatelessWidget {
   }
 }
 
-class VerificationResendText extends StatelessWidget {
-  const VerificationResendText({super.key});
+class CustomVerificationResendText extends ConsumerWidget {
+   CustomVerificationResendText({super.key, required this.onEnter,this.loading});
+  final VoidCallback onEnter;
+   var loading;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
     return Column(
       children: [
         SizedBox(height: 32.h),
         Text.rich(
           TextSpan(
             text: "Didn't receive a code? ",
-            style: Theme.of(context).textTheme.titleSmall,
+            style: Theme.of(context).textTheme.titleSmall!.copyWith(color: AllColor.grey),
             children: [
               TextSpan(
-                text: "Resend",
+                text: loading? "Resending": "Resend",
+                onEnter: (_) =>  loading ? () {} : onEnter,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AllColor.black,
                   fontWeight: FontWeight.w700,
+
                 ),
               ),
             ],

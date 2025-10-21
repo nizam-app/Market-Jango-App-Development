@@ -27,11 +27,9 @@ import 'notification/screen/notification_screen.dart';
 class BuyerHomeScreen extends StatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';
-
   @override
   State<BuyerHomeScreen> createState() => _BuyerHomeScreenState();
 }
-
 class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   @override
   Widget build(BuildContext context) {
@@ -89,7 +87,7 @@ class JustForYouProduct extends StatelessWidget {
           crossAxisCount: 2,
           // mainAxisSpacing: 0.h,
           crossAxisSpacing: 8.w,
-          childAspectRatio: 0.6.h,
+          childAspectRatio: 0.56.h,
         ),
         itemCount: 20,
         // Example item count
@@ -180,8 +178,6 @@ class DiscountProduct extends StatelessWidget {
     );
   }
 }
-
-
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({Key? key}) : super(key: key);

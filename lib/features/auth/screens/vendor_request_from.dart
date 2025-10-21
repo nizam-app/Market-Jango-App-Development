@@ -5,8 +5,8 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 
-class VendorRequestFrom extends StatelessWidget {
-  const VendorRequestFrom({super.key});
+class VendorRequestForm extends StatelessWidget {
+  const VendorRequestForm({super.key});
   static final String routeName = '/vendorRequstFrom';
   @override
   Widget build(BuildContext context) {

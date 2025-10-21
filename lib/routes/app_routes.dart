@@ -7,7 +7,7 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
-import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/car_info_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
@@ -36,12 +36,12 @@ import 'package:market_jango/features/auth/screens/code_screen.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
 import 'package:market_jango/features/auth/screens/new_password_screen.dart';
-import 'package:market_jango/features/auth/screens/password_screen.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
+import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
+import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
-import 'package:market_jango/features/auth/screens/user.dart';
+import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
-import 'package:market_jango/features/auth/screens/verification_screen.dart';
+import 'package:market_jango/features/auth/screens/forget_otp_verification_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
@@ -112,9 +112,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
-      path: VerificationScreen.routeName,
+      path: ForgetOTPVerificationScreen.routeName,
       name: 'verification',
-      builder: (context, state) => const VerificationScreen(),
+      builder: (context, state) => const ForgetOTPVerificationScreen(),
     ),
     GoRoute(
       path: NewPasswordScreen.routeName,
@@ -143,18 +143,18 @@ final GoRouter router = GoRouter(
      ),
    
    
-    GoRoute(path:PasswordScreen.routeName,
+    GoRoute(path:ResetPasswordScreen.routeName,
     name: 'passwordScreen',
-    builder: (context,state)=>const PasswordScreen(),
+    builder: (context,state)=>const ResetPasswordScreen(),
      ),
 
      GoRoute(
       path:AccountRequest.routeName,
       name: 'accountRequest',
       builder: (context,state)=>const AccountRequest(),
-     ), 
+     ),
 
-  
+
     GoRoute(
       path:VendorBottomNav.routeName,
       name: 'vendorBottomNavBar',
@@ -168,9 +168,9 @@ final GoRouter router = GoRouter(
     ),
 
    GoRoute(
-     path:VendorRequestFrom.routeName,
-    name: 'vendorRequstFrom',
-    builder: (context,state)=>const VendorRequestFrom(),
+     path:VendorRequestForm.routeName,
+    name: VendorRequestForm.routeName,
+    builder: (context,state)=>const VendorRequestForm(),
      ),
 
 
@@ -349,9 +349,9 @@ GoRoute(
     ),
 
     GoRoute(
-      path: TransportHome.routeName,
+      path: TransportHomeScreen.routeName,
       name: 'transport_home',
-      builder: (context, state) => TransportHome(),
+      builder: (context, state) => TransportHomeScreen(),
     ),
 
     GoRoute(
@@ -494,9 +494,9 @@ GoRoute(
     ),
     
      GoRoute(
-      path: DriverHome.routeName,
+      path: DriverHomeScreen.routeName,
       name: 'driverHome',
-      builder: (context, state) => const DriverHome(),
+      builder: (context, state) => const DriverHomeScreen(),
     ),
     
     GoRoute(

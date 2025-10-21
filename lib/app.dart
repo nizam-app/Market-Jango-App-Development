@@ -45,13 +45,13 @@ class App extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: AllColor.orange500,
-        scaffoldBackgroundColor: AllColor.white,
+        scaffoldBackgroundColor: Colors.white.withOpacity(0.8),
         colorScheme: ColorScheme.light(
           primary: AllColor.orange500,
           onPrimary: AllColor.white,
           secondary: AllColor.green500,
           onSecondary: AllColor.white,
-          surface: AllColor.black,
+          surface: AllColor.white,
           onSurface: AllColor.black,
         ),
         inputDecorationTheme: InputDecorationTheme(

@@ -25,7 +25,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white24,
+        // backgroundColor: Colors.white24,
         //drawer section
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
@@ -306,7 +306,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
             Text(
               "Add your\nProduct",
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Color(0xff2F2F2F),
+                // color: Color(0xff2F2F2F),
                 fontWeight: FontWeight.w700,
               ),
             ),

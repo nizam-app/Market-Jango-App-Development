@@ -58,6 +58,7 @@ class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
       Logger().i('Vendor Register Response: $body');
 
       final json = jsonDecode(body);
+      Logger().i(body);
       if (response.statusCode == 201 && json['status'] == 'success') {
         final vendor = VendorModel.fromJson(json['data']);
         state = AsyncData(vendor);

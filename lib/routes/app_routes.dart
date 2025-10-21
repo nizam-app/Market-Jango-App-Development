@@ -86,10 +86,11 @@ import 'package:market_jango/features/vendor/screens/vendor_transport_details/sc
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
+import '../features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: VendorBottomNav.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -167,11 +168,11 @@ final GoRouter router = GoRouter(
       builder: (context,state)=> ProductEditScreen(),
     ),
 
-   GoRoute(
-     path:VendorRequestForm.routeName,
-    name: VendorRequestForm.routeName,
-    builder: (context,state)=>const VendorRequestForm(),
-     ),
+   // GoRoute(
+   //   path:VendorRequestForm.routeName,
+   //  name: VendorRequestForm.routeName,
+   //  builder: (context,state)=>const VendorRequestForm(),
+   //   ),
 
 
      GoRoute(

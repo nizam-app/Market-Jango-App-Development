@@ -12,6 +12,7 @@ import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
 
+import '../data/vendor_business_type_data.dart';
 import '../logic/register_vendor_request_riverpod.dart';
 
 class VendorRequestScreen extends ConsumerStatefulWidget {
@@ -169,48 +170,7 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
                 SizedBox(height: 30.h),
 
                 // ---- Business Type ----
-                Container(
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF8E7),
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: AllColor.outerAlinment),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      hint: const Text("Choose Your Business Type"),
-                      value: _selectedBusinessType,
-                      icon: const Icon(Icons.arrow_drop_down),
-                      dropdownColor: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      items:
-                          const [
-                            'E-commerce',
-                            'Electronics',
-                            'Fashion & Clothing',
-                            'Beauty & Cosmetics',
-                            'Plumbers',
-                            'Electricians',
-                            'Painters',
-                          ].map((type) {
-                            return DropdownMenuItem<String>(
-                              value: type,
-                              child: Text(
-                                type,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) =>
-                          setState(() => _selectedBusinessType = value),
-                    ),
-                  ),
-                ),
+              BusinessTypeDropdown(),
 
                 SizedBox(height: 28.h),
 
@@ -256,7 +216,7 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
                           _pickedFiles.isEmpty
                               ? 'Upload Multiple Files'
                               : '${_pickedFiles.length} file(s) selected',
-                          style: textTheme.bodyMedium,
+                          style: textTheme.bodyMedium!.copyWith(color: AllColor.textHintColor),
                         ),
                         const Icon(Icons.upload_file),
                       ],
@@ -275,6 +235,55 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class BusinessTypeDropdown extends ConsumerWidget {
+  const BusinessTypeDropdown({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final businessTypesAsync = ref.watch(businessTypesProvider);
+    final selectedType = ref.watch(selectedBusinessTypeProvider);
+
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color:  AllColor.orange50,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: AllColor.textBorderColor), // 🔁 Replace with AllColor if needed
+      ),
+      child: businessTypesAsync.when(
+        data: (types) => DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            hint:  Text("Choose Your Business Type",style: TextStyle(color: AllColor.textHintColor),),
+            value: selectedType,
+            icon: const Icon(Icons.arrow_drop_down),
+            dropdownColor: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            items: types.map((type) {
+              return DropdownMenuItem<String>(
+                value: type,
+                child: Text(
+                  type,
+                  style:  TextStyle(
+                    fontSize: 16,
+                    color: AllColor.textHintColor,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              ref.read(selectedBusinessTypeProvider.notifier).state = value;
+            },
+          ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Data is not available")),
       ),
     );
   }

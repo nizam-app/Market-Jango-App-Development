@@ -90,7 +90,7 @@ import '../features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: VendorBottomNav.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 

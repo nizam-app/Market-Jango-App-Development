@@ -11,7 +11,6 @@ class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
 
   static const String routeName = '/vendor_home_screen';
-
   @override
   State<VendorHomeScreen> createState() => _VendorHomeScreenState();
 }
@@ -87,7 +86,6 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
     );
   }
-
   Widget buildDrawer(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),

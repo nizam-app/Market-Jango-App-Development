@@ -32,7 +32,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/routes/app_routes.dart';
 
 import 'core/constants/color_control/all_color.dart';
-import 'core/theme/light_dark_theme.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -45,7 +44,7 @@ class App extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: AllColor.orange500,
-        scaffoldBackgroundColor: Colors.white.withOpacity(0.8),
+        scaffoldBackgroundColor: Colors.white.withOpacity(0.9),
         colorScheme: ColorScheme.light(
           primary: AllColor.orange500,
           onPrimary: AllColor.white,

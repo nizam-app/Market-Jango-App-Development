@@ -59,11 +59,12 @@ class DriverRegisterNotifier extends StateNotifier<AsyncValue<DriverRegisterMode
 
       final response = await request.send();
       final body = await response.stream.bytesToString();
-      Logger().i('🚗 Driver Register Response: $body');
+
 
       final json = jsonDecode(body);
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           json['status'] == 'success') {
+        Logger().i('🚗 Driver Register Response: $body');
         final driver = DriverRegisterModel.fromJson(json['data']);
         state = AsyncValue.data(driver);
       } else {

@@ -11,46 +11,53 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
-
 import '../data/vendor_business_type_data.dart';
 import '../logic/register_vendor_request_riverpod.dart';
 
-class VendorRequestScreen extends ConsumerStatefulWidget {
+class VendorRequestScreen extends ConsumerWidget {
   const VendorRequestScreen({super.key});
 
-  static final String routeName = '/vendor_request';
+  static const String routeName = '/vendor_request';
 
-  @override
-  ConsumerState<VendorRequestScreen> createState() =>
-      _VendorRequestScreenState();
-}
-
-class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
-  Country? _selectedCountry;
-  String? _selectedBusinessType;
-  final _businessNameCtrl = TextEditingController();
-  final _addressCtrl = TextEditingController();
-  List<File> _pickedFiles = [];
-
-  Future<void> _pickFiles() async {
+  Future<void> _pickFiles(BuildContext context, WidgetRef ref) async {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
       allowedExtensions: ['jpg', 'png', 'jpeg', 'pdf', 'doc', 'docx'],
     );
+
     if (result != null) {
-      setState(() {
-        _pickedFiles = result.paths.map((e) => File(e!)).toList();
-      });
+      ref
+          .read(pickedFilesProvider.notifier)
+          .state =
+          result.paths.map((e) => File(e!)).toList();
     }
   }
 
-  Future<void> _submit() async {
-    if (_selectedCountry == null ||
-        _businessNameCtrl.text.isEmpty ||
-        _selectedBusinessType == null ||
-        _addressCtrl.text.isEmpty ||
-        _pickedFiles.isEmpty) {
+  void _showCountryPicker(BuildContext context, WidgetRef ref) {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: false,
+      onSelect: (country) {
+        ref
+            .read(selectedCountryProvider.notifier)
+            .state = country;
+      },
+    );
+  }
+
+  Future<void> _submit(BuildContext context, WidgetRef ref) async {
+    final country = ref.read(selectedCountryProvider);
+    final businessName = ref.read(businessNameProvider);
+    final businessType = ref.read(selectedBusinessTypeProvider);
+    final address = ref.read(addressProvider);
+    final files = ref.read(pickedFilesProvider);
+
+    if (country == null ||
+        businessName.isEmpty ||
+        businessType == null ||
+        address.isEmpty ||
+        files.isEmpty) {
       GlobalSnackbar.show(
         context,
         title: "Error",
@@ -60,16 +67,23 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
       return;
     }
 
+    ref
+        .read(vendorLoadingProvider.notifier)
+        .state = true;
+
     final notifier = ref.read(vendorRegisterProvider.notifier);
     await notifier.registerVendor(
       url: AuthAPIController.registerVendorRequestStore,
-      // 🔁 replace with your endpoint
-      country: _selectedCountry!.name,
-      businessName: _businessNameCtrl.text.trim(),
-      businessType: _selectedBusinessType!,
-      address: _addressCtrl.text.trim(),
-      files: _pickedFiles,
+      country: country.name,
+      businessName: businessName,
+      businessType: businessType,
+      address: address,
+      files: files,
     );
+
+    ref
+        .read(vendorLoadingProvider.notifier)
+        .state = false;
 
     final state = ref.read(vendorRegisterProvider);
     state.when(
@@ -84,28 +98,27 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
           context.push(PhoneNumberScreen.routeName);
         }
       },
-      error: (e, _) => GlobalSnackbar.show(
-        context,
-        title: "Error",
-        message: e.toString(),
-        type: CustomSnackType.error,
-      ),
+      error: (e, _) =>
+          GlobalSnackbar.show(
+            context,
+            title: "Error",
+            message: e.toString(),
+            type: CustomSnackType.error,
+          ),
       loading: () {},
     );
   }
 
-  void _showCountryPicker() {
-    showCountryPicker(
-      context: context,
-      showPhoneCode: false,
-      onSelect: (country) => setState(() => _selectedCountry = country),
-    );
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final loading = ref.watch(vendorRegisterProvider).isLoading;
-    final textTheme = Theme.of(context).textTheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme
+        .of(context)
+        .textTheme;
+    final country = ref.watch(selectedCountryProvider);
+    final businessName = ref.watch(businessNameProvider);
+    final address = ref.watch(addressProvider);
+    final files = ref.watch(pickedFilesProvider);
+    final loading = ref.watch(vendorLoadingProvider);
 
     return Scaffold(
       body: ScreenBackground(
@@ -121,33 +134,29 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
                   child: Text("Create Store", style: textTheme.titleLarge),
                 ),
                 SizedBox(height: 10.h),
-                Center(
-                  child: Text(
-                    "Get started with your access in a few steps",
-                    style: textTheme.bodySmall,
-                  ),
+                Text(
+                  "Get started with your access in a few steps",
+                  style: textTheme.bodySmall,
                 ),
-
                 SizedBox(height: 40.h),
 
-                // ---- Country Picker ----
+                // Country Picker
                 GestureDetector(
-                  onTap: _showCountryPicker,
+                  onTap: () => _showCountryPicker(context, ref),
                   child: Container(
+                    height: 60.h,
                     padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 14.h,
-                    ),
+                        horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: AllColor.orange50,
-                      border: Border.all(color: AllColor.outerAlinment),
+                      border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _selectedCountry?.name ?? 'Choose Your Country',
+                          country?.name ?? 'Choose Your Country',
                           style: textTheme.bodyMedium,
                         ),
                         const Icon(Icons.arrow_drop_down),
@@ -155,80 +164,82 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
                     ),
                   ),
                 ),
-
                 SizedBox(height: 28.h),
 
-                // ---- Business Name ----
+                // Business Name
                 TextFormField(
-                  controller: _businessNameCtrl,
+                  initialValue: businessName,
+                  onChanged: (v) =>
+                  ref
+                      .read(businessNameProvider.notifier)
+                      .state = v,
                   decoration: const InputDecoration(
                     isDense: true,
                     hintText: 'Enter your Business Name',
                   ),
                 ),
-
                 SizedBox(height: 30.h),
 
-                // ---- Business Type ----
-              BusinessTypeDropdown(),
-
+                // Business Type
+                const BusinessTypeDropdown(),
                 SizedBox(height: 28.h),
 
-                // ---- Address ----
+                // Address
                 TextFormField(
-                  controller: _addressCtrl,
+                  initialValue: address,
+                  onChanged: (v) =>
+                  ref
+                      .read(addressProvider.notifier)
+                      .state = v,
                   decoration: const InputDecoration(
                     isDense: true,
                     hintText: 'Enter your full address',
                   ),
                 ),
-
                 SizedBox(height: 28.h),
 
-                // ---- File Upload ----
+                // File Upload
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Upload your documents",
-                      style: textTheme.bodyMedium,
-                    ),
+                    child: Text("Upload your documents",
+                        style: textTheme.bodyMedium),
                   ),
                 ),
                 SizedBox(height: 12.h),
                 InkWell(
-                  onTap: _pickFiles,
+                  onTap: () => _pickFiles(context, ref),
                   child: Container(
+                    height: 60.h,
                     padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 14.h,
-                    ),
+                        horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AllColor.outerAlinment),
-                      borderRadius: BorderRadius.circular(25.r),
+                      border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
+                      borderRadius: BorderRadius.circular(30.r),
                       color: AllColor.orange50,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _pickedFiles.isEmpty
+                          files.isEmpty
                               ? 'Upload Multiple Files'
-                              : '${_pickedFiles.length} file(s) selected',
-                          style: textTheme.bodyMedium!.copyWith(color: AllColor.textHintColor),
+                              : '${files.length} file(s) selected',
+                          style: textTheme.bodyMedium!
+                              .copyWith(color: AllColor.textHintColor),
                         ),
                         const Icon(Icons.upload_file),
                       ],
                     ),
                   ),
                 ),
-
                 SizedBox(height: 62.h),
 
+                // Submit Button
                 CustomAuthButton(
                   buttonText: loading ? "Submitting..." : "Next",
-                  onTap: loading ? () {} : _submit,
+                  onTap: loading ? () {} : () => _submit(context, ref),
                 ),
                 SizedBox(height: 40.h),
               ],
@@ -240,6 +251,25 @@ class _VendorRequestScreenState extends ConsumerState<VendorRequestScreen> {
   }
 }
 
+
+final selectedCountryProvider = StateProvider<Country?>((ref) => null);
+
+// Business Type
+final selectedBusinessTypeProvider = StateProvider<String?>((ref) => null);
+
+// Business Name
+final businessNameProvider = StateProvider<String>((ref) => "");
+
+// Address
+final addressProvider = StateProvider<String>((ref) => "");
+
+// Files
+final pickedFilesProvider = StateProvider<List<File>>((ref) => []);
+
+// Loading State
+final vendorLoadingProvider = StateProvider<bool>((ref) => false);
+
+
 class BusinessTypeDropdown extends ConsumerWidget {
   const BusinessTypeDropdown({super.key});
 
@@ -249,29 +279,35 @@ class BusinessTypeDropdown extends ConsumerWidget {
     final selectedType = ref.watch(selectedBusinessTypeProvider);
 
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color:  AllColor.orange50,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AllColor.textBorderColor), // 🔁 Replace with AllColor if needed
+        color: AllColor.orange50,
+        borderRadius: BorderRadius.circular(30.r),
+        border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
       ),
       child: businessTypesAsync.when(
         data: (types) => DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             isExpanded: true,
-            hint:  Text("Choose Your Business Type",style: TextStyle(color: AllColor.textHintColor),),
+            hint: Text(
+              "Choose Your Business Type",
+              style: TextStyle(
+                color: AllColor.textHintColor,
+                fontSize: 14.sp,
+              ),
+            ),
             value: selectedType,
-            icon: const Icon(Icons.arrow_drop_down),
+            icon: Icon(Icons.arrow_drop_down, size: 24.sp),
             dropdownColor: Colors.white,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(30.r),
             items: types.map((type) {
               return DropdownMenuItem<String>(
                 value: type,
                 child: Text(
                   type,
-                  style:  TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     color: AllColor.textHintColor,
                   ),
                 ),
@@ -283,7 +319,7 @@ class BusinessTypeDropdown extends ConsumerWidget {
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Data is not available")),
+        error: (err, stack) => const Center(child: Text("Data is not available")),
       ),
     );
   }

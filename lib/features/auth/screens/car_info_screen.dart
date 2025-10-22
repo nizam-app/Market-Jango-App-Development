@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -37,8 +38,6 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
     _priceCtrl.dispose();
     super.dispose();
   }
-
-  // 📂 File picker
   Future<void> _pickFiles() async {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
@@ -49,7 +48,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
     if (result != null) {
       setState(() {
         _pickedFiles = result.paths
-            .where((e) => e != null && File(e!).existsSync()) // ✅ only valid
+            .where((e) => e != null && File(e!).existsSync())
             .map((e) => File(e!))
             .toList();
       });
@@ -63,10 +62,12 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
         _priceCtrl.text.isEmpty ||
         _selectedRoute == null ||
         _pickedFiles.isEmpty) {
-      GlobalSnackbar.show(context,
-          title: "Error",
-          message: "Please fill all fields and upload your documents",
-          type: CustomSnackType.error);
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: "Please fill all fields and upload your documents",
+        type: CustomSnackType.error,
+      );
       return;
     }
 
@@ -80,32 +81,25 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
       routeId: _selectedRoute!,
       files: _pickedFiles,
     );
+    await Future.delayed(const Duration(milliseconds: 100));
 
-    // ✅ এখন listen করবো, কিন্তু একবারই
-    ref.listenManual(driverRegisterProvider, (previous, next) {
-      next.whenOrNull(
-        data: (res) {
-          if (res != null && res.status == "success") {
-            GlobalSnackbar.show(
-              context,
-              title: "Success",
-              message: "Driver registered successfully!",
-              type: CustomSnackType.success,
-            );
-            context.push(PhoneNumberScreen.routeName);
-          }
-        },
-        error: (e, _) {
-          GlobalSnackbar.show(
-            context,
-            title: "Error",
-            message: e.toString(),
-            type: CustomSnackType.error,
-          );
-        },
+    final result = ref.read(driverRegisterProvider);
+
+    if (result is AsyncData && result.value != null) {
+      GlobalSnackbar.show(
+        context,
+        title: "Success",
+        message: "Driver registered successfully!",
+        type: CustomSnackType.success,
       );
-    });
+      if (context.mounted) {
+        context.push(PhoneNumberScreen.routeName);
+      }
+    }
+
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -166,12 +160,12 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
 
                 // Route dropdown
                 Container(
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 60.h,
+                  padding:  EdgeInsets.symmetric(horizontal: 16.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF8E7),
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: AllColor.outerAlinment),
+                    borderRadius: BorderRadius.circular(30.r),
+                    border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -180,7 +174,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                       value: _selectedRoute,
                       icon: const Icon(Icons.arrow_drop_down),
                       dropdownColor: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(30.r),
                       items: drivingRoutes.map((route) {
                         return DropdownMenuItem<String>(
                           value: route,
@@ -211,11 +205,12 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                 InkWell(
                   onTap: _pickFiles,
                   child: Container(
+                    height: 60.h,
                     padding:
                     EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AllColor.outerAlinment),
-                      borderRadius: BorderRadius.circular(25.r),
+                      border: Border.all(color:  AllColor.textBorderColor, width: 0.5.sp),
+                      borderRadius: BorderRadius.circular(30.r),
                       color: AllColor.orange50,
                     ),
                     child: Row(
@@ -225,7 +220,11 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                           _pickedFiles.isEmpty
                               ? 'Upload Multiple Files'
                               : '${_pickedFiles.length} file(s) selected',
-                          style: textTheme.bodyMedium,
+                          style:TextStyle(
+                            color: AllColor.textHintColor,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                         const Icon(Icons.upload_file),
                       ],

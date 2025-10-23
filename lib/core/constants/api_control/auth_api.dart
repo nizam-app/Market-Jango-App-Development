@@ -15,4 +15,5 @@ class AuthAPIController {
   static String registerPassword="${_base_api}/register-password";
   static String forgetPassword="${_base_api}/forget-password";
   static String verifyOtp="${_base_api}/verify-mail-otp";
+  static String route="${_base_api}/route";
 }

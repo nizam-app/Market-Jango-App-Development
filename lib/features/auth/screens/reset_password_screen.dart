@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
@@ -10,21 +9,20 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
 import 'package:market_jango/features/auth/screens/login/logic/password_validator.dart';
-import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
-import 'package:market_jango/features/auth/logic/register_password_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../logic/reset_password_riverpod.dart';
 import 'account_request.dart';
+import 'login/screen/login_screen.dart';
 
-class NewPasswordScreen extends ConsumerStatefulWidget {
-  const NewPasswordScreen({super.key});
-  static const String routeName = '/new_password_screen';
+class ResetPasswordScreen extends ConsumerStatefulWidget {
+  const ResetPasswordScreen({super.key});
+  static const String routeName = '/resetPasswordScreen';
 
   @override
-  ConsumerState<NewPasswordScreen> createState() => _NewPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -43,37 +41,23 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
       return;
     }
 
-    final notifier = ref.read(registerPasswordProvider.notifier);
-    await notifier.setPassword(
-      url: AuthAPIController.registerPassword, // তোমার endpoint
+    final notifier = ref.read(resetPasswordProvider.notifier);
+    await notifier.resetPassword(
+      url: AuthAPIController.resetPassword,
       password: password,
       confirmPassword: confirm,
     );
 
-    final state = ref.read(registerPasswordProvider);
+    final state = ref.read(resetPasswordProvider);
     state.when(
-      data: (ok)async {
-        SharedPreferences pref =await SharedPreferences.getInstance();
-        String? type = await pref.getString("user_type");
-        Logger().i(type);
+      data: (ok) async {
         if (ok) {
           GlobalSnackbar.show(context,
               title: "Success",
-              message: "Password set successfully!",
+              message: "Password reset successful!",
               type: CustomSnackType.success);
 
-        switch (type){
-          case "buyer":
-            context.pushReplacement(CongratulationScreen.routeName,);
-            break;
-          case "transport":
-            context.pushReplacement(CongratulationScreen.routeName,);
-            break;
-          default:
-            context.pushReplacement(AccountRequest.routeName,);
-
-        }
-
+          context.go(LoginScreen.routeName);
         }
       },
       error: (e, _) => GlobalSnackbar.show(context,
@@ -82,10 +66,11 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final isObscure = ref.watch(passwordVisibilityProvider);
-    final loading = ref.watch(registerPasswordProvider).isLoading;
+    final loading = ref.watch(resetPasswordProvider).isLoading;
     final t = Theme.of(context).textTheme;
 
     return Scaffold(

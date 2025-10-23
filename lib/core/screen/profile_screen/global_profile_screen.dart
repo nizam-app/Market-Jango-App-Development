@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
-import 'global_profile_edit_screen.dart';
-import 'package:market_jango/core/constants/color_control/all_color.dart';
+
+import '../global_profile_edit_screen.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
-  static const String routeName = '/settings_screen';
+
+  static const String routeName = '/settingsScreen';
 
   @override
   State<SettingScreen> createState() => _SettingScreenState();
@@ -89,7 +91,6 @@ class SettingTitle extends StatelessWidget {
     );
   }
 }
-
 class ProfileSection extends StatelessWidget {
   const ProfileSection({super.key});
 
@@ -134,7 +135,7 @@ class ProfileSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Mirable Lily",
+              Text("Miracle Lily",
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -214,7 +215,6 @@ class _SettingsTile extends StatelessWidget {
   final Color? titleColor;
   final Color? iconColor;
   final Color? arrowColor;
-
   @override
   Widget build(BuildContext context) {
     return InkWell(

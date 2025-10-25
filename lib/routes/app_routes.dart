@@ -78,7 +78,6 @@ import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/sc
 import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
 import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
-import 'package:market_jango/features/vendor/screens/vendor_setting/screen/vendor_settings.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
@@ -88,7 +87,7 @@ import '../features/auth/screens/login/screen/login_screen.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: BuyerBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -140,7 +139,6 @@ final GoRouter router = GoRouter(
     name: 'phoneNumberScreen',
     builder: (context,state)=>const PhoneNumberScreen(),
      ),
-
     GoRoute(path:ResetPasswordScreen.routeName,
     name: 'passwordScreen',
     builder: (context,state)=>const ResetPasswordScreen(),
@@ -182,12 +180,6 @@ GoRoute(
      path:VendorNotifications.routeName,
     name: 'vendor_notificatons',
     builder: (context,state)=>const VendorNotifications(),
-     ),
-
-     GoRoute(
-     path:VendorSettings.routeName,
-    name: 'vendor_setting',
-    builder: (context,state)=>const VendorSettings(),
      ),
 
      GoRoute(
@@ -274,7 +266,7 @@ GoRoute(
 
     GoRoute(
     path:VendorMyProductScreen.routeName,
-    name: 'vendorMyProductScreen',
+      name: VendorMyProductScreen.routeName,
     builder: (context,state)=>const VendorMyProductScreen(),
      ),
 
@@ -318,9 +310,9 @@ GoRoute(
   
     // Settings Flow
     GoRoute(
-      path: SettingScreen.routeName,
-      name: SettingScreen.routeName,
-      builder: (context, state) => const SettingScreen(),
+      path: GlobalSettingScreen.routeName,
+      name: GlobalSettingScreen.routeName,
+      builder: (context, state) => const GlobalSettingScreen(),
     ),
 
     GoRoute(

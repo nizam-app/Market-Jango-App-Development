@@ -16,4 +16,6 @@ class AuthAPIController {
   static String forgetPassword="${_base_api}/forget-password";
   static String verifyOtp="${_base_api}/verify-mail-otp";
   static String route="${_base_api}/route";
+  static String user_show = "${_base_api}/user/show";
+  static String vendor_show = "${_base_api}/vendor/show";
 }

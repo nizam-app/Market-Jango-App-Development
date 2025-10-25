@@ -1,84 +1,137 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
-class VendorHomeScreen extends StatefulWidget {
+import '../../../../../core/widget/global_pagination.dart';
+import '../data/vendor_product_data.dart';
+import '../logic/vendor_details_riverpod.dart';
+import '../model/user_details_model.dart';
+
+class VendorHomeScreen extends ConsumerStatefulWidget {
   const VendorHomeScreen({super.key});
 
   static const String routeName = '/vendor_home_screen';
   @override
-  State<VendorHomeScreen> createState() => _VendorHomeScreenState();
+  ConsumerState<VendorHomeScreen> createState() => _VendorHomeScreenState();
 }
 
-class _VendorHomeScreenState extends State<VendorHomeScreen> {
+class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
   String selectedFilter = "All"; // default selected filter
 
-  final List<String> filters = ["All", "Women", "Men"];
+  List<String> filters = ['All'];
+
+  int currentPage = 1;
+  int selectedCategoryId = 0; // 0 → All
+  String selectedCategoryName = 'All';
 
   @override
   Widget build(BuildContext context) {
+    final vendorAsync = ref.watch(vendorProvider);
+    final productAsync = ref.watch(productsProvider(currentPage));
+
     return SafeArea(
       child: Scaffold(
-        // backgroundColor: Colors.white24,
-        //drawer section
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),
         ),
         body: Builder(
           builder: (context) {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 25.h),
-                  Container(
-                    child: Stack(
-                      children: [
-                        buildProfileScetion(),
-                        Positioned(
-                          top: 20,
-                          right: 10,
-                          child: GestureDetector(
-                            onTap: () {
-                              Scaffold.of(context).openEndDrawer();
-                            },
-                            child: Container(
-                              height: 46.w,
-                              width: 46.w,
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                  ),
-                                ],
+            return SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 25.h),
+                    Container(
+                      child: Stack(
+                        children: [
+                          vendorAsync.when(
+                            data: (vendor) => buildProfileSection(vendor),
+                            loading: () => const CircularProgressIndicator(),
+                            error: (err, _) => Text('Error: $err'),
+                          ),
+                          Positioned(
+                            top: 20.h,
+                            right: 10.w,
+                            child: GestureDetector(
+                              onTap: () {
+                                Scaffold.of(context).openEndDrawer();
+                              },
+                              child: Container(
+                                height: 46.w,
+                                width: 46.w,
+                                padding: EdgeInsets.all(8.r),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.menu,
+                                  size: 24.sp,
+                                ), // ☰ three-line menu
                               ),
-                              child: Icon(
-                                Icons.menu,
-                                size: 24,
-                              ), // ☰ three-line menu
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 30.h),
-                  CustomSearchBar(),
-                  SizedBox(height: 10.h),
-                  buildFilteredSection(),
-                  buildProductGridViewSection(),
-                ],
+                    SizedBox(height: 30.h),
+                    CustomSearchBar(),
+                    SizedBox(height: 10.h),
+                    buildFilter(),
+                    SizedBox(height: 15.h),
+                    productAsync.when(
+                      data: (paginated) {
+                        final uniqueCategories = paginated.products
+                            .map((e) => e.categoryName)
+                            .toSet();
+                        filters = ['All', ...uniqueCategories];
+
+                        final filteredProducts = selectedFilter == 'All'
+                            ? paginated.products
+                            : paginated.products
+                                  .where(
+                                    (p) => p.categoryName == selectedFilter,
+                                  )
+                                  .toList();
+                        return Column(
+                          children: [
+                            _buildProductGridViewSection(filteredProducts),
+                            SizedBox(height: 20.h),
+                            GlobalPagination(
+                              currentPage: paginated.currentPage,
+                              totalPages: paginated.lastPage,
+                              onPageChanged: (page) {
+                                setState(() {
+                                  currentPage = page;
+                                });
+                              },
+                            ),
+                            SizedBox(height: 20.h),
+                          ],
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, _) => Center(child: Text('Error: $err')),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -86,6 +139,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
     );
   }
+
   Widget buildDrawer(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
@@ -96,8 +150,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           CustomBackButton(),
           SizedBox(height: 10.h),
           InkWell(
-            onTap: (){
-              context.push("/vendorOrderPending"); 
+            onTap: () {
+              context.push("/vendorOrderPending");
             },
             child: ListTile(
               leading: ImageIcon(
@@ -116,7 +170,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           ),
           Divider(color: Colors.grey.shade300),
           InkWell(
-            onTap: (){
+            onTap: () {
               context.push("/vendorSalePlatform");
             },
             child: ListTile(
@@ -136,7 +190,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           ),
           Divider(color: Colors.grey.shade300),
           InkWell(
-            onTap: (){
+            onTap: () {
               context.push("/language");
             },
             child: ListTile(
@@ -156,9 +210,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
           ),
           Divider(color: Colors.grey.shade300),
           InkWell(
-            onTap:(){
-
-            },
+            onTap: () {},
             child: ListTile(
               leading: ImageIcon(
                 const AssetImage("assets/icon/logout.png"),
@@ -167,7 +219,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
               ),
               title: Text(
                 "Log Out",
-                style: TextStyle(color: const Color(0xffFF3B3B), fontSize: 14.sp),
+                style: TextStyle(
+                  color: const Color(0xffFF3B3B),
+                  fontSize: 14.sp,
+                ),
               ),
               trailing: const Icon(
                 Icons.arrow_forward_ios_outlined,
@@ -180,45 +235,12 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     );
   }
 
-  Widget buildFilteredSection() {
-    return SizedBox(
-      height: 50,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                spacing: 5,
-                children: [Text("Fashion"), Icon(Icons.keyboard_arrow_down)],
-              ),
-            ),
-
-            // Filter buttons
-            buildFilter(),
-          ],
-        ),
-      ),
-    );
-  }
+  //
 
   Widget buildFilter() {
     return Row(
       children: filters.map((filter) {
-        bool isSelected = selectedFilter == filter;
+        final isSelected = selectedFilter == filter;
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -226,16 +248,16 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
             });
           },
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: EdgeInsets.symmetric(horizontal: 6.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: isSelected ? AllColor.loginButtomColor : Colors.white,
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(25.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
+                  blurRadius: 4.r,
+                  offset: Offset(0, 2.h),
                 ),
               ],
             ),
@@ -244,6 +266,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontWeight: FontWeight.w500,
+                fontSize: 14.sp,
               ),
             ),
           ),
@@ -252,116 +275,117 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
     );
   }
 
-  Widget buildProductGridViewSection() {
-    return Expanded(
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 9 / 13,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 15,
-        ),
-
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return buildAddUrProduct(context);
-          } else {
-            return Stack(
-              children: [
-                CustomNewProduct(
-                  width: 161.w,
-                  height: 170.h,
-                  text: "Flowy summer dress",
-                  text2: "Flowy summer dress",
-                ),
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  child: Edit_Widget(height: 24.w, width: 24.w, size: 12.r),
-                ),
-              ],
-            );
-          }
-        },
+  Widget _buildProductGridViewSection(List<Product> products) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 9 / 13,
+        mainAxisSpacing: 10.h,
+        crossAxisSpacing: 15.w,
       ),
+      itemCount: products.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return buildAddUrProduct(context);
+        } else {
+          final prod = products[index - 1];
+          return Stack(
+            children: [
+              CustomNewProduct(
+                width: 161.w,
+                height: 168.h,
+                text: prod.name,
+                text2: prod.description,
+                image: prod.image,
+              ),
+              Positioned(
+                top: 20.h,
+                right: 20.w,
+                child: Edit_Widget(height: 24.w, width: 24.w, size: 12.r),
+              ),
+            ],
+          );
+        }
+      },
     );
   }
+}
 
-  Widget buildAddUrProduct(BuildContext context) {
-    return Card(
-      elevation: 1,
-      child: Container(
-        height: 244.h,
-        width: 169.w,
-        decoration: BoxDecoration(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 30,
+Widget buildAddUrProduct(BuildContext context) {
+  return Card(
+    elevation: 1.r,
+    child: Container(
+      height: 244.h,
+      width: 169.w,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.r)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add, size: 70.sp, color: Color(0xff575757)),
+          SizedBox(height: 10.h),
+          Text(
+            "Add your\nProduct",
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              // color: Color(0xff2F2F2F),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget buildProfileSection(VendorDetailsModel vendor) {
+  return Column(
+    children: [
+      Center(
+        child: Stack(
           children: [
-            Icon(Icons.add, size: 70, color: Color(0xff575757)),
-            Text(
-              "Add your\nProduct",
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                // color: Color(0xff2F2F2F),
-                fontWeight: FontWeight.w700,
+            Container(
+              height: 82.w,
+              width: 82.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 1.w,
+                  color: AllColor.loginButtomColor,
+                ),
+                image: DecorationImage(
+                  image: NetworkImage(vendor.image),
+                  fit: BoxFit.cover,
+                ),
               ),
+            ),
+            Positioned(
+              top: 15.h,
+              left: 4.w,
+              child: Container(
+                height: 10.w,
+                width: 10.w,
+                decoration: BoxDecoration(
+                  color: AllColor.activityColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 10.h,
+              right: 0.w,
+              child: Edit_Widget(height: 21.w, width: 21.w, size: 10.r),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget buildProfileScetion() {
-    return Column(
-      children: [
-        Center(
-          child: Stack(
-            children: [
-              Container(
-                height: 82.w,
-                width: 82.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    width: 1.w,
-                    color: AllColor.loginButtomColor,
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage("assets/images/vendor_profile.png"),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 15,
-                left: 4,
-                child: Container(
-                  height: 10.w,
-                  width: 10.w,
-                  decoration: BoxDecoration(
-                    color: AllColor.activityColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 10,
-                right: 0,
-                child: Edit_Widget(height: 21.w, width: 21.w, size: 10.r),
-              ),
-            ],
-          ),
-        ),
-
-        SizedBox(height: 20.h),
-        Text(
-          "TrendLoop",
-          style: TextStyle(fontSize: 16.sp, color: AllColor.loginButtomColor),
-        ),
-      ],
-    );
-  }
+      SizedBox(height: 20.h),
+      Text(
+        vendor.name,
+        style: TextStyle(fontSize: 16.sp, color: AllColor.loginButtomColor),
+      ),
+    ],
+  );
 }

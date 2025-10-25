@@ -5,27 +5,27 @@ import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/profile_model.dart';
+import '../model/user_details_model.dart';
 
-final userProvider = FutureProvider<UserModel>((ref) async {
+final vendorProvider = FutureProvider<VendorDetailsModel>((ref) async {
   SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-  String? _user_id = _sharedPreferences.getString("user_id");
-  if (_user_id == null) {
+  String? _user_token = _sharedPreferences.getString("auth_token");
+  if (_user_token == null) {
     throw Exception("User ID not found");
   }
   final response = await http.get(
-    Uri.parse("${AuthAPIController.user_show}?id=$_user_id"),
+    Uri.parse(AuthAPIController.vendor_show),
     headers: {
-      "Content-Type": "application/json",
       "Accept": "application/json",
-      // Add token if needed
+      "Content-Type": "application/json",
+      "token": _user_token, // Replace or inject token dynamically
     },
   );
 
   if (response.statusCode == 200) {
     final json = jsonDecode(response.body);
-    return UserModel.fromJson(json['data']);
+    return VendorDetailsModel.fromJson(json['data']);
   } else {
-    throw Exception("Failed to load user");
+    throw Exception("Failed to load vendor data");
   }
 });

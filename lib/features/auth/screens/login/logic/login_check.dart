@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -7,15 +8,10 @@ import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
-import 'package:market_jango/features/transport/screens/transport_booking.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/constants/api_control/auth_api.dart';
 import '../../../../../core/widget/global_snackbar.dart';
-import '../../../../buyer/screens/home_screen.dart';
-import '../../../../vendor/screens/vendor_home/screen/vendor_home_screen.dart';
-import '../../../../driver/screen/driver_home.dart';
-import '../../../../transport/screens/transport_home.dart';
 
 Future<void> loginAndGoSingleRole({
   required BuildContext context,
@@ -49,11 +45,13 @@ Future<void> loginAndGoSingleRole({
 
       final userType = user['user_type'] ?? '';
       final token = data['token'] ?? json['token'] ?? '';
+      final int id = user['id'];
 
       // ✅ Save token & user_type safely
       final prefs = await SharedPreferences.getInstance();
       if (token.isNotEmpty) await prefs.setString('auth_token', token);
       if (userType.isNotEmpty) await prefs.setString('user_type', userType);
+      if (id != null) await prefs.setString('user_id', id.toString());
 
       GlobalSnackbar.show(
         context,

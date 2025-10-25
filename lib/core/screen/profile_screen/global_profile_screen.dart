@@ -1,78 +1,93 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
-import 'global_profile_edit_screen.dart';
-import 'package:market_jango/core/constants/color_control/all_color.dart';
 
-class SettingScreen extends StatefulWidget {
-  const SettingScreen({super.key});
-  static const String routeName = '/settings_screen';
+import '../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
+import '../../utils/get_user_type.dart';
+import '../global_profile_edit_screen.dart';
+import 'data/profile_data.dart';
+
+class GlobalSettingScreen extends ConsumerWidget {
+  const GlobalSettingScreen({super.key});
+  static const String routeName = '/settingsScreen';
 
   @override
-  State<SettingScreen> createState() => _SettingScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final userTypeAsync = ref.watch(getUserTypeProvider);
 
-class _SettingScreenState extends State<SettingScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return ScreenBackground(child: Padding(
-      padding:  EdgeInsets.all(20.r),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 12.h),
-          Tuppertextandbackbutton(screenName: "My Settings") ,
-          SizedBox(height: 16.h),
-          const ProfileSection(),
+    return ScreenBackground(
+      child: Padding(
+        padding: EdgeInsets.all(20.r),
+        child: userAsync.when(
+          data: (user) =>
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 12.h),
+                  Tuppertextandbackbutton(screenName: "My Settings"),
+                  SizedBox(height: 16.h),
+                  ProfileSection(name: user.name,
+                      username: user.email,
+                      imageUrl: user.image),
 
-          SizedBox(height: 20.h),
-          _SettingsLine(icon: Icons.phone_in_talk_outlined, text: "(319) 555-0115"),
-          _DividerLine(),
-          _SettingsLine(icon: Icons.email_outlined, text: "mirable@gmail.com"),
+                  SizedBox(height: 20.h),
+                  _SettingsLine(
+                      icon: Icons.phone_in_talk_outlined, text: user.phone),
+                  _DividerLine(),
+                  _SettingsLine(icon: Icons.email_outlined, text: user.email),
 
-          SizedBox(height: 12.h),
-          _DividerLine(),
+                  SizedBox(height: 12.h),
+                  _DividerLine(),
 
-          _SettingsTile(
-            leadingIcon: Icons.shopping_bag_outlined,
-            title: "My Order",
-            onTap: () {context.push(BuyerOrderPage.routeName);},
-          ),
-          _DividerLine(),
-          _SettingsTile(
-            leadingIcon: Icons.event_note_outlined,
-            title: "Order history",
-            onTap: () {context.push(BuyerOrderHistoryScreen.routeName);},
-          ),
-          _DividerLine(),
-          _SettingsTile(
-            leadingIcon: Icons.language_outlined,
-            title: "Language",
-            onTap: () {context.push(LanguageScreen.routeName);},
-          ),
-          _DividerLine(),
-
-          // ---- Log out (red/orange accent) ----
-          _SettingsTile(
-            leadingIcon: Icons.logout_outlined,
-            title: "Log Out",
-            titleColor: AllColor.orange,
-            iconColor: AllColor.orange,
-            arrowColor: AllColor.orange,
-            onTap: () {},
-          ),
-        ],
+                  if (userTypeAsync.value == "buyer") _SettingsTile(
+                    leadingIcon: Icons.shopping_bag_outlined,
+                    title: "My Order",
+                    onTap: () => context.push(BuyerOrderPage.routeName),
+                  ), if (userTypeAsync.value == "vendor") _SettingsTile(
+                    leadingIcon: Icons.shopping_bag_outlined,
+                    title: "My Product",
+                    onTap: () => context.push(VendorMyProductScreen.routeName),
+                  ),
+                  _DividerLine(),
+                  if (userTypeAsync.value == "buyer") _SettingsTile(
+                    leadingIcon: Icons.event_note_outlined,
+                    title: "Order history",
+                    onTap: () =>
+                        context.push(BuyerOrderHistoryScreen.routeName),
+                  ),
+                  _DividerLine(),
+                  _SettingsTile(
+                    leadingIcon: Icons.language_outlined,
+                    title: "Language",
+                    onTap: () => context.push(LanguageScreen.routeName),
+                  ),
+                  _DividerLine(),
+                  _SettingsTile(
+                    leadingIcon: Icons.logout_outlined,
+                    title: "Log Out",
+                    titleColor: AllColor.orange,
+                    iconColor: AllColor.orange,
+                    arrowColor: AllColor.orange,
+                    onTap: () {},
+                  ),
+                ],
+              ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(child: Text('Error: $error')),
+        ),
       ),
-    ),);
+    );
   }
 }
 
-/* ===================== widgets ===================== */
 
 class SettingTitle extends StatelessWidget {
   const SettingTitle({super.key});
@@ -89,9 +104,17 @@ class SettingTitle extends StatelessWidget {
     );
   }
 }
-
 class ProfileSection extends StatelessWidget {
-  const ProfileSection({super.key});
+  final String name;
+  final String username;
+  final String imageUrl;
+
+  const ProfileSection({
+    super.key,
+    required this.name,
+    required this.username,
+    required this.imageUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +126,7 @@ class ProfileSection extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 26.r,
-              backgroundImage: const NetworkImage(
-                "https://randomuser.me/api/portraits/women/68.jpg",
-              ),
+              backgroundImage: NetworkImage(imageUrl),
             ),
             Positioned(
               bottom: -2.h,
@@ -134,7 +155,7 @@ class ProfileSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Mirable Lily",
+              Text(name,
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -146,8 +167,12 @@ class ProfileSection extends StatelessWidget {
                 children: [
                   Icon(Icons.alternate_email, size: 14.sp, color: AllColor.black),
                   SizedBox(width: 4.w),
-                  Text("mirable123",
-                      style: TextStyle(fontSize: 13.sp, color: AllColor.black)),
+                  Text(
+                    username.length > 20
+                        ? '${username.substring(0, 17)}...'
+                        : username,
+                    style: TextStyle(fontSize: 13.sp, color: AllColor.black),
+                  ),
                   SizedBox(width: 8.w),
                   _PrivateBadge(),
                 ],
@@ -156,17 +181,14 @@ class ProfileSection extends StatelessWidget {
           ),
         ),
         IconButton(
-          onPressed: () => _gotoProfileEdit(context),
+          onPressed: () => context.push(BuyerProfileEditScreen.routeName),
           icon: Icon(Icons.edit_outlined, color: AllColor.black, size: 18.sp),
         ),
       ],
     );
   }
-
-  void _gotoProfileEdit(BuildContext context) {
-    context.push(BuyerProfileEditScreen.routeName);
-  }
 }
+
 
 class _SettingsLine extends StatelessWidget {
   const _SettingsLine({required this.icon, required this.text});
@@ -214,7 +236,6 @@ class _SettingsTile extends StatelessWidget {
   final Color? titleColor;
   final Color? iconColor;
   final Color? arrowColor;
-
   @override
   Widget build(BuildContext context) {
     return InkWell(

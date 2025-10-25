@@ -288,8 +288,8 @@ import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/transport_driver.dart';
 
-class TransportHome extends StatelessWidget {
-  const TransportHome({super.key});
+class TransportHomeScreen extends StatelessWidget {
+  const TransportHomeScreen({super.key});
   static const String routeName = '/transport_home';
 
   @override

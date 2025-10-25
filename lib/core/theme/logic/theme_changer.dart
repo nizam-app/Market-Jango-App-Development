@@ -1,9 +1,5 @@
-import 'package:get/get.dart';
-class ThemeChanger extends GetxController {
-  RxBool isDarkMode = true.obs;
 
-  void toggleTheme() {
-    isDarkMode.value = !isDarkMode.value;
-    update();
-  }
-}
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// mirrors your old `isDarkMode = true`
+final isDarkProvider = StateProvider<bool>((_) => true);

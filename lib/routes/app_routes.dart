@@ -2,23 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
-import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
-import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
-import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
+import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
+import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
+import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
-import 'package:market_jango/features/auth/screens/car_info.dart';
+import 'package:market_jango/features/auth/screens/car_info_screen.dart';
+import 'package:market_jango/features/auth/screens/code_screen.dart';
+import 'package:market_jango/features/auth/screens/email_screen.dart';
+import 'package:market_jango/features/auth/screens/forget_otp_verification_screen.dart';
+import 'package:market_jango/features/auth/screens/name_screen.dart';
+import 'package:market_jango/features/auth/screens/new_password_screen.dart';
+import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
+import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
+import 'package:market_jango/features/auth/screens/splash_screen.dart';
+import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
+import 'package:market_jango/features/buyer/screens/home_screen.dart';
 import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
-import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
@@ -30,25 +41,10 @@ import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_setting.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
-import 'package:market_jango/core/screen/global_profile_screen.dart';
-import 'package:market_jango/features/auth/screens/Congratulation.dart';
-import 'package:market_jango/features/auth/screens/code_screen.dart';
-import 'package:market_jango/features/auth/screens/email_screen.dart';
-import 'package:market_jango/features/auth/screens/name_screen.dart';
-import 'package:market_jango/features/auth/screens/new_password_screen.dart';
-import 'package:market_jango/features/auth/screens/password_screen.dart';
-import 'package:market_jango/features/auth/screens/phone_number.dart';
-import 'package:market_jango/features/auth/screens/splash_screen.dart';
-import 'package:market_jango/features/auth/screens/user.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_from.dart';
-import 'package:market_jango/features/auth/screens/verification_screen.dart';
-import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
-import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
-import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
-import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
-import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
@@ -65,21 +61,23 @@ import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
 import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
-import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/screen/product_edite_page.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
-import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
+import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_edit_page/screen/product_edite_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
+import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
-import 'package:market_jango/features/vendor/screens/vendor_setting/screen/vendor_settings.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
@@ -112,9 +110,9 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
     GoRoute(
-      path: VerificationScreen.routeName,
+      path: ForgetOTPVerificationScreen.routeName,
       name: 'verification',
-      builder: (context, state) => const VerificationScreen(),
+      builder: (context, state) => const ForgetOTPVerificationScreen(),
     ),
     GoRoute(
       path: NewPasswordScreen.routeName,
@@ -141,20 +139,18 @@ final GoRouter router = GoRouter(
     name: 'phoneNumberScreen',
     builder: (context,state)=>const PhoneNumberScreen(),
      ),
-   
-   
-    GoRoute(path:PasswordScreen.routeName,
+    GoRoute(path:ResetPasswordScreen.routeName,
     name: 'passwordScreen',
-    builder: (context,state)=>const PasswordScreen(),
+    builder: (context,state)=>const ResetPasswordScreen(),
      ),
 
      GoRoute(
       path:AccountRequest.routeName,
       name: 'accountRequest',
       builder: (context,state)=>const AccountRequest(),
-     ), 
+     ),
 
-  
+
     GoRoute(
       path:VendorBottomNav.routeName,
       name: 'vendorBottomNavBar',
@@ -167,11 +163,11 @@ final GoRouter router = GoRouter(
       builder: (context,state)=> ProductEditScreen(),
     ),
 
-   GoRoute(
-     path:VendorRequestFrom.routeName,
-    name: 'vendorRequstFrom',
-    builder: (context,state)=>const VendorRequestFrom(),
-     ),
+   // GoRoute(
+   //   path:VendorRequestForm.routeName,
+   //  name: VendorRequestForm.routeName,
+   //  builder: (context,state)=>const VendorRequestForm(),
+   //   ),
 
 
      GoRoute(
@@ -184,12 +180,6 @@ GoRoute(
      path:VendorNotifications.routeName,
     name: 'vendor_notificatons',
     builder: (context,state)=>const VendorNotifications(),
-     ),
-
-     GoRoute(
-     path:VendorSettings.routeName,
-    name: 'vendor_setting',
-    builder: (context,state)=>const VendorSettings(),
      ),
 
      GoRoute(
@@ -276,7 +266,7 @@ GoRoute(
 
     GoRoute(
     path:VendorMyProductScreen.routeName,
-    name: 'vendorMyProductScreen',
+      name: VendorMyProductScreen.routeName,
     builder: (context,state)=>const VendorMyProductScreen(),
      ),
 
@@ -320,9 +310,9 @@ GoRoute(
   
     // Settings Flow
     GoRoute(
-      path: SettingScreen.routeName,
-      name: 'settings_screen',
-      builder: (context, state) => const SettingScreen(),
+      path: GlobalSettingScreen.routeName,
+      name: GlobalSettingScreen.routeName,
+      builder: (context, state) => const GlobalSettingScreen(),
     ),
 
     GoRoute(
@@ -349,9 +339,9 @@ GoRoute(
     ),
 
     GoRoute(
-      path: TransportHome.routeName,
+      path: TransportHomeScreen.routeName,
       name: 'transport_home',
-      builder: (context, state) => TransportHome(),
+      builder: (context, state) => TransportHomeScreen(),
     ),
 
     GoRoute(
@@ -494,9 +484,9 @@ GoRoute(
     ),
     
      GoRoute(
-      path: DriverHome.routeName,
+      path: DriverHomeScreen.routeName,
       name: 'driverHome',
-      builder: (context, state) => const DriverHome(),
+      builder: (context, state) => const DriverHomeScreen(),
     ),
     
     GoRoute(

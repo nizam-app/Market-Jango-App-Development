@@ -1,34 +1,22 @@
-// category_model.dart
-class Category {
+class VendorCategoryModel {
   final int id;
   final String name;
+  final String status;
+  final int vendorId;
 
-  Category({required this.id, required this.name});
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(id: json['id'], name: json['name'] ?? '');
-  }
-}
-
-class PaginatedCategories {
-  final int currentPage;
-  final int lastPage;
-  final List<Category> categories;
-
-  PaginatedCategories({
-    required this.currentPage,
-    required this.lastPage,
-    required this.categories,
+  VendorCategoryModel({
+    required this.id,
+    required this.name,
+    required this.status,
+    required this.vendorId,
   });
 
-  factory PaginatedCategories.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
-    return PaginatedCategories(
-      currentPage: data['current_page'],
-      lastPage: data['last_page'],
-      categories: (data['data'] as List)
-          .map((e) => Category.fromJson(e))
-          .toList(),
+  factory VendorCategoryModel.fromJson(Map<String, dynamic> json) {
+    return VendorCategoryModel(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      status: json['status'] ?? '',
+      vendorId: json['vendor_id'] ?? 0,
     );
   }
 }

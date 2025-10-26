@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/constants/image_control/image_path.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/widget/custom_variant_picker.dart';
 
 import '../../../widgets/custom_back_button.dart';
+import '../../vendor_home/model/vendor_product_model.dart';
 
 class ProductEditScreen extends StatefulWidget {
-  const ProductEditScreen({super.key});
+  const ProductEditScreen({super.key, required this.product});
+
+  final Product product;
 
   static const String routeName = '/vendor_product_edit';
 
@@ -15,13 +18,43 @@ class ProductEditScreen extends StatefulWidget {
 }
 
 class _ProductEditScreenState extends State<ProductEditScreen> {
+  String? selectedCategory = "Fashion / Trend Loop";
+  String? selectedColor = "Blue";
+  String? selectedSize = "M";
+
+  final List<String> categories = ["Fashion / Trend Loop", "Shoes", "Jewelry"];
+  final List<String> colors = ["Blue", "Red", "Green", "Black"];
+  final List<String> sizes = ["S", "M", "L", "XL"];
+
+  late TextEditingController nameController;
+
+  late TextEditingController descriptionController;
+
+  late TextEditingController priceController;
+
+  final ThemeData dropTheme = ThemeData(
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+  );
+
+  @override
+  void initState() {
+    nameController = TextEditingController(text: widget.product.name);
+    descriptionController = TextEditingController(
+      text: widget.product.description,
+    );
+    priceController = TextEditingController(
+      text: widget.product.sellPrice.toString(),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 15.w),
+          padding: EdgeInsets.symmetric(horizontal: 15.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -31,145 +64,282 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                     height: 439.h,
                     width: double.maxFinite,
                     decoration: BoxDecoration(
-                      image: DecorationImage(image: AssetImage( '${ImagePath.justForYouImage}'), fit: BoxFit.cover,)
+                      image: DecorationImage(
+                        image: NetworkImage(widget.product.image),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-
                   ),
-                  Positioned(
-                    top: 50,
-                      left: 30,
-                      child: CustomBackButton())
+                  Positioned(top: 50, left: 30, child: CustomBackButton()),
                 ],
               ),
-              SizedBox(height: 10.h,),
+              SizedBox(height: 10.h),
               SizedBox(
                 height: 80.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: 4,
-                    itemBuilder: (context,index){
+                  itemBuilder: (context, index) {
                     return Container(
                       height: 76.w,
                       width: 76.w,
                       decoration: BoxDecoration(
-                        image: DecorationImage(image: AssetImage("assets/images/imgF.png"))
+                        image: DecorationImage(
+                          image: AssetImage("assets/images/imgF.png"),
+                        ),
                       ),
-                      child: Icon(Icons.camera_alt_outlined,color: Colors.white,),
+                      child: Icon(
+                        Icons.camera_alt_outlined,
+                        color: Colors.white,
+                      ),
                     );
+                  },
+                  separatorBuilder: (context, position) {
+                    return SizedBox(width: 10.w);
+                  },
+                ),
+              ),
+              SizedBox(height: 10.h),
 
-                    }, separatorBuilder: ( context,  position) {
-                    return SizedBox(width: 10.w,);
-                },),
-              ),
-              SizedBox(height: 10.w,),
-              Container(
-                width: 350.w,
-                height: 60.h,
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Fashion / Trend Loop"),
-                    Icon(Icons.keyboard_arrow_down)
-                  ],
-                ),
-              ),
-              SizedBox(height: 10.w,),
-              Container(
-                width: 350.w,
-                height: 60.h,
-                color: Colors.white,
-                child: Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 8.w,vertical: 15.h),
-                  child: Text("Women scart"),
-                ),
-              ),
-              SizedBox(height: 10.w,),
-              Container(
-                width: 351.w,
-                height: 226.h,
-                color: Colors.white,
-                child:  Center(child: Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 8.w),
-                  child: Text("Discover a curated collection of stylish and fashionable women’s dresses designed for every mood and moment. From elegant evenings to everyday charm — dress to express.\n\nDiscover a curated collection of stylish and fashionable women’s dresses."),
-                )),
-
-              ),
-              SizedBox(height: 10.w,),
-              Padding(
-                padding:  EdgeInsets.symmetric(horizontal: 5.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        width: 350.w,
-                        height: 60.h,
-                        color: Colors.white,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding:  EdgeInsets.symmetric(horizontal: 8.w),
-                              child: Text("Blue"),
-                            ),
-                            Icon(Icons.keyboard_arrow_down)
-                          ],
-                        ),
+              /// Category Dropdown
+              Theme(
+                data: dropTheme,
+                child: Container(
+                  height: 56.h,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  decoration: BoxDecoration(
+                    color: AllColor.white,
+                    // borderRadius: BorderRadius.circular(24.r),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 14.r,
+                        offset: Offset(0, 6.h),
+                        color: Colors.black.withOpacity(0.06),
                       ),
-                    ),
-                    SizedBox(width: 10.w,),
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        width: 350.w,
-                        height: 60.h,
-                        color: Colors.white,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding:  EdgeInsets.symmetric(horizontal: 8.w),
-                              child: Text("M,XL,L"),
-                            ),
-                            Icon(Icons.keyboard_arrow_down)
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10.w,),
-              Container(
-                width: 350.w,
-                height: 60.h,
-                color: Colors.white,
-                child: Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 8.w,vertical: 15.h),
-                  child: Text("\$18.00"),
-                ),
-              ),
-              SizedBox(height: 20.h,),
-              
-              ElevatedButton(onPressed: (){},
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(AllColor.loginButtomColor),
-                    foregroundColor: WidgetStatePropertyAll(Colors.white),
-                    fixedSize: WidgetStatePropertyAll(Size.fromWidth(80.w),),
-                    shape:WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.r)
-                      )
-                    )
+                    ],
                   ),
-                  child: Text("Save"))
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: selectedCategory,
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                      style: TextStyle(fontSize: 15.sp, color: Colors.black87),
+                      items: categories.map((e) {
+                        return DropdownMenuItem(
+                          value: e,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            child: Text(e),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (v) {
+                        setState(() {
+                          selectedCategory = v;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10.h),
+
+              /// Product Name
+              TextFormField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  fillColor: AllColor.white,
+                  enabledBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  focusedBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+
+              /// Description
+              TextFormField(
+                controller: descriptionController,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  fillColor: AllColor.white,
+                  enabledBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  focusedBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 15.h),
+
+              /// Color & Size Dropdown
+              CustomVariantPicker(),
+
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Expanded(
+              //       child: Theme(
+              //         data: dropTheme,
+              //         child: Container(
+              //           height: 56.h,
+              //           margin: EdgeInsets.only(right: 5.w),
+              //           padding: EdgeInsets.symmetric(horizontal: 16.w),
+              //           decoration: BoxDecoration(
+              //             color: AllColor.white,
+              //             // borderRadius: BorderRadius.circular(24.r),
+              //             boxShadow: [
+              //               BoxShadow(
+              //                 blurRadius: 14.r,
+              //                 offset: Offset(0, 6.h),
+              //                 color: Colors.black.withOpacity(0.06),
+              //               ),
+              //             ],
+              //           ),
+              //           child: DropdownButtonHideUnderline(
+              //             child: DropdownButton<String>(
+              //               isExpanded: true,
+              //               value: selectedColor,
+              //               icon: const Icon(Icons.keyboard_arrow_down_rounded),
+              //               dropdownColor: Colors.white,
+              //               borderRadius: BorderRadius.circular(16.r),
+              //               style: TextStyle(
+              //                 fontSize: 15.sp,
+              //                 color: Colors.black87,
+              //               ),
+              //               items: colors.map((e) {
+              //                 return DropdownMenuItem(
+              //                   value: e,
+              //                   child: Padding(
+              //                     padding: EdgeInsets.symmetric(vertical: 12.h),
+              //                     child: Text(e),
+              //                   ),
+              //                 );
+              //               }).toList(),
+              //               onChanged: (v) {
+              //                 setState(() {
+              //                   selectedColor = v;
+              //                 });
+              //               },
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ),
+              //     Expanded(
+              //       child: Theme(
+              //         data: dropTheme,
+              //         child: Container(
+              //           height: 56.h,
+              //           margin: EdgeInsets.only(left: 5.w),
+              //           padding: EdgeInsets.symmetric(horizontal: 16.w),
+              //           decoration: BoxDecoration(
+              //             color: AllColor.white,
+              //             // borderRadius: BorderRadius.circular(24.r),
+              //             boxShadow: [
+              //               BoxShadow(
+              //                 blurRadius: 14.r,
+              //                 offset: Offset(0, 6.h),
+              //                 color: Colors.black.withOpacity(0.06),
+              //               ),
+              //             ],
+              //           ),
+              //           child: DropdownButtonHideUnderline(
+              //             child: DropdownButton<String>(
+              //               isExpanded: true,
+              //               value: selectedSize,
+              //               icon: const Icon(Icons.keyboard_arrow_down_rounded),
+              //               dropdownColor: Colors.white,
+              //               borderRadius: BorderRadius.circular(16.r),
+              //               style: TextStyle(
+              //                 fontSize: 15.sp,
+              //                 color: Colors.black87,
+              //               ),
+              //               items: sizes.map((e) {
+              //                 return DropdownMenuItem(
+              //                   value: e,
+              //                   child: Padding(
+              //                     padding: EdgeInsets.symmetric(vertical: 12.h),
+              //                     child: Text(e),
+              //                   ),
+              //                 );
+              //               }).toList(),
+              //               onChanged: (v) {
+              //                 setState(() {
+              //                   selectedSize = v;
+              //                 });
+              //               },
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              SizedBox(height: 15.h),
+
+              /// Price
+              TextFormField(
+                controller: priceController,
+                decoration: InputDecoration(
+                  fillColor: AllColor.white,
+                  enabledBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  focusedBorder: OutlineInputBorder().copyWith(
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 20.h),
+
+              /// Save Button
+              ElevatedButton(
+                onPressed: () {
+                  // TODO: Handle save logic
+                  print("Category: $selectedCategory");
+                  print("Color: $selectedColor");
+                  print("Size: $selectedSize");
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(
+                    AllColor.loginButtomColor,
+                  ),
+                  foregroundColor: WidgetStatePropertyAll(Colors.white),
+                  fixedSize: WidgetStatePropertyAll(Size.fromWidth(80.w)),
+                  shape: WidgetStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                  ),
+                ),
+                child: Text("Save"),
+              ),
             ],
           ),
         ),
       ),
-
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    priceController.dispose();
+
+    // TODO: implement dispose
+    super.dispose();
   }
 }

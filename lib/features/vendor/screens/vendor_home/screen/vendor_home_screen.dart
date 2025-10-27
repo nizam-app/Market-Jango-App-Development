@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
@@ -9,8 +10,12 @@ import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_pr
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
+import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../../../../core/widget/global_pagination.dart';
+import '../../vendor_product_add_page/screen/product_add_page.dart';
+import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
+import '../logic/vendor_category_filter_riverpod.dart';
 import '../logic/vendor_details_riverpod.dart';
 import '../model/user_details_model.dart';
 
@@ -38,6 +43,7 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: AllColor.white70,
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),
@@ -92,35 +98,21 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
                     ),
                     SizedBox(height: 30.h),
                     CustomSearchBar(),
-                    SizedBox(height: 10.h),
-                    buildFilter(),
                     SizedBox(height: 15.h),
+                    CategoryBar(endpoint: VendorAPIController.vendor_category),
+                    SizedBox(height: 20.h),
                     productAsync.when(
                       data: (paginated) {
-                        final uniqueCategories = paginated.products
-                            .map((e) => e.categoryName)
-                            .toSet();
-                        filters = ['All', ...uniqueCategories];
-
-                        final filteredProducts = selectedFilter == 'All'
-                            ? paginated.products
-                            : paginated.products
-                                  .where(
-                                    (p) => p.categoryName == selectedFilter,
-                                  )
-                                  .toList();
+                        final products = paginated.products;
                         return Column(
                           children: [
-                            _buildProductGridViewSection(filteredProducts),
+                            _buildProductGridViewSection(products),
                             SizedBox(height: 20.h),
                             GlobalPagination(
                               currentPage: paginated.currentPage,
                               totalPages: paginated.lastPage,
-                              onPageChanged: (page) {
-                                setState(() {
-                                  currentPage = page;
-                                });
-                              },
+                              onPageChanged: (page) =>
+                                  setState(() => currentPage = page),
                             ),
                             SizedBox(height: 20.h),
                           ],
@@ -237,43 +229,7 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
 
   //
 
-  Widget buildFilter() {
-    return Row(
-      children: filters.map((filter) {
-        final isSelected = selectedFilter == filter;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedFilter = filter;
-            });
-          },
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 6.w),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: isSelected ? AllColor.loginButtomColor : Colors.white,
-              borderRadius: BorderRadius.circular(25.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4.r,
-                  offset: Offset(0, 2.h),
-                ),
-              ],
-            ),
-            child: Text(
-              filter,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w500,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  // filters = ['Quasi', 'Electronics', 'Grocery', ...]  // API থেকে সেট করবে
 
   Widget _buildProductGridViewSection(List<Product> products) {
     return GridView.builder(
@@ -303,7 +259,12 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
               Positioned(
                 top: 20.h,
                 right: 20.w,
-                child: Edit_Widget(height: 24.w, width: 24.w, size: 12.r),
+                child: Edit_Widget(
+                  height: 24.w,
+                  width: 24.w,
+                  size: 12.r,
+                  product: prod,
+                ),
               ),
             ],
           );
@@ -314,27 +275,32 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
 }
 
 Widget buildAddUrProduct(BuildContext context) {
-  return Card(
-    elevation: 1.r,
-    child: Container(
-      height: 244.h,
-      width: 169.w,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.r)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.add, size: 70.sp, color: Color(0xff575757)),
-          SizedBox(height: 10.h),
-          Text(
-            "Add your\nProduct",
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              // color: Color(0xff2F2F2F),
-              fontWeight: FontWeight.w700,
+  return InkWell(
+    onTap: () {
+      context.push(ProductAddPage.routeName);
+    },
+    child: Card(
+      elevation: 1.r,
+      child: Container(
+        height: 244.h,
+        width: 169.w,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.r)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 70.sp, color: Color(0xff575757)),
+            SizedBox(height: 10.h),
+            Text(
+              "Add your\nProduct",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                // color: Color(0xff2F2F2F),
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -376,7 +342,7 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
             Positioned(
               bottom: 10.h,
               right: 0.w,
-              child: Edit_Widget(height: 21.w, width: 21.w, size: 10.r),
+              child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit)),
             ),
           ],
         ),
@@ -388,4 +354,81 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
       ),
     ],
   );
+}
+
+class CategoryBar extends ConsumerStatefulWidget {
+  const CategoryBar({super.key, required this.endpoint});
+
+  final String endpoint;
+
+  @override
+  ConsumerState<CategoryBar> createState() => _CategoryBarState();
+}
+
+class _CategoryBarState extends ConsumerState<CategoryBar> {
+  int selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final categoryAsync = ref.watch(vendorCategoryProvider(widget.endpoint));
+
+    return categoryAsync.when(
+      data: (categories) {
+        final names = ['All', ...categories.map((e) => e.name).toList()];
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(names.length, (index) {
+              final isSelected = selectedIndex == index;
+
+              return GestureDetector(
+                onTap: () async {
+                  setState(() => selectedIndex = index);
+
+                  final productAsync = ref.watch(
+                    productsByCategoryProvider({
+                      'categoryId': categories[index].id,
+                    }),
+                  );
+                  Logger().e(productAsync.value);
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 6.w),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.black : Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4.r,
+                        offset: Offset(0, 2.h),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    names[index],
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 40,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Text('Category load error: $e'),
+    );
+  }
 }

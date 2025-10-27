@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/logic/register_user_riverpod.dart';
 import 'package:market_jango/features/auth/screens/name_screen.dart';
-import 'package:market_jango/core/widget/custom_auth_button.dart';
-import 'package:market_jango/core/widget/sreeen_brackground.dart';
+
 class UserScreen extends ConsumerWidget {
   const UserScreen({super.key});
   static const routeName = '/userScreen';
@@ -16,19 +17,30 @@ class UserScreen extends ConsumerWidget {
     final items = const ['Buyer', 'Transport', 'Vendor', 'Driver'];
     final selected = ref.watch(userTypeP);
     final reg = ref.watch(registerP);
+
     final loading = reg.isLoading;
 
-    // navigate on success
     ref.listen(registerP, (prev, next) {
       next.whenOrNull(
         data: (resp) {
           if (resp == null) return;
-          GlobalSnackbar.show(context, title: "Success", message: "User type selected successfully");
-          context.pushNamed(NameScreen.routeName,
-              pathParameters: {'role': resp.data.user.userType});
+          GlobalSnackbar.show(
+            context,
+            title: "Success",
+            message: "User type selected successfully",
+          );
+          context.pushNamed(
+            NameScreen.routeName,
+            pathParameters: {'role': resp.data.user.userType},
+          );
         },
         error: (err, _) {
-          GlobalSnackbar.show(context, title: "Error", message: err.toString(), type: CustomSnackType.error);
+          GlobalSnackbar.show(
+            context,
+            title: "Error",
+            message: err.toString(),
+            type: CustomSnackType.error,
+          );
         },
       );
     });
@@ -50,10 +62,14 @@ class UserScreen extends ConsumerWidget {
                 SizedBox(height: 30.h),
                 const CustomBackButton(),
                 SizedBox(height: 20.h),
-                Text("User Type Selection",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 20.sp)),
-                SizedBox(height: 24.h),
 
+                Text(
+                  "User Type Selection",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontSize: 20.sp),
+                ),
+                SizedBox(height: 24.h),
                 Theme(
                   data: dropTheme,
                   child: Container(
@@ -74,25 +90,40 @@ class UserScreen extends ConsumerWidget {
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: items.contains(selected) ? selected : null,
-                        hint: Text("Choose one",
-                            style: TextStyle(fontSize: 16.sp, color: const Color(0xFF6E7A8A), fontWeight: FontWeight.w500)),
+                        hint: Text(
+                          "Choose one",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: const Color(0xFF6E7A8A),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         dropdownColor: Colors.white,
                         borderRadius: BorderRadius.circular(16.r),
-                        style: TextStyle(fontSize: 15.sp, color: Colors.black87),
-                        items: items.map((e) => DropdownMenuItem(
-                          value: e,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 12.h),
-                              child: Text(e),
-                            ),
-                          ),
-                        )).toList(),
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          color: Colors.black87,
+                        ),
+                        items: items
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 12.h,
+                                    ),
+                                    child: Text(e),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (v) {
                           ref.read(userTypeP.notifier).state = v ?? 'Buyer';
-                          },
+                        },
                       ),
                     ),
                   ),
@@ -104,7 +135,7 @@ class UserScreen extends ConsumerWidget {
                 CustomAuthButton(
                   buttonText: loading ? "Please wait..." : "Next",
                   onTap: () {
-                    if (loading) return;             // non-null VoidCallback
+                    if (loading) return; // non-null VoidCallback
                     ref.read(registerP.notifier).submit();
                   },
                 ),

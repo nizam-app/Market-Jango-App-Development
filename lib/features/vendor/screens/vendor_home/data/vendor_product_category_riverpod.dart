@@ -1,65 +1,35 @@
-// category_provider.dart
+// vendor_product_category_riverpod.dart
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 
-import '../../../../../core/utils/get_token_sharedpefarens.dart';
+import '../../../../../core/utils/get_user_type.dart'; // sharedPreferencesProvider
 import '../model/vendor_product_catagory_model.dart';
-import '../model/vendor_product_model.dart';
 
-final categoriesProvider = FutureProvider.family<PaginatedCategories, int>((
-  ref,
-  page,
-) async {
-  final uri = Uri.parse('${VendorAPIController.vendor_product}?page=$page');
-  final response = await http.get(
-    uri,
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      // add token header if needed
-    },
-  );
-  if (response.statusCode == 200) {
-    final json = jsonDecode(response.body);
-    return PaginatedCategories.fromJson(json['data']);
-  } else {
-    throw Exception('Failed to load categories');
-  }
-});
-
-final productsByCategoryProvider =
-    FutureProvider.family<PaginatedProducts, Map<String, int>>((
-      ref,
-      params,
-    ) async {
-      final int categoryId = params['categoryId']!;
-      final int page = params['page']!;
-      String urlString;
-      if (categoryId == 0) {
-        urlString = '${VendorAPIController.vendor_product}?page=$page';
-      } else {
-        urlString =
-            '${VendorAPIController.vendor_product}?category_id=$categoryId&page=$page';
-      }
-      final uri = Uri.parse(urlString);
-      final token = await ref.watch(authTokenProvider.future);
+// ⬇️ String নেবে —> CategoryBar থেকে সরাসরি `endpoint` পাস করতে পারবে
+final vendorCategoryProvider = FutureProvider.autoDispose
+    .family<List<VendorCategoryModel>, String>((ref, endpoint) async {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final token = prefs.getString('auth_token');
       if (token == null) throw Exception('Token not found');
-      final response = await http.get(
-        uri,
-        headers: {
-          // 'Accept': 'application/json',
-          // 'Content-Type': 'application/json',
-          // add token header if needed
-          'token': token,
-        },
+
+      final res = await http.get(
+        Uri.parse(endpoint),
+        headers: {'Accept': 'application/json', 'token': token},
       );
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        return PaginatedProducts.fromJson(json['data']);
-      } else {
-        throw Exception('Failed to load products by category');
+      if (res.statusCode != 200) {
+        throw Exception('Failed: ${res.statusCode} -> ${res.body}');
       }
+
+      final body = jsonDecode(res.body);
+      final inner = body is Map ? body['data'] : body;
+      final List list = inner is Map
+          ? (inner['data'] ?? [])
+          : (inner is List ? inner : []);
+
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(VendorCategoryModel.fromJson)
+          .toList();
     });

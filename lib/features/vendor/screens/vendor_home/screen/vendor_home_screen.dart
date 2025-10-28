@@ -30,7 +30,7 @@ class VendorHomeScreen extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: AllColor.white70,
+        // backgroundColor: AllColor.white70,
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),

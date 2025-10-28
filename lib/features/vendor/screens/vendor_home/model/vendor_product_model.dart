@@ -11,6 +11,7 @@ class Product {
 
   final List<String> sizes;
   final List<String> colors;
+  final List<ProductImage> images; 
 
   Product({
     required this.id,
@@ -24,6 +25,7 @@ class Product {
     required this.categoryName,
     required this.sizes,
     required this.colors,
+    required this.images,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -53,9 +55,15 @@ class Product {
           : rawColor is String
           ? [rawColor]
           : [],
+      /// ✅ images mapping
+      images: (json['images'] as List? ?? [])
+          .map((e) => ProductImage.fromJson(e))
+          .toList(),
+    
     );
   }
 }
+
 
 
 
@@ -109,3 +117,22 @@ class PaginatedProducts {
 //     );
 //   }
 // }
+class ProductImage {
+  final int id;
+  final String imagePath;
+  final int productId;
+
+  ProductImage({
+    required this.id,
+    required this.imagePath,
+    required this.productId,
+  });
+
+  factory ProductImage.fromJson(Map<String, dynamic> json) {
+    return ProductImage(
+      id: json['id'] ?? 0,
+      imagePath: json['image_path'] ?? '',
+      productId: json['product_id'] ?? 0,
+    );
+  }
+}

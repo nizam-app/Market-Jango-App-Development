@@ -5,6 +5,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_scr
 import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
 import 'package:market_jango/features/auth/screens/car_info_screen.dart';
@@ -185,7 +186,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: VendorEditProfile.routeName,
       name: 'vendorEditProfile',
-      builder: (context, state) => const VendorEditProfile(),
+      builder: (context, state) {
+        UserModel userType = state.extra as UserModel;
+       return  VendorEditProfile(userType: userType) ;
+      },
     ),
 
     GoRoute(
@@ -342,7 +346,7 @@ final GoRouter router = GoRouter(
       path: TransportChart.routeName,
       name: 'transort_chat',
       builder: (context, state) => TransportChart(),
-    ),
+    ),                                                           
 
     GoRoute(
       path: TransportMessage.routeName,

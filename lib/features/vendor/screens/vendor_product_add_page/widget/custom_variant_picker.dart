@@ -29,77 +29,80 @@ class _CustomVariantPickerState extends ConsumerState<CustomVariantPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-       
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _CardHeader(label: 'Select Color'),
-              SizedBox(height: 20.h),
-              Wrap(
-                spacing: 10.w,
-                runSpacing: 10.h,
-                children: List.generate(widget.colors.length, (i) {
-                  final color = widget.colors[i];
-                  final isSelected = widget.selectedColors.contains(color);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          widget.selectedColors.remove(color);
-                        } else {
-                          widget.selectedColors.add(color);
-                        }
-                      });
-                      widget.onColorsChanged?.call(
-                        widget.selectedColors
-                            .map((c) => Color(int.parse(c)))
-                            .toList(),
-                      );
-                    },
-                    child: _ColorDot(color: color, selected: isSelected),
-                  );
-                }),
-              ),
-            ],
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+         
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _CardHeader(label: 'Select Color'),
+                SizedBox(height: 20.h),
+               
+                Wrap(
+                  spacing: 10.w,
+                  runSpacing: 10.h,
+                  children: List.generate(widget.colors.length, (i) {
+                    final color = widget.colors[i];
+                    final isSelected = widget.selectedColors.contains(color);
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            widget.selectedColors.remove(color);
+                          } else {
+                            widget.selectedColors.add(color);
+                          }
+                        });
+                        widget.onColorsChanged?.call(
+                          widget.selectedColors
+                              .map((c) => Color(int.parse(c)))
+                              .toList(),
+                        );
+                      },
+                      child: _ColorDot(color: "0xff$color", selected: isSelected),
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
-        ),
-
-        SizedBox(width: 14.w),
-
-        // ===== Right: Size =====
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _CardHeader(label: 'Select Size'),
-              SizedBox(height: 10.h),
-              Wrap(
-                spacing: 2.w,
-                runSpacing: 10.h,
-                children: widget.sizes.map((size) {
-                  final selected = widget.selectedSizes.contains(size);
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (selected) {
-                          widget.selectedSizes.remove(size);
-                        } else {
-                          widget.selectedSizes.add(size);
-                        }
-                      });
-                      widget.onSizesChanged?.call(widget.selectedSizes);
-                    },
-                    child: _SizeChip(label: size, selected: selected),
-                  );
-                }).toList(),
-              ),
-            ],
+      
+          SizedBox(width: 14.w),
+      
+          // ===== Right: Size =====
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _CardHeader(label: 'Select Size'),
+                SizedBox(height: 10.h),
+                Wrap(
+                  spacing: 2.w,
+                  runSpacing: 10.h,
+                  children: widget.sizes.map((size) {
+                    final selected = widget.selectedSizes.contains(size);
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (selected) {
+                            widget.selectedSizes.remove(size);
+                          } else {
+                            widget.selectedSizes.add(size);
+                          }
+                        });
+                        widget.onSizesChanged?.call(widget.selectedSizes);
+                      },
+                      child: _SizeChip(label: size, selected: selected),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -117,7 +120,7 @@ class _CardHeader extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 14.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(5.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0x14000000),

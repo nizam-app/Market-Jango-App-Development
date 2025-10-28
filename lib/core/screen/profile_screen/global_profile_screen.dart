@@ -8,15 +8,18 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 
 import '../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../utils/get_user_type.dart';
 import '../global_profile_edit_screen.dart';
 import 'data/profile_data.dart';
+import 'model/profile_model.dart';
 
 class GlobalSettingScreen extends ConsumerWidget {
-  const GlobalSettingScreen({super.key});
+  const GlobalSettingScreen( {super.key, });
   static const String routeName = '/settingsScreen';
+
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +39,8 @@ class GlobalSettingScreen extends ConsumerWidget {
                   SizedBox(height: 16.h),
                   ProfileSection(name: user.name,
                       username: user.email,
-                      imageUrl: user.image),
+                      imageUrl: user.image,
+                      userType: user),
 
                   SizedBox(height: 20.h),
                   _SettingsLine(
@@ -104,20 +108,23 @@ class SettingTitle extends StatelessWidget {
     );
   }
 }
-class ProfileSection extends StatelessWidget {
+class ProfileSection extends ConsumerWidget {
   final String name;
   final String username;
   final String imageUrl;
+  final UserModel userType;
 
   const ProfileSection({
     super.key,
     required this.name,
     required this.username,
     required this.imageUrl,
+    required this.userType,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userTypeAsync = ref.watch(getUserTypeProvider);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -181,7 +188,13 @@ class ProfileSection extends StatelessWidget {
           ),
         ),
         IconButton(
-          onPressed: () => context.push(BuyerProfileEditScreen.routeName),
+          onPressed: () {
+            if (userTypeAsync.value == "buyer") {
+    context.push(BuyerProfileEditScreen.routeName);
+            } else if (userTypeAsync.value == "vendor") {
+    context.push(VendorEditProfile.routeName,extra: userType);}
+            } ,
+
           icon: Icon(Icons.edit_outlined, color: AllColor.black, size: 18.sp),
         ),
       ],

@@ -7,6 +7,6 @@ class VendorAPIController {
   static String product_attribute_vendor =
       "$_base_api/product-attribute/vendor";
   static String vendor_category = "$_base_api/vendor/category";
-  static String vendor_category_product_filter =
-      "$_base_api/vendor/category/product";
+  static String vendor_category_product_filter = "$_base_api/vendor/category/product";
+  static String product_create = "$_base_api/product/create";
 }

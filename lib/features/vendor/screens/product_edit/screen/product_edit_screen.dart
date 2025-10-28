@@ -216,6 +216,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                         final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name).toList();
 
                         final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name).toList();
+
                         return CustomVariantPicker(colors: colorNames,sizes: sizeNames,selectedColors:widget.product.colors,selectedSizes: widget.product.sizes,);
                       } ,loading: () => const Center(child: CircularProgressIndicator()),
                       error: (err, _) => Center(child: Text('Error: $err'))

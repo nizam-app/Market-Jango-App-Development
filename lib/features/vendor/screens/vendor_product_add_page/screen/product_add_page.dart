@@ -11,6 +11,8 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/logic/creat_product_provider.dart';
 
 import '../../product_edit/data/product_attribute_data.dart';
 import '../widget/custom_variant_picker.dart';
@@ -36,28 +38,43 @@ class ProductAddPage extends ConsumerWidget {
                 ProductBasicInfoSection(),
                 SizedBox(height: 16.h),
               attributeAsync.when(
-                  data: (data) {
+                data: (data) {
+                  final colorAttr = data.data.firstWhere(
+                        (attr) => attr.name.toLowerCase() == 'color',
+                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                  );
+                  final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name ?? "").toList();
 
-                    final sizeAttr = data.data.firstWhere(
-                          (attr) => attr.name.toLowerCase() == 'size',
-                      orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                    );
+                  final sizeAttr = data.data.firstWhere(
+                        (attr) => attr.name.toLowerCase() == 'size',
+                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                  );
+                  final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name ?? "").toList();
 
-                    // শুধুমাত্র Color attribute নিন
-                    final colorAttr = data.data.firstWhere(
-                          (attr) => attr.name.toLowerCase() == 'color',
-                      orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                    );
 
-                    final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name??"").toList();
+                  final selectedColors = ref.watch(selectedColorsProvider);
+                  final selectedSizes  = ref.watch(selectedSizesProvider);
 
-                    final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name?? "").toList();
-                    return CustomVariantPicker(colors: colorNames,sizes: sizeNames);
-                  } ,loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Center(child: Text('Error: $err'))
+                  return CustomVariantPicker(
+                    colors: colorNames,
+                    sizes: sizeNames,
 
+                    selectedColors: selectedColors,
+                    selectedSizes: selectedSizes,
+
+                    
+                    onColorsChanged: (list) {
+                      ref.read(selectedColorsProvider.notifier).state = [...list];
+                    },
+                    onSizesChanged: (list) {
+                      ref.read(selectedSizesProvider.notifier).state = [...list];  }
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('Error: $err')),
               ),
-                SizedBox(height: 16.h),
+
+              SizedBox(height: 16.h),
                 PriceAndImagesSection(),
               ],
             ),
@@ -82,8 +99,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
 
   );
 
-  final _categories = const ['Fashion', 'Electronics', 'Beauty', 'Home'];
-  String? selectedCategory ;
+  String? selectedCategory;
 
   // colors tuned to the mock
   final _lblColor = const Color(0xFF436AA0); // label text
@@ -93,16 +109,17 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
   OutlineInputBorder _border() => OutlineInputBorder(
     borderRadius: BorderRadius.circular(5.r),
     borderSide: BorderSide(color: AllColor.grey, width: 1.2),
-    
+
   );
 
   @override
   Widget build(BuildContext context) {
+   
     final ThemeData _dropTheme = ThemeData(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
     );
-   
+
 
     final categoryAsync = ref.watch(vendorCategoryProvider(VendorAPIController.vendor_category));
     return Column(
@@ -111,6 +128,9 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
         _Label('Product Title', color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
+          onChanged: (value) {
+            ref.read(productNameProvider.notifier).state = value;
+          },
           controller: _titleC,
           style: TextStyle(fontSize: 16.sp),
           decoration: InputDecoration(
@@ -129,7 +149,12 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
         categoryAsync.when(
           data: (categories) {
             final categoryNames = categories.map((e) => e.name).toList();
-            selectedCategory = categoryNames.isNotEmpty ? categoryNames.first : '';
+            if (selectedCategory == null ||
+                !categoryNames.contains(selectedCategory)) {
+              selectedCategory =
+              categoryNames.isNotEmpty ? categoryNames.first : null;
+            }
+            
             return Theme(
               data: _dropTheme,
               child: Container(
@@ -154,7 +179,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                     dropdownColor: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
-                    
+
                     style: TextStyle(fontSize: 15.sp, color: Colors.black87),
                     items: categoryNames.map((e) {
                       return DropdownMenuItem(
@@ -167,9 +192,12 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                       );
                     }).toList(),
                     onChanged: (v) {
-                      setState(() {
-                        selectedCategory = v!;
-                      });
+                      if (v == null) return;
+                      setState(() => selectedCategory = v);
+                      final selected =
+                      categories.firstWhere((e) => e.name == v);
+                      ref.read(productCategoryProvider.notifier).state =
+                          selected.id;
                     },
                   ),
                 ),
@@ -185,6 +213,9 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
         _Label('Description', color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
+          onChanged: (value) {
+            ref.read(productDescProvider.notifier).state = value;
+          },
           controller: _descC,
           maxLines: 6,
           style: TextStyle(fontSize: 16.sp, height: 1.35),
@@ -224,76 +255,24 @@ class _Label extends StatelessWidget {
   }
 }
 
-class PriceAndImagesSection extends StatefulWidget {
-  const PriceAndImagesSection({super.key});
+class PriceAndImagesSection extends ConsumerStatefulWidget{
+  const PriceAndImagesSection({super.key,});
+
 
   @override
-  State<PriceAndImagesSection> createState() => _PriceAndImagesSectionState();
+  ConsumerState<PriceAndImagesSection> createState() => _PriceAndImagesSectionState();
 }
 
-class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
-  final _currentC = TextEditingController();
-  final _previousC = TextEditingController();
+class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
 
-  final _picker = ImagePicker();
-
-  XFile? _cover;
-  final List<XFile> _gallery = [];
-
-  Future<void> _pickCover(source) async {
-    final x = await _picker.pickImage(
-      source: source,
-      imageQuality: 85,
-    );
-    if (x != null) setState(() => _cover = x);
-  }
-
-  Future<void> _pickGallery() async {
-    final xs = await _picker.pickMultiImage(imageQuality: 85);
-    if (xs.isNotEmpty)
-      setState(
-        () => _gallery
-          ..clear()
-          ..addAll(xs.take(8)),
-      ); // cap to 8 for neat grid
-  }
-  void _askImageSource() {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () {
-                  Navigator.pop(context);
-
-                  _pickCover(ImageSource.camera) ;
-
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickCover(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     // Colors to mimic the screenshot
     const borderBlue = Color(0xFFBFD5F1);
     const labelBlue = Color(0xFF2B6CB0);
+    final createState = ref.watch(createProductProvider);
+
 
     OutlineInputBorder _border([Color c = borderBlue]) => OutlineInputBorder(
       borderSide: BorderSide(color: c, width: 1.2),
@@ -388,14 +367,94 @@ class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
             }),
           ),
           SizedBox(height: 20.h),
-          GlobalSaveBotton(
-            bottonName: "Update Now",
-            onPressed: () {
-              context.push("location");
+          createState.when(
+            data: (data) {
+             bool loading = createState.isLoading;
+             final selectedColors = ref.read(selectedColorsProvider);
+             final selectedSizes = ref.read(selectedSizesProvider);
+              return GlobalSaveBotton(
+                bottonName:loading? "Creating": "Create a Product",
+                onPressed: () {
+               final   createAsync = ref.read(createProductProvider.notifier);
+               final name = ref.watch(productNameProvider);
+               final desc = ref.watch(productDescProvider);
+               final categoryId = ref.watch(productCategoryProvider);
+               createAsync.createProduct(
+                   name: name,
+                   description: desc,
+                 regularPrice:   _currentC.text,
+                 sellPrice: _previousC.text,
+                   categoryId: categoryId ?? 1,
+                   color: selectedColors,
+                   size: selectedSizes,
+                 image: File(_cover!.path),
+                 files: _gallery.map((x) => File(x.path)).toList(),
+               ) ;
+
+                },
+              );
             },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(child: Text('Error: $err')),
           ),
         ],
       ),
+    );
+  }
+  final _currentC = TextEditingController();
+  final _previousC = TextEditingController();
+
+  final _picker = ImagePicker();
+
+  XFile? _cover;
+  final List<XFile> _gallery = [];
+
+  Future<void> _pickCover(source) async {
+    final x = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+    );
+    if (x != null) setState(() => _cover = x);
+  }
+
+  Future<void> _pickGallery() async {
+    final xs = await _picker.pickMultiImage(imageQuality: 85);
+    if (xs.isNotEmpty)
+      setState(
+            () => _gallery
+          ..clear()
+          ..addAll(xs.take(8)),
+      ); // cap to 8 for neat grid
+  }
+  void _askImageSource() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  _pickCover(ImageSource.camera) ;
+
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickCover(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

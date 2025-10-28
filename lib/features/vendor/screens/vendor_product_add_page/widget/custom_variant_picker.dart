@@ -15,63 +15,61 @@ class CustomVariantPicker extends ConsumerStatefulWidget {
 
   final List<String> colors;
   final List<String> sizes;
-  final ValueChanged<List<Color>>? onColorsChanged;
+  final ValueChanged<List<String>>? onColorsChanged;
   final ValueChanged<List<String>>? onSizesChanged;
-  final List<String> selectedColors ;
-  final List<String> selectedSizes ;
+  final List<String> selectedColors;
+  final List<String> selectedSizes;
 
   @override
   ConsumerState<CustomVariantPicker> createState() => _CustomVariantPickerState();
 }
 
 class _CustomVariantPickerState extends ConsumerState<CustomVariantPicker> {
-
-
   @override
   Widget build(BuildContext context) {
     return IntrinsicHeight(
       child: Row(
         children: [
-         
+          /// ==== LEFT: COLOR PICKER ====
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _CardHeader(label: 'Select Color'),
                 SizedBox(height: 20.h),
-               
                 Wrap(
                   spacing: 10.w,
                   runSpacing: 10.h,
                   children: List.generate(widget.colors.length, (i) {
                     final color = widget.colors[i];
                     final isSelected = widget.selectedColors.contains(color);
+
                     return GestureDetector(
                       onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            widget.selectedColors.remove(color);
-                          } else {
-                            widget.selectedColors.add(color);
-                          }
-                        });
-                        widget.onColorsChanged?.call(
-                          widget.selectedColors
-                              .map((c) => Color(int.parse(c)))
-                              .toList(),
-                        );
+                        /// ❗ Always copy before modifying (immutable fix)
+                        final updatedColors =
+                        List<String>.from(widget.selectedColors);
+
+                        if (isSelected) {
+                          updatedColors.remove(color);
+                        } else {
+                          updatedColors.add(color);
+                        }
+
+                        widget.onColorsChanged?.call(updatedColors);
                       },
-                      child: _ColorDot(color: "0xff$color", selected: isSelected),
+                      child:
+                      _ColorDot(color: "0xff$color", selected: isSelected),
                     );
                   }),
                 ),
               ],
             ),
           ),
-      
+
           SizedBox(width: 14.w),
-      
-          // ===== Right: Size =====
+
+          /// ==== RIGHT: SIZE PICKER ====
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,14 +83,17 @@ class _CustomVariantPickerState extends ConsumerState<CustomVariantPicker> {
                     final selected = widget.selectedSizes.contains(size);
                     return GestureDetector(
                       onTap: () {
-                        setState(() {
-                          if (selected) {
-                            widget.selectedSizes.remove(size);
-                          } else {
-                            widget.selectedSizes.add(size);
-                          }
-                        });
-                        widget.onSizesChanged?.call(widget.selectedSizes);
+                        /// ❗ Copy list before modifying
+                        final updatedSizes =
+                        List<String>.from(widget.selectedSizes);
+
+                        if (selected) {
+                          updatedSizes.remove(size);
+                        } else {
+                          updatedSizes.add(size);
+                        }
+
+                        widget.onSizesChanged?.call(updatedSizes);
                       },
                       child: _SizeChip(label: size, selected: selected),
                     );
@@ -107,10 +108,9 @@ class _CustomVariantPickerState extends ConsumerState<CustomVariantPicker> {
   }
 }
 
-/// Top rounded card with chevron (visual only, like the mock)
+/// Header box
 class _CardHeader extends StatelessWidget {
   const _CardHeader({required this.label});
-
   final String label;
 
   @override
@@ -129,33 +129,24 @@ class _CardHeader extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF444444),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: const Color(0xFF444444),
+            fontWeight: FontWeight.w500,
           ),
-          // Icon(
-          //   Icons.keyboard_arrow_down_rounded,
-          //   size: 22.sp,
-          //   color: const Color(0xFF7A7A7A),
-          // ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Round color swatch with black ring (thicker when selected)
+/// Color circle
 class _ColorDot extends StatelessWidget {
   const _ColorDot({required this.color, this.selected = false});
-
   final String color;
   final bool selected;
 
@@ -163,7 +154,7 @@ class _ColorDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedScale(
       scale: selected ? 1.15 : 1.0,
-      duration: Duration(milliseconds: 180),
+      duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
       child: Container(
         width: 36.w,
@@ -183,34 +174,23 @@ class _ColorDot extends StatelessWidget {
               offset: Offset(0, 3.h),
             ),
           ]
-              : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4.r,
-              offset: Offset(0, 1.h),
-            ),
-          ],
+              : [],
         ),
       ),
     );
-
   }
 }
 
-/// Light pill chip for sizes (blue-tinted like the mock)
+/// Size Chip
 class _SizeChip extends StatelessWidget {
-  const _SizeChip({
-    required this.label,
-    this.selected = false,
-  });
-
+  const _SizeChip({required this.label, this.selected = false});
   final String label;
   final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedScale(
-      scale: selected ? 0.9 : 0.8,
+      scale: selected ? 0.95 : 1.0,
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
       child: Container(

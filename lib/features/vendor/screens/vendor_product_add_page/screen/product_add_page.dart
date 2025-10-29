@@ -27,6 +27,7 @@ class ProductAddPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final attributeAsync = ref.watch(productAttributesProvider);
 
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(

@@ -74,8 +74,8 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
       request.fields['regular_price'] = regularPrice;
       request.fields['sell_price'] = sellPrice;
       request.fields['category_id'] = categoryId.toString();
-      request.fields['color'] = color.join(','); // multiple color
-      request.fields['size'] = size.join(',');   // multiple size
+      request.fields['color[]'] = color.join(','); // multiple color
+      request.fields['size[]'] = size.join(',');   // multiple size
 
       // 🖼️ Main Image
       request.files.add(await http.MultipartFile.fromPath('image', cover.path, filename: 'cover.jpg'));

@@ -14,7 +14,7 @@ class GlobalPagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int startPage = ((currentPage - 1) ~/ 6) * 6 + 1;
+    int startPage = ((currentPage - 1) ~/ 5) * 5 + 1;
     int endPage = (startPage + 4).clamp(1, totalPages);
 
     return Row(

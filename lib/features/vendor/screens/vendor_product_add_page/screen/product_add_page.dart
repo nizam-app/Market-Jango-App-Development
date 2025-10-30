@@ -9,8 +9,12 @@ import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/logic/creat_product_provider.dart';
 
@@ -21,7 +25,6 @@ class ProductAddPage extends ConsumerWidget {
    ProductAddPage({super.key,});
 
   static final String routeName = "/productAddPage";
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +58,7 @@ class ProductAddPage extends ConsumerWidget {
 
                   final selectedColors = ref.watch(selectedColorsProvider);
                   final selectedSizes  = ref.watch(selectedSizesProvider);
-
+            
                   return CustomVariantPicker(
                     colors: colorNames,
                     sizes: sizeNames,
@@ -63,7 +66,7 @@ class ProductAddPage extends ConsumerWidget {
                     selectedColors: selectedColors,
                     selectedSizes: selectedSizes,
 
-                    
+
                     onColorsChanged: (list) {
                       ref.read(selectedColorsProvider.notifier).state = [...list];
                     },
@@ -269,10 +272,31 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
 
   @override
   Widget build(BuildContext context) {
-    // Colors to mimic the screenshot
+    
     const borderBlue = Color(0xFFBFD5F1);
     const labelBlue = Color(0xFF2B6CB0);
     final createState = ref.watch(createProductProvider);
+
+    bool loading = createState.isLoading;
+    final selectedColors = ref.read(selectedColorsProvider);
+    final selectedSizes = ref.read(selectedSizesProvider);
+
+    ref.listen<AsyncValue<String>>(createProductProvider, (prev, next) {
+      next.when(
+        data: (msg) {
+          if (msg.contains('success')) {
+            // success হলেই নেভিগেট + টোস্ট
+            context.pop();
+            GlobalSnackbar.show(context, title: "Success", message: "Product Created Successfully");
+            ref.invalidate(updateProductProvider);
+          }
+        },
+        error: (err, _) {
+          GlobalSnackbar.show(context, title: "Error", message: err.toString());
+        },
+        loading: () {},
+      );
+    });
 
 
     OutlineInputBorder _border([Color c = borderBlue]) => OutlineInputBorder(
@@ -368,36 +392,42 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
             }),
           ),
           SizedBox(height: 20.h),
-          createState.when(
-            data: (data) {
-             bool loading = createState.isLoading;
-             final selectedColors = ref.read(selectedColorsProvider);
-             final selectedSizes = ref.read(selectedSizesProvider);
-              return GlobalSaveBotton(
-                bottonName:loading? "Creating": "Create a Product",
+          GlobalSaveBotton(
+                bottonName:loading? "Creating....": "Create a Product",
                 onPressed: () {
-               final   createAsync = ref.read(createProductProvider.notifier);
-               final name = ref.watch(productNameProvider);
-               final desc = ref.watch(productDescProvider);
-               final categoryId = ref.watch(productCategoryProvider);
-               createAsync.createProduct(
-                   name: name,
-                   description: desc,
-                 regularPrice:   _currentC.text,
-                 sellPrice: _previousC.text,
-                   categoryId: categoryId ?? 1,
-                   color: selectedColors,
-                   size: selectedSizes,
-                 image: File(_cover!.path),
-                 files: _gallery.map((x) => File(x.path)).toList(),
-               ) ;
-
-                },
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Text('Error: $err')),
-          ),
+                  final createAsync = ref.read(createProductProvider.notifier);
+                  final name = ref.watch(productNameProvider);
+                  final desc = ref.watch(productDescProvider);
+                  final categoryId = ref.watch(productCategoryProvider);
+                  createAsync.createProduct(
+                    name: name,
+                    description: desc,
+                    regularPrice: _currentC.text,
+                    sellPrice: _previousC.text,
+                    categoryId: categoryId ?? 1,
+                    color: selectedColors,
+                    size: selectedSizes,
+                    image: File(_cover!.path),
+                    files: _gallery.map((x) => File(x.path)).toList(),
+                  );
+                  // final state = ref.read(createProductProvider);
+                  // state.when(
+                  //     data: (msg) {
+                  //       if (msg.contains('success')) {
+                  //         context.push(VendorHomeScreen.routeName);
+                  //         GlobalSnackbar.show(context, title: "Success", message: "Product Created Successfully") ;
+                  //
+                  //       }
+                  //     },
+                  //     error: (err, _) {
+                  //       GlobalSnackbar.show(context, title: "Error", message: "Something went wrong") ;
+                  //     },
+                  //     loading: ()   {},
+                  //     // => const Center(child: CircularProgressIndicator()),
+                  // );
+                }
+              )
+           
         ],
       ),
     );

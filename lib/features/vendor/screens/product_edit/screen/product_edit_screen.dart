@@ -308,6 +308,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                                 data: (_) {
                                   context.pop();
                                   GlobalSnackbar.show(context, title: "Success", message: "Product updated successfully");
+                                  ref.invalidate(updateProductProvider);
                                 },
                                 loading: () {},
                                 error: (e, _) {

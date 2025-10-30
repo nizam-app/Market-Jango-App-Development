@@ -11,6 +11,8 @@ class CustomNewProduct extends StatelessWidget {
     required this.height,
     required this.text,
     required this.text2,
+    this.checking = false,
+     this.onTap,
     this.image =
         "https://res.cloudinary.com/dxrb6gab0/image/upload/v1761320111/product/image/k11fpqaa52odzuch0mlt.jpg",
   });
@@ -19,6 +21,9 @@ class CustomNewProduct extends StatelessWidget {
   final String text;
   final String text2;
   final String image;
+ 
+  final bool checking;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +43,7 @@ class CustomNewProduct extends StatelessWidget {
           child: Column(
             children: [
               InkWell(
-                onTap: () {
-                  context.push(ProductDetails.routeName);
-                },
+                onTap: onTap,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.r),
                   child: Image.network(
@@ -63,7 +66,7 @@ class CustomNewProduct extends StatelessWidget {
             children: [
               SizedBox(height: 3.h),
               Text(
-                text.length > 12 ? text2 : text,
+                text2.length < 12 ? text2 : text2.substring(0,12) + "...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium!.copyWith(color: AllColor.black),
@@ -72,7 +75,7 @@ class CustomNewProduct extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
               Text(
-                "\$17,00",
+                text.length < 12 ? text : text.substring(0,12) + "...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 18.sp),

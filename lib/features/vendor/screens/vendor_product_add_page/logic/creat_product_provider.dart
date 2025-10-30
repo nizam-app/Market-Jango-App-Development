@@ -95,7 +95,7 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
         final msg = (map is Map && map['message'] != null)
             ? map['message'].toString()
             : 'Product created successfully';
-        state = AsyncData('✅ $msg');
+        state = AsyncData('success $msg');
         return;
       }
 

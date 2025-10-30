@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/custom_search_bar.dart';
@@ -16,6 +17,8 @@ import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
 import '../logic/vendor_details_riverpod.dart';
 import '../model/user_details_model.dart';
+
+
 
 class VendorHomeScreen extends ConsumerWidget {
   const VendorHomeScreen({super.key});
@@ -187,9 +190,7 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  //
 
-  // filters = ['Quasi', 'Electronics', 'Grocery', ...]  // API থেকে সেট করবে
 
   Widget _buildProductGridViewSection(List<Product> products) {
     final safeProducts = products.whereType<Product>().toList();
@@ -219,8 +220,8 @@ class VendorHomeScreen extends ConsumerWidget {
             CustomNewProduct(
               width: 161.w,
               height: 168.h,
-              text: prod.name,
-              text2: prod.description,
+              text: prod.sellPrice,
+              text2: prod.name,
               image: prod.image,
             ),
             Positioned(
@@ -273,7 +274,7 @@ Widget buildAddUrProduct(BuildContext context) {
   );
 }
 
-Widget buildProfileSection(VendorDetailsModel vendor) {
+Widget buildProfileSection(VendorDetailsModel vendor, ) {
   return Column(
     children: [
       Center(
@@ -306,11 +307,53 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 10.h,
-              right: 0.w,
-              child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit)),
-            ),
+            // Positioned(
+            //   bottom: 10.h,
+            //   right: 0.w,
+            //   child: InkWell(
+            //     onTap: () {
+            //
+            //         // showModalBottomSheet(
+            //         //   context: context,
+            //         //   builder: (_) {
+            //         //     return SafeArea(
+            //         //       child: Wrap(
+            //         //         children: [
+            //         //           ListTile(
+            //         //             leading: const Icon(Icons.camera_alt),
+            //         //             title: const Text('Camera'),
+            //         //             onTap: () async{
+            //         //               Navigator.pop(context);
+            //         //
+            //         //
+            //         //                 var _picker;
+            //         //                 final x = await _picker.pickImage(
+            //         //                   source: ImageSource.camera,
+            //         //                   imageQuality: 85,
+            //         //                 );
+            //         //                 if (x != null) setState(() => _cover = x);
+            //         //
+            //         //
+            //         //
+            //         //             },
+            //         //           ),
+            //         //           ListTile(
+            //         //             leading: const Icon(Icons.photo_library),
+            //         //             title: const Text('Gallery'),
+            //         //             onTap: () {
+            //         //               Navigator.pop(context);
+            //         //               _pickCover(ImageSource.gallery);
+            //         //             },
+            //         //           ),
+            //         //         ],
+            //         //       ),
+            //         //     );
+            //         //   },
+            //         // );
+            //
+            //     },
+            //       child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit, color: AllColor.black,size: 12.r,))),
+            // ),
           ],
         ),
       ),
@@ -321,7 +364,12 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
       ),
     ],
   );
+
+  
 }
+
+
+
 
 class CategoryBar extends ConsumerStatefulWidget {
   const CategoryBar({

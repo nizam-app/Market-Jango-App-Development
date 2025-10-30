@@ -21,7 +21,7 @@ class CustomTopProducts extends ConsumerWidget {
         height: 55.h,
         width: double.infinity,
         child:allProducts.when(data: (product) {
-          List<ProductModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
+          List<CategoriesModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
           return ListView.builder(
               shrinkWrap: true,
               physics: AlwaysScrollableScrollPhysics(),

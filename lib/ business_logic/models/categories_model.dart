@@ -1,4 +1,4 @@
-class ProductModel {
+class CategoriesModel {
   final String title;
   final String description;
   final double price;
@@ -14,7 +14,7 @@ class ProductModel {
   final int discountPercent;
   final DateTime addedAt;
 
-  ProductModel({
+  CategoriesModel({
     required this.title,
     required this.description,
     required this.price,
@@ -31,8 +31,8 @@ class ProductModel {
     required this.addedAt,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
-    return ProductModel(
+  factory CategoriesModel.fromJson(Map<String, dynamic> json) {
+    return CategoriesModel(
       title: json['title'],
       description: json['description'],
       price: (json['price'] as num).toDouble(),

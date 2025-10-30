@@ -220,8 +220,8 @@ class VendorHomeScreen extends ConsumerWidget {
             CustomNewProduct(
               width: 161.w,
               height: 168.h,
-              text: prod.sellPrice,
-              text2: prod.name,
+              productPricesh: prod.sellPrice,
+              productName: prod.name,
               image: prod.image,
             ),
             Positioned(

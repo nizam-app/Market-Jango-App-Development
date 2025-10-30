@@ -6,11 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 class Category {
-  static final loadCategories = FutureProvider<List<ProductModel>>((ref) async {
+  static final loadCategories = FutureProvider<List<CategoriesModel>>((ref) async {
     final String response = await rootBundle.loadString(
         'assets/json/categories.json');
     final List<dynamic> data = json.decode(response);
 
-    return data.map((item) => ProductModel.fromJson(item)).toList();
+    return data.map((item) => CategoriesModel.fromJson(item)).toList();
   });
 }

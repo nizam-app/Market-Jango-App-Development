@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomNewProduct extends StatelessWidget {
   const CustomNewProduct({
     super.key,
-    required this.width,
+     this.width = 1,
     required this.height,
-    required this.text,
-    required this.text2,
+     this.imageHeight = 157,
+    required this.productPricesh,
+    required this.productName,
     this.checking = false,
      this.onTap,
     this.image =
@@ -18,8 +20,9 @@ class CustomNewProduct extends StatelessWidget {
   });
   final double width;
   final double height;
-  final String text;
-  final String text2;
+  final double  imageHeight;
+  final String productPricesh;
+  final String productName;
   final String image;
  
   final bool checking;
@@ -46,12 +49,14 @@ class CustomNewProduct extends StatelessWidget {
                 onTap: onTap,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.r),
-                  child: Image.network(
-                    image,
-                    height: 157.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child:    FirstTimeShimmerImage(imageUrl: image,height: imageHeight.h,width: width.sw,fit: BoxFit.cover,)
+
+                  // Image.network(
+                  //   image,
+                  //   height: imageHeight.h,
+                  //   width: double.infinity,
+                  //   fit: BoxFit.cover,
+                  // ),
                 ),
               ),
 
@@ -66,7 +71,7 @@ class CustomNewProduct extends StatelessWidget {
             children: [
               SizedBox(height: 3.h),
               Text(
-                text2.length < 12 ? text2 : text2.substring(0,12) + "...",
+                productName.length < 12 ? productName : productName.substring(0,12) + "...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium!.copyWith(color: AllColor.black),
@@ -75,7 +80,7 @@ class CustomNewProduct extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
               Text(
-                text.length < 12 ? text : text.substring(0,12) + "...",
+                productPricesh.length < 12 ? productPricesh : productPricesh.substring(0,12) + "...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 18.sp),

@@ -50,13 +50,9 @@ class _CustomSearchBarState extends ConsumerState<CustomSearchBar> {
             filled: true,
             fillColor: Colors.white,
             contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50.r),
-              borderSide: BorderSide.none,
-            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50.r),
-              borderSide: BorderSide.none,
+              borderSide: const BorderSide(color: Colors.grey),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50.r),

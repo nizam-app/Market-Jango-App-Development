@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
+import 'package:market_jango/core/screen/global_notification/screen/vendor_notifications.dart';
 
 class GlobalNotificationIcon extends StatelessWidget {
   const GlobalNotificationIcon({super.key});
@@ -31,6 +31,6 @@ class GlobalNotificationIcon extends StatelessWidget {
     );
   }
   void goToNotificationScreen(BuildContext context) {
-    context.push(NotificationsScreen.routeName);
+    context.push(GlobalNotificationsScreen.routeName);
   }
 }

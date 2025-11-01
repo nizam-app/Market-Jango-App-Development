@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/global_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
+
 import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
@@ -23,7 +24,7 @@ class VendorBottomNav extends ConsumerWidget {
     
     VendorHomeScreen(),
     GlobalMassageScreen(),
-    VendorNotifications(),
+    GlobalNotificationsScreen(),
    // CategoriesScreen(),
    VendorTransportScreen(),
     GlobalSettingScreen(),

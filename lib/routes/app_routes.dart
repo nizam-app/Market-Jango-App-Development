@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/global_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
@@ -27,7 +27,6 @@ import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_v
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
-import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -37,7 +36,6 @@ import 'package:market_jango/features/driver/screen/driver_chat.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
 import 'package:market_jango/features/driver/screen/driver_home.dart';
-import 'package:market_jango/features/driver/screen/driver_notificatons.dart';
 import 'package:market_jango/features/driver/screen/driver_ontheway.dart';
 import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
@@ -61,7 +59,6 @@ import 'package:market_jango/features/transport/screens/transport_completed.dart
 import 'package:market_jango/features/transport/screens/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
-import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
@@ -71,7 +68,6 @@ import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/scr
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
@@ -82,7 +78,6 @@ import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
-
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
 import '../features/buyer/screens/product/model/buyer_product_details_model.dart';
@@ -91,7 +86,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: BuyerBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -181,9 +176,9 @@ builder: (context, state) => const VendorRequestScreen(),
 ),
 
 GoRoute(
-path: VendorNotifications.routeName,
+path: GlobalNotificationsScreen.routeName,
 name: 'vendor_notificatons',
-builder: (context, state) => const VendorNotifications(),
+builder: (context, state) => const GlobalNotificationsScreen(),
 ),
 
 GoRoute(
@@ -322,11 +317,7 @@ name: 'buyer_home',
 builder: (context, state) => const BuyerHomeScreen(),
 ),
 
-GoRoute(
-path: NotificationsScreen.routeName,
-name: 'notification_screen',
-builder: (context, state) => NotificationsScreen(),
-),
+
 GoRoute(
 path: FilterScreen.routeName,
 name: 'filter_screen',
@@ -432,12 +423,6 @@ builder: (context, state) => AddCardScreen(),
 ),
 
 GoRoute(
-path: TransportNotifications.routeName,
-name: 'transport_notificatons',
-builder: (context, state) => TransportNotifications(),
-),
-
-GoRoute(
 path: EditProfilScreen.routeName,
 name: 'editProfile',
 builder: (context, state) => EditProfilScreen(),
@@ -496,11 +481,7 @@ name: 'driverEidtProfile',
 builder: (context, state) => const DriverEditProfile(),
 ),
 
-GoRoute(
-path: DriverNotificatons.routeName,
-name: 'driverNotifications',
-builder: (context, state) => const DriverNotificatons(),
-),
+
 
 GoRoute(
 path: DriverTrakingScreen.routeName,

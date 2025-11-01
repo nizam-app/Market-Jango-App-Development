@@ -26,7 +26,6 @@ import 'package:market_jango/core/models/global_search_model.dart';
 import 'all_categori/screen/all_categori_screen.dart';
 import 'all_categori/screen/category_product_screen.dart';
 import 'filter/screen/location_filtering_tab.dart';
-import 'notification/screen/notification_screen.dart';
 class BuyerHomeScreen extends StatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';

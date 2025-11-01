@@ -5,7 +5,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_scr
 import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 

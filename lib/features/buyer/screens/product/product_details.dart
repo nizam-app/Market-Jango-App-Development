@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
@@ -10,34 +12,34 @@ import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
-class ProductDetails extends StatelessWidget {
-  const ProductDetails({super.key});
-  static final String routeName = '/productDetails';
 
+import 'model/buyer_product_details_model.dart';
+class ProductDetails extends StatelessWidget {
+  const ProductDetails({super.key,required this.product});
+  final DetailItem  product;
+  static final String routeName = '/productDetails';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ProductImage(),
-              CustomSize(),
-              ProductMaterialAndStoreInfo(),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15.w),
-                child: Column(
-                  children: [
-                    const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
-                    CustomTopProducts(),
-                    SeeMoreButton(name: "New Items", seeMoreAction: (){context.pushNamed(
-                        SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}),
-                    const CustomNewItemsShow(),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ProductImage(product: product),
+            CustomSize(product: product),
+            ProductMaterialAndStoreInfo(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15.w),
+              child: Column(
+                children: [
+                  const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
+                  CustomTopProducts(),
+                  SeeMoreButton(name: "New Items", seeMoreAction: (){context.pushNamed(
+                      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}),
+                  const CustomNewItemsShow(),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
 
@@ -53,20 +55,20 @@ class ProductDetails extends StatelessWidget {
 }
 
 class ProductImage extends StatelessWidget {
-  const ProductImage({super.key});
+  const ProductImage({super.key,required this.product});
+  final DetailItem product;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Column(
       children: [
-        // 🔹 Product Image with Back Button
         Stack(
           children: [
-            Image.network(
-              "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1470&auto=format&fit=crop",
+            FirstTimeShimmerImage(
+             imageUrl:  product.imageUrl,
               height: 350.h,
-              width: double.infinity,
+              width: 1.sw,
               fit: BoxFit.cover,
             ),
             Positioned(
@@ -87,19 +89,21 @@ class ProductImage extends StatelessWidget {
   }
 }
 class CustomSize extends StatefulWidget {
-  const CustomSize({super.key});
+  const CustomSize({super.key, required this.product});
+  final DetailItem product;
 
   @override
   State<CustomSize> createState() => _CustomSizeState();
 }
 
 class _CustomSizeState extends State<CustomSize> {
-  final List<String> sizes = ["XS", "S", "M", "L", "XL", "2XL"];
-  int selectedIndex = 2; // Default selected = "M"
+  // final List<String> sizes = ["XS", "S", "M", "L", "XL", "2XL"];
+  int selectedIndex = 0; // Default selected = "M"
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
+    final product = widget.product;
     return Padding(
       padding:  EdgeInsets.all(16.r),
       child: Column(
@@ -112,7 +116,7 @@ class _CustomSizeState extends State<CustomSize> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "\$15.00",
+                  product.displayPrice,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -121,7 +125,7 @@ class _CustomSizeState extends State<CustomSize> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  "Everyday Elegance in Women’s Fashion",
+                  product.title,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
@@ -130,9 +134,7 @@ class _CustomSizeState extends State<CustomSize> {
                 ),
                 SizedBox(height: 10.h),
                 Text(
-                  "Discover a curated collection of stylish and fashionable "
-                      "women's dresses designed for every mood and moment. "
-                      "From elegant evenings to everyday charm — dress to express.",
+                  product.subtitle ?? '',
                   style: theme.titleMedium,
                 ),
               ],
@@ -151,7 +153,7 @@ class _CustomSizeState extends State<CustomSize> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(sizes.length, (index) {
+              children: List.generate(product.sizes.length, (index) {
                 bool isSelected = selectedIndex == index;
                 return GestureDetector(
                   onTap: () {
@@ -170,7 +172,7 @@ class _CustomSizeState extends State<CustomSize> {
                           : null,
                     ),
                     child: Text(
-                      sizes[index],
+                      product.sizes[index],
                       style: TextStyle(
                         fontSize:isSelected? 16.sp:13.sp,
                         fontWeight:isSelected? FontWeight.bold: FontWeight.w500,
@@ -183,7 +185,7 @@ class _CustomSizeState extends State<CustomSize> {
             ),
           ),
           SizeColorAnd(text: "Color"),
-          CustomColor()
+          CustomColor(product: product)
         ],
       ),
     );
@@ -218,34 +220,37 @@ class SizeColorAnd extends StatelessWidget {
 }
 
 class CustomColor extends StatefulWidget {
-  const CustomColor({super.key});
+  const CustomColor({super.key, required this.product});
+  final DetailItem product;
 
   @override
   State<CustomColor> createState() => _CustomColorState();
 }
 
 class _CustomColorState extends State<CustomColor> {
-  final List<Color> colors = [
-    Colors.grey.shade300,
-    Colors.black,
-    Colors.blue,
-    Colors.red,
-    Colors.teal,
-    Colors.amber,
-    Colors.purple,
-  ];
+  // final List<Color> colors = [
+  //   Colors.grey.shade300,
+  //   Colors.black,
+  //   Colors.blue,
+  //   Colors.red,
+  //   Colors.teal,
+  //   Colors.amber,
+  //   Colors.purple,
+  // ];
 
   int selectedIndex = 0; // default selected
 
   @override
   Widget build(BuildContext context) {
+    
     return SizedBox(
       height: 60.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: colors.length,
+        itemCount: widget.product.colors.length,
         itemBuilder: (context, index) {
           bool isSelected = selectedIndex == index;
+          String color = "0xff${widget.product.colors[index]}";
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -271,7 +276,7 @@ class _CustomColorState extends State<CustomColor> {
                     width: 40.w,
                     height: 40.w,
                     decoration: BoxDecoration(
-                      color: colors[index],
+                      color:Color(int.parse(color)),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3.w),
                     ),

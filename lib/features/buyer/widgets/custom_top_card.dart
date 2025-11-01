@@ -30,7 +30,7 @@ class CustomTopProducts extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final allTopProduct = topProducts[index];
                 return InkWell(
-                  onTap: (){context.push(ProductDetails.routeName);},
+                  onTap: (){context.push(ProductDetails.routeName,);},
                   child: CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
                     child: CircleAvatar(
                       radius: 24.r,

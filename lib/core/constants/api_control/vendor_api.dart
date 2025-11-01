@@ -10,5 +10,6 @@ class VendorAPIController {
   static String vendor_category_product_filter = "$_base_api/vendor/category/product";
   static String product_create = "$_base_api/product/create";
   static String productImageDelete(int id) => '$_base_api/vendor/image/destroy/$id';
+  static String search_by_vendor(query) => '$_base_api/vendor/search-by-vendor?query=$query';
 
 }

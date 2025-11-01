@@ -175,3 +175,25 @@ class ProductImage {
     );
   }
 }
+class Review {
+  final int id;
+  final int vendorId;
+  final String description;
+  final int rating;
+
+  Review({
+    required this.id,
+    required this.vendorId,
+    required this.description,
+    required this.rating,
+  });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      id: json['id'] ?? 0,
+      vendorId: json['vendor_id'] ?? 0,
+      description: json['description'] ?? '',
+      rating: json['rating'] ?? 0,
+    );
+  }
+}

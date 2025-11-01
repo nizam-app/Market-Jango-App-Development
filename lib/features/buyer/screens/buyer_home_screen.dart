@@ -8,11 +8,12 @@ import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
-import 'package:market_jango/core/widget/custom_search_bar.dart';
+import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
+import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
@@ -20,6 +21,8 @@ import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'all_categori/screen/all_categori_screen.dart';
 import 'all_categori/screen/category_product_screen.dart';
 import 'filter/screen/location_filtering_tab.dart';
@@ -320,7 +323,20 @@ class BuyerHomeSearchBar extends StatelessWidget {
           children: [
             Expanded(
               flex: 2,
-              child: CustomSearchBar(),
+              child: GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
+                provider: searchProvider,
+                itemsSelector: (res) => res.products,
+                itemBuilder: (context, p) => ProductSuggestionTile(p: p),
+                onItemSelected: (p) {
+                  context.push(ProductDetails.routeName, extra: p.toDetail());
+                },
+                hintText: 'Search products...',
+                debounce: const Duration(seconds:1),
+                minChars: 1,
+                showResults: true,
+                resultsMaxHeight: 380,
+                autofocus: false,
+              ),
             ),
             SizedBox(width: 8.w),
             // Menu Icon

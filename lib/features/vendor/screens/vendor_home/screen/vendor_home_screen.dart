@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
-import 'package:market_jango/core/widget/custom_search_bar.dart';
+import 'package:market_jango/core/widget/global_search_bar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
@@ -50,7 +52,19 @@ class VendorHomeScreen extends ConsumerWidget {
                 error: (err, _) => Text('Error: $err'),
               ),
               SizedBox(height: 30.h),
-              CustomSearchBar(
+              GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
+                provider: searchProvider,
+                itemsSelector: (res) => res.products,
+                itemBuilder: (context, p) => ProductSuggestionTile(p: p),
+                onItemSelected: (p) {
+                  // context.push('/product/${p.id}');
+                },
+                hintText: 'Search products...',
+                debounce: const Duration(seconds: 1),
+                minChars: 1,
+                showResults: true,
+                resultsMaxHeight: 380,
+                autofocus: false,
               ),
               SizedBox(height: 15.h),
               // Category bar

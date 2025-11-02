@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
-class CartScreen extends StatelessWidget {
+import 'package:market_jango/features/buyer/screens/cart/model/cart_model.dart';
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   static const String routeName = '/cartScreen';
@@ -18,9 +20,10 @@ class CartScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final double totalPrice = _calculateTotalPrice(dummyCartItems);
     final theme = Theme.of(context).textTheme;
+    final cartAsync = ref.watch(cartProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,16 +61,24 @@ class CartScreen extends StatelessWidget {
             child: _buildShippingAddress(context),
           ),
           SizedBox(height: 20.h),
-          Expanded(
-            child: ListView.builder(
-              itemCount: dummyCartItems.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 15.w),
-                  child: _buildCartItemCard(dummyCartItems[index],context),
-                );
-              },
-            ),
+          cartAsync.when(
+            data: (data) {
+            final  cartItems = data;
+              return Expanded(
+                child: ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final allData =data[index];
+                    return Padding(
+                      padding:  EdgeInsets.symmetric(horizontal: 15.w),
+                      child: _buildCartItemCard(allData,context),
+                    );
+                  },
+                ),
+              );
+            }  ,
+            loading: () => const Center(child: Text('Loading...')),
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
           ),
           CustomTotalCheckoutSection(totalPrice: totalPrice, context: context),
         ],
@@ -131,7 +142,7 @@ class CartScreen extends StatelessWidget {
   }
 
 
-  Widget _buildCartItemCard(CartItemModel item ,BuildContext context) {
+  Widget _buildCartItemCard(CartItem item ,BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Card(
       elevation: 0,
@@ -159,7 +170,7 @@ class CartScreen extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.r),
                   child: Image.network(
-                    item.imageUrl,
+                    item.product.image,
                     width: 90.w,
                     height: 90.h,
                     fit: BoxFit.cover,
@@ -198,14 +209,14 @@ class CartScreen extends StatelessWidget {
                 children: [
                   SizedBox(height: 8.h),
                   Text(
-                    item.name,
+                    item.product.name,
                     style: theme.titleMedium!.copyWith(color: AllColor.black),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    item.details,
+                    item.product.description,
                     style: TextStyle(
                         color: AllColor.black,
                         fontSize: 14.sp,
@@ -213,7 +224,7 @@ class CartScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '${item.price.toStringAsFixed(2).replaceAll('.', ',')}', // 17,00
+                    '${item.price}', // 17,00
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.sp,

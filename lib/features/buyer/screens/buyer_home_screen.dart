@@ -7,10 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/constants/image_control/image_path.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
+import 'package:market_jango/features/buyer/data/banner_data.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
@@ -26,15 +28,16 @@ import 'package:market_jango/core/models/global_search_model.dart';
 import 'all_categori/screen/all_categori_screen.dart';
 import 'all_categori/screen/category_product_screen.dart';
 import 'filter/screen/location_filtering_tab.dart';
-class BuyerHomeScreen extends StatefulWidget {
+class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';
   @override
-  State<BuyerHomeScreen> createState() => _BuyerHomeScreenState();
+  ConsumerState<BuyerHomeScreen> createState() => _BuyerHomeScreenState();
 }
-class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
+class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final bannerProvider = ref.watch(bannerNotifierProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -44,7 +47,21 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
               children: [
           
                 BuyerHomeSearchBar(),
-                PromoSlider(),
+                bannerProvider.when(
+                  data: (data) {
+                    if(data == null){
+                      return const Center(child: Text("No Data"));
+                    }
+                    final banners = data.banners ?? [];
+                    return PromoSlider(imageList: banners.map((e) => e.image).toList(),);
+                  } ,
+                  loading: () {
+                    return const Center(child: Text("Loading..."));
+                  },
+                  error: (error, stackTrace) {
+                    return const Center(child: Text('Error'));
+                  },
+                ),
                 SeeMoreButton(name:"Categories",seeMoreAction: (){goToAllCategoriesPage();},),
                 CustomCategories(scrollableCheck: NeverScrollableScrollPhysics(),categoriCount: 4,goToCategoriesProductPage:() {
                   goToCategoriesProductPage(context);
@@ -239,13 +256,10 @@ class _TimerScreenState extends State<TimerScreen> {
 
 
 class PromoSlider extends ConsumerWidget {
+  final List<String> imageList;
+  PromoSlider({required this.imageList});
   final CarouselSliderController _controller = CarouselSliderController();
 
-  final List<String> imageList = [
-    'assets/images/promo1.jpg',
-    'assets/images/promo2.jpg',
-    'assets/images/promo3.jpeg',
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -262,10 +276,10 @@ class PromoSlider extends ConsumerWidget {
           itemBuilder: (context, index, realIndex) {
             return ClipRRect(
               borderRadius: BorderRadius.circular(16.r),
-              child: Image.asset(
-                imageList[index],
+              child: FirstTimeShimmerImage(
+                imageUrl: imageList[index],
                 fit: BoxFit.cover,
-                width: double.infinity,
+                width: 1.sw,
               ),
             );
           },

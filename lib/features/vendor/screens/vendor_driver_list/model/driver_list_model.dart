@@ -1,11 +1,29 @@
-// models/approved_driver.dart
-class DriverUser {
-  final int id;
-  final String name;
-  DriverUser({required this.id, required this.name});
+// driver_pagination_model.dart
 
-  factory DriverUser.fromJson(Map<String, dynamic> j) =>
-      DriverUser(id: j['id'] ?? 0, name: j['name']?.toString() ?? '');
+class PaginatedDrivers {
+  final int currentPage;
+  final int lastPage;
+  final int total;
+  final List<Driver> drivers;
+
+  PaginatedDrivers({
+    required this.currentPage,
+    required this.lastPage,
+    required this.total,
+    required this.drivers,
+  });
+
+  factory PaginatedDrivers.fromJson(Map<String, dynamic> json) {
+    return PaginatedDrivers(
+      currentPage: json['current_page'] ?? 1,
+      lastPage: json['last_page'] ?? 1,
+      total: json['total'] ?? 0,
+      drivers: (json['data'] as List<dynamic>?)
+          ?.map((e) => Driver.fromJson(e))
+          .toList() ??
+          [],
+    );
+  }
 }
 
 class Driver {
@@ -27,27 +45,32 @@ class Driver {
     required this.user,
   });
 
-  factory Driver.fromJson(Map<String, dynamic> j) => Driver(
-    id: j['id'] ?? 0,
-    userId: j['user_id'] ?? 0,
-    createdAt: j['created_at']?.toString() ?? '',
-    location: j['location']?.toString() ?? '',
-    carName: j['car_name']?.toString() ?? '',
-    carModel: j['car_model']?.toString() ?? '',
-    user: DriverUser.fromJson(j['user'] ?? const {}),
-  );
+  factory Driver.fromJson(Map<String, dynamic> json) {
+    return Driver(
+      id: json['id'] ?? 0,
+      userId: json['user_id'] ?? 0,
+      createdAt: json['created_at'] ?? '',
+      location: json['location'] ?? '',
+      carName: json['car_name'] ?? '',
+      carModel: json['car_model'] ?? '',
+      user: DriverUser.fromJson(json['user'] ?? {}),
+    );
+  }
 }
 
-class DriverPage {
-  final int currentPage;
-  final List<Driver> data;
+class DriverUser {
+  final int id;
+  final String name;
 
-  DriverPage({required this.currentPage, required this.data});
+  DriverUser({
+    required this.id,
+    required this.name,
+  });
 
-  factory DriverPage.fromJson(Map<String, dynamic> j) => DriverPage(
-    currentPage: j['current_page'] ?? 1,
-    data: (j['data'] as List? ?? [])
-        .map((e) => Driver.fromJson(e as Map<String, dynamic>))
-        .toList(),
-  );
+  factory DriverUser.fromJson(Map<String, dynamic> json) {
+    return DriverUser(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+    );
+  }
 }

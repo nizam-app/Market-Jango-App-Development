@@ -12,5 +12,6 @@ class VendorAPIController {
   static String productImageDelete(int id) => '$_base_api/vendor/image/destroy/$id';
   static String search_by_vendor(query) => '$_base_api/vendor/search-by-vendor?query=$query';
   static String user_update = '$_base_api/user/update';
+  static String approved_driver = '$_base_api/approved-driver';
 
 }

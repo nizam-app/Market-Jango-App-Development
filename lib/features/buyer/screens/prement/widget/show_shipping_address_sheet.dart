@@ -128,6 +128,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         TextFormField(
+          
           controller: controller,
           onChanged: onChanged,
           keyboardType: keyboardType,
@@ -136,16 +137,16 @@ class CustomTextFormField extends StatelessWidget {
             hintText: hintText,
             hintStyle: TextStyle(color: AllColor.textHintColor, fontSize: 14.sp),
             filled: true,
-            fillColor: AllColor.grey.withOpacity(0.12),
+            fillColor: Color(0xFFE6F0F8),
             contentPadding:
             EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10.r),
-              borderSide: BorderSide(color: AllColor.textBorderColor),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Color(0xFF0168B8), width: 0.2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.r),
-              borderSide: BorderSide(color: AllColor.textBorderColor, width: 1.2),
+              borderSide: BorderSide(color: Color(0xFF0168B8), width: 0.2),
             ),
           ),
           style: TextStyle(color: AllColor.black, fontSize: 14.sp),

@@ -75,11 +75,10 @@ extension BuyerNewProductToDetail on NewItemsProduct {
       title: name,
       subtitle: description.isNotEmpty ? description : null,
       imageUrl: primaryImage,
-      // sell না থাকলে regular
       price: (sellPrice.isNotEmpty ? sellPrice : regularPrice),
       sizes: size,                 // ইতিমধ্যে নরমালাইজড ["L","XL"]
       colors: color,               // ইতিমধ্যে নরমালাইজড ["yellow","blue"]
-      vendorName: null,            // এই মডেলে vendor user.name নেই
+      vendorName: vendor.user.name,            
       categoryName: category.name, // category সবসময় থাকে আপনার বেসে
       gallery: galleryPaths,
       raw: this,

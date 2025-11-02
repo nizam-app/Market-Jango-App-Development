@@ -58,6 +58,7 @@ class NewItemsProduct {
   final List<String> size;
   final Category category;
   final List<ProductImage> images;
+  final Vendor vendor;
 
   NewItemsProduct({
     required this.id,
@@ -72,6 +73,7 @@ class NewItemsProduct {
     required this.size,
     required this.category,
     required this.images,
+    required this.vendor,
   });
 
   factory NewItemsProduct.fromJson(Map<String, dynamic> json) {
@@ -132,6 +134,14 @@ class NewItemsProduct {
       images: (json['images'] as List)
           .map((e) => ProductImage.fromJson(e))
           .toList(),
+      vendor: json['vendor'] != null
+          ? Vendor.fromJson(json['vendor'])
+          : Vendor(
+        id: 0,
+        userId: 0,
+        user: VendorUser(id: 0, name: ''),
+        reviews: const [],
+      ),
     );
   }
 }
@@ -194,6 +204,52 @@ class Review {
       vendorId: json['vendor_id'] ?? 0,
       description: json['description'] ?? '',
       rating: json['rating'] ?? 0,
+    );
+  }
+}
+
+class Vendor {
+  final int id;
+  final int userId;
+  final VendorUser user;
+  final List<Review> reviews;
+
+  Vendor({
+    required this.id,
+    required this.userId,
+    required this.user,
+    required this.reviews,
+  });
+
+  factory Vendor.fromJson(Map<String, dynamic> json) {
+    return Vendor(
+      id: json['id'] ?? 0,
+      userId: json['user_id'] ?? 0,
+      user: json['user'] != null
+          ? VendorUser.fromJson(json['user'])
+          : VendorUser(id: 0, name: ''),
+      reviews: (json['reviews'] is List)
+          ? (json['reviews'] as List)
+          .map((e) => Review.fromJson(e))
+          .toList()
+          : const [],
+    );
+  }
+}
+
+class VendorUser {
+  final int id;
+  final String name;
+
+  VendorUser({
+    required this.id,
+    required this.name,
+  });
+
+  factory VendorUser.fromJson(Map<String, dynamic> json) {
+    return VendorUser(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
     );
   }
 }

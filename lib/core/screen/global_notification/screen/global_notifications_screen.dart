@@ -32,8 +32,12 @@ class _GlobalNotificationsState extends ConsumerState<GlobalNotificationsScreen>
               Expanded(
                 child: notification.when(
                   data: (data) {
-            
-                    
+                    if (data.isEmpty) {
+                      return const Center(
+                        child: Text("There are no notifications now."),
+                      );
+                    }
+
                     return ListView.builder(
                       itemCount: data.length,
                       itemBuilder: (context, index) {

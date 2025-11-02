@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/screen/global_notification/screen/vendor_notifications.dart';
+import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 
 class GlobalNotificationIcon extends StatelessWidget {
   const GlobalNotificationIcon({super.key});

@@ -13,12 +13,14 @@ final userProvider = FutureProvider<UserModel>((ref) async {
   if (_user_id == null) {
     throw Exception("User ID not found");
   }
+  String? _auth_token = _sharedPreferences.getString("auth_token");
+  if (_auth_token == null) {
+    throw Exception("auth token not found");
+  }
   final response = await http.get(
     Uri.parse("${AuthAPIController.user_show}?id=$_user_id"),
     headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      // Add token if needed
+      "token": _auth_token,
     },
   );
 

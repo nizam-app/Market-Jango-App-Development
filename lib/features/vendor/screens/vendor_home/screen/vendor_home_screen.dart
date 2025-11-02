@@ -434,15 +434,15 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
                     vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AllColor.orange : Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4.r,
-                        offset: Offset(0, 2.h),
-                      ),
-                    ],
+                    color: isSelected ? AllColor.orange : AllColor.grey100,
+                    borderRadius: BorderRadius.circular(5.r),
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: Colors.black12,
+                    //     blurRadius: 2.r,
+                    //     offset: Offset(5, 2.h),
+                    //   ),
+                    // ],
                   ),
                   child: Text(
                     names[index],

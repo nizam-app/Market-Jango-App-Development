@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final notificationProvider = FutureProvider<List<NotificationModel>>((ref) async {
   final SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-  final String? token = _sharedPreferences.getString("token");
+  final String? token = _sharedPreferences.getString("auth_token");
   if (token == null) throw Exception('Token not found');
 
   final response = await http.get(
@@ -20,7 +20,8 @@ final notificationProvider = FutureProvider<List<NotificationModel>>((ref) async
 
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
-    final notificationsJson = data['data'] as List;
+    // Handle cases where 'data' might be null
+    final notificationsJson = data['data'] as List? ?? [];
     return notificationsJson.map((json) => NotificationModel.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load notifications');

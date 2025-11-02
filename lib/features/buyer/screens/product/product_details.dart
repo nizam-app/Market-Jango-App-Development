@@ -26,7 +26,7 @@ class ProductDetails extends StatelessWidget {
           children: [
             ProductImage(product: product),
             CustomSize(product: product),
-            ProductMaterialAndStoreInfo(),
+            ProductMaterialAndStoreInfo(storeName: product.vendorName??""),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.w),
               child: Column(

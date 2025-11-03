@@ -48,6 +48,7 @@ class _GlobalNotificationsState extends ConsumerState<GlobalNotificationsScreen>
                               ? DateFormat.jm().format(notifications.createdAt!)
                               : 'No time',
                           isUnread: notifications.isRead,
+                          massage: notifications.message ?? 'No message',
                         );
                       },
                     );
@@ -68,12 +69,14 @@ class NotificationTile extends StatelessWidget {
   final String title;
   final String time;
   final bool isUnread;
+  final String massage;
 
   const NotificationTile({
     super.key,
     required this.title,
     required this.time,
     required this.isUnread,
+    required this.massage,
   });
 
   @override
@@ -110,7 +113,7 @@ class NotificationTile extends StatelessWidget {
                 ),
                  SizedBox(height: 4.h),
                  Text(
-                  'Learn more about managing account info and activity',
+                  massage,
                   style: Theme.of(context).textTheme.titleMedium,
                 )
               ],

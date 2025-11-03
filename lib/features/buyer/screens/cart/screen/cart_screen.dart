@@ -63,7 +63,11 @@ class CartScreen extends ConsumerWidget {
           SizedBox(height: 20.h),
           cartAsync.when(
             data: (data) {
-            final  cartItems = data;
+              if (data.isEmpty) {
+                return const Expanded(
+                  child: Center(child: Text('Please add the cart product')),
+                );
+              }
               return Expanded(
                 child: ListView.builder(
                   itemCount: data.length,

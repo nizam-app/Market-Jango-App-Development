@@ -336,11 +336,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => TransportBottomNavBar(),
     ),
 
-    GoRoute(
-      path: TransportChart.routeName,
-      name: 'transort_chat',
-      builder: (context, state) => TransportChart(),
-    ),
+    // GoRoute(
+    //   path: TransportChart.routeName,
+    //   name: 'transort_chat',
+    //   builder: (context, state) => TransportChart(),
+    // ),
 
     GoRoute(
       path: TransportMessage.routeName,
@@ -446,11 +446,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const DriverBottomNavBar(),
     ),
 
-    GoRoute(
-      path: DriverChat.routeName,
-      name: 'driverChat',
-      builder: (context, state) => const DriverChat(),
-    ),
+    // GoRoute(
+    //   path: DriverChat.routeName,
+    //   name: 'driverChat',
+    //   builder: (context, state) => const DriverChat(),
+    // ),
 
     GoRoute(
       path: DriverOrder.routeName,

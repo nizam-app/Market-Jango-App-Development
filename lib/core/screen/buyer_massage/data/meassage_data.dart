@@ -12,6 +12,7 @@ class ChatController extends StateNotifier<AsyncValue<List<ChatThread>>> {
   ChatController() : super(const AsyncValue.loading());
 
   final String _baseUrl = BuyerAPIController.massage_list;
+  
 
   Future<void> getChatList() async {
     try {

@@ -1,18 +1,17 @@
 // lib/features/vendor/screens/product_edit/logic/update_product_provider.dart
 import 'dart:io';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/utils/image_check_before_post.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 
 final updateProductProvider =
-StateNotifierProvider<UpdateProductNotifier, AsyncValue<void>>(
+    StateNotifierProvider<UpdateProductNotifier, AsyncValue<void>>(
       (ref) => UpdateProductNotifier(ref),
-);
+    );
 
 class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
   UpdateProductNotifier(this.ref) : super(const AsyncData(null));
@@ -23,22 +22,20 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
     required int id,
     String? name,
     String? description,
-    String? previousPrice, 
-    String? currentPrice,  // API: current_price
+    String? previousPrice,
+    String? currentPrice, // API: current_price
     int? categoryId,
-    List<String>? colors,  // API: color[]
-    List<String>? sizes,   // API: size[]
-    File? image,           // API: image (main)
-    List<File>? newFiles,  // API: files[] (gallery additions)
+    List<String>? colors, // API: color[]
+    List<String>? sizes, // API: size[]
+    File? image, // API: image (main)
+    List<File>? newFiles, // API: files[] (gallery additions)
   }) async {
     try {
       state = const AsyncLoading();
 
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      final uri = Uri.parse(
-        VendorAPIController.product_update(id),
-      );
+      final uri = Uri.parse(VendorAPIController.product_update(id));
 
       final req = http.MultipartRequest('POST', uri);
       if (token != null) req.headers['token'] = token;
@@ -68,7 +65,9 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
       if (image != null) {
         // image nullable, so guard করে নিলাম
         coverCompressed = await ImageManager.compressFile(image);
-        req.files.add(await http.MultipartFile.fromPath('image', coverCompressed.path));
+        req.files.add(
+          await http.MultipartFile.fromPath('image', coverCompressed.path),
+        );
       }
 
       List<File> galleryCompressed = [];
@@ -77,13 +76,13 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
       if (toCompress.isNotEmpty) {
         galleryCompressed = await ImageManager.compressAll(toCompress);
         for (final f in galleryCompressed) {
-          // 🔧 filename পাঠানো খুব গুরুত্বপূর্ণ
-          req.files.add(await http.MultipartFile.fromPath(
-            'files[]',          
-            f.path,
-            filename: p.basename(f.path),
-
-          ));
+          req.files.add(
+            await http.MultipartFile.fromPath(
+              'files[]',
+              f.path,
+              filename: p.basename(f.path),
+            ),
+          );
         }
       }
 

@@ -12,7 +12,6 @@ class CartItemModel {
     required this.details,
     required this.price,
     this.quantity = 1,
-     this.id
+    this.id,
   });
-  
 }

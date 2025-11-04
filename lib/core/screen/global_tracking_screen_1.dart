@@ -1,5 +1,6 @@
 // global_tracking_screen.dart
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +14,7 @@ class GlobalTrackingScreen1 extends StatefulWidget {
     super.key,
     required this.screenName,
     this.startAdvanced = false, // show "screen 2" state initially
-    this.autoAdvance = true,    // auto move from false -> true in 3s
+    this.autoAdvance = true, // auto move from false -> true in 3s
   });
 
   static const String routeName = "/transportTracking";
@@ -73,10 +74,17 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("To Receive",
-                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                    Text("Track Your Order",
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
+                    Text(
+                      "To Receive",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "Track Your Order",
+                      style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                    ),
                   ],
                 ),
                 const Spacer(),
@@ -103,8 +111,10 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
 
             // Title for phase 1
             if (!_advanced)
-              Text("Packed",
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+              Text(
+                "Packed",
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+              ),
 
             SizedBox(height: 16.h),
 
@@ -132,8 +142,10 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Tracking Number",
-              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
+          Text(
+            "Tracking Number",
+            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -154,7 +166,7 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
         _timelineItem(
           title: "Packed",
           desc:
-          "Your parcel is packed and will be handed over to our delivery partner.",
+              "Your parcel is packed and will be handed over to our delivery partner.",
           time: "April.19 12:31",
           active: true,
         ),
@@ -190,8 +202,10 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Driver Information",
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+              Text(
+                "Driver Information",
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+              ),
               SizedBox(height: 10.h),
               Container(
                 padding: EdgeInsets.all(12.w),
@@ -213,11 +227,20 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Mr John Doe",
-                              style:
-                              TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                          Text("01780053624",
-                              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
+                          Text(
+                            "Mr John Doe",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            "01780053624",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -246,7 +269,7 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
         _timelineItem(
           title: "Packed",
           desc:
-          "Your parcel is packed and will be handed over to our delivery partner.",
+              "Your parcel is packed and will be handed over to our delivery partner.",
           time: "April.19 12:31",
         ),
         _timelineItem(
@@ -306,7 +329,9 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
           height: 28.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: glow, blurRadius: 16.r, spreadRadius: 2.r)],
+            boxShadow: [
+              BoxShadow(color: glow, blurRadius: 16.r, spreadRadius: 2.r),
+            ],
           ),
         ),
         Container(
@@ -366,8 +391,11 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: (active ? const Color(0xFF6DB2FF) : const Color(0xFFCAD4DE))
-                      .withOpacity(0.35),
+                  color:
+                      (active
+                              ? const Color(0xFF6DB2FF)
+                              : const Color(0xFFCAD4DE))
+                          .withOpacity(0.35),
                   blurRadius: 12.r,
                   spreadRadius: 1.r,
                 ),
@@ -421,10 +449,12 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
     bool shipped = false,
     bool highlight = false,
   }) {
-    final Color titleColor =
-    highlight ? Colors.orange : (shipped ? Colors.blue : Colors.black);
-    final Color timeBg =
-    highlight ? Colors.orange.withOpacity(0.1) : Colors.grey.shade200;
+    final Color titleColor = highlight
+        ? Colors.orange
+        : (shipped ? Colors.blue : Colors.black);
+    final Color timeBg = highlight
+        ? Colors.orange.withOpacity(0.1)
+        : Colors.grey.shade200;
     final Color timeColor = highlight ? Colors.orange : Colors.black;
 
     return Padding(
@@ -436,9 +466,14 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(title,
-                    style:
-                    TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: titleColor)),
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
+                  ),
+                ),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -446,8 +481,14 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
                   color: timeBg,
                   borderRadius: BorderRadius.circular(6.r),
                 ),
-                child: Text(time,
-                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500, color: timeColor)),
+                child: Text(
+                  time,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: timeColor,
+                  ),
+                ),
               ),
             ],
           ),
@@ -486,7 +527,9 @@ class DeliveryFailedPopup {
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
-                  border: const Border(bottom: BorderSide(color: Colors.blue, width: 2)),
+                  border: const Border(
+                    bottom: BorderSide(color: Colors.blue, width: 2),
+                  ),
                 ),
                 child: Center(
                   child: Text(
@@ -500,12 +543,14 @@ class DeliveryFailedPopup {
                 ),
               ),
               SizedBox(height: 20.h),
-              Text("What should I do?",
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+              Text(
+                "What should I do?",
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+              ),
               SizedBox(height: 8.h),
               Text(
                 "Don’t worry, we will shortly contact you to arrange a more suitable time. "
-                    "You can also call +00 000 000 000 or chat with our customer care service.",
+                "You can also call +00 000 000 000 or chat with our customer care service.",
                 style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
               ),
               SizedBox(height: 20.h),
@@ -514,12 +559,16 @@ class DeliveryFailedPopup {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
                   onPressed: () => context.push(ChatScreen.routeName),
-                  child:
-                  Text("Chat Now", style: TextStyle(fontSize: 14.sp, color: Colors.white)),
+                  child: Text(
+                    "Chat Now",
+                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                  ),
                 ),
               ),
               SizedBox(height: 50.h),

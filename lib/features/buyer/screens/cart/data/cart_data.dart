@@ -1,10 +1,11 @@
-import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+
 import '../../../../../core/utils/get_token_sharedpefarens.dart';
-import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../model/cart_model.dart';
 
 final List<CartItemModel> dummyCartItems = [
@@ -38,8 +39,6 @@ final List<CartItemModel> dummyCartItems = [
   ),
 ];
 
-
-
 final cartProvider = FutureProvider<List<CartItem>>((ref) async {
   final token = await ref.read(authTokenProvider.future);
   if (token == null) throw Exception('Token not found');
@@ -51,7 +50,9 @@ final cartProvider = FutureProvider<List<CartItem>>((ref) async {
     final body = jsonDecode(response.body);
     final data = body['data'] as List<dynamic>?;
     if (data == null) return [];
-    return data.map((e) => CartItem.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+        .toList();
   } else {
     throw Exception('Failed to load cart: ${response.statusCode}');
   }

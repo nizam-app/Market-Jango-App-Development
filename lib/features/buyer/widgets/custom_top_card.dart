@@ -21,7 +21,7 @@ class CustomTopProducts extends ConsumerWidget {
         height: 55.h,
         width: double.infinity,
         child:allProducts.when(data: (product) {
-          List<ProductModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
+          List<CategoriesModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
           return ListView.builder(
               shrinkWrap: true,
               physics: AlwaysScrollableScrollPhysics(),
@@ -30,7 +30,7 @@ class CustomTopProducts extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final allTopProduct = topProducts[index];
                 return InkWell(
-                  onTap: (){context.push(ProductDetails.routeName);},
+                  onTap: (){context.push(ProductDetails.routeName,);},
                   child: CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
                     child: CircleAvatar(
                       radius: 24.r,

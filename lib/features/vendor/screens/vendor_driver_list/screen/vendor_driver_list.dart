@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list/data/driver_list_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_driver_list/model/driver_list_model.dart';
 
-class VendorDriverList extends StatefulWidget {
+class VendorDriverList extends ConsumerStatefulWidget {
   const VendorDriverList({super.key});
   static const routeName = "/vendorDriverList";
 
   @override
-  State<VendorDriverList> createState() => _VendorDriverListState();
+  ConsumerState<VendorDriverList> createState() => _VendorDriverListState();
 }
 
-class _VendorDriverListState extends State<VendorDriverList> {
+class _VendorDriverListState extends ConsumerState<VendorDriverList> {
   final _search = TextEditingController();
 
   @override
@@ -23,12 +27,13 @@ class _VendorDriverListState extends State<VendorDriverList> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _drivers.where((d) {
-      final q = _search.text.trim().toLowerCase();
-      if (q.isEmpty) return true;
-      return d.name.toLowerCase().contains(q) || d.phone.contains(q);
-    }).toList();
-
+    // final filtered = _drivers.where((d) {
+    //   final q = _search.text.trim().toLowerCase();
+    //   if (q.isEmpty) return true;
+    //   return d.name.toLowerCase().contains(q) || d.phone.contains(q);
+    // }).toList();
+    final driverAsync = ref.watch(driverNotifierProvider);
+    final driverNotifier = ref.read(driverNotifierProvider.notifier);
     return Scaffold(
       backgroundColor: AllColor.white,
 
@@ -57,130 +62,146 @@ class _VendorDriverListState extends State<VendorDriverList> {
                     horizontal: 14,
                     vertical: 12,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.grey200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.grey200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.blue500),
-                  ),
+                  enabledBorder: buildOutlineInputBorder(),
+                  focusedBorder: buildOutlineInputBorder(),
                 ),
               ),
             ),
             SizedBox(height: 12.h),
 
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                physics: const BouncingScrollPhysics(),
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (_, i) => _DriverCard(
-                  data: filtered[i],
-                  onAssign: () {
+            driverAsync.when(
+              data: (data) {
+                final drivers = data?.drivers ?? [];
+                return SizedBox(
+                  height: 1.62.sw,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: drivers.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (_, i) => _DriverCard(
+                            data: drivers[i],
+                            onAssign: () {
+                              context.push("/assign_order_driver");
 
-                    //
-                    context.push("/assign_order_driver");
-                    
-                  },
-                  onChat: () {
-                    // context.go('/chat?to=${filtered[i].id}');
-                    
-                    context.push("/vendorTransportDetails");
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
+                            },
+                            onChat: () {
+                              context.push("/vendorTransportDetails");
+                            },
+                          ),
+                        ),
+
+                      ),
+                      SizedBox(height: 20.h,),
+                      if (data != null)
+                        GlobalPagination(
+                          currentPage: data.currentPage ?? 1,
+                          totalPages: data.lastPage ?? 1,
+                          onPageChanged: (page) {
+                            driverNotifier.changePage(page);
+                          },
+                        )
+                    ],
+                  ),
+                );
+              }  ,
+              loading: () => const Center(child: Text("Loading...")),
+              error: (error, stackTrace) => Center(child: Text(error.toString())),
+            ), ]
+        )
       ),
     );
+  }
+
+  OutlineInputBorder buildOutlineInputBorder() {
+    return OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide(color: AllColor.grey200),
+                );
   }
 }
 
 /* ===================== MODEL & DEMO DATA ===================== */
 
-class DriverItem {
-  final String id;
-  final String name;
-  final String phone;
-  final String address;
-  final double price;
-  final String avatarUrl;
-  final bool online;
-  const DriverItem({
-    required this.id,
-    required this.name,
-    required this.phone,
-    required this.address,
-    required this.price,
-    required this.avatarUrl,
-    required this.online,
-  });
-}
+// class DriverItem {
+//   final String id;
+//   final String name;
+//   final String phone;
+//   final String address;
+//   final double price;
+//   final String avatarUrl;
+//   final bool online;
+//   const DriverItem({
+//     required this.id,
+//     required this.name,
+//     required this.phone,
+//     required this.address,
+//     required this.price,
+//     required this.avatarUrl,
+//     required this.online,
+//   });
+// }
 
-const _drivers = <DriverItem>[
-  DriverItem(
-    id: '1',
-    name: 'Nguyen, Shane',
-    phone: '+00123456789',
-    address: 'australia, road 19 house 1',
-    price: 48,
-    avatarUrl:
-        'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=300',
-    online: true,
-  ),
-  DriverItem(
-    id: '2',
-    name: 'Henry, Arthur',
-    phone: '+00123456789',
-    address: 'australia, road 19 house 1',
-    price: 48,
-    avatarUrl:
-        'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=301',
-    online: true,
-  ),
-  DriverItem(
-    id: '3',
-    name: 'Cooper, Kristin',
-    phone: '+00123456789',
-    address: 'australia, road 19 house 1',
-    price: 48,
-    avatarUrl:
-        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=300',
-    online: true,
-  ),
-  DriverItem(
-    id: '4',
-    name: 'Black, Marvin',
-    phone: '+00123456789',
-    address: 'australia, road 19 house 1',
-    price: 48,
-    avatarUrl:
-        'https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=300',
-    online: true,
-  ),
-  DriverItem(
-    id: '5',
-    name: 'Miles, Esther',
-    phone: '+00123456789',
-    address: 'australia, road 19 house 1',
-    price: 48,
-    avatarUrl:
-        'https://images.unsplash.com/photo-1548142813-c348350df52b?w=300',
-    online: true,
-  ),
-];
+// const _drivers = <DriverItem>[
+//   DriverItem(
+//     id: '1',
+//     name: 'Nguyen, Shane',
+//     phone: '+00123456789',
+//     address: 'australia, road 19 house 1',
+//     price: 48,
+//     avatarUrl:
+//         'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=300',
+//     online: true,
+//   ),
+//   DriverItem(
+//     id: '2',
+//     name: 'Henry, Arthur',
+//     phone: '+00123456789',
+//     address: 'australia, road 19 house 1',
+//     price: 48,
+//     avatarUrl:
+//         'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=301',
+//     online: true,
+//   ),
+//   DriverItem(
+//     id: '3',
+//     name: 'Cooper, Kristin',
+//     phone: '+00123456789',
+//     address: 'australia, road 19 house 1',
+//     price: 48,
+//     avatarUrl:
+//         'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=300',
+//     online: true,
+//   ),
+//   DriverItem(
+//     id: '4',
+//     name: 'Black, Marvin',
+//     phone: '+00123456789',
+//     address: 'australia, road 19 house 1',
+//     price: 48,
+//     avatarUrl:
+//         'https://images.unsplash.com/photo-1544006659-f0b21884ce1d?w=300',
+//     online: true,
+//   ),
+//   DriverItem(
+//     id: '5',
+//     name: 'Miles, Esther',
+//     phone: '+00123456789',
+//     address: 'australia, road 19 house 1',
+//     price: 48,
+//     avatarUrl:
+//         'https://images.unsplash.com/photo-1548142813-c348350df52b?w=300',
+//     online: true,
+//   ),
+// ];
 
 /* ===================== CARD WIDGET ===================== */
 
 class _DriverCard extends StatelessWidget {
-  final DriverItem data;
+  final Driver data;
   final VoidCallback onAssign;
   final VoidCallback onChat;
 
@@ -213,7 +234,7 @@ class _DriverCard extends StatelessWidget {
                   height: 60.h,
                   width: 60.w,
                   color: AllColor.grey100,
-                  child: Image.network(data.avatarUrl, fit: BoxFit.cover),
+                  child: Image.network("", fit: BoxFit.cover),
                 ),
               ),
               SizedBox(width: 10.h),
@@ -227,7 +248,7 @@ class _DriverCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            data.name,
+                            data.user.name,
                             style: TextStyle(
                               color: AllColor.black,
                               fontWeight: FontWeight.w700,
@@ -236,7 +257,6 @@ class _DriverCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (data.online)
                           Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: 10.h,
@@ -263,11 +283,11 @@ class _DriverCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          data.phone,
+                          "014441114451",
                           style: TextStyle(color: AllColor.black54),
                         ),
                         Text(
-                          '\$${data.price.toStringAsFixed(0)}',
+                          '\$700',
                           style: TextStyle(
                             color: AllColor.black,
                             fontWeight: FontWeight.w800,
@@ -277,7 +297,7 @@ class _DriverCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      data.address,
+                      data.location,
                       style: TextStyle(color: AllColor.black54),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

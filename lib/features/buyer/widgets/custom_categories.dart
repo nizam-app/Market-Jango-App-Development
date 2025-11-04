@@ -91,7 +91,7 @@ class CustomCategories extends ConsumerWidget{
     );
   }
 
-  Map<String, List<String>> buildCategoryImageMap(List<ProductModel> products) {
+  Map<String, List<String>> buildCategoryImageMap(List<CategoriesModel> products) {
     final Map<String, List<String>> categoryImageMap = {};
 
     for (var product in products) {

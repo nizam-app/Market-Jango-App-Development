@@ -151,7 +151,7 @@ class FashionProduct extends StatelessWidget {
           itemCount: 10,
           // Example item count
           itemBuilder: (context, index) {
-            return CustomNewProduct(width: 130.w, height: 142.h, text: 'Product Name', text2: 'prices',);}
+            return CustomNewProduct(width: 130.w, height: 142.h, productPricesh: 'Product Name', productName: 'prices',);}
       ),
     );
   }
@@ -176,7 +176,7 @@ class PopularProduct extends StatelessWidget {
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              CustomNewProduct(width: 162.w, height: 175.h, text: 'Product Name', text2: 'price',),
+              CustomNewProduct(width: 162.w, height: 175.h, productPricesh: 'Product Name', productName: 'price',),
               Positioned(
                 top: 10,
                   right: 30,

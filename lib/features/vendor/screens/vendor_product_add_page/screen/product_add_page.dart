@@ -1,21 +1,36 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:market_jango/core/constants/api_control/vendor_api.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/logic/creat_product_provider.dart';
 
+import '../../product_edit/data/product_attribute_data.dart';
 import '../widget/custom_variant_picker.dart';
 
-class ProductAddPage extends StatelessWidget {
-  const ProductAddPage({super.key});
+class ProductAddPage extends ConsumerWidget {
+   ProductAddPage({super.key,});
 
   static final String routeName = "/productAddPage";
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attributeAsync = ref.watch(productAttributesProvider);
+
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -26,8 +41,44 @@ class ProductAddPage extends StatelessWidget {
                 Tuppertextandbackbutton(screenName: "Profile Edite"),
                 ProductBasicInfoSection(),
                 SizedBox(height: 16.h),
-                CustomVariantPicker(),
-                SizedBox(height: 16.h),
+              attributeAsync.when(
+                data: (data) {
+                  final colorAttr = data.data.firstWhere(
+                        (attr) => attr.name.toLowerCase() == 'color',
+                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                  );
+                  final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name ?? "").toList();
+
+                  final sizeAttr = data.data.firstWhere(
+                        (attr) => attr.name.toLowerCase() == 'size',
+                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                  );
+                  final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name ?? "").toList();
+
+
+                  final selectedColors = ref.watch(selectedColorsProvider);
+                  final selectedSizes  = ref.watch(selectedSizesProvider);
+            
+                  return CustomVariantPicker(
+                    colors: colorNames,
+                    sizes: sizeNames,
+
+                    selectedColors: selectedColors,
+                    selectedSizes: selectedSizes,
+
+
+                    onColorsChanged: (list) {
+                      ref.read(selectedColorsProvider.notifier).state = [...list];
+                    },
+                    onSizesChanged: (list) {
+                      ref.read(selectedSizesProvider.notifier).state = [...list];  }
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('Error: $err')),
+              ),
+
+              SizedBox(height: 16.h),
                 PriceAndImagesSection(),
               ],
             ),
@@ -38,51 +89,57 @@ class ProductAddPage extends StatelessWidget {
   }
 }
 
-class ProductBasicInfoSection extends StatefulWidget {
+class ProductBasicInfoSection extends ConsumerStatefulWidget {
   const ProductBasicInfoSection({super.key});
 
   @override
-  State<ProductBasicInfoSection> createState() =>
+  ConsumerState<ProductBasicInfoSection> createState() =>
       _ProductBasicInfoSectionState();
 }
 
-class _ProductBasicInfoSectionState extends State<ProductBasicInfoSection> {
-  final _titleC = TextEditingController(text: 'Flowy summer dress');
+class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSection> {
+  final _titleC = TextEditingController();
   final _descC = TextEditingController(
-    text:
-        "Discover a curated collection of stylish and fashionable women’s dresses designed for every mood and moment. From elegant evenings to everyday charm — dress to express.\n\nDiscover a curated collection of stylish and fashionable women’s dresses.",
+
   );
 
-  final _categories = const ['Fashion', 'Electronics', 'Beauty', 'Home'];
-  String _selectedCategory = 'Fashion';
+  String? selectedCategory;
 
   // colors tuned to the mock
   final _lblColor = const Color(0xFF436AA0); // label text
-  final _bdColor = const Color(0xFFD2E1F6); // border color
+
   final _hintText = const Color(0xFF95A6C4); // (optional) hint color
 
   OutlineInputBorder _border() => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.r),
-    borderSide: BorderSide(color: _bdColor, width: 1.2),
+    borderRadius: BorderRadius.circular(5.r),
+    borderSide: BorderSide(color: AllColor.grey, width: 1.2),
+
   );
 
   @override
   Widget build(BuildContext context) {
+   
+    final ThemeData _dropTheme = ThemeData(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+    );
+
+
+    final categoryAsync = ref.watch(vendorCategoryProvider(VendorAPIController.vendor_category));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _Label('Product Title', color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
+          onChanged: (value) {
+            ref.read(productNameProvider.notifier).state = value;
+          },
           controller: _titleC,
           style: TextStyle(fontSize: 16.sp),
           decoration: InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 14.w,
-              vertical: 14.h,
-            ),
-            border: _border(),
+            hintText: 'Enter Product Title',
+            fillColor: AllColor.white,
             enabledBorder: _border(),
             focusedBorder: _border(),
           ),
@@ -92,28 +149,67 @@ class _ProductBasicInfoSectionState extends State<ProductBasicInfoSection> {
 
         _Label('Category', color: _lblColor),
         SizedBox(height: 6.h),
-        DropdownButtonFormField<String>(
-          value: _selectedCategory,
-          items: _categories
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e, style: TextStyle(fontSize: 16.sp)),
+        /// Category Dropdown
+        categoryAsync.when(
+          data: (categories) {
+            final categoryNames = categories.map((e) => e.name).toList();
+            if (selectedCategory == null ||
+                !categoryNames.contains(selectedCategory)) {
+              selectedCategory =
+              categoryNames.isNotEmpty ? categoryNames.first : null;
+            }
+            
+            return Theme(
+              data: _dropTheme,
+              child: Container(
+                height: 56.h,
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: AllColor.white,
+                  borderRadius: BorderRadius.circular(5.r),
+                  border: Border.all(color: AllColor.grey),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 14.r,
+                      offset: Offset(0, 6.h),
+                      color: Colors.black.withOpacity(0.06),
+                    ),
+                  ],
                 ),
-              )
-              .toList(),
-          onChanged: (v) => setState(() => _selectedCategory = v!),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 14.w,
-              vertical: 12.h,
-            ),
-            border: _border(),
-            enabledBorder: _border(),
-            focusedBorder: _border(),
-          ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    value: selectedCategory,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+
+                    style: TextStyle(fontSize: 15.sp, color: Colors.black87),
+                    items: categoryNames.map((e) {
+                      return DropdownMenuItem(
+
+                        value: e,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          child: Text(e),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() => selectedCategory = v);
+                      final selected =
+                      categories.firstWhere((e) => e.name == v);
+                      ref.read(productCategoryProvider.notifier).state =
+                          selected.id;
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Center(child: Text('Error: $err')),
         ),
 
         SizedBox(height: 16.h),
@@ -121,12 +217,15 @@ class _ProductBasicInfoSectionState extends State<ProductBasicInfoSection> {
         _Label('Description', color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
+          onChanged: (value) {
+            ref.read(productDescProvider.notifier).state = value;
+          },
           controller: _descC,
           maxLines: 6,
           style: TextStyle(fontSize: 16.sp, height: 1.35),
           decoration: InputDecoration(
-            isDense: true,
-            alignLabelWithHint: true,
+            hintText: 'Enter Product Description...',
+            fillColor: AllColor.white,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 14.w,
               vertical: 14.h,
@@ -160,45 +259,45 @@ class _Label extends StatelessWidget {
   }
 }
 
-class PriceAndImagesSection extends StatefulWidget {
-  const PriceAndImagesSection({super.key});
+class PriceAndImagesSection extends ConsumerStatefulWidget{
+  const PriceAndImagesSection({super.key,});
+
 
   @override
-  State<PriceAndImagesSection> createState() => _PriceAndImagesSectionState();
+  ConsumerState<PriceAndImagesSection> createState() => _PriceAndImagesSectionState();
 }
 
-class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
-  final _currentC = TextEditingController(text: '\$65');
-  final _previousC = TextEditingController(text: '\$100');
+class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
 
-  final _picker = ImagePicker();
-
-  XFile? _cover;
-  final List<XFile> _gallery = [];
-
-  Future<void> _pickCover() async {
-    final x = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (x != null) setState(() => _cover = x);
-  }
-
-  Future<void> _pickGallery() async {
-    final xs = await _picker.pickMultiImage(imageQuality: 85);
-    if (xs.isNotEmpty)
-      setState(
-        () => _gallery
-          ..clear()
-          ..addAll(xs.take(8)),
-      ); // cap to 8 for neat grid
-  }
 
   @override
   Widget build(BuildContext context) {
-    // Colors to mimic the screenshot
+    
     const borderBlue = Color(0xFFBFD5F1);
     const labelBlue = Color(0xFF2B6CB0);
+    final createState = ref.watch(createProductProvider);
+
+    bool loading = createState.isLoading;
+    final selectedColors = ref.read(selectedColorsProvider);
+    final selectedSizes = ref.read(selectedSizesProvider);
+
+    ref.listen<AsyncValue<String>>(createProductProvider, (prev, next) {
+      next.when(
+        data: (msg) {
+          if (msg.contains('success')) {
+            // success হলেই নেভিগেট + টোস্ট
+            context.pop();
+            GlobalSnackbar.show(context, title: "Success", message: "Product Created Successfully");
+            ref.invalidate(updateProductProvider);
+          }
+        },
+        error: (err, _) {
+          GlobalSnackbar.show(context, title: "Error", message: err.toString());
+        },
+        loading: () {},
+      );
+    });
+
 
     OutlineInputBorder _border([Color c = borderBlue]) => OutlineInputBorder(
       borderSide: BorderSide(color: c, width: 1.2),
@@ -220,14 +319,10 @@ class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
                     controller: _currentC,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 12.h,
-                      ),
-                      isDense: true,
-                      border: _border(),
+                      fillColor: AllColor.white,
+                      hintText: 'Current Price',
                       enabledBorder: _border(),
-                      focusedBorder: _border(labelBlue),
+                      focusedBorder: _border(),
                     ),
                   ),
                 ),
@@ -241,14 +336,10 @@ class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
                     controller: _previousC,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 12.h,
-                      ),
-                      isDense: true,
-                      border: _border(),
+                      fillColor: AllColor.white,
+                      hintText: 'Previous Price',
                       enabledBorder: _border(),
-                      focusedBorder: _border(labelBlue),
+                      focusedBorder: _border(),
                     ),
                   ),
                 ),
@@ -261,24 +352,24 @@ class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
           _Labeled(
             label: 'Cover Image',
             labelColor: labelBlue,
-            child: _UploadCard(text: 'Upload Image', onTap: _pickCover),
+            child: _UploadCard(text: 'Upload Image', onTap: _askImageSource),
           ),
           SizedBox(height: 10.h),
 
           // Single preview
-          _SectionTitle('Uploaded Preview', labelBlue),
+          if (_cover != null)  _SectionTitle('Uploaded Preview', labelBlue),
           SizedBox(height: 8.h),
-          SizedBox(
+          if (_cover != null)    SizedBox(
             height: 64.w,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: _PreviewTile(file: _cover, size: 64.w),
+              child:  _PreviewTile(file: _cover, size: 64.w),
             ),
           ),
           SizedBox(height: 18.h),
 
           // Gallery images
-          _Labeled(
+       _Labeled(
             label: 'Gallery Images',
             labelColor: labelBlue,
             child: _UploadCard(
@@ -288,27 +379,113 @@ class _PriceAndImagesSectionState extends State<PriceAndImagesSection> {
           ),
           SizedBox(height: 10.h),
 
-          _SectionTitle('Uploaded Preview', labelBlue),
+          if (_gallery.isNotEmpty)   _SectionTitle('Uploaded Preview', labelBlue),
           SizedBox(height: 8.h),
 
           // Grid of previews (show empty placeholders if none)
-          Wrap(
+        Wrap(
             spacing: 12.w,
             runSpacing: 12.h,
-            children: List.generate(4, (i) {
+            children: List.generate(_gallery.length, (i) {
               final file = i < _gallery.length ? _gallery[i] : null;
               return _PreviewTile(file: file, size: 64.w);
             }),
           ),
           SizedBox(height: 20.h),
           GlobalSaveBotton(
-            bottonName: "Update Now",
-            onPressed: () {
-              context.push("location");
-            },
-          ),
+                bottonName:loading? "Creating....": "Create a Product",
+                onPressed: () {
+                  final createAsync = ref.read(createProductProvider.notifier);
+                  final name = ref.watch(productNameProvider);
+                  final desc = ref.watch(productDescProvider);
+                  final categoryId = ref.watch(productCategoryProvider);
+                  createAsync.createProduct(
+                    name: name,
+                    description: desc,
+                    regularPrice: _currentC.text,
+                    sellPrice: _previousC.text,
+                    categoryId: categoryId ?? 1,
+                    color: selectedColors,
+                    size: selectedSizes,
+                    image: File(_cover!.path),
+                    files: _gallery.map((x) => File(x.path)).toList(),
+                  );
+                  // final state = ref.read(createProductProvider);
+                  // state.when(
+                  //     data: (msg) {
+                  //       if (msg.contains('success')) {
+                  //         context.push(VendorHomeScreen.routeName);
+                  //         GlobalSnackbar.show(context, title: "Success", message: "Product Created Successfully") ;
+                  //
+                  //       }
+                  //     },
+                  //     error: (err, _) {
+                  //       GlobalSnackbar.show(context, title: "Error", message: "Something went wrong") ;
+                  //     },
+                  //     loading: ()   {},
+                  //     // => const Center(child: CircularProgressIndicator()),
+                  // );
+                }
+              )
+           
         ],
       ),
+    );
+  }
+  final _currentC = TextEditingController();
+  final _previousC = TextEditingController();
+
+  final _picker = ImagePicker();
+
+  XFile? _cover;
+  final List<XFile> _gallery = [];
+
+  Future<void> _pickCover(source) async {
+    final x = await _picker.pickImage(
+      source: source,
+      imageQuality: 85,
+    );
+    if (x != null) setState(() => _cover = x);
+  }
+
+  Future<void> _pickGallery() async {
+    final xs = await _picker.pickMultiImage(imageQuality: 85);
+    if (xs.isNotEmpty)
+      setState(
+            () => _gallery
+          ..clear()
+          ..addAll(xs.take(8)),
+      ); // cap to 8 for neat grid
+  }
+  void _askImageSource() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  _pickCover(ImageSource.camera) ;
+
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickCover(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

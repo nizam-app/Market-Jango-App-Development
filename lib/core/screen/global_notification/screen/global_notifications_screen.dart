@@ -1,33 +1,60 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
-import 'package:market_jango/features/buyer/data/notification_list.dart';
-class NotificationsScreen extends StatelessWidget {
-   NotificationsScreen({super.key});
-  static final routeName = "/notificationScreen";
+import 'package:market_jango/core/screen/global_notification/data/notification_data.dart';
+
+
+class GlobalNotificationsScreen extends ConsumerStatefulWidget {
+  const GlobalNotificationsScreen({super.key});
+
+   static const String routeName = '/vendor_notificatons';
+
+  @override
+  ConsumerState<GlobalNotificationsScreen> createState() => _GlobalNotificationsState();
+}
+
+class _GlobalNotificationsState extends ConsumerState<GlobalNotificationsScreen> {
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
+    final notification  = ref.watch(notificationProvider);
+    return  Scaffold(
+       body: SafeArea(
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 10.w),
+          padding:  EdgeInsets.symmetric(horizontal: 16.w),
           child: Column(
             children: [
-              Tuppertextandbackbutton(screenName: "Notification"),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text("Notification",style:TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),), 
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final item = notifications[index];
-                    return NotificationTile(
-                      title: item['title']!,
-                      time: item['time']!,
-                      isUnread: item['unread'] == 'true',
+                child: notification.when(
+                  data: (data) {
+                    if (data.isEmpty) {
+                      return const Center(
+                        child: Text("There are no notifications now."),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        final notifications = data[index];
+                        return NotificationTile(
+                          title: notifications.name ?? 'No Title',
+                          time: notifications.createdAt != null
+                              ? DateFormat.jm().format(notifications.createdAt!)
+                              : 'No time',
+                          isUnread: notifications.isRead,
+                          massage: notifications.message ?? 'No message',
+                        );
+                      },
                     );
                   },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Center(child: Text(error.toString())),
                 ),
               )
             ],
@@ -42,12 +69,14 @@ class NotificationTile extends StatelessWidget {
   final String title;
   final String time;
   final bool isUnread;
+  final String massage;
 
   const NotificationTile({
     super.key,
     required this.title,
     required this.time,
     required this.isUnread,
+    required this.massage,
   });
 
   @override
@@ -84,7 +113,7 @@ class NotificationTile extends StatelessWidget {
                 ),
                  SizedBox(height: 4.h),
                  Text(
-                  'Learn more about managing account info and activity',
+                  massage,
                   style: Theme.of(context).textTheme.titleMedium,
                 )
               ],
@@ -111,4 +140,5 @@ class NotificationTile extends StatelessWidget {
       ),
     );
   }
+   
 }

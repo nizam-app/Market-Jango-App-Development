@@ -146,6 +146,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   // temp local image map: tempId -> File
   final Map<int, File> _localImageMap = {};
+  void _askImageSource() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  pickMainImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickMainImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> pickMainImage(ImageSource source) async {
+    final x = await _picker.pickImage(source: source, imageQuality: 85);
+    if (x == null) return;
+
+    final file = File(x.path);
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final nowIso = DateTime.now().toIso8601String();
+
+    setState(() {
+      _localImageMap[tempId] = file;
+      _messages.insert(
+        0,
+        ChatMessage(
+          id: tempId, // negative => local/temporary
+          senderId: widget.myUserId,
+          receiverId: widget.partnerId,
+          message: '', // no text
+          image: 'local', // marker
+          publicId: null,
+          isRead: 0,
+          replyTo: null,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        ),
+      );
+    });
+  }
   @override
   void dispose() {
     _textController.dispose();
@@ -287,64 +345,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void _askImageSource() {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () {
-                  Navigator.pop(context);
 
-                  pickMainImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  pickMainImage(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> pickMainImage(ImageSource source) async {
-    final x = await _picker.pickImage(source: source, imageQuality: 85);
-    if (x == null) return;
-
-    final file = File(x.path);
-    final tempId = -DateTime.now().millisecondsSinceEpoch;
-    final nowIso = DateTime.now().toIso8601String();
-
-    setState(() {
-      _localImageMap[tempId] = file;
-      _messages.insert(
-        0,
-        ChatMessage(
-          id: tempId, // negative => local/temporary
-          senderId: widget.myUserId,
-          receiverId: widget.partnerId,
-          message: '', // no text
-          image: 'local', // marker
-          publicId: null,
-          isRead: 0,
-          replyTo: null,
-          createdAt: nowIso,
-          updatedAt: nowIso,
-        ),
-      );
-    });
-  }
 }
 
 /* ---------- Simple message bubble row (keeps your style) ---------- */

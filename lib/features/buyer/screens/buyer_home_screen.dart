@@ -13,6 +13,7 @@ import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/banner_data.dart';
+import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/data/categories_data_read.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
@@ -38,6 +39,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bannerProvider = ref.watch(bannerNotifierProvider);
+    final asyncData = ref.watch(topProductProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -268,7 +270,7 @@ class PromoSlider extends ConsumerWidget {
 
     return Column(
       children: [
-        SizedBox(height: 30.h),
+        SizedBox(height: 30.h),                                                
 
         CarouselSlider.builder(
           carouselController: _controller,

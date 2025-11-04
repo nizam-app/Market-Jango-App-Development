@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+
 import '../../buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 
 class CategoryProductScreen extends StatelessWidget {
@@ -24,7 +24,8 @@ class CategoryProductScreen extends StatelessWidget {
               padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 10.h),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25.r),
-                child: const CustomTextFromField(
+                child: CustomTextFromField(
+                  controller: TextEditingController(),
                   hintText: "Search your vendor",
                   prefixIcon: Icons.search,
                 ),
@@ -34,10 +35,9 @@ class CategoryProductScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               child: Text(
                 "Trend Loop",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge!
-                    .copyWith(fontSize: 24.sp),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge!.copyWith(fontSize: 24.sp),
               ),
             ),
             Expanded(
@@ -123,7 +123,7 @@ class ProductGridSection extends StatelessWidget {
           title: "Style meets comfort.",
           price: 128.00,
           imageUrl:
-          "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=3087&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=3087&auto=format&fit=crop",
           storeName: "R2A Store",
           memberSince: "Member Since 2014",
           storeImage: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -175,8 +175,9 @@ class ProductCard extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(4.r)),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(4.r),
+                  ),
                   child: Image.network(
                     imageUrl,
                     height: 130.h,
@@ -201,10 +202,9 @@ class ProductCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium!
-                        .copyWith(color: AllColor.black),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium!.copyWith(color: AllColor.black),
                   ),
                   SizedBox(height: 3.h),
                   Text(
@@ -236,8 +236,10 @@ class ProductCard extends StatelessWidget {
                             memberSince.length > 12
                                 ? '${memberSince.substring(0, 12)}...'
                                 : memberSince,
-                            style:
-                            TextStyle(fontSize: 10.sp, color: AllColor.grey),
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              color: AllColor.grey,
+                            ),
                           ),
                         ],
                       ),

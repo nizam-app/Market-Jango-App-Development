@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/%20business_logic/models/cart_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
+import 'package:market_jango/features/buyer/screens/cart/data/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/model/cart_model.dart';
+
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
@@ -31,10 +32,7 @@ class CartScreen extends ConsumerWidget {
         centerTitle: false,
         title: Row(
           children: [
-            Text(
-              'Cart',
-              style:theme.titleLarge!.copyWith(fontSize: 22.sp),
-            ),
+            Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
             SizedBox(width: 20.w), // Using ScreenUtil for width
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -42,14 +40,14 @@ class CartScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AllColor.blue200, // Example color from AllColor
                 borderRadius: BorderRadius.circular(
-                    20.r), // Using ScreenUtil for radius
+                  20.r,
+                ), // Using ScreenUtil for radius
               ),
               child: Text(
                 dummyCartItems.length.toString(),
                 style: theme.titleLarge!.copyWith(fontSize: 14.sp),
-                ),
               ),
-
+            ),
           ],
         ),
       ),
@@ -57,7 +55,7 @@ class CartScreen extends ConsumerWidget {
         children: [
           SizedBox(height: 20.h),
           Padding(
-            padding:  EdgeInsets.all(8.0.r),
+            padding: EdgeInsets.all(8.0.r),
             child: _buildShippingAddress(context),
           ),
           SizedBox(height: 20.h),
@@ -72,15 +70,15 @@ class CartScreen extends ConsumerWidget {
                 child: ListView.builder(
                   itemCount: data.length,
                   itemBuilder: (context, index) {
-                    final allData =data[index];
+                    final allData = data[index];
                     return Padding(
-                      padding:  EdgeInsets.symmetric(horizontal: 15.w),
-                      child: _buildCartItemCard(allData,context),
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
+                      child: _buildCartItemCard(allData, context),
                     );
                   },
                 ),
               );
-            }  ,
+            },
             loading: () => const Center(child: Text('Loading...')),
             error: (error, stackTrace) => Center(child: Text(error.toString())),
           ),
@@ -115,7 +113,7 @@ class CartScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Shipping Address',
-                  style:theme.titleLarge!.copyWith(fontSize: 14.sp) ,
+                  style: theme.titleLarge!.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),
                 Text(
@@ -130,7 +128,7 @@ class CartScreen extends ConsumerWidget {
           SizedBox(width: 16.w),
           Container(
             padding: EdgeInsets.all(8.r),
-            decoration:  BoxDecoration(
+            decoration: BoxDecoration(
               color: AllColor.orange, // Using AllColor
               shape: BoxShape.circle,
             ),
@@ -145,8 +143,7 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-
-  Widget _buildCartItemCard(CartItem item ,BuildContext context) {
+  Widget _buildCartItemCard(CartItem item, BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Card(
       elevation: 0,
@@ -183,8 +180,11 @@ class CartScreen extends ConsumerWidget {
                         width: 90.w,
                         height: 90.h,
                         color: AllColor.grey,
-                        child: Icon(Icons.broken_image,
-                            color: AllColor.blue, size: 40.sp),
+                        child: Icon(
+                          Icons.broken_image,
+                          color: AllColor.blue,
+                          size: 40.sp,
+                        ),
                       );
                     },
                   ),
@@ -222,9 +222,10 @@ class CartScreen extends ConsumerWidget {
                   Text(
                     item.product.description,
                     style: TextStyle(
-                        color: AllColor.black,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold), // Bold details
+                      color: AllColor.black,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ), // Bold details
                   ),
                   SizedBox(height: 8.h),
                   Text(
@@ -251,7 +252,7 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-// Quantity Control updated to match design
+  // Quantity Control updated to match design
   Widget _buildQuantityControl(int quantity) {
     return Row(
       children: [
@@ -281,22 +282,15 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-
-
-
   Widget _quantityButton(IconData icon, VoidCallback onPressed) {
     return InkWell(
       onTap: onPressed,
       customBorder: const CircleBorder(),
       child: Container(
         padding: EdgeInsets.all(6.r),
-        decoration: BoxDecoration(
-          color: AllColor.grey,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: AllColor.grey, shape: BoxShape.circle),
         child: Icon(icon, size: 18.sp, color: AllColor.black),
       ),
     );
   }
-
 }

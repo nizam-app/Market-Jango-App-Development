@@ -2,50 +2,75 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:logger/logger.dart';
-import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+import 'package:market_jango/core/constants/api_control/chat_api.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../model/massage_list_model.dart';
+class ChatListController extends AsyncNotifier<List<ChatThread>> {
+  http.Client _client = http.Client();
 
-class ChatController extends StateNotifier<AsyncValue<List<ChatThread>>> {
-  ChatController() : super(const AsyncValue.loading());
+  @override
+  Future<List<ChatThread>> build() async {
+    return _fetch();
+  }
 
-  final String _baseUrl = BuyerAPIController.massage_list;
-  
+  Future<List<ChatThread>> _fetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
 
-  Future<void> getChatList() async {
-    try {
-      state = const AsyncValue.loading();
+    final uri = Uri.parse(
+      ChatAPIController.massage_list,
+    ); // e.g. /api/chat/user
+    final res = await _client.get(
+      uri,
+      headers: {
+        if (token != null) 'token': token,
+        'Accept': 'application/json',
+      },
+    );
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      if (token == null) throw Exception('Token not found');
-
-      final response = await http.get(
-        Uri.parse(_baseUrl),
-        headers: {
-          'token': token,
-          
-        },
-      );
-      Logger().i('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final body = json.decode(response.body);
-        if (body['status'] == 'success') {
-          final List list = body['data'];
-          final chats = list.map((e) => ChatThread.fromJson(e)).toList();
-          state = AsyncValue.data(chats);
-        } else {
-          throw Exception(body['message']);
-        }
-      } else {
-        throw Exception('Failed to load chat list');
-      }
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      Logger().e('Error fetching chat list: $e');
+    if (res.statusCode != 200) {
+      throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
     }
+
+    final map = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = (map['data'] as List? ?? [])
+        .map((e) => ChatThread.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return list;
+  }
+
+  /// pull-to-refresh / ম্যানুয়াল রিফেচ
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_fetch);
+  }
+
+  /// লোকালভাবে read flag টগল/আপডেট (API লাগলে এখানেই মারবেন)
+  void markAsRead(int chatId) {
+    final current = state.value;
+    if (current == null) return;
+    final updated = [
+      for (final c in current)
+        if (c.chatId == chatId)
+          ChatThread(
+            chatId: c.chatId,
+            partnerId: c.partnerId,
+            partnerName: c.partnerName,
+            partnerImage: c.partnerImage,
+            lastMessage: c.lastMessage,
+            lastMessageTime: c.lastMessageTime,
+            isRead: 1,
+          )
+        else
+          c,
+    ];
+    state = AsyncData(updated);
   }
 }
+
+/// একটাই প্রোভাইডার ব্যবহার করবেন UI-তে
+final chatListProvider =
+    AsyncNotifierProvider<ChatListController, List<ChatThread>>(
+      ChatListController.new,
+    );

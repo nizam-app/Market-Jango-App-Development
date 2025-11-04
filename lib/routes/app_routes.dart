@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
-import 'package:market_jango/core/screen/global_profile_edit_screen.dart';
+import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
-import 'package:market_jango/core/screen/profile_screen/global_profile_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/account_request.dart';
 import 'package:market_jango/features/auth/screens/car_info_screen.dart';
@@ -24,8 +26,7 @@ import 'package:market_jango/features/buyer/screens/all_categori/screen/category
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
-import 'package:market_jango/features/buyer/screens/notification/screen/notification_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -35,7 +36,6 @@ import 'package:market_jango/features/driver/screen/driver_chat.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
 import 'package:market_jango/features/driver/screen/driver_home.dart';
-import 'package:market_jango/features/driver/screen/driver_notificatons.dart';
 import 'package:market_jango/features/driver/screen/driver_ontheway.dart';
 import 'package:market_jango/features/driver/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order_details.dart';
@@ -59,7 +59,6 @@ import 'package:market_jango/features/transport/screens/transport_completed.dart
 import 'package:market_jango/features/transport/screens/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/transport_home.dart';
 import 'package:market_jango/features/transport/screens/transport_message.dart';
-import 'package:market_jango/features/transport/screens/transport_notifications.dart';
 import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
@@ -69,7 +68,6 @@ import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/scr
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_notification/screen/vendor_notifications.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
@@ -80,15 +78,15 @@ import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
-
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
+import '../features/buyer/screens/product/model/buyer_product_details_model.dart';
 import '../features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: BuyerBottomNavBar.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -99,7 +97,8 @@ final GoRouter router = GoRouter(
       builder: (context, state) => LoginScreen(),
     ),
 
-    GoRoute(
+    GoRoute
+      (
       path: SplashScreen.routeName,
       name: 'splashScreen',
       builder: (context, state) => const SplashScreen(),
@@ -165,11 +164,11 @@ final GoRouter router = GoRouter(
       },
     ),
 
-    // GoRoute(
-    //   path:VendorRequestForm.routeName,
-    //  name: VendorRequestForm.routeName,
-    //  builder: (context,state)=>const VendorRequestForm(),
-    //   ),
+// GoRoute(
+//   path:VendorRequestForm.routeName,
+//  name: VendorRequestForm.routeName,
+//  builder: (context,state)=>const VendorRequestForm(),
+//   ),
     GoRoute(
       path: VendorRequestScreen.routeName,
       name: 'vendor_request',
@@ -177,15 +176,18 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: VendorNotifications.routeName,
+      path: GlobalNotificationsScreen.routeName,
       name: 'vendor_notificatons',
-      builder: (context, state) => const VendorNotifications(),
+      builder: (context, state) => const GlobalNotificationsScreen(),
     ),
 
     GoRoute(
       path: VendorEditProfile.routeName,
       name: 'vendorEditProfile',
-      builder: (context, state) => const VendorEditProfile(),
+      builder: (context, state) {
+        UserModel userType = state.extra as UserModel;
+        return VendorEditProfile(userType: userType);
+      },
     ),
 
     GoRoute(
@@ -296,7 +298,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const CarInfoScreen(),
     ),
 
-    // Settings Flow
+// Settings Flow
     GoRoute(
       path: GlobalSettingScreen.routeName,
       name: GlobalSettingScreen.routeName,
@@ -315,11 +317,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const BuyerHomeScreen(),
     ),
 
-    GoRoute(
-      path: NotificationsScreen.routeName,
-      name: 'notification_screen',
-      builder: (context, state) => NotificationsScreen(),
-    ),
+
     GoRoute(
       path: FilterScreen.routeName,
       name: 'filter_screen',
@@ -338,11 +336,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => TransportBottomNavBar(),
     ),
 
-    GoRoute(
-      path: TransportChart.routeName,
-      name: 'transort_chat',
-      builder: (context, state) => TransportChart(),
-    ),
+    // GoRoute(
+    //   path: TransportChart.routeName,
+    //   name: 'transort_chat',
+    //   builder: (context, state) => TransportChart(),
+    // ),
 
     GoRoute(
       path: TransportMessage.routeName,
@@ -353,9 +351,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '${GlobalTrackingScreen1.routeName}/:screenName',
       name: GlobalTrackingScreen1.routeName,
-      builder: (context, state) => GlobalTrackingScreen1(
-        screenName: state.pathParameters['screenName']!,
-      ),
+      builder: (context, state) =>
+          GlobalTrackingScreen1(
+            screenName: state.pathParameters['screenName']!,
+          ),
     ),
 
     GoRoute(
@@ -425,12 +424,6 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: TransportNotifications.routeName,
-      name: 'transport_notificatons',
-      builder: (context, state) => TransportNotifications(),
-    ),
-
-    GoRoute(
       path: EditProfilScreen.routeName,
       name: 'editProfile',
       builder: (context, state) => EditProfilScreen(),
@@ -453,11 +446,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const DriverBottomNavBar(),
     ),
 
-    GoRoute(
-      path: DriverChat.routeName,
-      name: 'driverChat',
-      builder: (context, state) => const DriverChat(),
-    ),
+    // GoRoute(
+    //   path: DriverChat.routeName,
+    //   name: 'driverChat',
+    //   builder: (context, state) => const DriverChat(),
+    // ),
 
     GoRoute(
       path: DriverOrder.routeName,
@@ -489,11 +482,6 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const DriverEditProfile(),
     ),
 
-    GoRoute(
-      path: DriverNotificatons.routeName,
-      name: 'driverNotifications',
-      builder: (context, state) => const DriverNotificatons(),
-    ),
 
     GoRoute(
       path: DriverTrakingScreen.routeName,
@@ -517,9 +505,10 @@ final GoRouter router = GoRouter(
       path: "${SeeJustForYouScreen.routeName}/:screenName",
       name: SeeJustForYouScreen.routeName,
 
-      builder: (context, state) => SeeJustForYouScreen(
-        screenName: state.pathParameters["screenName"] ?? "Just for you",
-      ),
+      builder: (context, state) =>
+          SeeJustForYouScreen(
+            screenName: state.pathParameters["screenName"] ?? "Just for you",
+          ),
     ),
     GoRoute(
       path: ChatScreen.routeName,
@@ -547,9 +536,16 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const ReviewScreen(),
     ),
     GoRoute(
-      path: ProductDetails.routeName,
-      name: ProductDetails.routeName,
-      builder: (context, state) => const ProductDetails(),
+        path: ProductDetails.routeName,
+        name: ProductDetails.routeName,
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! DetailItem) {
+            return const Scaffold(
+                body: Center(child: Text('Invalid route data')));
+          }
+          return ProductDetails(product: extra,);
+        }
     ),
     GoRoute(
       path: BuyerPaymentScreen.routeName,
@@ -557,9 +553,12 @@ final GoRouter router = GoRouter(
       builder: (context, state) => BuyerPaymentScreen(),
     ),
     GoRoute(
-      path: BuyerProfileEditScreen.routeName,
-      name: BuyerProfileEditScreen.routeName,
-      builder: (context, state) => BuyerProfileEditScreen(),
+        path: BuyerProfileEditScreen.routeName,
+        name: BuyerProfileEditScreen.routeName,
+        builder: (context, state) {
+          final userData = state.extra as UserModel;
+          return BuyerProfileEditScreen(user: userData,) ;
+        }
     ),
     GoRoute(
       path: BuyerOrderPage.routeName,
@@ -589,7 +588,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: CategoryAddPage.routeName,
       name: CategoryAddPage.routeName,
-      builder: (context, state) => CategoryAddPage(),
-    ),
-  ],
+      builder: (context, state) => CategoryAddPage()
+      ,
+    )
+    ,
+  ]
+  ,
 );

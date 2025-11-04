@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/widgets/custom_see_all_product.dart';
 
-import 'home_screen.dart';
+import 'buyer_home_screen.dart';
 class SeeJustForYouScreen extends StatelessWidget {
   const SeeJustForYouScreen({super.key, required this.screenName});
   final String screenName;

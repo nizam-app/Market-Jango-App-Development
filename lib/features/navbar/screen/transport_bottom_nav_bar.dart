@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 
 import '../../transport/screens/transport_booking.dart';
 import '../../transport/screens/transport_chart.dart';
@@ -15,7 +16,7 @@ final transportNavIndexProvider = StateProvider<int>((_) => 0);
 // Pages (swap with your actual screens)
 final transportPagesProvider = Provider<List<Widget>>((_) => const [
   TransportHomeScreen(),
-  TransportChart(),
+  GlobalMassageScreen(),
   TransportBooking(),
   TransportSetting(),
 ]);

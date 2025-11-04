@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
-import 'package:market_jango/core/widget/custom_search_bar.dart';
+import 'package:market_jango/core/widget/global_search_bar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
@@ -15,122 +17,97 @@ import '../../../../../core/widget/global_pagination.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
 import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
-import '../logic/vendor_category_filter_riverpod.dart';
 import '../logic/vendor_details_riverpod.dart';
 import '../model/user_details_model.dart';
 
-class VendorHomeScreen extends ConsumerStatefulWidget {
+
+
+class VendorHomeScreen extends ConsumerWidget {
   const VendorHomeScreen({super.key});
-
   static const String routeName = '/vendor_home_screen';
-  @override
-  ConsumerState<VendorHomeScreen> createState() => _VendorHomeScreenState();
-}
-
-class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
-  String selectedFilter = "All"; // default selected filter
-
-  List<String> filters = ['All'];
-
-  int currentPage = 1;
-  int selectedCategoryId = 0; // 0 → All
-  String selectedCategoryName = 'All';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final vendorAsync = ref.watch(vendorProvider);
-    final productAsync = ref.watch(productsProvider(currentPage));
+    final productAsync = ref.watch(productNotifierProvider);
+
+    final productNotifier = ref.read(productNotifierProvider.notifier);
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: AllColor.white70,
+        // backgroundColor: AllColor.white70,
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),
         ),
-        body: Builder(
-          builder: (context) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 25.h),
-                    Container(
-                      child: Stack(
-                        children: [
-                          vendorAsync.when(
-                            data: (vendor) => buildProfileSection(vendor),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (err, _) => Text('Error: $err'),
-                          ),
-                          Positioned(
-                            top: 20.h,
-                            right: 10.w,
-                            child: GestureDetector(
-                              onTap: () {
-                                Scaffold.of(context).openEndDrawer();
-                              },
-                              child: Container(
-                                height: 46.w,
-                                width: 46.w,
-                                padding: EdgeInsets.all(8.r),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.menu,
-                                  size: 24.sp,
-                                ), // ☰ three-line menu
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 30.h),
-                    CustomSearchBar(),
-                    SizedBox(height: 15.h),
-                    CategoryBar(endpoint: VendorAPIController.vendor_category),
-                    SizedBox(height: 20.h),
-                    productAsync.when(
-                      data: (paginated) {
-                        final products = paginated.products;
-                        return Column(
-                          children: [
-                            _buildProductGridViewSection(products),
-                            SizedBox(height: 20.h),
-                            GlobalPagination(
-                              currentPage: paginated.currentPage,
-                              totalPages: paginated.lastPage,
-                              onPageChanged: (page) =>
-                                  setState(() => currentPage = page),
-                            ),
-                            SizedBox(height: 20.h),
-                          ],
-                        );
-                      },
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (err, _) => Center(child: Text('Error: $err')),
-                    ),
-                  ],
-                ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 25.h),
+              vendorAsync.when(
+                data: (vendor) => buildProfileSection(vendor),
+                loading: () => const CircularProgressIndicator(),
+                error: (err, _) => Text('Error: $err'),
               ),
-            );
-          },
+              SizedBox(height: 30.h),
+              GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
+                provider: searchProvider,
+                itemsSelector: (res) => res.products,
+                itemBuilder: (context, p) => ProductSuggestionTile(p: p),
+                onItemSelected: (p) {
+                  // context.push('/product/${p.id}');
+                },
+                hintText: 'Search products...',
+                debounce: const Duration(seconds: 1),
+                minChars: 1,
+                showResults: true,
+                resultsMaxHeight: 380,
+                autofocus: false,
+              ),
+              SizedBox(height: 15.h),
+              // Category bar
+              CategoryBar(
+                endpoint: VendorAPIController.vendor_category,
+                onCategorySelected: (categoryId) {
+                  productNotifier.changeCategory(categoryId);
+                },
+              ),
+              SizedBox(height: 20.h),
+
+              // Products with pagination
+              productAsync.when(
+                data: (paginated) {
+                  if (paginated == null) {
+                    return const Center(child: Text("No products found"));
+                  }
+                  final products = paginated.products;
+                  return Column(
+                    children: [
+                      _buildProductGridViewSection(products),
+                      SizedBox(height: 20.h),
+                      GlobalPagination(
+                        currentPage: paginated.currentPage,
+                        totalPages: paginated.lastPage,
+                        onPageChanged: (page) {
+                          productNotifier.changePage(page);
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('Error: $err')),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   Widget buildDrawer(BuildContext context) {
     return Padding(
@@ -227,11 +204,11 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
     );
   }
 
-  //
 
-  // filters = ['Quasi', 'Electronics', 'Grocery', ...]  // API থেকে সেট করবে
 
   Widget _buildProductGridViewSection(List<Product> products) {
+    final safeProducts = products.whereType<Product>().toList();
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -241,37 +218,42 @@ class _VendorHomeScreenState extends ConsumerState<VendorHomeScreen> {
         mainAxisSpacing: 10.h,
         crossAxisSpacing: 15.w,
       ),
-      itemCount: products.length + 1,
+      itemCount: safeProducts.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
           return buildAddUrProduct(context);
-        } else {
-          final prod = products[index - 1];
-          return Stack(
-            children: [
-              CustomNewProduct(
-                width: 161.w,
-                height: 168.h,
-                text: prod.name,
-                text2: prod.description,
-                image: prod.image,
-              ),
-              Positioned(
-                top: 20.h,
-                right: 20.w,
-                child: Edit_Widget(
-                  height: 24.w,
-                  width: 24.w,
-                  size: 12.r,
-                  product: prod,
-                ),
-              ),
-            ],
-          );
         }
+
+        final prod = safeProducts.elementAtOrNull(index - 1);
+        if (prod == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Stack(
+          children: [
+            CustomNewProduct(
+              width: 161.w,
+              height: 168.h,
+              productPricesh: prod.sellPrice,
+              productName: prod.name,
+              image: prod.image,
+            ),
+            Positioned(
+              top: 20.h,
+              right: 20.w,
+              child: Edit_Widget(
+                height: 24.w,
+                width: 24.w,
+                size: 12.r,
+                product: prod,
+              ),
+            )
+          ],
+        );
       },
     );
   }
+
 }
 
 Widget buildAddUrProduct(BuildContext context) {
@@ -306,7 +288,7 @@ Widget buildAddUrProduct(BuildContext context) {
   );
 }
 
-Widget buildProfileSection(VendorDetailsModel vendor) {
+Widget buildProfileSection(VendorDetailsModel vendor, ) {
   return Column(
     children: [
       Center(
@@ -339,11 +321,53 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
                 ),
               ),
             ),
-            Positioned(
-              bottom: 10.h,
-              right: 0.w,
-              child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit)),
-            ),
+            // Positioned(
+            //   bottom: 10.h,
+            //   right: 0.w,
+            //   child: InkWell(
+            //     onTap: () {
+            //
+            //         // showModalBottomSheet(
+            //         //   context: context,
+            //         //   builder: (_) {
+            //         //     return SafeArea(
+            //         //       child: Wrap(
+            //         //         children: [
+            //         //           ListTile(
+            //         //             leading: const Icon(Icons.camera_alt),
+            //         //             title: const Text('Camera'),
+            //         //             onTap: () async{
+            //         //               Navigator.pop(context);
+            //         //
+            //         //
+            //         //                 var _picker;
+            //         //                 final x = await _picker.pickImage(
+            //         //                   source: ImageSource.camera,
+            //         //                   imageQuality: 85,
+            //         //                 );
+            //         //                 if (x != null) setState(() => _cover = x);
+            //         //
+            //         //
+            //         //
+            //         //             },
+            //         //           ),
+            //         //           ListTile(
+            //         //             leading: const Icon(Icons.photo_library),
+            //         //             title: const Text('Gallery'),
+            //         //             onTap: () {
+            //         //               Navigator.pop(context);
+            //         //               _pickCover(ImageSource.gallery);
+            //         //             },
+            //         //           ),
+            //         //         ],
+            //         //       ),
+            //         //     );
+            //         //   },
+            //         // );
+            //
+            //     },
+            //       child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit, color: AllColor.black,size: 12.r,))),
+            // ),
           ],
         ),
       ),
@@ -354,12 +378,22 @@ Widget buildProfileSection(VendorDetailsModel vendor) {
       ),
     ],
   );
+
+  
 }
 
+
+
+
 class CategoryBar extends ConsumerStatefulWidget {
-  const CategoryBar({super.key, required this.endpoint});
+  const CategoryBar({
+    super.key,
+    required this.endpoint,
+    required this.onCategorySelected,
+  });
 
   final String endpoint;
+  final Function(int categoryId) onCategorySelected;
 
   @override
   ConsumerState<CategoryBar> createState() => _CategoryBarState();
@@ -383,15 +417,15 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
               final isSelected = selectedIndex == index;
 
               return GestureDetector(
-                onTap: () async {
+                onTap: () {
                   setState(() => selectedIndex = index);
 
-                  final productAsync = ref.watch(
-                    productsByCategoryProvider({
-                      'categoryId': categories[index].id,
-                    }),
-                  );
-                  Logger().e(productAsync.value);
+                  int selectedId = 0;
+                  if (index > 0) {
+                    selectedId = categories[index - 1].id;
+                  }
+
+                  widget.onCategorySelected(selectedId);
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 6.w),
@@ -400,15 +434,15 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
                     vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.black : Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4.r,
-                        offset: Offset(0, 2.h),
-                      ),
-                    ],
+                    color: isSelected ? AllColor.orange : AllColor.grey100,
+                    borderRadius: BorderRadius.circular(5.r),
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: Colors.black12,
+                    //     blurRadius: 2.r,
+                    //     offset: Offset(5, 2.h),
+                    //   ),
+                    // ],
                   ),
                   child: Text(
                     names[index],

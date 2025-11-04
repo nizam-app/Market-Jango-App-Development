@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorEditProfile extends StatefulWidget {
-  const VendorEditProfile({super.key});
+  const VendorEditProfile({super.key, required this.userType});
   static const routeName = "/vendorEditProfile";
+  final UserModel userType;
 
   @override
   State<VendorEditProfile> createState() => _VendorEditProfileState();
 }
 
 class _VendorEditProfileState extends State<VendorEditProfile> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
-  final _phone = TextEditingController();
+  late final _name ;
+  late final _email ;
+  late final _phone ;
   String? _selectedRoute;
 
   final List<String> _availableRoutes = const [
@@ -38,6 +40,13 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
     _email.dispose();
     _phone.dispose();
     super.dispose();
+  }
+  @override
+  void initState() {
+    _name = TextEditingController(text: widget.userType.name);
+    _email = TextEditingController(text: widget.userType.email);
+    _phone = TextEditingController(text: widget.userType.phone);
+    super.initState();
   }
 
   @override

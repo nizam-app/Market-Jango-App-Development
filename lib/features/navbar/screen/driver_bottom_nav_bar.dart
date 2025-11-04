@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_chat.dart';
 
 import '../../driver/screen/driver_home.dart';
@@ -15,7 +16,7 @@ final driverNavIndexProvider = StateProvider<int>((_) => 0);
 // Pages (swap these with your real screens)
 final driverPagesProvider = Provider<List<Widget>>((_) => const [
   DriverHomeScreen(),
-  DriverChat(),
+  GlobalMassageScreen(),
   DriverOrder(),
   DriverSetting(),
 ]);

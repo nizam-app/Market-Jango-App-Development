@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/models/global_search_model.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
@@ -12,29 +13,61 @@ import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'model/buyer_product_details_model.dart';
+
 class ProductDetails extends StatelessWidget {
-  const ProductDetails({super.key,required this.product});
-  final DetailItem  product;
+  const ProductDetails({super.key, required this.product});
+  final DetailItem product;
   static final String routeName = '/productDetails';
   @override
   Widget build(BuildContext context) {
+    Logger().e(product.vendor!.id);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
             ProductImage(product: product),
             CustomSize(product: product),
-            ProductMaterialAndStoreInfo(storeName: product.vendorName??""),
+            ProductMaterialAndStoreInfo(
+              storeName: product.vendorName ?? "",
+              image: product.imageUrl,
+              onChatTap: () async {
+                SharedPreferences _pref = await SharedPreferences.getInstance();
+                String? myUserIdInt = _pref.getString('user_id');
+                if (myUserIdInt == null) throw Exception("User ID not found");
+                final id = int.parse(myUserIdInt);
+                context.push(
+                  ChatScreen.routeName,
+                  extra: ChatArgs(
+                    partnerId: product.vendor!.id,
+                    partnerName: product.vendor?.userName ?? "",
+                    partnerImage: product.vendor?.userImage ?? "",
+                    myUserId: id,
+                  ),
+                );
+              },
+            ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.w),
               child: Column(
                 children: [
-                  const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
+                  const SeeMoreButton(
+                    name: "Top Products",
+                    seeMoreAction: null,
+                    isSeeMore: false,
+                  ),
                   CustomTopProducts(),
-                  SeeMoreButton(name: "New Items", seeMoreAction: (){context.pushNamed(
-                      SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}),
+                  SeeMoreButton(
+                    name: "New Items",
+                    seeMoreAction: () {
+                      context.pushNamed(
+                        SeeJustForYouScreen.routeName,
+                        pathParameters: {"screenName": "New Items"},
+                      );
+                    },
+                  ),
                   const CustomNewItemsShow(),
                 ],
               ),
@@ -55,7 +88,7 @@ class ProductDetails extends StatelessWidget {
 }
 
 class ProductImage extends StatelessWidget {
-  const ProductImage({super.key,required this.product});
+  const ProductImage({super.key, required this.product});
   final DetailItem product;
 
   @override
@@ -66,7 +99,7 @@ class ProductImage extends StatelessWidget {
         Stack(
           children: [
             FirstTimeShimmerImage(
-             imageUrl:  product.imageUrl,
+              imageUrl: product.imageUrl,
               height: 350.h,
               width: 1.sw,
               fit: BoxFit.cover,
@@ -76,18 +109,23 @@ class ProductImage extends StatelessWidget {
               left: 12.w,
               child: CircleAvatar(
                 backgroundColor: AllColor.white,
-                child:IconButton(onPressed: (){context.pop();}, icon:  Icon(Icons.arrow_back, color: AllColor.black)),
+                child: IconButton(
+                  onPressed: () {
+                    context.pop();
+                  },
+                  icon: Icon(Icons.arrow_back, color: AllColor.black),
+                ),
               ),
             ),
           ],
         ),
 
         // 🔹 White Container with Product Details
-
       ],
     );
   }
 }
+
 class CustomSize extends StatefulWidget {
   const CustomSize({super.key, required this.product});
   final DetailItem product;
@@ -105,7 +143,7 @@ class _CustomSizeState extends State<CustomSize> {
     final theme = Theme.of(context).textTheme;
     final product = widget.product;
     return Padding(
-      padding:  EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(16.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -133,22 +171,20 @@ class _CustomSizeState extends State<CustomSize> {
                   ),
                 ),
                 SizedBox(height: 10.h),
-                Text(
-                  product.subtitle ?? '',
-                  style: theme.titleMedium,
-                ),
+                Text(product.subtitle ?? '', style: theme.titleMedium),
               ],
             ),
           ),
 
           SizeColorAnd(text: "Size"),
 
-
           // 🔹 Container background
           Container(
-            padding: EdgeInsets.symmetric( horizontal: 8.w,vertical: 3.h),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
-              color: AllColor.lightBlue.withOpacity(0.15), // light blue background
+              color: AllColor.lightBlue.withOpacity(
+                0.15,
+              ), // light blue background
               borderRadius: BorderRadius.circular(50.r),
             ),
             child: Row(
@@ -162,10 +198,12 @@ class _CustomSizeState extends State<CustomSize> {
                     });
                   },
                   child: Container(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 7.h,
+                    ),
                     decoration: BoxDecoration(
-                      color:isSelected? AllColor.white : AllColor.transparent,
+                      color: isSelected ? AllColor.white : AllColor.transparent,
                       borderRadius: BorderRadius.circular(50.r),
                       border: isSelected
                           ? Border.all(color: AllColor.blue, width: 3.w)
@@ -174,8 +212,10 @@ class _CustomSizeState extends State<CustomSize> {
                     child: Text(
                       product.sizes[index],
                       style: TextStyle(
-                        fontSize:isSelected? 16.sp:13.sp,
-                        fontWeight:isSelected? FontWeight.bold: FontWeight.w500,
+                        fontSize: isSelected ? 16.sp : 13.sp,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isSelected ? AllColor.blue : AllColor.black,
                       ),
                     ),
@@ -185,7 +225,7 @@ class _CustomSizeState extends State<CustomSize> {
             ),
           ),
           SizeColorAnd(text: "Color"),
-          CustomColor(product: product)
+          CustomColor(product: product),
         ],
       ),
     );
@@ -193,10 +233,7 @@ class _CustomSizeState extends State<CustomSize> {
 }
 
 class SizeColorAnd extends StatelessWidget {
-  const SizeColorAnd({
-    super.key,
-    required this.text,
-  });
+  const SizeColorAnd({super.key, required this.text});
 
   final String text;
 
@@ -206,13 +243,13 @@ class SizeColorAnd extends StatelessWidget {
       children: [
         SizedBox(height: 16.h),
         Text(
-              "$text",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: AllColor.black,
-              ),
-            ),
+          "$text",
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: AllColor.black,
+          ),
+        ),
         SizedBox(height: 10.h),
       ],
     );
@@ -242,7 +279,6 @@ class _CustomColorState extends State<CustomColor> {
 
   @override
   Widget build(BuildContext context) {
-    
     return SizedBox(
       height: 60.h,
       child: ListView.builder(
@@ -276,7 +312,7 @@ class _CustomColorState extends State<CustomColor> {
                     width: 40.w,
                     height: 40.w,
                     decoration: BoxDecoration(
-                      color:Color(int.parse(color)),
+                      color: Color(int.parse(color)),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3.w),
                     ),
@@ -298,6 +334,7 @@ class _CustomColorState extends State<CustomColor> {
     );
   }
 }
+
 class ProductMaterialAndStoreInfo extends StatelessWidget {
   const ProductMaterialAndStoreInfo({
     super.key,
@@ -305,10 +342,12 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
       MaterialChip(text: 'Cotton 95%'),
       MaterialChip(text: 'Nylon 5%'),
     ],
-    this.storeName = 'R2A Store',
+    this.storeName = '___',
     this.rating = 4.6,
     this.reviewCount = 56,
     this.onChatTap,
+    this.image =
+        "https://t3.ftcdn.net/jpg/05/62/05/20/360_F_562052065_yk3KPuruq10oyfeu5jniLTS4I2ky3bYX.jpg",
   });
 
   final List<MaterialChip> materials;
@@ -316,17 +355,18 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
   final double rating;
   final int reviewCount;
   final VoidCallback? onChatTap;
+  final String image;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:  EdgeInsets.symmetric(horizontal:20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Materials row
-          SizeColorAnd(text: "Specifications",)  ,
-          
+          SizeColorAnd(text: "Specifications"),
+
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
@@ -339,16 +379,24 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
           // Store + chat
           Row(
             children: [
-              InkWell(onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
-                child: CircleAvatar(radius: 25,
-                backgroundImage: AssetImage("assets/images/promo2.jpg"),),
+              InkWell(
+                onTap: () {
+                  context.push(BuyerVendorProfileScreen.routeName);
+                },
+                child: CircleAvatar(
+                  radius: 25,
+                  // TODO: Replace with the actual vendor image URL from your product/vendor data
+                  backgroundImage: NetworkImage(image),
+                ),
               ),
-              SizedBox(width: 20.w,)    ,
+              SizedBox(width: 20.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
+                    onTap: () {
+                      context.push(BuyerVendorProfileScreen.routeName);
+                    },
                     child: Text(
                       storeName,
                       style: TextStyle(
@@ -376,15 +424,22 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       ),
                       SizedBox(width: 6.w),
 
-                      // Small badge around review count like in screenshot
                       InkWell(
-                        onTap: (){context.push(ReviewScreen.routeName);},
+                        onTap: () {
+                          context.push(ReviewScreen.routeName);
+                        },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 2.h,
+                          ),
                           decoration: BoxDecoration(
                             // color: AllColor.badgeBg,
                             borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(color: AllColor.black, width: 0.8),
+                            border: Border.all(
+                              color: AllColor.black,
+                              width: 0.8,
+                            ),
                           ),
                           child: Text(
                             '$reviewCount reviews',
@@ -398,7 +453,6 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       ),
                     ],
                   ),
-
                 ],
               ),
               Spacer(),
@@ -414,18 +468,17 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                         size: 16.r,
                         color: AllColor.blue,
                       ),
-                      SizedBox(width: 5.w,),
-                      InkWell(
-                        onTap: (){context.push(ChatScreen.routeName);},
-                          child: Text("Chat naw",style: TextStyle(color: Colors.blue,fontSize: 12),))
+                      SizedBox(width: 5.w),
+                      Text(
+                        "Chat naw",
+                        style: TextStyle(color: Colors.blue, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
               ),
-              
             ],
           ),
-        
         ],
       ),
     );
@@ -462,6 +515,7 @@ class MaterialChip {
   final String text;
   const MaterialChip({required this.text});
 }
+
 class QuantityBuyBar extends StatefulWidget {
   const QuantityBuyBar({
     super.key,
@@ -514,22 +568,36 @@ class _QuantityBuyBarState extends State<QuantityBuyBar> {
             ),
             child: Row(
               children: [
-                _QtyIcon(onTap: _dec, child: Text('−', style: TextStyle(fontSize: 16.sp))),
+                _QtyIcon(
+                  onTap: _dec,
+                  child: Text('−', style: TextStyle(fontSize: 16.sp)),
+                ),
                 SizedBox(width: 10.w),
-                Text('$qty', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                Text(
+                  '$qty',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 SizedBox(width: 10.w),
-                _QtyIcon(onTap: _inc, child: Text('+', style: TextStyle(fontSize: 16.sp))),
+                _QtyIcon(
+                  onTap: _inc,
+                  child: Text('+', style: TextStyle(fontSize: 16.sp)),
+                ),
               ],
             ),
           ),
-       Spacer() ,
+          Spacer(),
 
           // 🔶 Buy now button (vertically same, horizontally smaller)
           SizedBox(
-            width: 180.w,   // ⬅️ fixed width, not Expanded → horizontally smaller
-            height: 44.h,   // ⬅️ vertical same as আগে
+            width: 180.w, // ⬅️ fixed width, not Expanded → horizontally smaller
+            height: 44.h, // ⬅️ vertical same as আগে
             child: ElevatedButton(
-              onPressed: () {context.push(BuyerPaymentScreen.routeName);},
+              onPressed: () {
+                context.push(BuyerPaymentScreen.routeName);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AllColor.orange,
                 shape: RoundedRectangleBorder(

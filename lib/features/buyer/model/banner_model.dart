@@ -16,9 +16,10 @@ class PaginatedBanners {
       currentPage: json['current_page'] ?? 1,
       lastPage: json['last_page'] ?? 1,
       total: json['total'] ?? 0,
-      banners: (json['data'] as List<dynamic>?)
-          ?.map((e) => BannerItem.fromJson(e))
-          .toList() ??
+      banners:
+          (json['data'] as List<dynamic>?)
+              ?.map((e) => BannerItem.fromJson(e))
+              .toList() ??
           [],
     );
   }
@@ -34,7 +35,7 @@ class BannerItem {
   final int productId;
   final String createdAt;
   final String updatedAt;
-  final Product? product;
+  final BenarProduct? product;
 
   BannerItem({
     required this.id,
@@ -61,13 +62,13 @@ class BannerItem {
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
       product: json['product'] != null
-          ? Product.fromJson(json['product'])
+          ? BenarProduct.fromJson(json['product'])
           : null,
     );
   }
 }
 
-class Product {
+class BenarProduct {
   final int id;
   final String name;
   final String description;
@@ -86,7 +87,7 @@ class Product {
   final String createdAt;
   final String updatedAt;
 
-  Product({
+  BenarProduct({
     required this.id,
     required this.name,
     required this.description,
@@ -106,7 +107,7 @@ class Product {
     required this.updatedAt,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
+  factory BenarProduct.fromJson(Map<String, dynamic> json) {
     // color এবং size কখনো array, কখনো string — তাই normalize করা হয়েছে
     List<String> parseDynamicList(dynamic data) {
       if (data == null) return [];
@@ -126,7 +127,7 @@ class Product {
       return [];
     }
 
-    return Product(
+    return BenarProduct(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',

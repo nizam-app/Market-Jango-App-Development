@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
-import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
@@ -19,8 +18,6 @@ import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
 import '../logic/vendor_details_riverpod.dart';
 import '../model/user_details_model.dart';
-
-
 
 class VendorHomeScreen extends ConsumerWidget {
   const VendorHomeScreen({super.key});
@@ -107,7 +104,6 @@ class VendorHomeScreen extends ConsumerWidget {
       ),
     );
   }
-
 
   Widget buildDrawer(BuildContext context) {
     return Padding(
@@ -204,10 +200,8 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-
-
-  Widget _buildProductGridViewSection(List<Product> products) {
-    final safeProducts = products.whereType<Product>().toList();
+  Widget _buildProductGridViewSection(List<VendorProduct> products) {
+    final safeProducts = products.whereType<VendorProduct>().toList();
 
     return GridView.builder(
       shrinkWrap: true,
@@ -247,13 +241,12 @@ class VendorHomeScreen extends ConsumerWidget {
                 size: 12.r,
                 product: prod,
               ),
-            )
+            ),
           ],
         );
       },
     );
   }
-
 }
 
 Widget buildAddUrProduct(BuildContext context) {
@@ -288,7 +281,7 @@ Widget buildAddUrProduct(BuildContext context) {
   );
 }
 
-Widget buildProfileSection(VendorDetailsModel vendor, ) {
+Widget buildProfileSection(VendorDetailsModel vendor) {
   return Column(
     children: [
       Center(
@@ -378,12 +371,7 @@ Widget buildProfileSection(VendorDetailsModel vendor, ) {
       ),
     ],
   );
-
-  
 }
-
-
-
 
 class CategoryBar extends ConsumerStatefulWidget {
   const CategoryBar({

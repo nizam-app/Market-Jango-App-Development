@@ -6,7 +6,6 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
-// <-- যোগ করুন
 
 class CustomTopProducts extends ConsumerWidget {
   const CustomTopProducts({super.key});
@@ -16,39 +15,55 @@ class CustomTopProducts extends ConsumerWidget {
     final asyncData = ref.watch(topProductProvider);
 
     return SizedBox(
-      height: 70.h,
+      height: 85.h,
       width: double.infinity,
       child: asyncData.when(
         data: (products) {
+          if (products.isEmpty) {
+            return const Center(child: Text('No top products'));
+          }
           return ListView.builder(
-            shrinkWrap: true,
-            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
             scrollDirection: Axis.horizontal,
             itemCount: products.length,
             itemBuilder: (context, index) {
               final p = products[index];
-              return InkWell(
-                onTap: () {
-                  context.push(ProductDetails.routeName, extra: p.toDetail());
-                },
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6.w),
-                  child: CircleAvatar(
-                    radius: 32.r,
-                    backgroundColor: AllColor.white,
-                    child: CircleAvatar(
-                      radius: 28.r,
-                      backgroundImage: NetworkImage(p.image),
+              return Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      // তোমার details screen এ যাও
+                      context.push(
+                        ProductDetails.routeName,
+                        extra: p.toDetail(),
+                      );
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w),
+                      child: CircleAvatar(
+                        radius: 32.r,
+                        backgroundColor: AllColor.white,
+                        child: CircleAvatar(
+                          radius: 28.r,
+                          backgroundImage: (p.image.isNotEmpty)
+                              ? NetworkImage(p.image)
+                              : null,
+                          child: (p.image.isEmpty)
+                              ? Icon(Icons.image_not_supported, size: 18.sp)
+                              : null,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Text(p.name, style: TextStyle(fontSize: 12.sp)),
+                ],
               );
             },
           );
         },
-        error: (error, stack) => Center(
+        error: (error, _) => Center(
           child: Text(
-            ': $error',
+            'Error: $error',
             style: const TextStyle(color: Colors.red),
           ),
         ),

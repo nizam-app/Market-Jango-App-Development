@@ -1,4 +1,4 @@
-// show_shipping_address_sheet.dart
+// show_shipping_contract_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <-- ADD
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,9 +9,9 @@ import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_upd
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_page_data_model.dart';
 
-void showShippingAddressSheet(
+void showShippingContractSheet(
   BuildContext context,
-  WidgetRef ref,
+  WidgetRef ref, // <-- ADD ref
   PaymentPageData? ares,
 ) {
   showModalBottomSheet(
@@ -22,11 +22,13 @@ void showShippingAddressSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
     ),
     builder: (context) {
-      final addressCtrl = TextEditingController(
-        text: ares?.buyer.shipAddress ?? "",
+      final nameCtrl = TextEditingController(text: ares?.buyer.shipName ?? "");
+      final phoneCtrl = TextEditingController(
+        text: ares?.buyer.shipPhone ?? "",
       );
-      final cityCtrl = TextEditingController(text: ares?.buyer.shipCity ?? "");
-      final postCtrl = TextEditingController(text: ares?.buyer.postcode ?? "");
+      final emailCtrl = TextEditingController(
+        text: ares?.buyer.shipEmail ?? "",
+      );
 
       return Padding(
         padding: EdgeInsets.only(
@@ -47,7 +49,7 @@ void showShippingAddressSheet(
                 children: [
                   Expanded(
                     child: Text(
-                      'Shipping Address',
+                      'Shipping Contract',
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -73,27 +75,26 @@ void showShippingAddressSheet(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomTextFormField(
-                      label: 'Address',
-                      controller: addressCtrl,
-                      hintText: 'Enter your address',
-                      maxLines: 3,
+                      label: 'Name',
+                      controller: nameCtrl,
+                      hintText: 'Receiver Name',
                     ),
                     SizedBox(height: 12.h),
                     CustomTextFormField(
-                      label: 'Town / City',
-                      controller: cityCtrl,
-                      hintText: 'Enter your city',
+                      label: 'Phone Number',
+                      controller: phoneCtrl,
+                      hintText: 'Phone',
+                      keyboardType: TextInputType.phone,
                     ),
                     SizedBox(height: 12.h),
                     CustomTextFormField(
-                      label: 'Postcode',
-                      controller: postCtrl,
-                      hintText: 'Enter your postcode',
-                      keyboardType: TextInputType.number,
+                      label: 'Email Address',
+                      controller: emailCtrl,
+                      hintText: 'Email',
+                      keyboardType: TextInputType.emailAddress,
                     ),
                     SizedBox(height: 20.h),
 
-                    // Save button
                     GlobalSaveBotton(
                       bottonName: 'Save Changes',
                       onPressed: () async {
@@ -102,10 +103,12 @@ void showShippingAddressSheet(
                               .read(userUpdateServiceProvider)
                               .updateUserFields(
                                 fields: {
-                                  'ship_address': addressCtrl.text,
-                                  'ship_city': cityCtrl.text,
-                                  if (postCtrl.text.trim().isNotEmpty)
-                                    'postcode': postCtrl.text,
+                                  if (nameCtrl.text.trim().isNotEmpty)
+                                    'ship_name': nameCtrl.text,
+                                  if (phoneCtrl.text.trim().isNotEmpty)
+                                    'ship_phone': phoneCtrl.text,
+                                  if (emailCtrl.text.trim().isNotEmpty)
+                                    'ship_email': emailCtrl.text,
                                 },
                               );
                           if (context.mounted) {
@@ -113,7 +116,7 @@ void showShippingAddressSheet(
                             context.pop();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Shipping address updated'),
+                                content: Text('Contact info updated'),
                               ),
                             );
                           }

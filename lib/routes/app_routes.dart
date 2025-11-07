@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
@@ -21,13 +22,14 @@ import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
+import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
-import 'package:market_jango/features/buyer/screens/filter/screen/filter_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -47,7 +49,6 @@ import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dar
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
-import 'package:market_jango/features/transport/screens/language_screen.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
 import 'package:market_jango/features/transport/screens/profile_edit.dart';
 import 'package:market_jango/features/transport/screens/transport_booking.dart';
@@ -85,7 +86,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: LoginScreen.routeName,
+  initialLocation: BuyerBottomNavBar.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -157,7 +158,7 @@ final GoRouter router = GoRouter(
       path: ProductEditScreen.routeName,
       name: ProductEditScreen.routeName,
       builder: (context, state) {
-        final product = state.extra as Product;
+        final product = state.extra as VendorProduct;
         return ProductEditScreen(product: product);
       },
     ),
@@ -389,9 +390,9 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: LanguageScreen.routeName,
+      path: GlobalLanguageScreen.routeName,
       name: 'language',
-      builder: (context, state) => LanguageScreen(),
+      builder: (context, state) => GlobalLanguageScreen(),
     ),
 
     GoRoute(
@@ -421,7 +422,11 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: CategoriesScreen.routeName,
       name: CategoriesScreen.routeName,
-      builder: (context, state) => CategoriesScreen(),
+      builder: (context, state) {
+        // final categories = state.extra as CategoryResponse;
+
+        return CategoriesScreen();
+      },
     ),
     GoRoute(
       path: BuyerBottomNavBar.routeName,
@@ -489,12 +494,18 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: "${SeeJustForYouScreen.routeName}/:screenName",
+      path: SeeJustForYouScreen.routeName,
       name: SeeJustForYouScreen.routeName,
-
-      builder: (context, state) => SeeJustForYouScreen(
-        screenName: state.pathParameters["screenName"] ?? "Just for you",
-      ),
+      builder: (context, state) {
+        final extras = state.extra as Map<String, dynamic>;
+        final screenName = extras['screenName'] as String;
+        final productsResponse =
+            extras['productsResponse'] as TopProductsResponse;
+        return SeeJustForYouScreen(
+          screenName: screenName,
+          productsResponse: productsResponse,
+        );
+      },
     ),
     GoRoute(
       path: ChatScreen.routeName, // "/chatScreen"

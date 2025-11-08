@@ -28,7 +28,7 @@ class ChatThread {
   final String partnerImage;
   final String lastMessage;
   final String lastMessageTime; // already humanized by backend
-  final bool isRead;
+  final int isRead;
 
   ChatThread({
     required this.chatId,
@@ -47,6 +47,6 @@ class ChatThread {
     partnerImage: json['partner_image'] ?? '',
     lastMessage: json['last_message'] ?? '',
     lastMessageTime: json['last_message_time'] ?? '',
-    isRead: json['is_read'] == 1,
+    isRead: json['is_read'] ?? 0,
   );
 }

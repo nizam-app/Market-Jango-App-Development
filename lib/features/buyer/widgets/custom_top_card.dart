@@ -1,47 +1,74 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/%20business_logic/models/categories_model.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/buyer/data/categories_data_read.dart';
+import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
+import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomTopProducts extends ConsumerWidget {
-  CustomTopProducts({
-    super.key,
-  });
+  const CustomTopProducts({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allProducts = ref.watch(Category.loadCategories);
+    final asyncData = ref.watch(topProductProvider);
+
     return SizedBox(
-        height: 55.h,
-        width: double.infinity,
-        child:allProducts.when(data: (product) {
-          List<CategoriesModel> topProducts =product.where((eliment) => eliment.topProduct == true).toList();
+      height: 85.h,
+      width: double.infinity,
+      child: asyncData.when(
+        data: (products) {
+          if (products.isEmpty) {
+            return const Center(child: Text('No top products'));
+          }
           return ListView.builder(
-              shrinkWrap: true,
-              physics: AlwaysScrollableScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount: topProducts.length, // Example item count
-              itemBuilder: (context, index) {
-                final allTopProduct = topProducts[index];
-                return InkWell(
-                  onTap: (){context.push(ProductDetails.routeName,);},
-                  child: CircleAvatar(radius: 30.r,backgroundColor: AllColor.white,
-                    child: CircleAvatar(
-                      radius: 24.r,
-                      backgroundImage: AssetImage("${allTopProduct.image}"),
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            scrollDirection: Axis.horizontal,
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final p = products[index];
+              return Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      // তোমার details screen এ যাও
+                      context.push(
+                        ProductDetails.routeName,
+                        extra: p.toDetail(),
+                      );
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w),
+                      child: CircleAvatar(
+                        radius: 32.r,
+                        backgroundColor: AllColor.white,
+                        child: CircleAvatar(
+                          radius: 28.r,
+                          backgroundImage: (p.image.isNotEmpty)
+                              ? NetworkImage(p.image)
+                              : null,
+                          child: (p.image.isEmpty)
+                              ? Icon(Icons.image_not_supported, size: 18.sp)
+                              : null,
+                        ),
+                      ),
                     ),
                   ),
-                );
-              }
-          );}, error: (error, stack) => Text('Something went wrong'),
-          loading: () => CircularProgressIndicator(),
-        ));
+                  Text(p.name, style: TextStyle(fontSize: 12.sp)),
+                ],
+              );
+            },
+          );
+        },
+        error: (error, _) => Center(
+          child: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+      ),
+    );
   }
-
 }

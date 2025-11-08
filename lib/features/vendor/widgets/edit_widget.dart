@@ -16,7 +16,7 @@ class Edit_Widget extends StatelessWidget {
   final double width;
   final double size;
 
-  final Product product;
+  final VendorProduct product;
 
   @override
   Widget build(BuildContext context) {

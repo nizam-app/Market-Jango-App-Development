@@ -22,7 +22,7 @@ import '../model/product_attribute_response_model.dart';
 class ProductEditScreen extends ConsumerStatefulWidget {
   const ProductEditScreen({super.key, required this.product});
 
-  final Product product;
+  final VendorProduct product;
 
   static const String routeName = '/vendor_product_edit';
 
@@ -267,7 +267,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                   ),
 
                   SizedBox(height: 20.h),
-                  
+
                   Align(
                     alignment: Alignment.topLeft,
                     child: ElevatedButton(
@@ -306,13 +306,22 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                               res.when(
                                 data: (_) {
                                   context.pop();
-                                  GlobalSnackbar.show(context, title: "Success", message: "Product updated successfully");
+                                  GlobalSnackbar.show(
+                                    context,
+                                    title: "Success",
+                                    message: "Product updated successfully",
+                                  );
                                   ref.invalidate(updateProductProvider);
                                 },
                                 loading: () {},
                                 error: (e, _) {
-                                  GlobalSnackbar.show(context, title: "Error", message: "Product updated failed",type: CustomSnackType.error);
-                                }
+                                  GlobalSnackbar.show(
+                                    context,
+                                    title: "Error",
+                                    message: "Product updated failed",
+                                    type: CustomSnackType.error,
+                                  );
+                                },
                               );
                             },
                       child: Text(saving ? 'Saving...' : 'Save'),
@@ -436,7 +445,7 @@ class ProductImageCarousel extends ConsumerStatefulWidget {
     this.onLocalAddedChanged, // parent-এ লোকাল ফাইলের লিস্ট দিতে চাইলে
   });
 
-  final Product product;
+  final VendorProduct product;
   final ValueChanged<List<File>>? onLocalAddedChanged;
 
   @override

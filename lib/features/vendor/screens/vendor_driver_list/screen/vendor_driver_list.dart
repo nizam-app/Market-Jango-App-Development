@@ -38,89 +38,93 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
       backgroundColor: AllColor.white,
 
       body: SafeArea(
-        child: Column(
-          children: [
-            CustomBackButton(),
-            SizedBox(height: 20.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: TextField(
-                controller: _search,
-                onChanged: (_) => setState(() {}),
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: 'Search you transporter',
-                  hintStyle: TextStyle(color: AllColor.textHintColor),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: AllColor.black54,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              CustomBackButton(),
+              SizedBox(height: 20.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.h),
+                child: TextField(
+                  controller: _search,
+                  onChanged: (_) => setState(() {}),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Search you transporter',
+                    hintStyle: TextStyle(color: AllColor.textHintColor),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: AllColor.black54,
+                    ),
+                    filled: true,
+                    fillColor: AllColor.grey100,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    enabledBorder: buildOutlineInputBorder(),
+                    focusedBorder: buildOutlineInputBorder(),
                   ),
-                  filled: true,
-                  fillColor: AllColor.grey100,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  enabledBorder: buildOutlineInputBorder(),
-                  focusedBorder: buildOutlineInputBorder(),
                 ),
               ),
-            ),
-            SizedBox(height: 12.h),
+              SizedBox(height: 12.h),
 
-            driverAsync.when(
-              data: (data) {
-                final drivers = data?.drivers ?? [];
-                return SizedBox(
-                  height: 1.62.sw,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: drivers.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (_, i) => _DriverCard(
-                            data: drivers[i],
-                            onAssign: () {
-                              context.push("/assign_order_driver");
-
-                            },
-                            onChat: () {
-                              context.push("/vendorTransportDetails");
-                            },
+              driverAsync.when(
+                data: (data) {
+                  final drivers = data?.drivers ?? [];
+                  return SizedBox(
+                    height: 1.62.sw,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: drivers.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (_, i) => _DriverCard(
+                              data: drivers[i],
+                              onAssign: () {
+                                context.push("/assign_order_driver");
+                              },
+                              onChat: () {
+                                context.push("/vendorTransportDetails");
+                              },
+                            ),
                           ),
                         ),
-
-                      ),
-                      SizedBox(height: 20.h,),
-                      if (data != null)
-                        GlobalPagination(
-                          currentPage: data.currentPage ?? 1,
-                          totalPages: data.lastPage ?? 1,
-                          onPageChanged: (page) {
-                            driverNotifier.changePage(page);
-                          },
-                        )
-                    ],
-                  ),
-                );
-              }  ,
-              loading: () => const Center(child: Text("Loading...")),
-              error: (error, stackTrace) => Center(child: Text(error.toString())),
-            ), ]
-        )
+                        SizedBox(height: 20.h),
+                        if (data != null)
+                          GlobalPagination(
+                            currentPage: data.currentPage ?? 1,
+                            totalPages: data.lastPage ?? 1,
+                            onPageChanged: (page) {
+                              driverNotifier.changePage(page);
+                            },
+                          ),
+                        SizedBox(height: 20.h),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const Center(child: Text("Loading...")),
+                error: (error, stackTrace) =>
+                    Center(child: Text(error.toString())),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   OutlineInputBorder buildOutlineInputBorder() {
     return OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22),
-                  borderSide: BorderSide(color: AllColor.grey200),
-                );
+      borderRadius: BorderRadius.circular(22),
+      borderSide: BorderSide(color: AllColor.grey200),
+    );
   }
 }
 
@@ -257,25 +261,25 @@ class _DriverCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.h,
-                              vertical: 5.w,
-                            ),
-                            decoration: BoxDecoration(
-                              color: onlineColor.withOpacity(.12),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: onlineColor),
-                            ),
-                            child: Text(
-                              'Online',
-                              style: TextStyle(
-                                color: onlineColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12.sp,
-                              ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.h,
+                            vertical: 5.w,
+                          ),
+                          decoration: BoxDecoration(
+                            color: onlineColor.withOpacity(.12),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: onlineColor),
+                          ),
+                          child: Text(
+                            'Online',
+                            style: TextStyle(
+                              color: onlineColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12.sp,
                             ),
                           ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 6.h),
@@ -303,7 +307,6 @@ class _DriverCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 10.h),
-
                   ],
                 ),
               ),
@@ -344,11 +347,7 @@ class _DriverCard extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
                     onTap: onChat,
-                    child: Icon(
-                      Icons.chat,
-                      size: 20.sp,
-                      color: AllColor.white,
-                    ),
+                    child: Icon(Icons.chat, size: 20.sp, color: AllColor.white),
                   ),
                 ),
               ),

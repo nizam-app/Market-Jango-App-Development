@@ -13,6 +13,10 @@ class BuyerAPIController {
   static String just_for_you = "$_base_api/admin-selects/just-for-you";
   static String top_products = "$_base_api/admin-selects/top-products";
   static String new_items = "$_base_api/admin-selects/new-items";
+  static Uri _u(String path) => Uri.parse(_base_api).resolve(path);
+  static String paymen_tresponse = "$_base_api/payment/response";
+  static final Uri invoiceStatus = _u('/payment/response');
+
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
 }

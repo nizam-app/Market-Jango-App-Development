@@ -40,7 +40,7 @@ class CustomSeeAllProduct extends ConsumerWidget {
                   image: products.image,
                   imageHeight: 137,
                 ),
-                if (products.discount != null || products.discount != 0)
+                if (products.discount != null && products.discount != 0)
                   Positioned(
                     top: 10.h,
                     right: 15.w,

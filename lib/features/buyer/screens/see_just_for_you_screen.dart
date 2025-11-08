@@ -6,6 +6,7 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/buyer/data/buyer_just_for_you_data.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
+import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_see_all_product.dart';
 
@@ -33,7 +34,7 @@ class SeeJustForYouScreen extends ConsumerWidget {
               Tuppertextandbackbutton(screenName: "$screenName"),
               CustomSeeAllProduct(
                 onTap: () {
-                  context.pushNamed(ProductDetails.routeName);
+                  context.pushNamed(ProductDetails.routeName, extra: productsResponse.data.data.first.product.toDetail());
                 },
                 product: products,
               ),

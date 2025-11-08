@@ -5,7 +5,7 @@ class CartResponse {
   final String status;
   final String message;
   final Map<String, List<CartItem>> groups; // e.g. {"0":[...]}
-  final int total;
+  final double total;
 
   CartResponse({
     required this.status,
@@ -44,7 +44,7 @@ class CartResponse {
       status: json['status']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
       groups: parsed,
-      total: total,
+      total: total.toDouble(),
     );
   }
 }

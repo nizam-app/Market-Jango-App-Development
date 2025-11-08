@@ -39,7 +39,6 @@ class CustomTotalCheckoutSection extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // ==== TOTAL TEXT ====
           Row(
             children: [
               Text(
@@ -51,7 +50,7 @@ class CustomTotalCheckoutSection extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$${totalPrice.toStringAsFixed(2).replaceAll(".", ",")}',
+                '\$${totalPrice}',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,

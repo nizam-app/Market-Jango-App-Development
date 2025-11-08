@@ -10,6 +10,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
+import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/show_shipping_contract_sheet.dart';
@@ -137,7 +138,7 @@ class BuyerPaymentScreen extends ConsumerWidget {
       ),
       // Bottom total: args থেকে
       bottomNavigationBar: CustomTotalCheckoutSection(
-        totalPrice: totalForBottom,
+        totalPrice: args?.grandTotal ?? 0,
         context: context,
         onCheckout: () => startCheckout(context),
       ),
@@ -551,7 +552,7 @@ class _CustomItemShowState extends State<CustomItemShow> {
 }
 
 Future<void> startCheckout(BuildContext context) async {
-  // লোডিং ডায়ালগ
+  // লোডার
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -561,11 +562,7 @@ Future<void> startCheckout(BuildContext context) async {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.4),
-            ),
+            SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4)),
             SizedBox(width: 12),
             Text('Preparing checkout...'),
           ],
@@ -575,22 +572,15 @@ Future<void> startCheckout(BuildContext context) async {
   );
 
   try {
-    // ref ছাড়াই container নাও
     final container = ProviderScope.containerOf(context, listen: false);
     final token = await container.read(authTokenProvider.future);
 
-    final uri = Uri.parse(
-      BuyerAPIController.invoice_createate,
-    ); // GET /api/invoice/create
-    final res = await http.get(
-      uri,
-      headers: {
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'token': token,
-      },
-    );
+    final uri = Uri.parse(BuyerAPIController.invoice_createate); // /api/invoice/create
+    final res = await http.get(uri, headers: {
+      'Accept': 'application/json',
+      if (token != null && token.isNotEmpty) 'token': token,
+    });
 
-    // লোডার বন্ধ
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
@@ -605,36 +595,44 @@ Future<void> startCheckout(BuildContext context) async {
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     String? paymentUrl;
     final data = body['data'];
-    if (data is List && data.isNotEmpty) {
-      final pm = data.first['paymentMethod'];
-      if (pm is Map<String, dynamic>) {
-        paymentUrl = pm['payment_url']?.toString();
-      }
+    final obj = (data is List && data.isNotEmpty) ? data.first : data;
+    final pm = (obj is Map<String, dynamic>) ? obj['paymentMethod'] : null;
+    if (pm is Map<String, dynamic>) {
+      paymentUrl = pm['payment_url']?.toString();
     }
 
     if (paymentUrl == null || paymentUrl.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Payment URL not found')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment URL not found')),
+      );
       return;
     }
 
-    final u = Uri.parse(paymentUrl);
-    // আগে চেক করো
-    if (await canLaunchUrl(u)) {
-      await launchUrl(u, mode: LaunchMode.externalApplication);
+    final result = await Navigator.of(context).push<PaymentStatusResult>(
+      MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl ?? "")),
+    );
+
+    if (result?.success == true) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment completed successfully')),
+        );
+        // TODO: cart clear / orders page
+      }
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl!)),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment not completed')),
+        );
+      }
     }
+
   } catch (e) {
-    // লোডার থাকলে বন্ধ করো
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Checkout failed: $e')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Checkout failed: $e')),
+    );
   }
 }

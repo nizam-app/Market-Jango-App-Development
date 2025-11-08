@@ -1,3 +1,4 @@
+// lib/features/buyer/model/new_items_model.dart
 import 'dart:convert';
 
 class BuyerNewItemsModel {
@@ -15,9 +16,17 @@ class BuyerNewItemsModel {
     return BuyerNewItemsModel(
       status: json['status'] ?? '',
       message: json['message'] ?? '',
-      data: BuyerNewItems.fromJson(json['data']),
+      data: BuyerNewItems.fromJson(
+        Map<String, dynamic>.from(json['data'] as Map),
+      ),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'status': status,
+    'message': message,
+    'data': data.toJson(),
+  };
 }
 
 class BuyerNewItems {
@@ -34,15 +43,27 @@ class BuyerNewItems {
   });
 
   factory BuyerNewItems.fromJson(Map<String, dynamic> json) {
+    final list = (json['data'] as List? ?? const []);
     return BuyerNewItems(
-      currentPage: json['current_page'] ?? 1,
-      data: (json['data'] as List)
-          .map((e) => NewItemsProduct.fromJson(e))
+      currentPage: _toInt(json['current_page'], fallback: 1),
+      data: list
+          .where((e) => e != null)
+          .map(
+            (e) =>
+                NewItemsProduct.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList(),
-      nextPageUrl: json['next_page_url'],
-      lastPage: json['last_page'] ?? 1,
+      nextPageUrl: _toStrN(json['next_page_url']),
+      lastPage: _toInt(json['last_page'], fallback: 1),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'current_page': currentPage,
+    'data': data.map((e) => e.toJson()).toList(),
+    'next_page_url': nextPageUrl,
+    'last_page': lastPage,
+  };
 }
 
 class NewItemsProduct {
@@ -76,74 +97,64 @@ class NewItemsProduct {
     required this.vendor,
   });
 
+  /// API কখনো wrapper দেয়:
+  /// { id,key,product_id, product:{ ... actual product ... } }
+  /// অথবা সরাসরি product object।
   factory NewItemsProduct.fromJson(Map<String, dynamic> json) {
-    // normalize color
-    List<String> parsedColors = [];
-    if (json['color'] is List) {
-      parsedColors = (json['color'] as List)
-          .expand((e) => e.toString().split(','))
-          .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    } else if (json['color'] is String) {
-      try {
-        parsedColors = List<String>.from(jsonDecode(json['color']));
-      } catch (_) {
-        parsedColors = json['color']
-            .toString()
-            .split(',')
-            .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
-            .where((e) => e.isNotEmpty)
-            .toList();
-      }
-    }
+    final Map<String, dynamic> src = (json['product'] is Map)
+        ? Map<String, dynamic>.from(json['product'] as Map)
+        : Map<String, dynamic>.from(json);
 
-    // normalize size
-    List<String> parsedSizes = [];
-    if (json['size'] is List) {
-      parsedSizes = (json['size'] as List)
-          .expand((e) => e.toString().split(','))
-          .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    } else if (json['size'] is String) {
-      try {
-        parsedSizes = List<String>.from(jsonDecode(json['size']));
-      } catch (_) {
-        parsedSizes = json['size']
-            .toString()
-            .split(',')
-            .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
-            .where((e) => e.isNotEmpty)
-            .toList();
-      }
-    }
+    final List<String> parsedColors = _normalizeStringOrList(src['color']);
+    final List<String> parsedSizes = _normalizeStringOrList(src['size']);
+
+    final Map<String, dynamic> categoryMap = (src['category'] is Map)
+        ? Map<String, dynamic>.from(src['category'] as Map)
+        : const <String, dynamic>{};
+
+    final Map<String, dynamic> vendorMap = (src['vendor'] is Map)
+        ? Map<String, dynamic>.from(src['vendor'] as Map)
+        : const <String, dynamic>{};
+
+    final List<ProductImage> imageList = ((src['images'] as List?) ?? const [])
+        .where((e) => e is Map)
+        .map((e) => ProductImage.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
 
     return NewItemsProduct(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      regularPrice: json['regular_price'] ?? '0.00',
-      sellPrice: json['sell_price'] ?? '0.00',
-      image: json['image'] ?? '',
-      vendorId: json['vendor_id'] ?? 0,
-      categoryId: json['category_id'] ?? 0,
+      id: _toInt(src['id']),
+      name: _toStr(src['name']),
+      description: _toStr(src['description']),
+      regularPrice: _toStr(src['regular_price'], fallback: '0.00'),
+      sellPrice: _toStr(src['sell_price'], fallback: '0.00'),
+      image: _toStr(src['image']),
+      vendorId: _toInt(src['vendor_id']),
+      categoryId: _toInt(src['category_id']),
       color: parsedColors,
       size: parsedSizes,
-      category: Category.fromJson(json['category']),
-      images: (json['images'] as List)
-          .map((e) => ProductImage.fromJson(e))
-          .toList(),
-      vendor: json['vendor'] != null
-          ? Vendor.fromJson(json['vendor'])
-          : Vendor(
-        id: 0,
-        userId: 0,
-        user: VendorUser(id: 0, name: ''),
-        reviews: const [],
-      ),
+      category: Category.fromJson(categoryMap),
+      images: imageList,
+      vendor: vendorMap.isNotEmpty
+          ? Vendor.fromJson(vendorMap)
+          : Vendor.empty(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'regular_price': regularPrice,
+    'sell_price': sellPrice,
+    'image': image,
+    'vendor_id': vendorId,
+    'category_id': categoryId,
+    'color': color,
+    'size': size,
+    'category': category.toJson(),
+    'images': images.map((e) => e.toJson()).toList(),
+    'vendor': vendor.toJson(),
+  };
 }
 
 class Category {
@@ -151,19 +162,21 @@ class Category {
   final String name;
   final String description;
 
-  Category({
-    required this.id,
-    required this.name,
-    required this.description,
-  });
+  Category({required this.id, required this.name, required this.description});
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
+      id: _toInt(json['id']),
+      name: _toStr(json['name']),
+      description: _toStr(json['description']),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+  };
 }
 
 class ProductImage {
@@ -179,12 +192,19 @@ class ProductImage {
 
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
-      id: json['id'] ?? 0,
-      imagePath: json['image_path'] ?? '',
-      productId: json['product_id'] ?? 0,
+      id: _toInt(json['id']),
+      imagePath: _toStr(json['image_path']),
+      productId: _toInt(json['product_id']),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'image_path': imagePath,
+    'product_id': productId,
+  };
 }
+
 class Review {
   final int id;
   final int vendorId;
@@ -200,56 +220,233 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      id: json['id'] ?? 0,
-      vendorId: json['vendor_id'] ?? 0,
-      description: json['description'] ?? '',
-      rating: json['rating'] ?? 0,
+      id: _toInt(json['id']),
+      vendorId: _toInt(json['vendor_id']),
+      description: _toStr(json['description']),
+      rating: _toInt(json['rating']),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'vendor_id': vendorId,
+    'description': description,
+    'rating': rating,
+  };
 }
 
 class Vendor {
   final int id;
+  final String? country;
+  final String? address;
+  final String? businessName;
+  final String? businessType;
   final int userId;
-  final VendorUser user;
-  final List<Review> reviews;
+  final String? createdAt;
+  final String? updatedAt;
 
-  Vendor({
+  final User user; // nested user
+  final List<Review> reviews; // nested reviews
+
+  const Vendor({
     required this.id,
     required this.userId,
     required this.user,
     required this.reviews,
+    this.country,
+    this.address,
+    this.businessName,
+    this.businessType,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> userMap = (json['user'] is Map)
+        ? Map<String, dynamic>.from(json['user'] as Map)
+        : const <String, dynamic>{}; // ✅ typed empty map
+
+    final List reviewsList = (json['reviews'] as List?) ?? const [];
+
     return Vendor(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
-      user: json['user'] != null
-          ? VendorUser.fromJson(json['user'])
-          : VendorUser(id: 0, name: ''),
-      reviews: (json['reviews'] is List)
-          ? (json['reviews'] as List)
-          .map((e) => Review.fromJson(e))
-          .toList()
-          : const [],
+      id: _toInt(json['id']),
+      userId: _toInt(json['user_id']),
+      user: userMap.isNotEmpty ? User.fromJson(userMap) : User.empty(),
+      reviews: reviewsList
+          .where((e) => e is Map)
+          .map((e) => Review.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      country: _toStrN(json['country']),
+      address: _toStrN(json['address']),
+      businessName: _toStrN(json['business_name']),
+      businessType: _toStrN(json['business_type']),
+      createdAt: _toStrN(json['created_at']),
+      updatedAt: _toStrN(json['updated_at']),
     );
   }
+
+  factory Vendor.empty() => Vendor(
+    id: 0,
+    userId: 0,
+    user: User.empty(),
+    reviews: const [],
+    country: null,
+    address: null,
+    businessName: null,
+    businessType: null,
+    createdAt: null,
+    updatedAt: null,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'country': country,
+    'address': address,
+    'business_name': businessName,
+    'business_type': businessType,
+    'user_id': userId,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+    'user': user.toJson(),
+    'reviews': reviews.map((r) => r.toJson()).toList(),
+  };
 }
 
-class VendorUser {
+class User {
   final int id;
   final String name;
 
-  VendorUser({
+  // extra (API-তে থাকে)
+  final String? userType;
+  final String? email;
+  final String? phone;
+  final String? otp;
+  final String? phoneVerifiedAt;
+  final String? language;
+  final String? image;
+  final String? publicId;
+  final String? status;
+  final int? isActive;
+  final String? expiresAt;
+  final String? createdAt;
+  final String? updatedAt;
+
+  User({
     required this.id,
     required this.name,
+    this.userType,
+    this.email,
+    this.phone,
+    this.otp,
+    this.phoneVerifiedAt,
+    this.language,
+    this.image,
+    this.publicId,
+    this.status,
+    this.isActive,
+    this.expiresAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory VendorUser.fromJson(Map<String, dynamic> json) {
-    return VendorUser(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: _toInt(json['id']),
+      name: _toStr(json['name']),
+      userType: _toStrN(json['user_type']),
+      email: _toStrN(json['email']),
+      phone: _toStrN(json['phone']),
+      otp: _toStrN(json['otp']),
+      phoneVerifiedAt: _toStrN(json['phone_verified_at']),
+      language: _toStrN(json['language']),
+      image: _toStrN(json['image']),
+      publicId: _toStrN(json['public_id']),
+      status: _toStrN(json['status']),
+      isActive: _toIntN(json['is_active']),
+      expiresAt: _toStrN(json['expires_at']),
+      createdAt: _toStrN(json['created_at']),
+      updatedAt: _toStrN(json['updated_at']),
     );
   }
+
+  factory User.empty() => User(id: 0, name: '');
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'user_type': userType,
+    'email': email,
+    'phone': phone,
+    'otp': otp,
+    'phone_verified_at': phoneVerifiedAt,
+    'language': language,
+    'image': image,
+    'public_id': publicId,
+    'status': status,
+    'is_active': isActive,
+    'expires_at': expiresAt,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
+}
+
+/// -------------------- helpers --------------------
+
+int _toInt(dynamic v, {int fallback = 0}) {
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v) ?? fallback;
+  return fallback;
+}
+
+int? _toIntN(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v);
+  return null;
+}
+
+String _toStr(dynamic v, {String fallback = ''}) {
+  if (v == null) return fallback;
+  final s = v.toString();
+  return s.isEmpty ? fallback : s;
+}
+
+String? _toStrN(dynamic v) {
+  if (v == null) return null;
+  final s = v.toString().trim();
+  return s.isEmpty ? null : s;
+}
+
+/// color/size normalize: List | "['x','xl']" | "x,XL"
+List<String> _normalizeStringOrList(dynamic raw) {
+  if (raw == null) return const [];
+
+  if (raw is List) {
+    return raw
+        .expand((e) => e.toString().split(','))
+        .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  if (raw is String) {
+    try {
+      final d = jsonDecode(raw);
+      if (d is List) {
+        return d
+            .expand((e) => e.toString().split(','))
+            .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    } catch (_) {}
+    return raw
+        .toString()
+        .split(',')
+        .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  return const [];
 }

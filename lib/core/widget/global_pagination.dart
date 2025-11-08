@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class GlobalPagination extends StatelessWidget {
   final int currentPage;
@@ -32,8 +33,8 @@ class GlobalPagination extends StatelessWidget {
             child: InkWell(
               onTap: () => onPageChanged(page),
               child: Container(
-                width: 38,
-                height: 38,
+                width: 36.w,
+                height: 36.h,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: page == currentPage ? Colors.orange : Colors.white,

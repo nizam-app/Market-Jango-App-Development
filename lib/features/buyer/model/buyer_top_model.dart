@@ -106,7 +106,7 @@ class TopProductItem {
   final int id;
   final String key;
   final int productId;
-  final Product product;
+  final TopProduct product;
 
   TopProductItem({
     required this.id,
@@ -120,7 +120,7 @@ class TopProductItem {
       id: json['id'] ?? 0,
       key: json['key'] ?? '',
       productId: json['product_id'] ?? 0,
-      product: Product.fromJson(json['product'] ?? {}),
+      product: TopProduct.fromJson(json['product'] ?? {}),
     );
   }
 
@@ -132,45 +132,97 @@ class TopProductItem {
   };
 }
 
-class Product {
+class TopProduct {
   final int id;
   final String name;
+  final String? description;
   final String regularPrice;
   final String sellPrice;
   final String image;
   final int categoryId;
+  final List<String>? color;
+  final List<String>? size;
   final int vendorId;
   final List<ProductImage> images;
+  final int? discount;
   final Vendor vendor;
   final Category category;
 
-  Product({
+  TopProduct({
     required this.id,
     required this.name,
+    this.description,
     required this.regularPrice,
     required this.sellPrice,
     required this.image,
     required this.categoryId,
+    this.color,
+    this.size,
     required this.vendorId,
     required this.images,
     required this.vendor,
     required this.category,
+    this.discount,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
+  factory TopProduct.fromJson(Map<String, dynamic> json) {
+    List<String> parsedColors = [];
+    if (json['color'] is List) {
+      parsedColors = (json['color'] as List)
+          .expand((e) => e.toString().split(','))
+          .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } else if (json['color'] is String) {
+      try {
+        parsedColors = List<String>.from(jsonDecode(json['color']));
+      } catch (_) {
+        parsedColors = json['color']
+            .toString()
+            .split(',')
+            .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    }
+
+    // normalize size
+    List<String> parsedSizes = [];
+    if (json['size'] is List) {
+      parsedSizes = (json['size'] as List)
+          .expand((e) => e.toString().split(','))
+          .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } else if (json['size'] is String) {
+      try {
+        parsedSizes = List<String>.from(jsonDecode(json['size']));
+      } catch (_) {
+        parsedSizes = json['size']
+            .toString()
+            .split(',')
+            .map((e) => e.replaceAll(RegExp(r'[\[\]\"]'), '').trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    }
+    return TopProduct(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
+      description: json['description'] ?? '',
       regularPrice: json['regular_price']?.toString() ?? '',
       sellPrice: json['sell_price']?.toString() ?? '',
       image: json['image'] ?? '',
       categoryId: json['category_id'] ?? 0,
+      color: parsedColors,
+      size: parsedSizes,
       vendorId: json['vendor_id'] ?? 0,
       images: (json['images'] as List<dynamic>? ?? [])
           .map((e) => ProductImage.fromJson(e))
           .toList(),
       vendor: Vendor.fromJson(json['vendor'] ?? {}),
       category: Category.fromJson(json['category'] ?? {}),
+      discount: json['discount'] ?? 0,
     );
   }
 
@@ -220,31 +272,73 @@ class ProductImage {
 
 class Vendor {
   final int id;
+  final String? country;
+  final String? address;
+  final String? businessName;
+  final String? businessType;
   final int userId;
-  final User user;
-  final List<Review> reviews;
+  final String? createdAt; // "2025-10-25T09:39:23.000000Z"
+  final String? updatedAt;
 
-  Vendor({
+  final User user; // আপনার বিদ্যমান User মডেল
+  final List<Review> reviews; // আপনার বিদ্যমান Review মডেল
+
+  const Vendor({
     required this.id,
     required this.userId,
     required this.user,
     required this.reviews,
+    this.country,
+    this.address,
+    this.businessName,
+    this.businessType,
+    this.createdAt,
+    this.updatedAt,
   });
 
+  // ছোট হেল্পার
+  static int _toInt(dynamic v) {
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
+  }
+
+  static String? _toStrN(dynamic v) {
+    if (v == null) return null;
+    final s = v.toString().trim();
+    return s.isEmpty ? null : s;
+  }
+
   factory Vendor.fromJson(Map<String, dynamic> json) {
+    final userJson = (json['user'] as Map?) ?? const {};
+    final reviewsJson = (json['reviews'] as List?) ?? const [];
+
     return Vendor(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
-      user: User.fromJson(json['user'] ?? {}),
-      reviews: (json['reviews'] as List<dynamic>? ?? [])
-          .map((e) => Review.fromJson(e))
+      id: _toInt(json['id']),
+      userId: _toInt(json['user_id']),
+      country: _toStrN(json['country']),
+      address: _toStrN(json['address']),
+      businessName: _toStrN(json['business_name']),
+      businessType: _toStrN(json['business_type']),
+      createdAt: _toStrN(json['created_at']),
+      updatedAt: _toStrN(json['updated_at']),
+      user: User.fromJson(Map<String, dynamic>.from(userJson)),
+      reviews: reviewsJson
+          .whereType<Map>()
+          .map((e) => Review.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'country': country,
+    'address': address,
+    'business_name': businessName,
+    'business_type': businessType,
     'user_id': userId,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
     'user': user.toJson(),
     'reviews': reviews.map((r) => r.toJson()).toList(),
   };
@@ -254,22 +348,13 @@ class User {
   final int id;
   final String name;
 
-  User({
-    required this.id,
-    required this.name,
-  });
+  User({required this.id, required this.name});
 
   factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-    );
+    return User(id: json['id'] ?? 0, name: json['name'] ?? '');
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 }
 
 class Review {
@@ -306,22 +391,13 @@ class Category {
   final int id;
   final String name;
 
-  Category({
-    required this.id,
-    required this.name,
-  });
+  Category({required this.id, required this.name});
 
   factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-    );
+    return Category(id: json['id'] ?? 0, name: json['name'] ?? '');
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 }
 
 class PageLink {

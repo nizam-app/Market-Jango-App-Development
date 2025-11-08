@@ -1,4 +1,4 @@
-class Product {
+class VendorProduct {
   final int id;
   final String name;
   final String description;
@@ -11,9 +11,9 @@ class Product {
 
   final List<String> sizes;
   final List<String> colors;
-  final List<ProductImage> images; 
+  final List<ProductImage> images;
 
-  Product({
+  VendorProduct({
     required this.id,
     required this.name,
     required this.description,
@@ -28,11 +28,11 @@ class Product {
     required this.images,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
+  factory VendorProduct.fromJson(Map<String, dynamic> json) {
     final rawSize = json['size'];
     final rawColor = json['color'];
 
-    return Product(
+    return VendorProduct(
       id: json['id'],
       name: json['name'] ?? '',
       description: json['description'] ?? '',
@@ -55,23 +55,20 @@ class Product {
           : rawColor is String
           ? [rawColor]
           : [],
+
       /// ✅ images mapping
       images: (json['images'] as List? ?? [])
           .map((e) => ProductImage.fromJson(e))
           .toList(),
-    
     );
   }
 }
-
-
-
 
 class PaginatedProducts {
   final int currentPage;
   final int lastPage;
   final int total;
-  final List<Product> products;
+  final List<VendorProduct> products;
 
   PaginatedProducts({
     required this.currentPage,
@@ -86,11 +83,12 @@ class PaginatedProducts {
       lastPage: json['last_page'] ?? 1,
       total: json['total'] ?? 0,
       products: (json['data'] as List? ?? [])
-          .map((e) => Product.fromJson(e as Map<String, dynamic>))
+          .map((e) => VendorProduct.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
 }
+
 //
 // class PaginatedProducts {
 //   final int currentPage;

@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
-import 'package:market_jango/features/buyer/logic/new_items_riverpod.dart';
-import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
+import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
@@ -19,7 +18,7 @@ class CustomNewItemsShow extends ConsumerWidget {
       height: 210.h,
       child: newItemsAsync.when(
         data: (data) {
-          final products = data.data.data;
+          final products = data!.data.data.map((e) => e.product).toList();
           return ListView.builder(
             shrinkWrap: true,
             physics: AlwaysScrollableScrollPhysics(),
@@ -31,14 +30,17 @@ class CustomNewItemsShow extends ConsumerWidget {
               return Builder(
                 builder: (context) {
                   return CustomNewProduct(
-                    width: 120.w,
-                    height: 140.h,
+                    width: 130,
+                    height: 140,
                     productPricesh: product.sellPrice,
                     productName: product.name.toString(),
                     imageHeight: 130,
                     image: product.image,
                     onTap: () {
-                      context.push(ProductDetails.routeName, extra: product.toDetail());
+                      context.push(
+                        ProductDetails.routeName,
+                        extra: product.toDetail(),
+                      );
                     },
                   );
                 },

@@ -10,7 +10,6 @@ import 'package:market_jango/core/screen/buyer_massage/data/chat_history_data.da
 import 'package:market_jango/core/screen/buyer_massage/logic/message_send_riverpod.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
-
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({
     super.key,

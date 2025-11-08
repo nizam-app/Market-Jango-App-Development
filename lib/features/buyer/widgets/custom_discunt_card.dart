@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
 class CustomDiscountCord extends StatelessWidget {
-  const CustomDiscountCord({
-    super.key,
-  });
+  final String discount;
+  const CustomDiscountCord({super.key, this.discount = ""});
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +15,10 @@ class CustomDiscountCord extends StatelessWidget {
         borderRadius: BorderRadius.circular(5.r),
       ),
       child: Text(
-        '-20%',
-        style:Theme.of(context).textTheme.titleLarge!.copyWith(
-            fontSize: 12.sp,color: AllColor.white
+        discount,
+        style: Theme.of(context).textTheme.titleLarge!.copyWith(
+          fontSize: 12.sp,
+          color: AllColor.white,
         ),
       ),
     );

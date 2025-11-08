@@ -1,22 +1,50 @@
+// cart_models.dart
+import 'dart:convert';
+
 class CartResponse {
   final String status;
   final String message;
-  final List<CartItem> data;
+  final Map<String, List<CartItem>> groups; // e.g. {"0":[...]}
+  final int total;
 
   CartResponse({
     required this.status,
     required this.message,
-    required this.data,
+    required this.groups,
+    required this.total,
   });
 
+  List<CartItem> get items => groups.values.expand((e) => e).toList();
+
+  factory CartResponse.fromRaw(String str) =>
+      CartResponse.fromJson(json.decode(str));
+
   factory CartResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    final Map<String, List<CartItem>> parsed = {};
+    int total = 0;
+
+    if (data is Map<String, dynamic>) {
+      total = int.tryParse('${data['total'] ?? 0}') ?? 0;
+      data.forEach((k, v) {
+        if (k == 'total') return;
+        if (v is List) {
+          parsed[k] = v
+              .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+      });
+    } else if (data is List) {
+      parsed['0'] = data
+          .map((e) => CartItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
     return CartResponse(
-      status: json['status'] ?? '',
-      message: json['message'] ?? '',
-      data: (json['data'] as List<dynamic>?)
-          ?.map((e) => CartItem.fromJson(e))
-          .toList() ??
-          [],
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      groups: parsed,
+      total: total,
     );
   }
 }
@@ -31,7 +59,12 @@ class CartItem {
   final int buyerId;
   final int vendorId;
   final String status;
-  final Product product;
+
+  final int? id;
+  final String createdAt;
+  final String updatedAt;
+
+  final CardProduct product;
   final Vendor vendor;
   final Buyer buyer;
 
@@ -48,27 +81,41 @@ class CartItem {
     required this.product,
     required this.vendor,
     required this.buyer,
+    this.id,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
+    int _i(dynamic v) {
+      if (v is int) return v;
+      if (v is String) return int.tryParse(v) ?? 0;
+      return 0;
+    }
+
+    String _s(dynamic v) => v?.toString() ?? '';
+
     return CartItem(
-      quantity: json['quantity'] ?? 0,
-      deliveryCharge: json['delivery_charge'] ?? '',
-      color: json['color'] ?? '',
-      size: json['size'] ?? '',
-      price: json['price'] ?? '',
-      productId: json['product_id'] ?? 0,
-      buyerId: json['buyer_id'] ?? 0,
-      vendorId: json['vendor_id'] ?? 0,
-      status: json['status'] ?? '',
-      product: Product.fromJson(json['product'] ?? {}),
+      id: json['id'] == null ? null : _i(json['id']),
+      quantity: _i(json['quantity']),
+      deliveryCharge: _s(json['delivery_charge']),
+      color: _s(json['color']),
+      size: _s(json['size']),
+      price: _s(json['price']),
+      productId: _i(json['product_id']),
+      buyerId: _i(json['buyer_id']),
+      vendorId: _i(json['vendor_id']),
+      status: _s(json['status']),
+      product: CardProduct.fromJson(json['product'] ?? {}),
       vendor: Vendor.fromJson(json['vendor'] ?? {}),
       buyer: Buyer.fromJson(json['buyer'] ?? {}),
+      createdAt: _s(json['created_at']),
+      updatedAt: _s(json['updated_at']),
     );
   }
 }
 
-class Product {
+class CardProduct {
   final int id;
   final String name;
   final String description;
@@ -87,7 +134,7 @@ class Product {
   final String createdAt;
   final String updatedAt;
 
-  Product({
+  CardProduct({
     required this.id,
     required this.name,
     required this.description,
@@ -107,36 +154,53 @@ class Product {
     required this.updatedAt,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    List<String> parseDynamicList(dynamic data) {
+  factory CardProduct.fromJson(Map<String, dynamic> json) {
+    List<String> _list(dynamic data) {
       if (data == null) return [];
       if (data is List) {
-        return data.expand((e) => e.toString().split(',')).map((e) => e.trim()).toList();
+        return data
+            .expand((e) => e.toString().split(','))
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
       }
       if (data is String) {
-        return data.replaceAll('"', '').split(',').map((e) => e.trim()).toList();
+        return data
+            .replaceAll('"', '')
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
       }
       return [];
     }
 
-    return Product(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      regularPrice: json['regular_price'] ?? '',
-      sellPrice: json['sell_price'] ?? '',
-      discount: json['discount'] ?? 0,
-      publicId: json['public_id'],
-      star: json['star'] ?? 0,
-      image: json['image'] ?? '',
-      color: parseDynamicList(json['color']),
-      size: parseDynamicList(json['size']),
-      remark: json['remark'] ?? '',
-      isActive: json['is_active'] ?? 0,
-      vendorId: json['vendor_id'] ?? 0,
-      categoryId: json['category_id'] ?? 0,
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
+    int _i(dynamic v) {
+      if (v is int) return v;
+      if (v is String) return int.tryParse(v) ?? 0;
+      return 0;
+    }
+
+    String _s(dynamic v) => v?.toString() ?? '';
+
+    return CardProduct(
+      id: _i(json['id']),
+      name: _s(json['name']),
+      description: _s(json['description']),
+      regularPrice: _s(json['regular_price']),
+      sellPrice: _s(json['sell_price']),
+      discount: _i(json['discount']),
+      publicId: json['public_id']?.toString(),
+      star: _i(json['star']),
+      image: _s(json['image']),
+      color: _list(json['color']),
+      size: _list(json['size']),
+      remark: _s(json['remark']),
+      isActive: _i(json['is_active']),
+      vendorId: _i(json['vendor_id']),
+      categoryId: _i(json['category_id']),
+      createdAt: _s(json['created_at']),
+      updatedAt: _s(json['updated_at']),
     );
   }
 }
@@ -163,15 +227,18 @@ class Vendor {
   });
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
+    String _s(dynamic v) => v?.toString() ?? '';
+    int _i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
+
     return Vendor(
-      id: json['id'] ?? 0,
-      country: json['country'] ?? '',
-      address: json['address'] ?? '',
-      businessName: json['business_name'] ?? '',
-      businessType: json['business_type'] ?? '',
-      userId: json['user_id'] ?? 0,
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
+      id: _i(json['id']),
+      country: _s(json['country']),
+      address: _s(json['address']),
+      businessName: _s(json['business_name']),
+      businessType: _s(json['business_type']),
+      userId: _i(json['user_id']),
+      createdAt: _s(json['created_at']),
+      updatedAt: _s(json['updated_at']),
     );
   }
 }
@@ -180,33 +247,77 @@ class Buyer {
   final int id;
   final String gender;
   final String? age;
+
+  // billing/basic
   final String address;
+  final String? state;
+  final String? postcode;
   final String? country;
+
+  // shipping
+  final String? shipName;
+  final String? shipEmail;
+  final String? shipAddress;
   final String? shipCity;
+  final String? shipState;
+  final String? shipCountry;
+  final String? shipPhone;
+
+  // misc
   final String? description;
+  final String? location;
   final int userId;
+  final String createdAt;
+  final String updatedAt;
 
   Buyer({
     required this.id,
     required this.gender,
     required this.age,
     required this.address,
+    required this.state,
+    required this.postcode,
     required this.country,
+    required this.shipName,
+    required this.shipEmail,
+    required this.shipAddress,
     required this.shipCity,
+    required this.shipState,
+    required this.shipCountry,
+    required this.shipPhone,
     required this.description,
+    required this.location,
     required this.userId,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory Buyer.fromJson(Map<String, dynamic> json) {
+    String _s(dynamic v) => v?.toString() ?? '';
+    int _i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
+
     return Buyer(
-      id: json['id'] ?? 0,
-      gender: json['gender'] ?? '',
-      age: json['age'],
-      address: json['address'] ?? '',
-      country: json['country'],
-      shipCity: json['ship_city'],
-      description: json['description'],
-      userId: json['user_id'] ?? 0,
+      id: _i(json['id']),
+      gender: _s(json['gender']) ?? '',
+      age: _s(json['age']),
+      address: _s(json['address']) ?? '',
+      state: _s(json['state']),
+      postcode: _s(json['postcode']),
+      country: _s(json['country']),
+
+      shipName: _s(json['ship_name']),
+      shipEmail: _s(json['ship_email']),
+      shipAddress: _s(json['ship_address']),
+      shipCity: _s(json['ship_city']),
+      shipState: _s(json['ship_state']),
+      shipCountry: _s(json['ship_country']),
+      shipPhone: _s(json['ship_phone']),
+
+      description: _s(json['description']),
+      location: _s(json['location']),
+      userId: _i(json['user_id']),
+      createdAt: _s(json['created_at']) ?? '',
+      updatedAt: _s(json['updated_at']) ?? '',
     );
   }
 }

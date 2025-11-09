@@ -1,16 +1,19 @@
 // lib/features/buyer/screens/category/category_product_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/data/buyer_catagori_vendor_list_data.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 import '../../buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 
 class CategoryProductScreen extends StatelessWidget {
-  const CategoryProductScreen({super.key});
+  const CategoryProductScreen({super.key, required this.categoryVendorId});
+  final int categoryVendorId;
   static const String routeName = '/categoryProductScreen';
 
   @override
@@ -43,7 +46,7 @@ class CategoryProductScreen extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  const VendorListSection(),
+                  VendorListSection(vendorId: categoryVendorId,),
                   const Expanded(child: ProductGridSection()),
                 ],
               ),
@@ -55,54 +58,95 @@ class CategoryProductScreen extends StatelessWidget {
   }
 }
 
-/// ---------------------- Custom Codebase ----------------------
+class VendorListSection extends ConsumerWidget {
+  const VendorListSection({
+    super.key,
+    required this.vendorId,   // currently active/selected vendor (to highlight)
+    this.limit = 1,
+  });
 
-class VendorListSection extends StatelessWidget {
-  const VendorListSection({super.key});
-
-  final vendors = const [
-    {"name": "TrendLoop", "icon": "https://i.pravatar.cc/100?img=1"},
-    {"name": "Style Street", "icon": "https://i.pravatar.cc/100?img=2"},
-    {"name": "Louis Vuitton", "icon": "https://i.pravatar.cc/100?img=3"},
-    {"name": "MasterCard", "icon": "https://i.pravatar.cc/100?img=4"},
-    {"name": "Starbucks", "icon": "https://i.pravatar.cc/100?img=5"},
-    {"name": "Gillette", "icon": "https://i.pravatar.cc/100?img=6"},
-    {"name": "IBM", "icon": "https://i.pravatar.cc/100?img=7"},
-    {"name": "McDonalds", "icon": "https://i.pravatar.cc/100?img=8"},
-  ];
+  final int vendorId;
+  final int limit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vendorsAsync = ref.watch(vendorsProvider(limit));
+
     return Container(
       width: 110.w,
       color: AllColor.grey500,
-      child: ListView.builder(
-        itemCount: vendors.length,
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              SizedBox(height: 10.h),
-              InkWell(
-                onTap: () => context.push(BuyerVendorProfileScreen.routeName),
-                child: CircleAvatar(
-                  radius: 28.r,
-                  backgroundImage: NetworkImage(vendors[index]["icon"]!),
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                vendors[index]["name"]!,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500),
-              ),
-              SizedBox(height: 10.h),
-            ],
+      child: vendorsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+        data: (vendors) {
+          if (vendors.isEmpty) {
+            return const Center(child: Text('No vendors'));
+          }
+          return ListView.builder(
+            itemCount: vendors.length,
+            itemBuilder: (context, index) {
+              final v = vendors[index];
+              final isActive = v.id == vendorId;
+
+              return Column(
+                children: [
+                  SizedBox(height: 10.h),
+                  InkWell(
+                    onTap: () {
+                      
+                      context.push(
+                        BuyerVendorProfileScreen.routeName,
+                        extra: v.id,
+                      );
+                    },
+                    child: CircleAvatar(
+                      radius: isActive ? 32.r : 28.r,
+                      backgroundColor:
+                      isActive ? AllColor.orange : AllColor.white,
+                      child: CircleAvatar(
+                        radius: isActive ? 28.r : 24.r,
+                        backgroundColor: AllColor.grey200,
+                        child: Text(
+                          _initials(v.businessName),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AllColor.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w),
+                    child: Text(
+                      v.businessName,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                      TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                ],
+              );
+            },
           );
         },
       ),
     );
   }
+
+  String _initials(String s) {
+    final parts = s.trim().split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts.first.isEmpty ? '?' : parts.first[0].toUpperCase();
+    return (parts[0].isEmpty ? '' : parts[0][0]) +
+        (parts[1].isEmpty ? '' : parts[1][0].toUpperCase());
+  }
 }
+
 
 class ProductGridSection extends StatelessWidget {
   const ProductGridSection({super.key});

@@ -13,7 +13,6 @@ class CustomTopProducts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncData = ref.watch(topProductProvider);
-
     return SizedBox(
       height: 87.h,
       width: double.infinity,
@@ -32,10 +31,9 @@ class CustomTopProducts extends ConsumerWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      // তোমার details screen এ যাও
                       context.push(
                         ProductDetails.routeName,
-                        extra: p.toDetail(),
+                        extra: p.id,
                       );
                     },
                     child: Padding(

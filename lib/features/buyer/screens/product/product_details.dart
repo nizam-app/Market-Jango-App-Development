@@ -17,12 +17,14 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'logic/add_cart_quantity_logic.dart';
-import 'model/buyer_product_details_model.dart';
+import 'logic/product_details_data.dart';
+
+import 'model/product_all_details_model.dart';
 
 // ProductDetails: Stateless → Stateful
 class ProductDetails extends ConsumerStatefulWidget {
-  const ProductDetails({super.key, required this.product});
-  final DetailItem product;
+  const ProductDetails({super.key, required this.productId});
+  final int productId;
   static final String routeName = '/productDetails';
 
   @override
@@ -32,101 +34,103 @@ class ProductDetails extends ConsumerStatefulWidget {
 class _ProductDetailsState extends ConsumerState<ProductDetails> {
   String? _selectedSize;
   String? _selectedColor;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.product.sizes.isNotEmpty) {
-      _selectedSize = widget.product.sizes.first;
-    }
-    if (widget.product.colors.isNotEmpty) {
-      _selectedColor = widget.product.colors.first;
-    }
-  }
+  
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final prod = ref.watch(productDetailsProvider(widget.productId));
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ProductImage(product: product),
-            CustomSize(
-              product: product,
-              initial: _selectedSize,
-              onSelected: (s) => setState(() => _selectedSize = s),
-            ),
-            SizeColorAnd(text: "Color"),
-            CustomColor(
-              product: product,
-              initial: _selectedColor,
-              onSelected: (c) => setState(() => _selectedColor = c),
-            ),
-            ProductMaterialAndStoreInfo(
-              storeName: product.vendorName ?? "",
-              image: product.vendor?.userImage ?? "https://www.selikoff.net/blog-files/null-value.gif",
-              onChatTap: () async {
-                final pref = await SharedPreferences.getInstance();
-                final myUserIdStr = pref.getString('user_id');
-                if (myUserIdStr == null) throw Exception("User ID not found");
-                final myId = int.parse(myUserIdStr);
-                try {
-                  await context.push(
-                    ChatScreen.routeName,
-                    extra: ChatArgs(
-                      partnerId: product.vendor!.userId!,
-                      partnerName: product.vendor?.userName ?? product.vendorName ?? "",
-                      partnerImage: product.vendor?.userImage ?? "",
-                      myUserId: myId,
-                    ),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Chat open failed: $e')),
-                  );
-                }
-              },
-            ),
+        child: prod.when(
+          data: (product) {
+            return Column(
+              children: [
+                ProductImage(product: product),
+                CustomSize(
+                  product: product,
+                  initial: _selectedSize,
+                  onSelected: (s) => setState(() => _selectedSize = s),
+                ),
+                SizeColorAnd(text: "Color"),
+                CustomColor(
+                  product: product,
+                  initial: _selectedColor,
+                  onSelected: (c) => setState(() => _selectedColor = c),
+                ),
+                ProductMaterialAndStoreInfo(
+                  storeName: product.vendor?.user?.name ?? product.vendor?.businessName ?? '',
+                  image: product.vendor?.user?.image ?? "https://www.selikoff.net/blog-files/null-value.gif",
+                  onChatTap: () async {
+                    final pref = await SharedPreferences.getInstance();
+                    final myUserIdStr = pref.getString('user_id');
+                    if (myUserIdStr == null) throw Exception("User ID not found");
+                    final myId = int.parse(myUserIdStr);
+                    try {
+                      await context.push(
+                        ChatScreen.routeName,
+                        extra: ChatArgs(
+                          partnerId: product.vendor?.user?.id ?? product.vendorId,
+                          partnerName: product.vendor?.user?.name ?? product.vendor?.businessName ?? '',
+                          partnerImage: product.vendor?.user?.image ?? '',
+                          myUserId: myId,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Chat open failed: $e')),
+                      );
+                    }
+                  },
+                ),
 
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.w),
-              child: Column(
-                children: const [
-                  SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
-                  CustomTopProducts(),
-                  
-                ],
-              ),
-            ),
-          ],
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15.w),
+                  child: Column(
+                    children: const [
+                      SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
+                      CustomTopProducts(),
+
+                    ],
+                  ),
+                ),
+              ],
+            );
+          } ,
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text(error.toString())),
         ),
       ),
 
-      bottomNavigationBar: QuantityBuyBar(
-        onBuyNow: (qty) async {
-          try {
-            final resp = await CartService.create(
-              productId: product.id,                  
-              color: _selectedColor ?? '',
-              size: _selectedSize ?? '',
-              quantity: qty,
-            );
+      bottomNavigationBar: prod.when(
+        data: (data) {
+          return QuantityBuyBar(
+            onBuyNow: (qty) async {
+              try {
+                final resp = await CartService.create(
+                  productId: data.id,
+                  color: _selectedColor ?? '',
+                  size: _selectedSize ?? '',
+                  quantity: qty,
+                );
 
-           
-            if (!mounted) return;
-           GlobalSnackbar.show(context, title: ("Success"), message: "Added to cart")
-            ;
-           ref.invalidate(cartProvider);
-           
-            context.push(CartScreen.routeName);
-          } catch (e) {
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
-            );
-          }
+
+                if (!mounted) return;
+               GlobalSnackbar.show(context, title: ("Success"), message: "Added to cart")
+                ;
+               ref.invalidate(cartProvider);
+
+                context.push(CartScreen.routeName);
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(e.toString())),
+                );
+              }
+            },
+          );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text(error.toString())),
       ),
     );
   }
@@ -145,7 +149,7 @@ class ProductImage extends StatelessWidget {
         Stack(
           children: [
             FirstTimeShimmerImage(
-              imageUrl: product.imageUrl,
+              imageUrl: product.image,
               height: 350.h,
               width: 1.sw,
               fit: BoxFit.cover,
@@ -195,7 +199,7 @@ class _CustomSizeState extends State<CustomSize> {
     super.initState();
     final i = widget.initial;
     if (i != null) {
-      final idx = widget.product.sizes.indexOf(i);
+      final idx = widget.product.size.indexOf(i);
       if (idx >= 0) selectedIndex = idx;
     }
   }
@@ -217,12 +221,12 @@ class _CustomSizeState extends State<CustomSize> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(product.sizes.length, (index) {
+              children: List.generate(product.size.length, (index) {
                 final isSelected = selectedIndex == index;
                 return GestureDetector(
                   onTap: () {
                     setState(() => selectedIndex = index);
-                    widget.onSelected?.call(product.sizes[index]);
+                    widget.onSelected?.call(product.size[index]);
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
@@ -232,7 +236,7 @@ class _CustomSizeState extends State<CustomSize> {
                       border: isSelected ? Border.all(color: AllColor.blue, width: 3.w) : null,
                     ),
                     child: Text(
-                      product.sizes[index],
+                      product.size[index],
                       style: TextStyle(
                         fontSize: isSelected ? 16.sp : 13.sp,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -297,7 +301,7 @@ class _CustomColorState extends State<CustomColor> {
     super.initState();
     final i = widget.initial;
     if (i != null) {
-      final idx = widget.product.colors.indexOf(i);
+      final idx = widget.product.color.indexOf(i);
       if (idx >= 0) selectedIndex = idx;
     }
   }
@@ -308,10 +312,10 @@ class _CustomColorState extends State<CustomColor> {
       height: 60.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: widget.product.colors.length,
+        itemCount: widget.product.color.length,
         itemBuilder: (context, index) {
           final isSelected = selectedIndex == index;
-          final raw = widget.product.colors[index]; // e.g. "red" বা "d926cd"
+          final raw = widget.product.color[index]; // e.g. "red" বা "d926cd"
           // Hex হলে সেফলি দেখাতে try করলাম; না হলে ডিফল্ট grey
           Color swatch;
           try {

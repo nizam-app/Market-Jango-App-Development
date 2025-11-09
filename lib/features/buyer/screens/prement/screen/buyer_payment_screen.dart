@@ -10,6 +10,8 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
+import 'package:market_jango/features/buyer/screens/prement/logic/global_logger.dart';
+import 'package:market_jango/features/buyer/screens/prement/logic/status_check_logic.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
@@ -552,7 +554,6 @@ class _CustomItemShowState extends State<CustomItemShow> {
 }
 
 Future<void> startCheckout(BuildContext context) async {
-  // লোডার
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -575,7 +576,10 @@ Future<void> startCheckout(BuildContext context) async {
     final container = ProviderScope.containerOf(context, listen: false);
     final token = await container.read(authTokenProvider.future);
 
-    final uri = Uri.parse(BuyerAPIController.invoice_createate); // /api/invoice/create
+    // ✅ এখানে তোমার কনস্ট্যান্ট যেটাই হোক (Uri/String) সেটি log করবো
+    final uri = Uri.parse(BuyerAPIController.invoice_createate);
+    log.i('InvoiceCreate → GET $uri  (token: ${maskToken(token)})');
+
     final res = await http.get(uri, headers: {
       'Accept': 'application/json',
       if (token != null && token.isNotEmpty) 'token': token,
@@ -585,6 +589,9 @@ Future<void> startCheckout(BuildContext context) async {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
+    log.i('InvoiceCreate ← status=${res.statusCode}');
+    log.t('InvoiceCreate body: ${res.body.length > 400 ? res.body.substring(0, 400)+'…' : res.body}');
+
     if (res.statusCode != 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Invoice failed: ${res.statusCode}')),
@@ -593,13 +600,11 @@ Future<void> startCheckout(BuildContext context) async {
     }
 
     final body = jsonDecode(res.body) as Map<String, dynamic>;
-    String? paymentUrl;
     final data = body['data'];
     final obj = (data is List && data.isNotEmpty) ? data.first : data;
-    final pm = (obj is Map<String, dynamic>) ? obj['paymentMethod'] : null;
-    if (pm is Map<String, dynamic>) {
-      paymentUrl = pm['payment_url']?.toString();
-    }
+    final paymentUrl = obj?['paymentMethod']?['payment_url']?.toString();
+
+    log.i('payment_url = $paymentUrl');
 
     if (paymentUrl == null || paymentUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -609,28 +614,28 @@ Future<void> startCheckout(BuildContext context) async {
     }
 
     final result = await Navigator.of(context).push<PaymentStatusResult>(
-      MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl ?? "")),
+      MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl)),
     );
 
-    if (result?.success == true) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment completed successfully')),
-        );
-        // TODO: cart clear / orders page
-      }
-    } else {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment not completed')),
-        );
-      }
-    }
+    log.i('WebView result: ${result?.success}');
 
-  } catch (e) {
+    if (result?.success == true) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment completed successfully')),
+      );
+      Navigator.pop(context); // success → back
+    } else {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment not completed')),
+      );
+    }
+  } catch (e, st) {
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
+    log.e('Checkout exception: $e\nStack trace: $st');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Checkout failed: $e')),
     );

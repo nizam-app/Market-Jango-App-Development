@@ -1,9 +1,10 @@
+// lib/features/buyer/screens/prement/screen/web_view_screen.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/status_check_logic.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentWebView extends StatefulWidget {
   const PaymentWebView({super.key, required this.url});
@@ -16,12 +17,9 @@ class PaymentWebView extends StatefulWidget {
 class _PaymentWebViewState extends State<PaymentWebView> {
   late final WebViewController _c;
   bool _finished = false;
-  Timer? _pollTimer;
+  bool _verifying = false;
 
-  // success hint গুলো (তোমার গেটওয়ের রিটার্ন URL/টেক্সট অনুযায়ী বাড়াতে পারো)
-  final List<String> successUrlHints = const [
-    'success','complete','paid','payment/success','successful'
-  ];
+  final successHints = const ['success','complete','paid','payment/success','successful'];
 
   @override
   void initState() {
@@ -30,75 +28,67 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onUrlChange: (change) => _maybeSuccessByUrl(change.url),
           onNavigationRequest: (req) {
-            _maybeSuccessByUrl(req.url);
+            _maybeVerifyByUrl(req.url);
             return NavigationDecision.navigate;
           },
-          onPageFinished: (_) => _ensurePolling(),
+          onUrlChange: (c) => _maybeVerifyByUrl(c.url),
+          onPageFinished: (_) => _inspectDom(),
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
   }
 
-  void _ensurePolling() {
-    _pollTimer ??= Timer.periodic(const Duration(seconds: 1), (_) => _inspectDom());
+  void _maybeVerifyByUrl(String? url) {
+    if (_finished || url == null) return;
+    final uri = Uri.tryParse(url);
+    final u = url.toLowerCase();
+
+    // ✅ আমাদের callback route hit হলে সরাসরি ওই URL দিয়েই verify করি
+    final isCallback = uri != null && uri.path.contains('/api/payment/response');
+    final looksSuccess = successHints.any((h) => u.contains(h));
+
+    if (isCallback || looksSuccess) {
+      _confirmAndClose(callback: uri);
+    }
   }
 
   Future<void> _inspectDom() async {
-    if (_finished) return;
+    if (_finished || _verifying) return;
     try {
-      final raw = await _c.runJavaScriptReturningResult(r'''
-        (function(){
-          const t = document.body ? (document.body.innerText || document.body.textContent) : '';
-          return t;
-        })();
-      ''');
+      final raw = await _c.runJavaScriptReturningResult(
+        r'''(function(){const t=document.body?(document.body.innerText||document.body.textContent):'';return t;})();''',
+      );
       String text = raw?.toString() ?? '';
       if (text.startsWith('"') && text.endsWith('"')) {
         text = json.decode(text);
       }
       final l = text.toLowerCase();
-
       if (l.contains('thanks for your payment') ||
           l.contains('payment successful') ||
           l.contains('transaction was completed successfully')) {
-        _confirmThenPop(successHint: 'dom');
+        _confirmAndClose(); // DOM hint পেলেও verify করে নেব
       }
     } catch (_) {}
   }
 
-  void _maybeSuccessByUrl(String? url) {
-    if (_finished || url == null) return;
-    final u = url.toLowerCase();
-    if (successUrlHints.any((h) => u.contains(h))) {
-      _confirmThenPop(successHint: 'url');
-    }
-  }
+  Future<void> _confirmAndClose({Uri? callback}) async {
+    if (_finished || _verifying) return;
+    _verifying = true;
 
-  /// ✅ success hint পেলেই সার্ভার verify — না হলে পেজ খোলা থাকবে
-  Future<void> _confirmThenPop({required String successHint}) async {
-    if (_finished) return;
-    final ok = await verifyPaymentFromServer(context);
+    final ok = await verifyPaymentFromServer(
+      context,
+      callbackUri: callback, // থাকলে: tx_ref/transaction_id/status নিয়ে নিবে
+    );
+
+    _verifying = false;
     if (!mounted || _finished) return;
+
     if (ok) {
-      _pop(success: true, reason: 'verified-$successHint');
-    } else {
-      // verify না হলে কিছুই করবো না (পেজ খোলা থাকবে)
+      _finished = true;
+      Navigator.pop(context, PaymentStatusResult(success: true));
     }
-  }
-
-  void _pop({required bool success, String? reason}) {
-    if (_finished || !mounted) return;
-    _finished = true;
-    _pollTimer?.cancel();
-    Navigator.pop(context, PaymentStatusResult(success: success));
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
+    // না হলে কিছুই করবে না—gateway/সার্ভার আপডেট নিলে আবার URL/DOM চেঞ্জে ট্রিগার হবে
   }
 
   @override
@@ -108,8 +98,6 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       body: Stack(
         children: [
           WebViewWidget(controller: _c),
-
-          // ম্যানুয়াল: I've paid → server verify
           Positioned(
             left: 16, right: 16, bottom: 16,
             child: Row(
@@ -117,11 +105,8 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 Expanded(
                   child: FilledButton(
                     onPressed: () async {
-                      final ok = await verifyPaymentFromServer(context);
-                      if (!mounted) return;
-                      if (ok) {
-                        Navigator.pop(context, PaymentStatusResult(success: true));
-                      } else {
+                      await _confirmAndClose(); // ম্যানুয়াল verify
+                      if (mounted && !_finished) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Not completed yet. Please wait…')),
                         );
@@ -132,7 +117,9 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 ),
                 const SizedBox(width: 12),
                 IconButton(
-                  onPressed: () => _pop(success: false, reason: 'user-close'),
+                  onPressed: () {
+                    if (!_finished) Navigator.pop(context, PaymentStatusResult(success: false));
+                  },
                   icon: const Icon(Icons.close),
                 ),
               ],

@@ -209,7 +209,7 @@ class VendorHomeScreen extends ConsumerWidget {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 9 / 13,
-        mainAxisSpacing: 10.h,
+        mainAxisSpacing: 10,
         crossAxisSpacing: 15.w,
       ),
       itemCount: safeProducts.length + 1,
@@ -217,7 +217,6 @@ class VendorHomeScreen extends ConsumerWidget {
         if (index == 0) {
           return buildAddUrProduct(context);
         }
-
         final prod = safeProducts.elementAtOrNull(index - 1);
         if (prod == null) {
           return const SizedBox.shrink();
@@ -226,8 +225,8 @@ class VendorHomeScreen extends ConsumerWidget {
         return Stack(
           children: [
             CustomNewProduct(
-              width: 161.w,
-              height: 168.h,
+              width: 161,
+              height: 168,
               productPricesh: prod.sellPrice,
               productName: prod.name,
               image: prod.image,

@@ -39,7 +39,7 @@ class CustomNewItemsShow extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         ProductDetails.routeName,
-                        extra: product.toDetail(),
+                        extra: product.id,
                       );
                     },
                   );

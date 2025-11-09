@@ -18,6 +18,7 @@ class BuyerAPIController {
 
   // static Uri _u(String path) => Uri.parse(_base_api).resolve(path);
   static String paymen_tresponse = "$_base_api/payment/response";
+  static String invoice_tracking(oderId) => "$_base_api/invoice/tracking/$oderId";
   static String all_order = "$_base_api/all-order";
   // static final Uri invoiceStatus = _u('/payment/response');
 

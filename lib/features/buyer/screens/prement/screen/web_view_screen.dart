@@ -1,10 +1,11 @@
 // lib/features/buyer/screens/prement/screen/web_view_screen.dart
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/status_check_logic.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentWebView extends StatefulWidget {
   const PaymentWebView({super.key, required this.url});
@@ -19,7 +20,13 @@ class _PaymentWebViewState extends State<PaymentWebView> {
   bool _finished = false;
   bool _verifying = false;
 
-  final successHints = const ['success','complete','paid','payment/success','successful'];
+  final successHints = const [
+    'success',
+    'complete',
+    'paid',
+    'payment/success',
+    'successful',
+  ];
 
   @override
   void initState() {
@@ -45,7 +52,8 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     final u = url.toLowerCase();
 
     // ✅ আমাদের callback route hit হলে সরাসরি ওই URL দিয়েই verify করি
-    final isCallback = uri != null && uri.path.contains('/api/payment/response');
+    final isCallback =
+        uri != null && uri.path.contains('/api/payment/response');
     final looksSuccess = successHints.any((h) => u.contains(h));
 
     if (isCallback || looksSuccess) {
@@ -98,33 +106,33 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       body: Stack(
         children: [
           WebViewWidget(controller: _c),
-          Positioned(
-            left: 16, right: 16, bottom: 16,
-            child: Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () async {
-                      await _confirmAndClose(); // ম্যানুয়াল verify
-                      if (mounted && !_finished) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Not completed yet. Please wait…')),
-                        );
-                      }
-                    },
-                    child: const Text("I've paid — check status"),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                IconButton(
-                  onPressed: () {
-                    if (!_finished) Navigator.pop(context, PaymentStatusResult(success: false));
-                  },
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-          ),
+          // Positioned(
+          //   left: 16, right: 16, bottom: 16,
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         child: FilledButton(
+          //           onPressed: () async {
+          //             await _confirmAndClose(); // ম্যানুয়াল verify
+          //             if (mounted && !_finished) {
+          //               ScaffoldMessenger.of(context).showSnackBar(
+          //                 const SnackBar(content: Text('Not completed yet. Please wait…')),
+          //               );
+          //             }
+          //           },
+          //           child: const Text("I've paid — check status"),
+          //         ),
+          //       ),
+          //       const SizedBox(width: 12),
+          //       IconButton(
+          //         onPressed: () {
+          //           if (!_finished) Navigator.pop(context, PaymentStatusResult(success: false));
+          //         },
+          //         icon: const Icon(Icons.close),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );

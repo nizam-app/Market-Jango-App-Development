@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,16 +8,15 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
-import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'logic/add_cart_quantity_logic.dart';
 import 'logic/product_details_data.dart';
-
 import 'model/product_all_details_model.dart';
 
 // ProductDetails: Stateless → Stateful
@@ -34,7 +32,7 @@ class ProductDetails extends ConsumerStatefulWidget {
 class _ProductDetailsState extends ConsumerState<ProductDetails> {
   String? _selectedSize;
   String? _selectedColor;
-  
+
   @override
   Widget build(BuildContext context) {
     final prod = ref.watch(productDetailsProvider(widget.productId));
@@ -58,19 +56,29 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   onSelected: (c) => setState(() => _selectedColor = c),
                 ),
                 ProductMaterialAndStoreInfo(
-                  storeName: product.vendor?.user?.name ?? product.vendor?.businessName ?? '',
-                  image: product.vendor?.user?.image ?? "https://www.selikoff.net/blog-files/null-value.gif",
+                  storeName:
+                      product.vendor?.user?.name ??
+                      product.vendor?.businessName ??
+                      '',
+                  image:
+                      product.vendor?.user?.image ??
+                      "https://www.selikoff.net/blog-files/null-value.gif",
                   onChatTap: () async {
                     final pref = await SharedPreferences.getInstance();
                     final myUserIdStr = pref.getString('user_id');
-                    if (myUserIdStr == null) throw Exception("User ID not found");
+                    if (myUserIdStr == null)
+                      throw Exception("User ID not found");
                     final myId = int.parse(myUserIdStr);
                     try {
                       await context.push(
                         ChatScreen.routeName,
                         extra: ChatArgs(
-                          partnerId: product.vendor?.user?.id ?? product.vendorId,
-                          partnerName: product.vendor?.user?.name ?? product.vendor?.businessName ?? '',
+                          partnerId:
+                              product.vendor?.user?.id ?? product.vendorId,
+                          partnerName:
+                              product.vendor?.user?.name ??
+                              product.vendor?.businessName ??
+                              '',
                           partnerImage: product.vendor?.user?.image ?? '',
                           myUserId: myId,
                         ),
@@ -87,15 +95,18 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Column(
                     children: const [
-                      SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
+                      SeeMoreButton(
+                        name: "Top Products",
+                        seeMoreAction: null,
+                        isSeeMore: false,
+                      ),
                       CustomTopProducts(),
-
                     ],
                   ),
                 ),
               ],
             );
-          } ,
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Center(child: Text(error.toString())),
         ),
@@ -113,18 +124,20 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   quantity: qty,
                 );
 
-
                 if (!mounted) return;
-               GlobalSnackbar.show(context, title: ("Success"), message: "Added to cart")
-                ;
-               ref.invalidate(cartProvider);
+                GlobalSnackbar.show(
+                  context,
+                  title: ("Success"),
+                  message: "Added to cart",
+                );
+                ref.invalidate(cartProvider);
 
                 context.push(CartScreen.routeName);
               } catch (e) {
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(e.toString())),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(e.toString())));
               }
             },
           );
@@ -135,7 +148,6 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
     );
   }
 }
-
 
 class ProductImage extends StatelessWidget {
   const ProductImage({super.key, required this.product});
@@ -229,17 +241,24 @@ class _CustomSizeState extends State<CustomSize> {
                     widget.onSelected?.call(product.size[index]);
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 7.h,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? AllColor.white : AllColor.transparent,
                       borderRadius: BorderRadius.circular(50.r),
-                      border: isSelected ? Border.all(color: AllColor.blue, width: 3.w) : null,
+                      border: isSelected
+                          ? Border.all(color: AllColor.blue, width: 3.w)
+                          : null,
                     ),
                     child: Text(
                       product.size[index],
                       style: TextStyle(
                         fontSize: isSelected ? 16.sp : 13.sp,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isSelected ? AllColor.blue : AllColor.black,
                       ),
                     ),
@@ -286,7 +305,7 @@ class CustomColor extends StatefulWidget {
     this.onSelected,
   });
   final DetailItem product;
-  final String? initial;               // raw string e.g. "red" / "d926cd"
+  final String? initial; // raw string e.g. "red" / "d926cd"
   final ValueChanged<String>? onSelected;
 
   @override
@@ -353,7 +372,12 @@ class _CustomColorState extends State<CustomColor> {
                     ),
                   ),
                   if (isSelected)
-                    Icon(Icons.check, size: 25.sp, color: Colors.white, weight: 900),
+                    Icon(
+                      Icons.check,
+                      size: 25.sp,
+                      color: Colors.white,
+                      weight: 900,
+                    ),
                 ],
               ),
             ),
@@ -410,7 +434,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  context.push(BuyerVendorProfileScreen.routeName);
+                  context.push(BuyerVendorProfileScreen.routeName, extra: );
                 },
                 child: CircleAvatar(
                   radius: 25,
@@ -626,7 +650,9 @@ class _QuantityBuyBarState extends State<QuantityBuyBar> {
               onPressed: () => widget.onBuyNow(qty),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AllColor.orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
                 elevation: 0,
               ),
               child: Text(

@@ -18,19 +18,20 @@ class BuyerAPIController {
 
   // static Uri _u(String path) => Uri.parse(_base_api).resolve(path);
   static String paymen_tresponse = "$_base_api/payment/response";
-  static String invoice_tracking(oderId) => "$_base_api/invoice/tracking/$oderId";
+  static String invoice_tracking(oderId) =>
+      "$_base_api/invoice/tracking/$oderId";
   static String all_order = "$_base_api/all-order";
-  // static final Uri invoiceStatus = _u('/payment/response');
-
+  static String vendor_first_product = "$_base_api/vendor/first/product";
+  static String vendor_search(name) => "$_base_api/vendor/search/$name";
 
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
 }
 
-
 // lib/core/constants/api_control/buyer_api.dart
 class BuyerPaymentAPIController {
-  static const String invoice_createate = 'http://103.208.183.253:8000/api/invoice/create';
+  static const String invoice_createate =
+      'http://103.208.183.253:8000/api/invoice/create';
 
   // ✅ নতুন: payment verify/callback endpoint (GET)
   static final Uri paymentResponse = Uri.parse(

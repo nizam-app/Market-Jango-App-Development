@@ -22,8 +22,6 @@ import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
-import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
-import 'package:market_jango/features/buyer/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
@@ -34,6 +32,7 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_his
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
+import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -80,7 +79,6 @@ import 'package:market_jango/features/vendor/screens/vendor_transport_details/sc
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
-import '../features/buyer/screens/product/model/buyer_product_details_model.dart';
 import '../features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
@@ -340,7 +338,7 @@ final GoRouter router = GoRouter(
     //   builder: (context, state) => TransportChart(),
     // ),
     GoRoute(
-      path: GlobalTrackingScreen1.routeName, 
+      path: GlobalTrackingScreen1.routeName,
       name: GlobalTrackingScreen1.routeName,
       builder: (context, state) {
         // primary: extra থেকে পার্স

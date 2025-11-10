@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 class CustomSeeAllProduct extends ConsumerWidget {
-  final VoidCallback onTap;
+
   final product;
   const CustomSeeAllProduct({
     super.key,
-    required this.onTap,
     required this.product,
   });
   @override
@@ -29,7 +30,9 @@ class CustomSeeAllProduct extends ConsumerWidget {
         itemBuilder: (context, index) {
           final products = product[index];
           return GestureDetector(
-            onTap: onTap,
+            onTap: () {
+              context.push(ProductDetails.routeName, extra: products.id);
+            },
             child: Stack(
               children: [
                 CustomNewProduct(
@@ -40,7 +43,7 @@ class CustomSeeAllProduct extends ConsumerWidget {
                   image: products.image,
                   imageHeight: 137,
                 ),
-                if (products.discount != null || products.discount != 0)
+                if (products.discount != null && products.discount != 0)
                   Positioned(
                     top: 10.h,
                     right: 15.w,

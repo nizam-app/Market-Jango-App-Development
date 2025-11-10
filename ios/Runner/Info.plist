@@ -11,7 +11,15 @@
 <key>NSPhotoLibraryAddUsageDescription</key>
 <string>This app requires permission to save images to your photo library.</string>
 
-	<key>CFBundleDevelopmentRegion</key>
+            <key>NSLocationWhenInUseUsageDescription</key>
+            <string>We use your location to show nearby content.</string>
+            <key>NSCameraUsageDescription</key>
+            <string>Camera access is needed for capturing photos/video.</string>
+            <key>NSMicrophoneUsageDescription</key>
+            <string>Microphone access is needed for audio.</string>
+            <key>NSPhotoLibraryAddUsageDescription</key>
+            <string>We save images to your library on request.</string>
+    <key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Market Jango</string>

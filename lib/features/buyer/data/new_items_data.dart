@@ -6,7 +6,6 @@ import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 
-/// 🔹 Provider for paginated "Buyer New Items"
 final buyerNewItemsProvider =
     AsyncNotifierProvider<BuyerNewItemsNotifier, TopProductsResponse?>(
       BuyerNewItemsNotifier.new,

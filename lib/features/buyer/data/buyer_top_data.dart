@@ -31,8 +31,7 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       if (res.statusCode != 200) {
         throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
       }
-
-      // ✔️ পুরো রেসপন্স মডেলে পার্স করি
+      
       Logger().i(res.body);
       final parsed = TopProductsResponse.fromRawJson(res.body);
 

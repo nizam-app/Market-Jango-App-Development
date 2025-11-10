@@ -1,19 +1,7 @@
-class PaymentLineItem {
-  final String title;
-  final String imageUrl;
-  final int qty;
-  final double price;
+// lib/features/buyer/screens/prement/model/payment_status_result.dart
+class PaymentStatusResult {
+  final bool success;
+  final Map<String, dynamic>? payload; // server JSON
 
-  PaymentLineItem({
-    required this.title,
-    required this.imageUrl,
-    required this.qty,
-    required this.price,
-  });
-}
-
-class ShippingOption {
-  final String title;
-  final double cost;
-  ShippingOption({required this.title, required this.cost});
+  const PaymentStatusResult({required this.success, this.payload});
 }

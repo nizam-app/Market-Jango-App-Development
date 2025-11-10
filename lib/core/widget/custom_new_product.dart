@@ -39,6 +39,15 @@ class CustomNewProduct extends StatelessWidget {
           decoration: BoxDecoration(
             color: AllColor.white,
             borderRadius: BorderRadius.circular(7.r),
+            boxShadow: [
+              BoxShadow(
+                color: AllColor.black.withOpacity(0.06),
+                blurRadius: 18.r,
+                spreadRadius: 0,
+                offset: const Offset(0, 10),
+              ),
+
+            ],
           ),
           clipBehavior: Clip.hardEdge,
           child: Column(

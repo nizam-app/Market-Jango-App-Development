@@ -50,6 +50,7 @@ class CategoriesScreen extends ConsumerWidget {
                               context,
                               cat.id,
                               cat.name,
+                              cat.vendor.id
                             ),
                           ),
                         ),
@@ -79,10 +80,11 @@ class CategoriesScreen extends ConsumerWidget {
     BuildContext context,
     int categoryId,
     String title,
+    int vendorId,
   ) {
     context.pushNamed(
       CategoryProductScreen.routeName,
-      extra: {'categoryId': categoryId, 'title': title},
+      extra: vendorId,
     );
   }
 }

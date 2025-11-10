@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
@@ -24,6 +25,7 @@ import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
+import 'package:path/path.dart';
 
 import '../data/buyer_just_for_you_data.dart';
 import 'all_categori/screen/all_categori_screen.dart';
@@ -42,7 +44,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   Widget build(BuildContext context) {
     final bannerProvider = ref.watch(bannerNotifierProvider);
     final asyncData = ref.watch(topProductProvider);
-    final justForYou = ref.watch(justForYouProvider);
+    final justForYou = ref.watch(justForYouProvider("${BuyerAPIController.just_for_you}"));
     final newItems = ref.watch(buyerNewItemsProvider);
     return Scaffold(
       backgroundColor: AllColor.white70,
@@ -72,7 +74,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 ),
                 SeeMoreButton(
                   name: "Categories",
-                  seeMoreAction: () => goToAllCategoriesPage(),
+                  seeMoreAction: () => goToAllCategoriesPage(context),
                 ),
                 CustomCategories(
                   categoriCount: 4,
@@ -116,8 +118,8 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
     );
   }
 
-  void goToAllCategoriesPage() {
-    context.push(CategoriesScreen.routeName);
+  void goToAllCategoriesPage(BuildContext context,) {
+    context.push(CategoriesScreen.routeName,);
   }
 
   void goToNewItemsPage(
@@ -127,7 +129,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   ) {
     context.pushNamed(
       SeeJustForYouScreen.routeName,
-      extra: {'screenName': 'New Items', 'productsResponse': productsResponse},
+      extra: {'screenName': 'New Items', 'url': "${BuyerAPIController.new_items}"},
     );
   }
 
@@ -140,7 +142,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
       SeeJustForYouScreen.routeName,
       extra: {
         'screenName': 'Just For You',
-        'productsResponse': productsResponse,
+        'url': "${BuyerAPIController.just_for_you}",
       },
     );
   }
@@ -148,8 +150,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   void goToCategoriesProductPage(BuildContext context, int id, String name) {
     context.push(
       CategoryProductScreen.routeName,
-
-      // extra: {'categoryId': id}
+      extra: id
     );
   }
 }
@@ -159,7 +160,7 @@ class JustForYouProduct extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncJustForYou = ref.watch(justForYouProvider);
+    final asyncJustForYou = ref.watch(justForYouProvider("${BuyerAPIController.just_for_you}"));
 
     return asyncJustForYou.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -187,9 +188,9 @@ class JustForYouProduct extends ConsumerWidget {
 
             return GestureDetector(
               onTap: () {
-                final detail = p.toDetail();
+                final detail = p;
 
-                context.push(ProductDetails.routeName, extra: detail);
+                context.push(ProductDetails.routeName, extra: detail.id);
               },
               child: CustomNewProduct(
                 width: 162,
@@ -423,7 +424,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
                 itemsSelector: (res) => res.products,
                 itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                 onItemSelected: (p) {
-                  context.push(ProductDetails.routeName, extra: p.toDetail());
+                  context.push(ProductDetails.routeName, extra: p.id);
                 },
                 hintText: 'Search products...',
                 debounce: const Duration(seconds: 1),

@@ -30,7 +30,15 @@ class ChatScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
+
 class _ChatScreenState extends ConsumerState<ChatScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    debugPrint("CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}");
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;

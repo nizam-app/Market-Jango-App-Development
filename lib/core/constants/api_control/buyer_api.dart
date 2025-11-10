@@ -13,6 +13,27 @@ class BuyerAPIController {
   static String just_for_you = "$_base_api/admin-selects/just-for-you";
   static String top_products = "$_base_api/admin-selects/top-products";
   static String new_items = "$_base_api/admin-selects/new-items";
+  static String product_detail(int id) => "$_base_api/product/detail/$id";
+  static String vendor_list(id) => "$_base_api/vendor/list/$id";
+
+  // static Uri _u(String path) => Uri.parse(_base_api).resolve(path);
+  static String paymen_tresponse = "$_base_api/payment/response";
+  static String invoice_tracking(oderId) => "$_base_api/invoice/tracking/$oderId";
+  static String all_order = "$_base_api/all-order";
+  // static final Uri invoiceStatus = _u('/payment/response');
+
+
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
+}
+
+
+// lib/core/constants/api_control/buyer_api.dart
+class BuyerPaymentAPIController {
+  static const String invoice_createate = 'http://103.208.183.253:8000/api/invoice/create';
+
+  // ✅ নতুন: payment verify/callback endpoint (GET)
+  static final Uri paymentResponse = Uri.parse(
+    'http://103.208.183.253:8000/api/payment/response',
+  );
 }

@@ -556,7 +556,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerVendorProfileScreen.routeName,
       name: BuyerVendorProfileScreen.routeName,
-      builder: (context, state) => const BuyerVendorProfileScreen(),
+      builder: (context, state) =>
+          BuyerVendorProfileScreen(vendorId: state.extra as int),
     ),
     GoRoute(
       path: ReviewScreen.routeName,

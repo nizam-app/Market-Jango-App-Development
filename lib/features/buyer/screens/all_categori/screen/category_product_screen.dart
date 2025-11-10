@@ -7,18 +7,37 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/buyer_catagori_vendor_list_data.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/vendor_first_product_data.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/model/buyer_vendor_search_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 import '../../buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import '../data/buyer_vendor_search_data.dart';
 
-class CategoryProductScreen extends StatelessWidget {
+final selectedVendorIdProvider = StateProvider.autoDispose<int>((ref) => 1);
+
+class CategoryProductScreen extends ConsumerStatefulWidget {
   const CategoryProductScreen({super.key, required this.categoryVendorId});
   final int categoryVendorId;
   static const String routeName = '/categoryProductScreen';
 
   @override
+  ConsumerState<CategoryProductScreen> createState() =>
+      _CategoryProductScreenState();
+}
+
+class _CategoryProductScreenState extends ConsumerState<CategoryProductScreen> {
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedVendorIdProvider.notifier).state =
+          widget.categoryVendorId;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final selectedId = ref.watch(selectedVendorIdProvider);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -34,19 +53,24 @@ class CategoryProductScreen extends StatelessWidget {
             //       prefixIcon: Icons.search,
             //     ),
             //   ),
-            GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
-              provider: searchProvider,
-              itemsSelector: (res) => res.products,
-              itemBuilder: (context, p) => ProductSuggestionTile(p: p),
-              onItemSelected: (p) {
-                context.push(ProductDetails.routeName, extra: p.id);
-              },
-              hintText: 'Search products...',
-              debounce: const Duration(seconds: 1),
-              minChars: 1,
-              showResults: true,
-              resultsMaxHeight: 380,
-              autofocus: false,
+            Padding(
+              padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 10.h),
+              child: GlobalSearchBar<VendorSearchResponse, VendorSuggestion>(
+                provider: vendorSearchProvider, // আপনার সার্চ প্রোভাইডার
+                itemsSelector: (res) => res.data.suggestions, // suggestion list
+                itemBuilder: (context, v) => VendorSuggestionTile(v: v),
+                onItemSelected: (v) {
+                  // ✅ সার্চ থেকে সিলেক্ট করলে লিস্টে হাইলাইট/সুইচ হবে
+                  ref.read(selectedVendorIdProvider.notifier).state =
+                      v.vendorId;
+                },
+                hintText: 'Search vendors...',
+                debounce: const Duration(milliseconds: 600),
+                minChars: 1,
+                showResults: true,
+                resultsMaxHeight: 380,
+                autofocus: false,
+              ),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
@@ -60,7 +84,7 @@ class CategoryProductScreen extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  VendorListSection(vendorId: categoryVendorId),
+                  VendorListSection(vendorId: selectedId, limit: 10),
                   const Expanded(child: ProductGridSection()),
                 ],
               ),
@@ -204,6 +228,7 @@ class ProductGridSection extends ConsumerWidget {
                   "https://ui-avatars.com/api/?name=${Uri.encodeComponent(v.vendorName)}",
               discount: p.discount,
               productId: p.id,
+              vendorId: v.vendorId,
             );
           },
         );
@@ -221,6 +246,8 @@ class ProductCard extends StatelessWidget {
   final String storeImage;
   final int? discount;
   final int productId;
+  final int vendorId;
+
   const ProductCard({
     super.key,
     required this.title,
@@ -231,6 +258,7 @@ class ProductCard extends StatelessWidget {
     required this.storeImage,
     this.discount,
     required this.productId,
+    required this.vendorId,
   });
 
   @override
@@ -296,8 +324,10 @@ class ProductCard extends StatelessWidget {
                   ),
                   SizedBox(height: 20.h),
                   InkWell(
-                    onTap: () =>
-                        context.push(BuyerVendorProfileScreen.routeName),
+                    onTap: () => context.push(
+                      BuyerVendorProfileScreen.routeName,
+                      extra: vendorId,
+                    ),
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -337,5 +367,51 @@ class ProductCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class VendorSuggestionTile extends StatelessWidget {
+  const VendorSuggestionTile({super.key, required this.v});
+  final VendorSuggestion v;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      leading: CircleAvatar(
+        radius: 18.r,
+        backgroundColor: AllColor.grey200,
+        backgroundImage: (v.imageUrl != null && v.imageUrl!.isNotEmpty)
+            ? NetworkImage(v.imageUrl!)
+            : null,
+        child: (v.imageUrl == null || v.imageUrl!.isEmpty)
+            ? Text(
+                _initials(v.businessName),
+                style: TextStyle(fontSize: 12.sp, color: AllColor.black),
+              )
+            : null,
+      ),
+      title: Text(
+        v.businessName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp),
+      ),
+      subtitle: Text(
+        v.ownerName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+      ),
+    );
+  }
+
+  String _initials(String s) {
+    final parts = s.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1)
+      return parts.first.isEmpty ? '?' : parts.first[0].toUpperCase();
+    return (parts[0].isEmpty ? '' : parts[0][0]).toUpperCase() +
+        (parts[1].isEmpty ? '' : parts[1][0].toUpperCase());
   }
 }

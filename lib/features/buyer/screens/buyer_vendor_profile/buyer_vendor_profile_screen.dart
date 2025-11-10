@@ -9,8 +9,9 @@ import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 class BuyerVendorProfileScreen extends StatelessWidget {
-  const BuyerVendorProfileScreen({super.key});
+  const BuyerVendorProfileScreen({super.key, required this.vendorId});
   static final String routeName = '/vendorProfileScreen';
+  final int vendorId;
 
   @override
   Widget build(BuildContext context) {

@@ -434,7 +434,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  context.push(BuyerVendorProfileScreen.routeName);
+                  context.push(BuyerVendorProfileScreen.routeName, extra: );
                 },
                 child: CircleAvatar(
                   radius: 25,

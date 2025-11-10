@@ -13,7 +13,6 @@ final vendorSearchProvider = FutureProvider.autoDispose
       final token = await ref.read(authTokenProvider.future);
       if (token == null) throw Exception('Token not found');
 
-      // তোমার API কন্ট্রোলারে একটা helper রাখো
       final url = BuyerAPIController.vendor_search(name);
 
       final resp = await http.get(Uri.parse(url), headers: {'token': token});

@@ -17,16 +17,16 @@ class CartScreen extends ConsumerWidget {
 
   static const String routeName = '/cartScreen';
 
-  double _calculateTotalPriceFromApi(List<CartItem> items) {
-    double total = 0;
-    for (final it in items) {
-      final price = double.tryParse(it.price) ?? 0;
-      final qty = it.quantity;
-      final delivery = double.tryParse(it.deliveryCharge) ?? 0;
-      total += (price * qty) + delivery;
-    }
-    return total;
-  }
+  // double _calculateTotalPriceFromApi(List<CartItem> items) {
+  //   double total = 0;
+  //   for (final it in items) {
+  //     final price = double.tryParse(it.price) ?? 0;
+  //     final qty = it.quantity;
+  //     final delivery = double.tryParse(it.deliveryCharge) ?? 0;
+  //     total += (price * qty) + delivery;
+  //   }
+  //   return total;
+  // }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +42,9 @@ class CartScreen extends ConsumerWidget {
               Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
           error: (e, _) =>
               Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
-          data: (items) => Row(
+          data: (item) {
+            final items = item.items;
+            return Row(
             children: [
               Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
               SizedBox(width: 20.w),
@@ -58,7 +60,7 @@ class CartScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          ),
+          );},
         ),
       ),
       body: Column(
@@ -69,11 +71,13 @@ class CartScreen extends ConsumerWidget {
             child: cartAsync.when(
               loading: () => _buildShippingAddress(context, null, ref),
               error: (_, __) => _buildShippingAddress(context, null, ref),
-              data: (items) => _buildShippingAddress(
+              data: (item) {
+              final  items =item.items;
+                return _buildShippingAddress(
                 context,
                 items.isNotEmpty ? items.first.buyer : null,
                 ref,
-              ),
+              );},
             ),
           ),
           SizedBox(height: 20.h),
@@ -84,7 +88,8 @@ class CartScreen extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stackTrace) =>
                   Center(child: Text(error.toString())),
-              data: (data) {
+              data: (dat) {
+                final data =dat.items;
                 if (data.isEmpty) {
                   return const Center(
                     child: Text('Please add the cart product'),
@@ -109,10 +114,10 @@ class CartScreen extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (e, _) => const SizedBox.shrink(),
             data: (items) => CustomTotalCheckoutSection(
-              totalPrice: _calculateTotalPriceFromApi(items),
+              totalPrice: items.total,
               context: context,
               onCheckout: () {
-                final pd = _buildPaymentData(items);
+                final pd = _buildPaymentData(items.items, items.total);
                 context.push(BuyerPaymentScreen.routeName, extra: pd);
               },
             ),
@@ -122,7 +127,7 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
-  PaymentPageData _buildPaymentData(List<CartItem> items) {
+  PaymentPageData _buildPaymentData(List<CartItem> items, double total) {
     double subtotal = 0, delivery = 0;
     for (final it in items) {
       final p = double.tryParse(it.price) ?? 0;
@@ -136,7 +141,7 @@ class CartScreen extends ConsumerWidget {
       items: items,
       subtotal: subtotal,
       deliveryTotal: delivery,
-      grandTotal: subtotal + delivery,
+      grandTotal: total,
     );
   }
 
@@ -162,44 +167,47 @@ class CartScreen extends ConsumerWidget {
         child: Row(
           children: [
             // Image + delete
-            Stack(
-              alignment: Alignment.topLeft,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: Image.network(
-                    item.product.image,
-                    width: 90.w,
-                    height: 90.h,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 90.w,
-                        height: 90.h,
-                        color: AllColor.grey,
-                        child: Icon(
-                          Icons.broken_image,
-                          color: AllColor.blue,
-                          size: 40.sp,
-                        ),
-                      );
-                    },
+            Padding(
+              padding:  EdgeInsets.only(left: 7.w),
+              child: Stack(
+                alignment: Alignment.topLeft,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Image.network(
+                      item.product.image,
+                      width: 90.w,
+                      height: 100.h,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 90.w,
+                          height: 100.h,
+                          color: AllColor.grey,
+                          child: Icon(
+                            Icons.broken_image,
+                            color: AllColor.blue,
+                            size: 40.sp,
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.all(2.r),
-                  padding: EdgeInsets.all(5.r),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+                  Container(
+                    margin: EdgeInsets.all(2.r),
+                    padding: EdgeInsets.all(5.r),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.delete,
+                      color: AllColor.orange,
+                      size: 18.sp,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.delete,
-                    color: AllColor.orange,
-                    size: 18.sp,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(width: 12.w),
 
@@ -223,7 +231,7 @@ class CartScreen extends ConsumerWidget {
                   SizedBox(height: 6.h),
                   Text(
                     item.product.description,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: AllColor.black, fontSize: 11.sp),
                   ),

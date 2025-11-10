@@ -9,17 +9,32 @@ import '../../features/buyer/screens/order/screen/buyer_order_page.dart';
 import '../../features/vendor/widgets/custom_back_button.dart';
 import 'buyer_massage/screen/global_chat_screen.dart';
 
+
+// lib/routes/args/tracking_args.dart
+class TrackingArgs {
+  final String screenName;
+  final bool startAdvanced;
+  final bool autoAdvance;
+
+  const TrackingArgs({
+    required this.screenName,
+    this.startAdvanced = false,
+    this.autoAdvance = true,
+  });
+}
+
 class GlobalTrackingScreen1 extends StatefulWidget {
   const GlobalTrackingScreen1({
     super.key,
     required this.screenName,
-    this.startAdvanced = false, // show "screen 2" state initially
-    this.autoAdvance = true, // auto move from false -> true in 3s
+    this.startAdvanced = false,
+    this.autoAdvance = true, 
   });
 
   static const String routeName = "/transportTracking";
   final String screenName;
   final bool startAdvanced;
+  
   final bool autoAdvance;
 
   @override

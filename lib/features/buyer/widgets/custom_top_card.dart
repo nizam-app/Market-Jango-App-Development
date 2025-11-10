@@ -13,9 +13,8 @@ class CustomTopProducts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncData = ref.watch(topProductProvider);
-
     return SizedBox(
-      height: 85.h,
+      height: 87.h,
       width: double.infinity,
       child: asyncData.when(
         data: (products) {
@@ -32,25 +31,33 @@ class CustomTopProducts extends ConsumerWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      // তোমার details screen এ যাও
                       context.push(
                         ProductDetails.routeName,
-                        extra: p.toDetail(),
+                        extra: p.id,
                       );
                     },
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w),
-                      child: CircleAvatar(
-                        radius: 32.r,
-                        backgroundColor: AllColor.white,
+                      padding: EdgeInsets.only(top: 4.h, left: 6.w,right: 6.w),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3), // changes position of shadow
+                            ),
+                          ],
+                        ),
                         child: CircleAvatar(
-                          radius: 28.r,
-                          backgroundImage: (p.image.isNotEmpty)
-                              ? NetworkImage(p.image)
-                              : null,
-                          child: (p.image.isEmpty)
-                              ? Icon(Icons.image_not_supported, size: 18.sp)
-                              : null,
+                          radius: 32.r,
+                          backgroundColor: AllColor.white,
+                          child: CircleAvatar(
+                            radius: 28.r,
+                            backgroundImage: (p.image.isNotEmpty) ? NetworkImage(p.image) : null,
+                            child: (p.image.isEmpty) ? Icon(Icons.image_not_supported, size: 18.sp) : null,
+                          ),
                         ),
                       ),
                     ),

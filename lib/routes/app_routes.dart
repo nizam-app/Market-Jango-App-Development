@@ -340,11 +340,38 @@ final GoRouter router = GoRouter(
     //   builder: (context, state) => TransportChart(),
     // ),
     GoRoute(
-      path: '${GlobalTrackingScreen1.routeName}/:screenName',
+      path: GlobalTrackingScreen1.routeName, 
       name: GlobalTrackingScreen1.routeName,
-      builder: (context, state) => GlobalTrackingScreen1(
-        screenName: state.pathParameters['screenName']!,
-      ),
+      builder: (context, state) {
+        // primary: extra থেকে পার্স
+        final extra = state.extra;
+        if (extra is TrackingArgs) {
+          return GlobalTrackingScreen1(
+            screenName: extra.screenName,
+            startAdvanced: extra.startAdvanced,
+            autoAdvance: extra.autoAdvance,
+          );
+        }
+
+        // fallback: query/path থেকে পার্স (যদি extra না দেও)
+        bool _b(String? v, bool def) {
+          if (v == null) return def;
+          final s = v.toLowerCase();
+          return s == 'true' || s == '1';
+        }
+
+        String _s(String key, {String def = 'Tracking'}) {
+          return state.uri.queryParameters[key] ??
+              state.pathParameters[key] ??
+              def;
+        }
+
+        return GlobalTrackingScreen1(
+          screenName: _s('screenName'),
+          startAdvanced: _b(state.uri.queryParameters['startAdvanced'], false),
+          autoAdvance: _b(state.uri.queryParameters['autoAdvance'], true),
+        );
+      },
     ),
 
     GoRoute(
@@ -499,12 +526,8 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final extras = state.extra as Map<String, dynamic>;
         final screenName = extras['screenName'] as String;
-        final productsResponse =
-            extras['productsResponse'] as TopProductsResponse;
-        return SeeJustForYouScreen(
-          screenName: screenName,
-          productsResponse: productsResponse,
-        );
+        final url = extras['url'] as String;
+        return SeeJustForYouScreen(screenName: screenName, url: url);
       },
     ),
     GoRoute(
@@ -529,7 +552,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: CategoryProductScreen.routeName,
       name: CategoryProductScreen.routeName,
-      builder: (context, state) => const CategoryProductScreen(),
+      builder: (context, state) =>
+          CategoryProductScreen(categoryVendorId: state.extra as int),
     ),
     GoRoute(
       path: BuyerVendorProfileScreen.routeName,
@@ -544,15 +568,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: ProductDetails.routeName,
       name: ProductDetails.routeName,
-      builder: (context, state) {
-        final extra = state.extra;
-        if (extra is! DetailItem) {
-          return const Scaffold(
-            body: Center(child: Text('Invalid route data')),
-          );
-        }
-        return ProductDetails(product: extra);
-      },
+      builder: (context, state) =>
+          ProductDetails(productId: state.extra as int),
     ),
     GoRoute(
       path: BuyerPaymentScreen.routeName,

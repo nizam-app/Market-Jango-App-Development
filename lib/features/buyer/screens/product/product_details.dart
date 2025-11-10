@@ -8,7 +8,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
-import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
@@ -63,6 +63,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   image:
                       product.vendor?.user?.image ??
                       "https://www.selikoff.net/blog-files/null-value.gif",
+                  vendorId: product.vendor?.user?.id ?? product.vendorId,
                   onChatTap: () async {
                     final pref = await SharedPreferences.getInstance();
                     final myUserIdStr = pref.getString('user_id');
@@ -401,6 +402,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
     this.onChatTap,
     this.image =
         "https://t3.ftcdn.net/jpg/05/62/05/20/360_F_562052065_yk3KPuruq10oyfeu5jniLTS4I2ky3bYX.jpg",
+    required this.vendorId,
   });
 
   final List<MaterialChip> materials;
@@ -409,6 +411,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
   final int reviewCount;
   final VoidCallback? onChatTap;
   final String image;
+  final int vendorId;
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +437,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  context.push(BuyerVendorProfileScreen.routeName, extra: );
+                  context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
                 },
                 child: CircleAvatar(
                   radius: 25,
@@ -448,7 +451,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      context.push(BuyerVendorProfileScreen.routeName);
+                      context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
                     },
                     child: Text(
                       storeName,

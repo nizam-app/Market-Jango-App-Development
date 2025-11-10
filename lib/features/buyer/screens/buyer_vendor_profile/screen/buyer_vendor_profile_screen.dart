@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating/flutter_rating.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
-class BuyerVendorProfileScreen extends StatelessWidget {
+import 'buyer_vendor_cetagory_screen.dart';
+
+class BuyerVendorProfileScreen extends ConsumerWidget {
   const BuyerVendorProfileScreen({super.key, required this.vendorId});
   static final String routeName = '/vendorProfileScreen';
   final int vendorId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(vendorCategoryProductsProvider(vendorId));
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -28,26 +34,35 @@ class BuyerVendorProfileScreen extends StatelessWidget {
                     SeeMoreButton(name: "Populer", isSeeMore: false),
                     PopularProduct(),
 
-                    SeeMoreButton(
-                      name: "Fashion",
-                      seeMoreAction: () {
-                        context.pushNamed(
-                          SeeJustForYouScreen.routeName,
-                          pathParameters: {"screenName": "Fashion"},
+                    async.when(
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Center(child: Text(e.toString())),
+                      data: (res) {
+                        final categories = res?.data.categories.data ?? [];
+
+                        if (categories.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Column(
+                          children: [
+                            for (final c in categories) ...[
+                              SeeMoreButton(
+                                name: c.name,
+                                seeMoreAction: () {
+                                  context.pushNamed(
+                                    BuyerVendorCetagoryScreen.routeName,
+                                    pathParameters: {"screenName": c.name}, 
+                                    extra: vendorId, 
+                                  );
+                                },
+                              ),
+                              FashionProduct(products: c.products),
+                            ],
+                          ],
                         );
                       },
-                    ),
-                    FashionProduct(),
-                    SeeMoreButton(
-                      name: "Electronics",
-                      seeMoreAction: () {
-                        context.pushNamed(
-                          SeeJustForYouScreen.routeName,
-                          pathParameters: {"screenName": "Electronics"},
-                        );
-                      },
-                    ),
-                    FashionProduct(),
+                    )
                   ],
                 ),
               ),
@@ -144,30 +159,51 @@ class CustomVendorUpperSection extends StatelessWidget {
 }
 
 class FashionProduct extends StatelessWidget {
-  const FashionProduct({super.key});
+  const FashionProduct({
+    super.key,
+    this.products,
+  });
+  final List<VcpProduct>? products;
 
   @override
   Widget build(BuildContext context) {
+    final items = products ?? const [];
+
     return SizedBox(
-      height: 210.h,
+      height: 220.h,
       child: ListView.builder(
         shrinkWrap: true,
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        itemCount: 10,
-        // Example item count
+        itemCount: items.isEmpty ? 10 : items.length,
         itemBuilder: (context, index) {
+          if (items.isEmpty) {
+            return CustomNewProduct(
+              width: 130,
+              height: 140,
+              productName: 'Product Name',
+              productPricesh: 'prices',
+              imageHeight: 130,
+            );
+          }
+
+          final p = items[index];
           return CustomNewProduct(
-            width: 130.w,
-            height: 142.h,
-            productPricesh: 'Product Name',
-            productName: 'prices',
+            width: 130,
+            height: 140,
+            imageHeight: 130,
+
+            productName: p.name,
+            productPricesh: p.sellPrice.toStringAsFixed(2),
+            image: p.image,
+            // 
           );
         },
       ),
     );
   }
 }
+
 
 class PopularProduct extends StatelessWidget {
   const PopularProduct({super.key});

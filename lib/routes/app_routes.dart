@@ -48,6 +48,7 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
 import 'package:market_jango/features/transport/screens/profile_edit.dart';
@@ -56,9 +57,7 @@ import 'package:market_jango/features/transport/screens/transport_cancelled.dart
 import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
-import 'package:market_jango/features/transport/screens/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/transport_home.dart';
-import 'package:market_jango/features/transport/screens/transport_setting.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
@@ -85,7 +84,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: BuyerBottomNavBar.routeName,
+  initialLocation: TransportBottomNavBar.routeName,
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 
@@ -373,12 +372,11 @@ final GoRouter router = GoRouter(
       },
     ),
 
-    GoRoute(
-      path: TransportSetting.routeName,
-      name: 'transport_setting',
-      builder: (context, state) => TransportSetting(),
-    ),
-
+    // GoRoute(
+    //   path: TransportSetting.routeName,
+    //   name: 'transport_setting',
+    //   builder: (context, state) => TransportSetting(),
+    // ),
     GoRoute(
       path: TransportBooking.routeName,
       name: 'transport_booking',
@@ -430,7 +428,9 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: DriverDetailsScreen.routeName,
       name: 'driverDetails',
-      builder: (context, state) => DriverDetailsScreen(),
+      builder: (context, state) {
+        return DriverDetailsScreen(driverId: state.extra as int);
+      },
     ),
 
     GoRoute(

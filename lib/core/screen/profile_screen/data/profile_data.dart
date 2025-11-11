@@ -1,3 +1,4 @@
+// user_by_id_provider.dart
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,21 +8,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/profile_model.dart';
 
-final userProvider = FutureProvider<UserModel>((ref) async {
+// just make userProvider accept an id parameter
+final userProvider = FutureProvider.family<UserModel, String>((
+  ref,
+  String userId,
+) async {
   SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-  String? _user_id = _sharedPreferences.getString("user_id");
-  if (_user_id == null) {
-    throw Exception("User ID not found");
-  }
+
   String? _auth_token = _sharedPreferences.getString("auth_token");
   if (_auth_token == null) {
     throw Exception("auth token not found");
   }
+
   final response = await http.get(
-    Uri.parse("${AuthAPIController.user_show}?id=$_user_id"),
-    headers: {
-      "token": _auth_token,
-    },
+    Uri.parse("${AuthAPIController.user_show}?id=$userId"),
+    headers: {"token": _auth_token},
   );
 
   if (response.statusCode == 200) {

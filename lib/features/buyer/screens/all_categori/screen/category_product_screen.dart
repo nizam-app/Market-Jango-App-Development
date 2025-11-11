@@ -1,4 +1,6 @@
 // lib/features/buyer/screens/category/category_product_screen.dart
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,7 +13,7 @@ import 'package:market_jango/features/buyer/screens/all_categori/model/buyer_ven
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
-import '../../buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import '../../buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import '../data/buyer_vendor_search_data.dart';
 
 final selectedVendorIdProvider = StateProvider.autoDispose<int>((ref) => 1);
@@ -339,7 +341,7 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              storeName,
+                              "${storeName.substring(0, math.min(10, storeName.length))}",
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,

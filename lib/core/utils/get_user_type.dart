@@ -14,3 +14,10 @@ final getUserTypeProvider = FutureProvider<String?>((ref) async {
   // Get the 'userType' string. It returns null if not found.
   return prefs.getString('user_type');
 });
+
+final getUserIdProvider = FutureProvider<String?>((ref) async {
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
+
+  // Get the 'userType' string. It returns null if not found.
+  return prefs.getString('user_id');
+});

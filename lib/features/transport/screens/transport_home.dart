@@ -1,4 +1,3 @@
-
 // import 'dart:convert';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -105,7 +104,7 @@
 //                SizedBox(height: 10.h),
 //               Column(
 //                 children: [
-                  
+
 //                     TextField(
 //                       decoration: InputDecoration(
 //                         hintText: "Enter Pickup location",
@@ -115,9 +114,9 @@
 //                         ),
 //                       ),
 //                     ),
-                 
+
 //                   SizedBox(height: 10.h),
-                 
+
 //                     TextField(
 //                       decoration: InputDecoration(
 //                         hintText: "Destination",
@@ -127,7 +126,7 @@
 //                         ),
 //                       ),
 //                     ),
-                 
+
 //                 ],
 //               ),
 //               SizedBox(height: 10.h),
@@ -279,26 +278,31 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
-import 'package:market_jango/features/transport/screens/transport_driver.dart';
 
-class TransportHomeScreen extends StatelessWidget {
+import 'driver/data/transport_driver_data.dart';
+import 'driver/screen/model/transport_driver_model.dart';
+
+class TransportHomeScreen extends ConsumerWidget {
   const TransportHomeScreen({super.key});
   static const String routeName = '/transport_home';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(approvedDriversProvider);
     return Scaffold(
-      backgroundColor: Color(0xFFF5F4F8), 
+      backgroundColor: Color(0xFFF5F4F8),
       body: SafeArea(
         child: SingleChildScrollView(
-          //physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: EdgeInsets.all(16.w),
             child: Column(
@@ -315,22 +319,22 @@ class TransportHomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 10.w,),
+                    SizedBox(width: 10.w),
                     InkWell(
-                        onTap: (){
-                          context.push("/transport_notificatons");
-                        },
-                        child: Icon(Icons.verified, size: 20.sp,color: AllColor.blue500,)),
-                    Spacer()    ,
+                      onTap: () {
+                        context.push("/transport_notificatons");
+                      },
+                      child: Icon(
+                        Icons.verified,
+                        size: 20.sp,
+                        color: AllColor.blue500,
+                      ),
+                    ),
+                    Spacer(),
                     GlobalNotificationIcon(),
                   ],
                 ),
-                Text(
-                      "Find your Driver",
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                      ),
-                    ),
+                Text("Find your Driver", style: TextStyle(fontSize: 10.sp)),
                 SizedBox(height: 20.h),
 
                 /// Search Fields
@@ -348,12 +352,28 @@ class TransportHomeScreen extends StatelessWidget {
                     // Or divider (পাতলা গ্রে)
                     Row(
                       children: [
-                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                        Expanded(
+                          child: Divider(
+                            thickness: 1,
+                            color: const Color(0xFFE5E7EB),
+                          ),
+                        ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          child: Text("Or", style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
+                          child: Text(
+                            "Or",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
                         ),
-                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                        Expanded(
+                          child: Divider(
+                            thickness: 1,
+                            color: const Color(0xFFE5E7EB),
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 12.h),
@@ -362,7 +382,7 @@ class TransportHomeScreen extends StatelessWidget {
                     _softField(
                       hint: "Enter Pickup location",
                       icon: Icons.location_on_outlined,
-                      bg:  AllColor.grey300, // হালকা ধূসর
+                      bg: AllColor.grey300, // হালকা ধূসর
                     ),
                     SizedBox(height: 10.h),
 
@@ -387,7 +407,10 @@ class TransportHomeScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {},
-                    child: Text("Search", style: TextStyle(fontSize: 16.sp, color: AllColor.white)),
+                    child: Text(
+                      "Search",
+                      style: TextStyle(fontSize: 16.sp, color: AllColor.white),
+                    ),
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -413,11 +436,42 @@ class TransportHomeScreen extends StatelessWidget {
                 ),
 
                 /// Driver Cards (ListView → Column with .map)
-                Column(
-                  children: List.generate(
-                    4,
-                    (index) => const _DriverCard(),
+                state.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 16.h),
+                      child: Text('Failed to load drivers'),
+                    ),
                   ),
+                  data: (resp) {
+                    final page = resp?.data;
+                    final items = page?.data ?? <Driver>[];
+
+                    if (items.isEmpty) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: 20.h),
+                        child: const Text('No drivers available'),
+                      );
+                    }
+                    final homeItems = items.take(4).toList();
+
+                    return Column(
+                      children: homeItems
+                          .map(
+                            (d) => _DriverCard(
+                              driver: d,
+                              images: (d.images is List)
+                                  ? (d.images as List)
+                                        .whereType<String>()
+                                        .toList()
+                                  : <String>[],
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -426,11 +480,8 @@ class TransportHomeScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _softField({
-    required String hint,
-    required IconData icon,
-    Color? bg,
-  }) {
+
+  Widget _softField({required String hint, required IconData icon, Color? bg}) {
     return TextField(
       decoration: InputDecoration(
         hintText: hint,
@@ -464,13 +515,27 @@ class TransportHomeScreen extends StatelessWidget {
 
 /// Driver Card
 class _DriverCard extends StatelessWidget {
-  const _DriverCard();
+  const _DriverCard({required this.driver, required this.images});
+
+  final Driver driver;
+  final List<String> images;
 
   @override
   Widget build(BuildContext context) {
+    final user = driver.user;
+
+    // Safe fallbacks
+    final avatarUrl = (user.image?.isNotEmpty == true)
+        ? user.image!
+        : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxfenNzfIFlwE5dd7aduVOvGR05Qqz7EDi-Q&s";
+
+    final carUrl = images.isNotEmpty
+        ? images.first
+        : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxfenNzfIFlwE5dd7aduVOvGR05Qqz7EDi-Q&s";
+
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
-      color: AllColor.white,
+      color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
         padding: EdgeInsets.all(12.w),
@@ -481,69 +546,74 @@ class _DriverCard extends StatelessWidget {
             Row(
               children: [
                 InkWell(
-                  onTap: (){
-                    context.push(DriverDetailsScreen.routeName);
+                  onTap: () {
+                    Logger().i(user.id);
+                    context.push(DriverDetailsScreen.routeName, extra: user.id);
                   },
                   child: CircleAvatar(
                     radius: 20.r,
-                    backgroundImage: const NetworkImage(
-                      "https://randomuser.me/api/portraits/men/75.jpg",
-                    ),
+                    backgroundImage: NetworkImage(avatarUrl),
                   ),
                 ),
                 SizedBox(width: 10.w),
                 InkWell(
-                  onTap: (){ context.push(DriverDetailsScreen.routeName);},
+                  onTap: () {
+                    Logger().i(user.id);
+                    context.push(DriverDetailsScreen.routeName, extra: user.id);
+                  },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Jerome Bell",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
-                          )),
-                      Text("Porsche Taycan",
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.grey,
-                          )),
+                      Text(
+                        user.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                      Text(
+                        "${user.phone}",
+                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                      ),
                     ],
                   ),
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 6.h,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    "\$25/km",
+                    "\$${driver.price}/km",
                     style: TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.w600,
                       fontSize: 12.sp,
                     ),
                   ),
-                )
+                ),
               ],
             ),
             SizedBox(height: 10.h),
 
-            /// Car Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: Image.network(
-                "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
-                height: 120.h,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            /// Car Image (safe)
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: FirstTimeShimmerImage(
+                  imageUrl: carUrl,
+                  height: 120.h,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             SizedBox(height: 10.h),
 
-            /// Title + Button
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               decoration: BoxDecoration(
@@ -553,28 +623,35 @@ class _DriverCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Porsche Tayan",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                  Expanded(
+                    child: Text(
+                      "${driver.carName} • ${driver.location}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   InkWell(
-                    onTap: (){context.push(DriverDetailsScreen.routeName);},
+                    onTap: () => context.push(
+                      DriverDetailsScreen.routeName,
+                      extra: driver.id,
+                    ),
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 8.h,
+                      ),
                       decoration: BoxDecoration(
-                        color: AllColor.orange700,
+                        color: Colors.orange,
                         borderRadius: BorderRadius.circular(30.r),
                       ),
                       child: Text(
-                        "See Details ",
-                        
+                        "See Details",
                         style: TextStyle(
-                          color: AllColor.black,
+                          color: Colors.white,
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -583,7 +660,7 @@ class _DriverCard extends StatelessWidget {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

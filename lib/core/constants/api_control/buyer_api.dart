@@ -15,6 +15,8 @@ class BuyerAPIController {
   static String new_items = "$_base_api/admin-selects/new-items";
   static String product_detail(int id) => "$_base_api/product/detail/$id";
   static String vendor_list(id) => "$_base_api/vendor/list/$id";
+  static String categoryVendorProducts(int vendorId, {int page = 1}) =>
+      "$_base_api/category/vendor/product/$vendorId?page=$page";
 
   // static Uri _u(String path) => Uri.parse(_base_api).resolve(path);
   static String paymen_tresponse = "$_base_api/payment/response";

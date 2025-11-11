@@ -14,7 +14,7 @@ class CustomNewProduct extends StatelessWidget {
     this.checking = false,
     this.onTap,
     this.image =
-        "https://res.cloudinary.com/dxrb6gab0/image/upload/v1761320111/product/image/k11fpqaa52odzuch0mlt.jpg",
+        "https://t4.ftcdn.net/jpg/05/98/45/79/360_F_598457961_hojY3MEjPaYBgdUkfaWO6mPNuHce6WFv.jpg",
   });
   final double width;
   final double height;

@@ -25,7 +25,8 @@ import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_cetagory_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -612,6 +613,34 @@ final GoRouter router = GoRouter(
       path: CategoryAddPage.routeName,
       name: CategoryAddPage.routeName,
       builder: (context, state) => CategoryAddPage(),
+    ),
+    GoRoute(
+      path: '${BuyerVendorCetagoryScreen.routeName}/:screenName',
+      name: BuyerVendorCetagoryScreen.routeName, // তুমি pushNamed-ও করতে পারবে
+
+      builder: (context, state) {
+        final screenName = state.pathParameters['screenName'] ?? '';
+
+        // extra থেকে vendorId সেফলি ধরছি
+        int vendorId = 0;
+        final extra = state.extra;
+        if (extra is int) {
+          vendorId = extra;
+        } else if (extra is Map && extra['vendorId'] is int) {
+          vendorId = extra['vendorId'] as int;
+        }
+
+        if (screenName.isEmpty || vendorId == 0) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid route data')),
+          );
+        }
+
+        return BuyerVendorCetagoryScreen(
+          screenName: screenName,
+          vendorId: vendorId,
+        );
+      },
     ),
   ],
 );

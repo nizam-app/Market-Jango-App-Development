@@ -22,7 +22,9 @@ class GlobalSettingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(userProvider);
+    final userAsync = ref.watch(
+      userProvider(ref.watch(getUserIdProvider).value ?? ""),
+    );
     final userTypeAsync = ref.watch(getUserTypeProvider);
 
     return ScreenBackground(

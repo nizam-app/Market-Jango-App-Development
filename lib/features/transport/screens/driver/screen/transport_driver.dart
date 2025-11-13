@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
@@ -188,10 +189,15 @@ class _DriverCard extends StatelessWidget {
             Row(
               children: [
                 InkWell(
-                  onTap: () => context.push(
-                    DriverDetailsScreen.routeName,
-                    extra: driver.user.id,
-                  ),
+                  onTap: ()  {
+
+                    Logger().e(driver.user.id);
+
+
+                    context.push(
+      DriverDetailsScreen.routeName,
+      extra: driver.userId,
+      );}    ,
                   child: CircleAvatar(
                     radius: 20.r,
                     backgroundImage: NetworkImage(avatarUrl),
@@ -201,7 +207,7 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () => context.push(
                     DriverDetailsScreen.routeName,
-                    extra: driver.user.id,
+                    extra: driver.userId,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,7 +286,7 @@ class _DriverCard extends StatelessWidget {
                   InkWell(
                     onTap: () => context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.id,
+                      extra: driver.userId,
                     ),
                     child: Container(
                       padding: EdgeInsets.symmetric(

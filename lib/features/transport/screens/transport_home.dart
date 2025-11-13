@@ -455,7 +455,7 @@ class TransportHomeScreen extends ConsumerWidget {
                         child: const Text('No drivers available'),
                       );
                     }
-                    final homeItems = items.take(4).toList();
+                    final homeItems = items.take(10).toList();
 
                     return Column(
                       children: homeItems
@@ -548,7 +548,7 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: user.id);
+                    context.push(DriverDetailsScreen.routeName, extra: driver.userId);
                   },
                   child: CircleAvatar(
                     radius: 20.r,
@@ -559,7 +559,7 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: user.id);
+                    context.push(DriverDetailsScreen.routeName, extra: driver.userId);
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -635,10 +635,12 @@ class _DriverCard extends StatelessWidget {
                     ),
                   ),
                   InkWell(
-                    onTap: () => context.push(
+                    onTap: () {
+                      Logger().e(driver.id);
+                      context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.id,
-                    ),
+                      extra: driver.userId,
+                    );},
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 16.w,

@@ -19,7 +19,6 @@ import 'logic/add_cart_quantity_logic.dart';
 import 'logic/product_details_data.dart';
 import 'model/product_all_details_model.dart';
 
-// ProductDetails: Stateless → Stateful
 class ProductDetails extends ConsumerStatefulWidget {
   const ProductDetails({super.key, required this.productId});
   final int productId;
@@ -28,7 +27,6 @@ class ProductDetails extends ConsumerStatefulWidget {
   @override
   ConsumerState<ProductDetails> createState() => _ProductDetailsState();
 }
-
 class _ProductDetailsState extends ConsumerState<ProductDetails> {
   String? _selectedSize;
   String? _selectedColor;

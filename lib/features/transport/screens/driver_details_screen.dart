@@ -22,7 +22,7 @@ class DriverDetailsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (user) {
-          final d = user.driver; // DriverInfo?
+          final d = user.driver; 
           final avatarUrl = (user.image.isNotEmpty)
               ? user.image
               : "https://i.pravatar.cc/150?img=12";
@@ -55,7 +55,7 @@ class DriverDetailsScreen extends ConsumerWidget {
                   "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
                   "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
                 ];
-          Logger().d(user);
+          // Logger().d(user);
           Logger().d(driverId);
           return SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
@@ -156,7 +156,6 @@ class DriverDetailsScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  // আপনার API-তে যদি bio/description না থাকে, placeholder রাখলাম
                   "Lorem ipsum dolor sit amet consectetur. Id viverra elementum sit viverra vestibulum fames. Euismod habitasse habitant massa amet. Venenatis id netus orci dolor nulla ultricies dignissim vitae sagittis.",
                   style: TextStyle(fontSize: 13.sp, color: Colors.grey[800]),
                   textAlign: TextAlign.justify,
@@ -191,7 +190,8 @@ class DriverDetailsScreen extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final img = index < carImages.length
                         ? carImages[index]
-                        : "https://pngimg.com/uploads/porsche/porsche_PNG10613.png";
+                        : "https://static.vecteezy.com/system/resources/previews/0"
+                        "24/228/025/non_2x/slashed-zero-icon-symbol-in-mathematics-null-set-empty-set-illustration-free-vector.jpg";
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(8.r),
                       child: Card(child: Image.network(img, fit: BoxFit.cover)),

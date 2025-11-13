@@ -16,6 +16,7 @@ import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
@@ -190,7 +191,7 @@ class JustForYouProduct extends ConsumerWidget {
               onTap: () {
                 final detail = p;
 
-                context.push(ProductDetails.routeName, extra: detail.id);
+                context.push(BuyerVendorProfileScreen.routeName, extra: detail.vendor.userId);
               },
               child: CustomNewProduct(
                 width: 162,
@@ -424,7 +425,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
                 itemsSelector: (res) => res.products,
                 itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                 onItemSelected: (p) {
-                  context.push(ProductDetails.routeName, extra: p.id);
+                  context.push(BuyerVendorProfileScreen.routeName, extra: p.vendor?.userId);
                 },
                 hintText: 'Search products...',
                 debounce: const Duration(seconds: 1),

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
@@ -38,8 +39,8 @@ class CustomNewItemsShow extends ConsumerWidget {
                     image: product.image,
                     onTap: () {
                       context.push(
-                        ProductDetails.routeName,
-                        extra: product.id,
+                        BuyerVendorProfileScreen.routeName,
+                        extra: product.vendor.userId,
                       );
                     },
                   );

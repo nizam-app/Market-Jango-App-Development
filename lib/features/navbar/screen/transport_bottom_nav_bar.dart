@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 
-import '../../transport/screens/transport_booking.dart';
+import '../../transport/screens/my_booking/screen/transport_booking.dart';
 import '../../transport/screens/transport_home.dart';
 
 // --- Providers ---------------------------------------------------------------

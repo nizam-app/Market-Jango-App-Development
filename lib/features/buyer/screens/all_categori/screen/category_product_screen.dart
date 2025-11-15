@@ -266,7 +266,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push(ProductDetails.routeName, extra: productId),
+      onTap: () => context.push(BuyerVendorProfileScreen.routeName, extra: vendorId),
       child: Container(
         decoration: BoxDecoration(
           color: AllColor.white,

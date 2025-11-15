@@ -1,8 +1,11 @@
 // models/vendor_category_products.dart
 import 'dart:convert';
 
-VendorCategoryProductsResponse vendorCategoryProductsResponseFromJson(String s) =>
-    VendorCategoryProductsResponse.fromJson(jsonDecode(s));
+VendorCategoryProductsResponse vendorCategoryProductsResponseFromJson(
+  String s,
+) => VendorCategoryProductsResponse.fromJson(
+  jsonDecode(s) as Map<String, dynamic>,
+);
 
 class VendorCategoryProductsResponse {
   final String status;
@@ -15,12 +18,17 @@ class VendorCategoryProductsResponse {
     required this.data,
   });
 
-  factory VendorCategoryProductsResponse.fromJson(Map<String, dynamic> j) =>
-      VendorCategoryProductsResponse(
-        status: (j['status'] ?? '').toString(),
-        message: j['message']?.toString(),
-        data: VcpData.fromJson(j['data'] as Map<String, dynamic>),
-      );
+  factory VendorCategoryProductsResponse.fromJson(Map<String, dynamic> j) {
+    final raw = j['data'];
+    return VendorCategoryProductsResponse(
+      status: (j['status'] ?? '').toString(),
+      message: j['message']?.toString(),
+      // API কখনও data:{} দেয়, কখনও data:[]
+      data: (raw is Map<String, dynamic>)
+          ? VcpData.fromJson(raw)
+          : VcpData.empty(),
+    );
+  }
 }
 
 class VcpData {
@@ -34,9 +42,16 @@ class VcpData {
     all: _toInt(j['all']),
     categories: Page<CategoryNode>.fromJson(
       j['categories'] as Map<String, dynamic>,
-          (e) => CategoryNode.fromJson(e as Map<String, dynamic>),
+      (e) => CategoryNode.fromJson(e as Map<String, dynamic>),
     ),
     vendor: VcpVendor.fromJson(j['vendor'] as Map<String, dynamic>),
+  );
+
+  /// empty fallback যখন API data:[]
+  factory VcpData.empty() => VcpData(
+    all: 0,
+    categories: Page<CategoryNode>.empty(),
+    vendor: VcpVendor.empty(),
   );
 }
 
@@ -57,9 +72,9 @@ class Page<T> {
   });
 
   factory Page.fromJson(
-      Map<String, dynamic> j,
-      T Function(Object? json) itemFromJson,
-      ) {
+    Map<String, dynamic> j,
+    T Function(Object? json) itemFromJson,
+  ) {
     final list = (j['data'] as List? ?? []).map(itemFromJson).toList();
     return Page(
       currentPage: _toInt(j['current_page']),
@@ -69,6 +84,14 @@ class Page<T> {
       prevPageUrl: j['prev_page_url']?.toString(),
     );
   }
+
+  factory Page.empty() => Page(
+    currentPage: 1,
+    data: <T>[],
+    lastPage: 1,
+    nextPageUrl: null,
+    prevPageUrl: null,
+  );
 }
 
 /// ---------- Category ----------
@@ -147,27 +170,28 @@ class VcpVendor {
   final String businessName;
   final String country;
 
-  VcpVendor({required this.id, required this.businessName, required this.country});
+  VcpVendor({
+    required this.id,
+    required this.businessName,
+    required this.country,
+  });
 
   factory VcpVendor.fromJson(Map<String, dynamic> j) => VcpVendor(
     id: _toInt(j['id']),
     businessName: (j['business_name'] ?? '').toString(),
     country: (j['country'] ?? '').toString(),
   );
+
+  factory VcpVendor.empty() => VcpVendor(id: 0, businessName: '', country: '');
 }
 
 /// ---------- helpers ----------
-int _toInt(dynamic v) => v == null
-    ? 0
-    : v is int
-    ? v
-    : int.tryParse(v.toString()) ?? 0;
+int _toInt(dynamic v) =>
+    v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);
 
 double _toDouble(dynamic v) => v == null
     ? 0.0
-    : v is num
-    ? v.toDouble()
-    : double.tryParse(v.toString()) ?? 0.0;
+    : (v is num ? v.toDouble() : double.tryParse(v.toString()) ?? 0.0);
 
 /// color/size: ["yellow,blue"] বা ["L","XL"] — দুটোই হ্যান্ডেল
 List<String> _normalizeList(dynamic v) {
@@ -177,7 +201,9 @@ List<String> _normalizeList(dynamic v) {
     for (final e in v) {
       final s = e?.toString() ?? '';
       if (s.contains(',')) {
-        out.addAll(s.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+        out.addAll(
+          s.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty),
+        );
       } else if (s.trim().isNotEmpty) {
         out.add(s.trim());
       }

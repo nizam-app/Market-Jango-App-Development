@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
@@ -32,8 +33,8 @@ class CustomTopProducts extends ConsumerWidget {
                   InkWell(
                     onTap: () {
                       context.push(
-                        ProductDetails.routeName,
-                        extra: p.id,
+                        BuyerVendorProfileScreen.routeName,
+                        extra: p.vendor.userId,
                       );
                     },
                     child: Padding(

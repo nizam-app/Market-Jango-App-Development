@@ -3,12 +3,13 @@ import 'package:flutter_rating/flutter_rating.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_propuler_product_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 import 'buyer_vendor_cetagory_screen.dart';
@@ -26,16 +27,17 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              CustomVendorUpperSection(),
+              CustomVendorUpperSection(vendorId: vendorId.toString()),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Column(
                   children: [
                     SeeMoreButton(name: "Populer", isSeeMore: false),
-                    PopularProduct(),
+                    PopularProduct(vendorId: vendorId),
 
                     async.when(
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
                       error: (e, _) => Center(child: Text(e.toString())),
                       data: (res) {
                         final categories = res?.data.categories.data ?? [];
@@ -52,8 +54,8 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                                 seeMoreAction: () {
                                   context.pushNamed(
                                     BuyerVendorCetagoryScreen.routeName,
-                                    pathParameters: {"screenName": c.name}, 
-                                    extra: vendorId, 
+                                    pathParameters: {"screenName": c.name},
+                                    extra: vendorId,
                                   );
                                 },
                               ),
@@ -62,7 +64,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                           ],
                         );
                       },
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -74,82 +76,112 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
   }
 }
 
-class CustomVendorUpperSection extends StatelessWidget {
-  const CustomVendorUpperSection({super.key});
+class CustomVendorUpperSection extends ConsumerWidget {
+  const CustomVendorUpperSection({super.key, required this.vendorId});
+  final String vendorId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(userProvider(vendorId));
     final theme = Theme.of(context).textTheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () {
-              context.pop();
-            },
-            child: Icon(Icons.arrow_back_ios),
-          ),
-          Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+
+    return async.when(
+      loading: () => Padding(
+        padding: EdgeInsets.all(20.w),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) =>
+          Padding(padding: EdgeInsets.all(20.w), child: Text(e.toString())),
+      data: (v) {
+        // ---- SAFE READS (no ! anywhere) ----
+        final vendor = v.vendor; // may be null
+        final hasText = (String? s) => s != null && s.trim().isNotEmpty;
+
+        final name = hasText(v.name)
+            ? v.name
+            : (vendor != null && hasText(vendor.businessName))
+            ? vendor.businessName
+            : 'Vendor';
+
+        final img = hasText(v.image)
+            ? v.image!
+            : 'https://via.placeholder.com/200x200.png?text=Vendor';
+
+        final location = (vendor != null && hasText(vendor.country))
+            ? vendor.country
+            : '—';
+
+        // যদি আসল রেটিং না থাকে, UI ঠিক রাখতে fallback
+        final double rating = 4.6;
+        final reviewText = '${rating.toStringAsFixed(1)} ( ${v.id} reviews )';
+
+        final opening = (v.createdAt != null && v.expiresAt != null)
+            ? 'Opening time: ${v.createdAt} - ${v.expiresAt}'
+            : 'Opening time: 8:00 am - 7:00 pm';
+
+        // ---- UI (unchanged look) ----
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile image
-              CircleAvatar(
-                radius: 35.r,
-                backgroundImage: NetworkImage(
-                  "https://images.unsplash.com/photo-1607746882042-944635dfe10e",
-                ),
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: const Icon(Icons.arrow_back_ios),
               ),
-              SizedBox(height: 8.h),
-
-              // Name + Location
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  CircleAvatar(
+                    radius: 35.r,
+                    backgroundImage: NetworkImage(img),
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        name,
+                        style: theme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 5.w),
+                      Icon(Icons.location_on, size: 16.sp, color: Colors.red),
+                      Text(location, style: theme.titleMedium),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
                   Text(
-                    "TrendLoop",
-                    style: theme.headlineMedium!.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    opening,
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                   ),
-                  SizedBox(width: 5.w),
-                  Icon(Icons.location_on, size: 16.sp, color: Colors.red),
-                  Text("Dhaka", style: theme.titleMedium),
-                ],
-              ),
-              SizedBox(height: 4.h),
-
-              // Opening time
-              Text(
-                "Opening time: 8:00 am - 7:00 pm",
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-              ),
-              SizedBox(height: 8.h),
-
-              // Rating + Review count
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  StarRating(rating: 4.6, color: Colors.amber),
-                  SizedBox(width: 8.w),
-                  GestureDetector(
-                    onTap: () {
-                      goToReviewScreen(context);
-                    },
-                    child: Text(
-                      "4.6 ( 66 reviews )",
-                      style: TextStyle(fontSize: 13.sp, color: Colors.black87),
-                    ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      StarRating(rating: rating, color: Colors.amber),
+                      SizedBox(width: 8.w),
+                      GestureDetector(
+                        onTap: () => goToReviewScreen(context),
+                        child: Text(
+                          reviewText,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              const Spacer(),
             ],
           ),
-          Spacer(),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -159,10 +191,7 @@ class CustomVendorUpperSection extends StatelessWidget {
 }
 
 class FashionProduct extends StatelessWidget {
-  const FashionProduct({
-    super.key,
-    this.products,
-  });
+  const FashionProduct({super.key, this.products});
   final List<VcpProduct>? products;
 
   @override
@@ -196,7 +225,7 @@ class FashionProduct extends StatelessWidget {
             productName: p.name,
             productPricesh: p.sellPrice.toStringAsFixed(2),
             image: p.image,
-            // 
+            //
           );
         },
       ),
@@ -204,34 +233,61 @@ class FashionProduct extends StatelessWidget {
   }
 }
 
-
-class PopularProduct extends StatelessWidget {
-  const PopularProduct({super.key});
+class PopularProduct extends ConsumerWidget {
+  const PopularProduct({super.key, required this.vendorId});
+  final int vendorId; // pass the ID you used in Postman (e.g., 1)
 
   @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        // mainAxisSpacing: 0.h,
-        crossAxisSpacing: 8.w,
-        childAspectRatio: 0.68.h,
-      ),
-      itemCount: 4,
-      // Example item count
-      itemBuilder: (context, index) {
-        return Stack(
-          children: [
-            CustomNewProduct(
-              width: 162.w,
-              height: 175.h,
-              productPricesh: 'Product Name',
-              productName: 'price',
-            ),
-            Positioned(top: 10, right: 30, child: CustomDiscountCord()),
-          ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(popularProductsProvider(vendorId));
+
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) =>
+          Padding(padding: EdgeInsets.all(12.w), child: Text(e.toString())),
+      data: (resp) {
+        final items = resp?.data ?? const [];
+        if (items.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.all(12.w),
+            child: const Text('No popular products found'),
+          );
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 8.w,
+            childAspectRatio: 0.68.h,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final p = items[index].product;
+
+            return Stack(
+              children: [
+                CustomNewProduct(
+                  width: 162.w,
+                  height: 175.h,
+                  // Your widget’s param names are a bit swapped in example,
+                  // keeping exactly as your API expects:
+                  productPricesh: p.name, // title
+                  productName: p.sellPrice.toStringAsFixed(2), // price
+                  // If your CustomNewProduct supports image param, pass p.image.
+                ),
+                Positioned(
+                  top: 10,
+                  right: 30,
+                  child: CustomDiscountCord(
+                    // if your Discount widget accepts a value; else keep empty
+                    // value: p.discount,
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );

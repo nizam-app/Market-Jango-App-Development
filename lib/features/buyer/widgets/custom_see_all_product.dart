@@ -3,16 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
-import 'package:market_jango/features/buyer/screens/product/product_details.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 class CustomSeeAllProduct extends ConsumerWidget {
-
   final product;
-  const CustomSeeAllProduct({
-    super.key,
-    required this.product,
-  });
+  const CustomSeeAllProduct({super.key, required this.product});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Expanded(
@@ -31,7 +27,10 @@ class CustomSeeAllProduct extends ConsumerWidget {
           final products = product[index];
           return GestureDetector(
             onTap: () {
-              context.push(ProductDetails.routeName, extra: products.id);
+              context.push(
+                BuyerVendorProfileScreen.routeName,
+                extra: products.vendor.userId,
+              );
             },
             child: Stack(
               children: [

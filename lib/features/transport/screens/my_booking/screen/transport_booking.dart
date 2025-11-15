@@ -72,8 +72,6 @@ class _TransportBookingState extends State<TransportBooking> {
                     },
                   ),
                 ),
-
-                // Booking list
                 Expanded(
                   child: state.when(
                     loading: () => const Center(child: CircularProgressIndicator()),
@@ -111,7 +109,7 @@ class _TransportBookingState extends State<TransportBooking> {
                           final o = filtered[index];
                           final firstItem = (o.items.isNotEmpty) ? o.items.first : null;
 
-                          final orderIdText = "#${o.id}";
+                          final orderIdText = "#${o.taxRef}";
                           final driverText = firstItem?.driver != null
                               ? "${firstItem!.driver!.carName} (${firstItem.driver!.carModel})"
                               : "Assigned Driver";

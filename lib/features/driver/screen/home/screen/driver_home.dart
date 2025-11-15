@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
@@ -11,12 +13,13 @@ import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_da
 
 import '../model/new_oder_driver_model.dart';
 
-class DriverHomeScreen extends StatelessWidget {
+class DriverHomeScreen extends ConsumerWidget {
   const DriverHomeScreen({super.key});
   static final routeName = "/driverHome";
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(driverNewOrdersProvider);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -48,13 +51,15 @@ class DriverHomeScreen extends StatelessWidget {
 
 /* ------------------------------ Custom Codebase ------------------------------ */
 
-class _HeaderSection extends StatelessWidget {
+class _HeaderSection extends ConsumerWidget {
   const _HeaderSection({required this.name, required this.subtitle});
   final String name;
   final String subtitle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userID = ref.watch(getUserIdProvider.select((value) => value.value));
+    final async = ref.watch(userProvider(userID ?? ''));
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
@@ -62,33 +67,40 @@ class _HeaderSection extends StatelessWidget {
         children: [
           // left: greetings
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            child: async.when(
+              data: (data) {
+                final name = data.name;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AllColor.black,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(Icons.verified, color: AllColor.blue500, size: 18.sp),
+                      ],
+                    ),
+                    SizedBox(height: 4.h),
                     Text(
-                      "Hello, $name",
+                      subtitle,
                       style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AllColor.black,
+                        fontSize: 12.sp,
+                        color: AllColor.black54,
+                        height: 1.25,
                       ),
                     ),
-                    SizedBox(width: 6.w),
-                    Icon(Icons.verified, color: AllColor.blue500, size: 18.sp),
                   ],
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AllColor.black54,
-                    height: 1.25,
-                  ),
-                ),
-              ],
+                );
+              }       ,
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text(e.toString())),
             ),
           ),
 

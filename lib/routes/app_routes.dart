@@ -56,7 +56,7 @@ import 'package:market_jango/features/transport/screens/transport_cancelled.dart
 import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
-import 'package:market_jango/features/transport/screens/transport_home.dart';
+import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
@@ -83,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: DriverBottomNavBar.routeName,
+  initialLocation: TransportBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),

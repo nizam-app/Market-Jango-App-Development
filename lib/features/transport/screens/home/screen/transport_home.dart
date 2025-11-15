@@ -284,13 +284,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
 
-import 'driver/data/transport_driver_data.dart';
-import 'driver/screen/model/transport_driver_model.dart';
+import '../../driver/data/transport_driver_data.dart';
+import '../../driver/screen/model/transport_driver_model.dart';
 
 class TransportHomeScreen extends ConsumerWidget {
   const TransportHomeScreen({super.key});
@@ -299,6 +301,8 @@ class TransportHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(approvedDriversProvider);
+    final userID = ref.watch(getUserIdProvider.select((value) => value.value));
+    final async = ref.watch(userProvider(userID ?? ''));
     return Scaffold(
       backgroundColor: Color(0xFFF5F4F8),
       body: SafeArea(
@@ -309,30 +313,36 @@ class TransportHomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 /// Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Hello, Jane Cooper",
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 10.w),
-                    InkWell(
-                      onTap: () {
-                        context.push("/transport_notificatons");
-                      },
-                      child: Icon(
-                        Icons.verified,
-                        size: 20.sp,
-                        color: AllColor.blue500,
-                      ),
-                    ),
-                    Spacer(),
-                    GlobalNotificationIcon(),
-                  ],
+                async.when(
+                  data: (data) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.name,
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        InkWell(
+                          onTap: () {
+                            context.push("/transport_notificatons");
+                          },
+                          child: Icon(
+                            Icons.verified,
+                            size: 20.sp,
+                            color: AllColor.blue500,
+                          ),
+                        ),
+                        Spacer(),
+                        GlobalNotificationIcon(),
+                      ],
+                    );
+                  }    ,
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text(e.toString())),
                 ),
                 Text("Find your Driver", style: TextStyle(fontSize: 10.sp)),
                 SizedBox(height: 20.h),

@@ -50,7 +50,6 @@ class OrderDetailsScreen extends ConsumerWidget {
                   dropoffAddress: invoice.dropOfAddress,
                   customerName: invoice.cusName,
                   customerPhone: invoice.cusPhone,
-                  // আপাতত instruction নেই – ডেলিভারি স্ট্যাটাস দেখাচ্ছি
                   instruction:
                       "Delivery status: ${invoice.deliveryStatus} (${invoice.status})",
                   // আপাতত static map image, পরে real map / static map URL use করবে
@@ -59,13 +58,31 @@ class OrderDetailsScreen extends ConsumerWidget {
                 );
               },
             ),
-            _BottomActions(
-              onMessage: () {
-                context.push(ChatScreen.routeName);
+            trackingAsync.when(
+              data: (DriverTrackingData data) {
+                if (data.status == "AssignedOrder") {
+                  return _BottomActions(
+                    onMessage: () {
+                      context.push(ChatScreen.routeName);
+                    },
+                    onStartDelivery: () {
+                      context.push(DriverTrakingScreen.routeName);
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
               },
-              onStartDelivery: () {
-                context.push(DriverTrakingScreen.routeName);
-              },
+              loading: () => const Expanded(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (err, st) => Expanded(
+                child: Center(
+                  child: Text(
+                    err.toString(),
+                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -121,9 +138,9 @@ class _DetailsContent extends StatelessWidget {
             _Label("Customer Details"),
             _BodyText(customerName),
             _BodyText(customerPhone),
-            SizedBox(height: 10.h),
-            _Label("Customer instruction"),
-            _InstructionBox(text: instruction),
+            // SizedBox(height: 10.h),
+            // _Label("Customer instruction"),
+            // _InstructionBox(text: instruction),
             SizedBox(height: 10.h),
             _MapImage(imageUrl: imageUrl),
             SizedBox(height: 10.h),

@@ -23,6 +23,7 @@ class BuyerAPIController {
   static String invoice_tracking(oderId) =>
       "$_base_api/invoice/tracking/$oderId";
   static String all_order = "$_base_api/all-order";
+  static String popular_product(id) => "$_base_api/popular/product/$id";
   static String vendor_first_product = "$_base_api/vendor/first/product";
   static String vendor_search(name) => "$_base_api/vendor/search/?name=$name";
 

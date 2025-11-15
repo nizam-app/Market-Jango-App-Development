@@ -1,51 +1,70 @@
+// order_details_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_details_data.dart';
+import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
+import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 
-import 'driver_traking_screen.dart';
+class OrderDetailsScreen extends ConsumerWidget {
+  const OrderDetailsScreen({super.key, required this.trackingId});
 
-
-class OrderDetailsScreen extends StatelessWidget {
-  const OrderDetailsScreen({super.key, });
-  static final routeName = "/orderDetails"; 
-
+  static const routeName = "/orderDetails";
+  final String trackingId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = int.parse(trackingId);
+    final trackingAsync = ref.watch(driverTrackingProvider(id));
+
     return Scaffold(
       backgroundColor: AllColor.white,
       body: SafeArea(
         child: Column(
           children: [
-           CustomBackButton(),
-            SizedBox(height: 10,),
-            _DetailsContent(
-              orderId: "1234",
-              pickupAddress:
-                  "4517 Washington Ave. Manchester, Kentucky 39495",
-              dropoffAddress:
-                  "6391 Elgin St. Celina, Delaware 10299",
-              customerName: "John appeaiel",
-              customerPhone: "(239) 555-0108",
-              instruction: "Don't ring the bell",
-              imageUrl:
-                  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+            CustomBackButton(),
+            SizedBox(height: 10.h),
+            trackingAsync.when(
+              loading: () => const Expanded(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (err, st) => Expanded(
+                child: Center(
+                  child: Text(
+                    err.toString(),
+                    style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                  ),
+                ),
+              ),
+              data: (DriverTrackingData data) {
+                final invoice = data.invoice;
+
+                return _DetailsContent(
+                  orderId: invoice.id.toString(),
+                  pickupAddress: invoice.pickupAddress,
+                  dropoffAddress: invoice.dropOfAddress,
+                  customerName: invoice.cusName,
+                  customerPhone: invoice.cusPhone,
+                  // আপাতত instruction নেই – ডেলিভারি স্ট্যাটাস দেখাচ্ছি
+                  instruction:
+                      "Delivery status: ${invoice.deliveryStatus} (${invoice.status})",
+                  // আপাতত static map image, পরে real map / static map URL use করবে
+                  imageUrl:
+                      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+                );
+              },
             ),
             _BottomActions(
               onMessage: () {
-                context.push(
-                  ChatScreen.routeName, 
-                  
-                );
+                context.push(ChatScreen.routeName);
               },
               onStartDelivery: () {
-                context.push(
-                  DriverTrakingScreen.routeName
-                ); 
-
+                context.push(DriverTrakingScreen.routeName);
               },
             ),
           ],
@@ -55,8 +74,7 @@ class OrderDetailsScreen extends StatelessWidget {
   }
 }
 
-/* ------------------------------ Custom Codebase ------------------------------ */
-
+/* ------------------------------ UI Part (unchanged mostly) ------------------------------ */
 
 class _DetailsContent extends StatelessWidget {
   const _DetailsContent({
@@ -85,28 +103,30 @@ class _DetailsContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Order #$orderId",
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AllColor.black,
-                )),
-             SizedBox(height: 16,),  
+            Text(
+              "Order #$orderId",
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: AllColor.black,
+              ),
+            ),
+            SizedBox(height: 16.h),
             _Label("Pickup address"),
             _BodyText(pickupAddress),
             _DividerLine(),
-            _Label("Drop- off address"),
+            _Label("Drop-off address"),
             _BodyText(dropoffAddress),
             _DividerLine(),
             _Label("Customer Details"),
             _BodyText(customerName),
             _BodyText(customerPhone),
-             SizedBox(height: 10,),  
-            _Label("Customer instruction:"),
+            SizedBox(height: 10.h),
+            _Label("Customer instruction"),
             _InstructionBox(text: instruction),
-             SizedBox(height: 10,),  
+            SizedBox(height: 10.h),
             _MapImage(imageUrl: imageUrl),
-          SizedBox(height: 10,),  
+            SizedBox(height: 10.h),
           ],
         ),
       ),
@@ -223,10 +243,10 @@ class _BottomActions extends StatelessWidget {
             fg: AllColor.white,
             onTap: onMessage,
           ),
-         SizedBox(height: 12,),
+          SizedBox(height: 12.h),
           _FilledButton(
             label: "Start Delivery",
-            bg: AllColor.loginButtomColor, 
+            bg: AllColor.loginButtomColor,
             fg: AllColor.white,
             onTap: onStartDelivery,
           ),

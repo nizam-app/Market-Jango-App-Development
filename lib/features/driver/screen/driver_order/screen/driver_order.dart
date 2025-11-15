@@ -1,21 +1,25 @@
+// features/driver/screen/driver_order/driver_order.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/driver/screen/driver_order_details.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_data.dart';
+import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 
-class DriverOrder extends StatefulWidget {
+class DriverOrder extends ConsumerStatefulWidget {
   const DriverOrder({super.key});
   static const routeName = "/driverOrder";
 
   @override
-  State<DriverOrder> createState() => _DriverOrderState();
+  ConsumerState<DriverOrder> createState() => _DriverOrderState();
 }
 
-class _DriverOrderState extends State<DriverOrder> {
+class _DriverOrderState extends ConsumerState<DriverOrder> {
   final _search = TextEditingController();
-  int _tab = 0; // 0=All, 1=Pending, 2=On the way, 3=Delivered
+  int _tab = 0;
 
   @override
   void dispose() {
@@ -25,72 +29,75 @@ class _DriverOrderState extends State<DriverOrder> {
 
   @override
   Widget build(BuildContext context) {
-    final items = _demoOrders
-        .where((e) {
-          switch (_tab) {
-            case 1:
-              return e.status == OrderStatus.pending;
-            case 2:
-              return e.status == OrderStatus.onTheWay;
-            case 3:
-              return e.status == OrderStatus.delivered;
-            default:
-              return true;
-          }
-        })
-        .where(
-          (e) =>
-              _search.text.trim().isEmpty ||
-              e.orderId.toLowerCase().contains(_search.text.toLowerCase()),
-        )
-        .toList();
+    final async = ref.watch(driverAllOrdersProvider);
+    final notifier = ref.read(driverAllOrdersProvider.notifier);
+    final tabs = notifier.statusTabs;
+
+    final items = async.hasValue
+        ? notifier.toUi(query: _search.text, tabIndex: _tab)
+        : const <OrderItem>[];
 
     return Scaffold(
       backgroundColor: AllColor.white,
       body: SafeArea(
         child: Column(
           children: [
-            // Search
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: _SearchField(
-                controller: _search,
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
+            // Optional search
+            // Padding(
+            //   padding: EdgeInsets.symmetric(horizontal: 16.h),
+            //   child: _SearchField(
+            //     controller: _search,
+            //     onChanged: (_) => setState(() {}),
+            //   ),
+            // ),
             SizedBox(height: 12.h),
 
-            // Filter chips
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: _FilterChips(
-                selectedIndex: _tab,
-                onChanged: (i) => setState(() => _tab = i),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _FilterChipsDynamic(
+                  tabs: tabs,
+                  selectedIndex: _tab,
+                  onChanged: (i) => setState(() => _tab = i),
+                ),
               ),
             ),
             SizedBox(height: 12.h),
 
             Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 6.w),
-                physics: const BouncingScrollPhysics(),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemBuilder: (_, i) => _OrderCard(
-                  data: items[i],
-                  
-                  onSeeDetails: () => context.push(
-                    '${OrderDetailsScreen.routeName}?id=${items[i].orderId}',
+              child: async.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text(e.toString())),
+                data: (_) => ListView.separated(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 6.w,
                   ),
-                 
-                  onTrackOrder: items[i].status == OrderStatus.delivered
-                      ? null
-                      : () => context.push(
-                        '${DriverTrakingScreen.routeName}?id =${items[i].orderId}',
-                          
-                        ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                  itemBuilder: (_, i) => _OrderCard(
+                    data: items[i],
+                    onSeeDetails: () => context.push(
+                      OrderDetailsScreen.routeName,
+                      extra: items[i].orderId,
+                    ),
+                    onTrackOrder: items[i].kind == OrderStatus.delivered
+                        ? null
+                        : () => context.push(
+                            '${DriverTrakingScreen.routeName}?id=${items[i].orderId}',
+                          ),
+                  ),
                 ),
               ),
+            ),
+
+            SizedBox(height: 8.h),
+            GlobalPagination(
+              currentPage: notifier.currentPage,
+              totalPages: notifier.lastPage,
+              onPageChanged: (p) => notifier.changePage(p),
             ),
           ],
         ),
@@ -99,65 +106,7 @@ class _DriverOrderState extends State<DriverOrder> {
   }
 }
 
-/* ===================== Models & Demo Data ===================== */
-
-enum OrderStatus { delivered, pending, onTheWay }
-
-class OrderItem {
-  final String orderId;
-  final String pickup;
-  final String destination;
-  final double price;
-  final OrderStatus status;
-
-  const OrderItem({
-    required this.orderId,
-    required this.pickup,
-    required this.destination,
-    required this.price,
-    required this.status,
-  });
-}
-
-const _demoOrders = <OrderItem>[
-  OrderItem(
-    orderId: 'ORD12345',
-    pickup: 'Urban tech store',
-    destination: 'Alex Hossain',
-    price: 7.50,
-    status: OrderStatus.delivered,
-  ),
-  OrderItem(
-    orderId: 'ORD12345',
-    pickup: 'Urban tech store',
-    destination: 'Alex Hossain',
-    price: 7.50,
-    status: OrderStatus.pending,
-  ),
-  OrderItem(
-    orderId: 'ORD12345',
-    pickup: 'Urban tech store',
-    destination: 'Alex Hossain',
-    price: 7.50,
-    status: OrderStatus.onTheWay,
-  ),
-  OrderItem(
-    orderId: 'ORD12345',
-    pickup: 'Urban tech store',
-    destination: 'Alex Hossain',
-    price: 7.50,
-    status: OrderStatus.pending,
-  ),
-  OrderItem(
-    orderId: 'ORD12345',
-    pickup: 'Urban tech store',
-    destination: 'Alex Hossain',
-    price: 7.50,
-    status: OrderStatus.onTheWay,
-  ),
-];
-
-/* ===================== Reusable Widgets ===================== */
+/* ===================== Widgets ===================== */
 
 class _SearchField extends StatelessWidget {
   final TextEditingController controller;
@@ -171,7 +120,7 @@ class _SearchField extends StatelessWidget {
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: 'Search order',
+        hintText: 'Search by Order ID',
         hintStyle: TextStyle(color: AllColor.textHintColor),
         filled: true,
         fillColor: AllColor.grey100,
@@ -195,45 +144,58 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-class _FilterChips extends StatelessWidget {
+class _FilterChipsDynamic extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onChanged;
-  const _FilterChips({required this.selectedIndex, required this.onChanged});
+  final List<String> tabs;
+  const _FilterChipsDynamic({
+    required this.selectedIndex,
+    required this.onChanged,
+    required this.tabs,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final tabs = ['All', 'Pending', 'On the way', 'Delivered'];
-    return Row(
-      children: List.generate(tabs.length, (i) {
-        final selected = i == selectedIndex;
-        return Padding(
-          padding: EdgeInsets.only(right: i == tabs.length - 1 ? 0 : 8),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () => onChanged(i),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.h, vertical: 8.w),
-              decoration: BoxDecoration(
-                color: selected ? AllColor.loginButtomColor : AllColor.grey100,
+    return SizedBox(
+      height: 40,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(tabs.length, (i) {
+            final selected = i == selectedIndex;
+            return Padding(
+              padding: EdgeInsets.only(right: i == tabs.length - 1 ? 0 : 8),
+              child: InkWell(
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: selected
-                      ? AllColor.loginButtomColor
-                      : AllColor.grey200,
+                onTap: () => onChanged(i),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? AllColor.loginButtomColor
+                        : AllColor.grey100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: selected
+                          ? AllColor.loginButtomColor
+                          : AllColor.grey200,
+                    ),
+                  ),
+                  child: Text(
+                    tabs[i],
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: selected ? AllColor.white : AllColor.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               ),
-              child: Text(
-                tabs[i],
-                style: TextStyle(
-                  color: selected ? AllColor.white : AllColor.black,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-        );
-      }),
+            );
+          }),
+        ),
+      ),
     );
   }
 }
@@ -252,7 +214,6 @@ class _OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
-
     return Container(
       decoration: BoxDecoration(
         color: AllColor.white,
@@ -263,10 +224,9 @@ class _OrderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // status + price
           Row(
             children: [
-              _StatusPill(status: data.status),
+              _StatusPill(label: data.statusLabel, kind: data.kind),
               const Spacer(),
               Text(
                 priceText,
@@ -288,18 +248,14 @@ class _OrderCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-
           _kvBold('Pick up location: ', data.pickup),
           SizedBox(height: 8.h),
           _kvBold('Destination: ', data.destination),
           SizedBox(height: 14.h),
-
-          // buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _PrimaryButton(text: 'See details', onTap: onSeeDetails),
-            
               if (onTrackOrder != null)
                 _SecondaryButton(text: 'Track order', onTap: onTrackOrder!),
             ],
@@ -329,25 +285,22 @@ class _OrderCard extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  final OrderStatus status;
-  const _StatusPill({required this.status});
+  final String label; // ← ঠিক status টেক্সট
+  final OrderStatus kind; // ← রঙ/স্টাইল
+  const _StatusPill({required this.label, required this.kind});
 
   @override
   Widget build(BuildContext context) {
     late Color border;
-    late String text;
-    switch (status) {
+    switch (kind) {
       case OrderStatus.delivered:
         border = AllColor.green500;
-        text = 'Delivered';
-        break;
-      case OrderStatus.pending:
-        border = AllColor.blue500;
-        text = 'Pending';
         break;
       case OrderStatus.onTheWay:
         border = AllColor.orange500;
-        text = 'On the way';
+        break;
+      case OrderStatus.pending:
+        border = AllColor.blue500;
         break;
     }
     return Container(
@@ -358,7 +311,7 @@ class _StatusPill extends StatelessWidget {
         border: Border.all(color: border),
       ),
       child: Text(
-        text,
+        label, // ← API-র status যেমন আছে তেমন
         style: TextStyle(
           color: border,
           fontWeight: FontWeight.w700,

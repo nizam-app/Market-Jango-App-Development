@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/features/driver/screen/driver_order_details.dart';
+import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
+
+import '../model/new_oder_driver_model.dart';
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});
@@ -88,7 +94,7 @@ class _HeaderSection extends StatelessWidget {
 
           InkWell(
             onTap: () {
-              context.push("/driverNotifications");
+              context.push(GlobalNotificationsScreen.routeName);
             },
             child: Icon(
               Icons.notifications,
@@ -185,26 +191,53 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _OrdersList extends StatelessWidget {
+class _OrdersList extends ConsumerWidget {
   const _OrdersList({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final orders = _mockOrders();
-    return Expanded(
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-        itemBuilder: (_, i) => _OrderCard(order: orders[i]),
-        separatorBuilder: (_, __) => SizedBox(height: 12.h),
-        itemCount: orders.length,
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(driverNewOrdersProvider);
+    final notifier = ref.read(driverNewOrdersProvider.notifier);
+
+    return async.when(
+      loading: () =>
+          const Expanded(child: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Expanded(child: Center(child: Text(e.toString()))),
+      data: (resp) {
+        // raw entity list
+        final raw = resp?.data.data ?? const <DriverOrder>[];
+        final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
+
+        return Expanded(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.separated(
+                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                  itemBuilder: (_, i) =>
+                      _OrderCard(order: orders[i], orderId: raw[i].id),
+                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                  itemCount: orders.length,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              GlobalPagination(
+                currentPage: notifier.currentPage,
+                totalPages: notifier.lastPage,
+                onPageChanged: notifier.changePage,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.orderId});
   final _OrderModel order;
+  final int orderId;
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +291,7 @@ class _OrderCard extends StatelessWidget {
                     children: [
                       _FilledBtn(
                         label: "See details",
-                        onTap: () => _onSeeDetails(context, order),
+                        onTap: () => _onSeeDetails(context, orderId),
                         bg: AllColor.loginButtomColor,
                         fg: AllColor.white,
                       ),
@@ -296,8 +329,8 @@ class _OrderCard extends StatelessWidget {
     );
   }
 
-  void _onSeeDetails(BuildContext context, _OrderModel order) {
-    context.push(OrderDetailsScreen.routeName, extra: order);
+  void _onSeeDetails(BuildContext context, orderId) {
+    context.push(OrderDetailsScreen.routeName, extra: orderId);
   }
 
   void _onTrack(BuildContext context, _OrderModel order) {
@@ -409,35 +442,53 @@ class _OrderModel {
     required this.destination,
     required this.price,
   });
+
+  factory _OrderModel.fromEntity(DriverOrder o) {
+    final inv = o.invoice;
+    final pickup = (inv?.pickupAddress?.trim().isNotEmpty ?? false)
+        ? inv!.pickupAddress
+        : (inv?.shipAddress ?? '—');
+    final dest = (inv?.dropOfAddress?.trim().isNotEmpty ?? false)
+        ? inv!.dropOfAddress
+        : (inv?.shipCity ?? '—');
+    // final id = int.parse(o.invoice!.taxRef);
+    return _OrderModel(
+      id: o.invoice!.taxRef,
+      status: o.status,
+      pickup: pickup,
+      destination: dest,
+      price: o.salePrice,
+    );
+  }
 }
 
-class _OrdersListData {
-  static final list = [
-    _OrderModel(
-      id: "ORD12345",
-      status: "Pending",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-    ),
-    _OrderModel(
-      id: "ORD12346",
-      status: "Pending",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-    ),
-    _OrderModel(
-      id: "ORD12347",
-      status: "Pending",
-      pickup: "Urban tech store",
-      destination: "Alex Hossain",
-      price: 750,
-    ),
-  ];
-}
+// class _OrdersListData {
+//   static final list = [
+//     _OrderModel(
+//       id: "ORD12345",
+//       status: "Pending",
+//       pickup: "Urban tech store",
+//       destination: "Alex Hossain",
+//       price: 750,
+//     ),
+//     _OrderModel(
+//       id: "ORD12346",
+//       status: "Pending",
+//       pickup: "Urban tech store",
+//       destination: "Alex Hossain",
+//       price: 750,
+//     ),
+//     _OrderModel(
+//       id: "ORD12347",
+//       status: "Pending",
+//       pickup: "Urban tech store",
+//       destination: "Alex Hossain",
+//       price: 750,
+//     ),
+//   ];
+// }
 
-List<_OrderModel> _mockOrders() => _OrdersListData.list;
+// List<_OrderModel> _mockOrders() => _OrdersListData.list;
 
 class _StatItem {
   final String title;

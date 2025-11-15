@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
-import 'package:market_jango/features/driver/screen/driver_chat.dart';
+import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 
-import '../../driver/screen/driver_home.dart';
-import '../../driver/screen/driver_order.dart';
-import '../../driver/screen/driver_setting.dart';
+import '../../driver/screen/driver_order/screen/driver_order.dart';
+import '../../driver/screen/home/screen/driver_home.dart';
 
 // --- Providers ---------------------------------------------------------------
 
@@ -14,12 +13,14 @@ import '../../driver/screen/driver_setting.dart';
 final driverNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap these with your real screens)
-final driverPagesProvider = Provider<List<Widget>>((_) => const [
-  DriverHomeScreen(),
-  GlobalMassageScreen(),
-  DriverOrder(),
-  DriverSetting(),
-]);
+final driverPagesProvider = Provider<List<Widget>>(
+  (_) => const [
+    DriverHomeScreen(),
+    GlobalMassageScreen(),
+    DriverOrder(),
+    GlobalSettingScreen(),
+  ],
+);
 
 // --- Widget ------------------------------------------------------------------
 
@@ -46,10 +47,7 @@ class DriverBottomNavBar extends ConsumerWidget {
             label: "Home",
             icon: _SvgIcon('assets/images/homeicon.svg'),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: "Chat",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
           BottomNavigationBarItem(
             label: "Order",
             icon: _SvgIcon('assets/images/bookicon.svg'),

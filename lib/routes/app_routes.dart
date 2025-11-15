@@ -37,12 +37,11 @@ import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
-import 'package:market_jango/features/driver/screen/driver_home.dart';
 import 'package:market_jango/features/driver/screen/driver_ontheway.dart';
-import 'package:market_jango/features/driver/screen/driver_order.dart';
-import 'package:market_jango/features/driver/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_setting.dart';
+import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order.dart';
+import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/home/screen/driver_home.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
@@ -84,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: DriverBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -478,12 +477,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const DriverOrder(),
     ),
 
-    GoRoute(
-      path: DriverSetting.routeName,
-      name: 'driverSetting',
-      builder: (context, state) => const DriverSetting(),
-    ),
-
+    // GoRoute(
+    //   path: DriverSetting.routeName,
+    //   name: 'driverSetting',
+    //   builder: (context, state) => const DriverSetting(),
+    // ),
     GoRoute(
       path: DriverHomeScreen.routeName,
       name: 'driverHome',
@@ -491,9 +489,26 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: OrderDetailsScreen.routeName,
-      name: 'orderDetails',
-      builder: (context, state) => const OrderDetailsScreen(),
+      path: OrderDetailsScreen.routeName, // "/orderDetails"
+      name: OrderDetailsScreen.routeName,
+      builder: (context, state) {
+        final extra = state.extra;
+
+        // extra থেকে String সেফলি নিন (int এলে string করে নেব)
+        final String id = switch (extra) {
+          String s => s.trim(),
+          int n => n.toString(),
+          _ => '',
+        };
+
+        if (id.isEmpty) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid tracking id')),
+          );
+        }
+
+        return OrderDetailsScreen(trackingId: id);
+      },
     ),
 
     GoRoute(

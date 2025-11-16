@@ -83,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: TransportBottomNavBar.routeName,
+  initialLocation: VendorBottomNav.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -193,11 +193,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorTransportScreen(),
     ),
 
-    GoRoute(
-      path: VendorOrderPending.routeName,
-      name: 'vendorOrderPending',
-      builder: (context, state) => const VendorOrderPending(),
-    ),
+    // GoRoute(
+    //   path: VendorOrderPending.routeName,
+    //   name: 'vendorOrderPending',
+    //   builder: (context, state) => const VendorOrderPending(),
+    // ),
 
     GoRoute(
       path: AsignToOrderDriver.routeName,
@@ -211,17 +211,17 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorAssignedOrder(),
     ),
 
-    GoRoute(
-      path: VendorOrderComplete.routeName,
-      name: 'vendorOrderCompleted',
-      builder: (context, state) => const VendorOrderComplete(),
-    ),
-
-    GoRoute(
-      path: VendorOrderCancel.routeName,
-      name: 'vendorOrderCancel',
-      builder: (context, state) => const VendorOrderCancel(),
-    ),
+    // GoRoute(
+    //   path: VendorOrderComplete.routeName,
+    //   name: 'vendorOrderCompleted',
+    // //   builder: (context, state) => const VendorOrderComplete(),
+    // // ),
+    //
+    // GoRoute(
+    //   path: VendorOrderCancel.routeName,
+    //   name: 'vendorOrderCancel',
+    //   builder: (context, state) => const VendorOrderCancel(),
+    // ),
 
     GoRoute(
       path: VendorSalePlatformScreen.routeName,
@@ -247,11 +247,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorShipmentsScreen(),
     ),
 
-    GoRoute(
-      path: VendorPendingScreen.routeName,
-      name: 'vendorPendingScreen',
-      builder: (context, state) => const VendorPendingScreen(),
-    ),
+    // GoRoute(
+    //   path: VendorPendingScreen.routeName,
+    //   name: 'vendorPendingScreen',
+    //   builder: (context, state) => const VendorPendingScreen(),
+    // ),
 
     GoRoute(
       path: VendorCancelledScreen.routeName,

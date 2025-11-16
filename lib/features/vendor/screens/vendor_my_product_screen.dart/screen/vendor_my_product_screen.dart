@@ -1,25 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
-class VendorMyProductScreen extends StatefulWidget {
+import '../../product_edit/model/product_attribute_response_model.dart';
+
+class VendorMyProductScreen extends ConsumerStatefulWidget {
   const VendorMyProductScreen({super.key});
   static const routeName = "/vendorMyProductScreen";
 
   @override
-  State<VendorMyProductScreen> createState() => _VendorMyProductScreenState();
+  ConsumerState<VendorMyProductScreen> createState() => _VendorMyProductScreenState();
 }
 
-class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
+class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
   final List<String> attributes = [];
 
-  void _showAttributeMenu(BuildContext context, Offset position) async {
+  Future<void> _showAttributeMenu(BuildContext context, Offset position) async {
+    // 1) API থেকে attribute list আনছি
+    ProductAttributeResponse res;
+    try {
+      res = await ref.read(productAttributesProvider.future);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+      return;
+    }
+
+    final attrs = res.data;
+    if (attrs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No attributes found')),
+      );
+      return;
+    }
+
+    // 2) popup position
     final RenderBox overlay =
     Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    final value = await showMenu<String>(
+    // 3) showMenu – name দেখাচ্ছি
+    final selected = await showMenu<VendorProductAttribute>(
       context: context,
       position: RelativeRect.fromLTRB(
         position.dx,
@@ -27,36 +58,40 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
         overlay.size.width - position.dx,
         overlay.size.height - position.dy,
       ),
-      items: const [
-        PopupMenuItem(value: "Color", child: Text("Color")),
-        PopupMenuItem(value: "Size", child: Text("Size")),
-        PopupMenuItem(value: "Others", child: Text("Others")),
-      ],
+      items: attrs
+          .map(
+            (a) => PopupMenuItem<VendorProductAttribute>(
+          value: a,
+          child: Text(a.name),
+        ),
+      )
+          .toList(),
     );
 
-    if (value != null) {
+    // 4) value handle
+    if (selected != null) {
       setState(() {
-        attributes.add(value);
+        attributes.add(selected.name); // তোমার existing List<String> attributes
       });
 
-      /// Navigation
-      if (value == "Color") {
+      // চাইলে name অনুসারে navigation
+      if (selected.name == "Color") {
         context.push("/myProductColorScreen");
-      } else if (value == "Size") {
+      } else if (selected.name == "Size") {
         context.push("/myProductSizeScreen");
       }
-     
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$value attribute added!")),
+        SnackBar(content: Text("${selected.name} attribute added!")),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final productAsync = ref.watch(productNotifierProvider);
+    final productNotifier = ref.read(productNotifierProvider.notifier);
     return Scaffold(
-     
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 16.h),
@@ -80,14 +115,14 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
                   _AddBox(
                     title: "Add your\nProduct",
                     onTap: () {
-                      context.push("/productEditePage");
+                      context.push(ProductAddPage.routeName);
                     },
                   ),
                   SizedBox(width: 12.w),
                   _AddBox(
                     title: "Add your\nCategory",
                     onTap: () {
-                      context.push("/categoryAddPage");
+                      context.push(CategoryAddPage.routeName);
                     },
                   ),
                 ],
@@ -130,19 +165,47 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
               SizedBox(height: 12.h),
 
               /// Product items
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 5,
-                separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                itemBuilder: (context, index) {
-                  return _ProductCard(
-                    imageUrl:
-                    "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600", // ✅ placeholder image
-                    title: "Flowy summer dress",
-                    category: "Fashion",
-                    price: "\$65",
+              productAsync.when(
+                data: (paginetion) {
+                if(paginetion == null ) {
+                  return const Center(child: Text("No Data"));
+                }
+                 final products = paginetion.products ;
+                  return Column(
+                    children: [
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: products.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return _ProductCard(
+                            imageUrl:
+                            product.image, // ✅ placeholder image
+                            title: product.name,
+                            category: product.categoryName,
+                            price: product.sellPrice,
+                            product: product,
+                          );
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                      GlobalPagination(
+                        currentPage: paginetion.currentPage,
+                        totalPages: paginetion.lastPage,
+                        onPageChanged: (page) {
+                          productNotifier.changePage(page);
+                        },
+                      ),
+                    ],
                   );
+                }     ,
+                error: (error, stackTrace) {
+                  return Center(child: Text(error.toString()));
+                },
+                loading: () {
+                  return const Center(child: CircularProgressIndicator());
                 },
               ),
             ],
@@ -195,12 +258,14 @@ class _ProductCard extends StatelessWidget {
   final String category;
   final String price;
   final String imageUrl;
+  final VendorProduct product;
 
   const _ProductCard({
     required this.title,
     required this.category,
     required this.price,
     required this.imageUrl,
+    required this.product,  
   });
 
   @override
@@ -255,7 +320,7 @@ class _ProductCard extends StatelessWidget {
 
           InkWell(
             onTapDown: (TapDownDetails details) {
-              _showPopupMenu(context, details.globalPosition);
+              _showPopupMenu(context, details.globalPosition, product);
             },
             child: const Icon(Icons.more_vert),
           ),
@@ -264,7 +329,7 @@ class _ProductCard extends StatelessWidget {
     );
   }
 
-  void _showPopupMenu(BuildContext context, Offset position) async {
+  void _showPopupMenu(BuildContext context, Offset position,VendorProduct product,) async {
     final RenderBox overlay =
     Overlay.of(context).context.findRenderObject() as RenderBox;
 
@@ -278,6 +343,9 @@ class _ProductCard extends StatelessWidget {
       ),
       items: [
         PopupMenuItem(
+          onTap: () {
+            context.push(ProductEditScreen.routeName,extra: product);
+          },
           value: "edit",
           child: Row(
             children: [
@@ -302,12 +370,12 @@ class _ProductCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
 
-    if (value == "edit") {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Edit clicked")));
-    } else if (value == "delete") {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Delete clicked")));
-    }
+    // if (value == "edit") {
+    //   ScaffoldMessenger.of(context)
+    //       .showSnackBar(const SnackBar(content: Text("Edit clicked")));
+    // } else if (value == "delete") {
+    //   ScaffoldMessenger.of(context)
+    //       .showSnackBar(const SnackBar(content: Text("Delete clicked")));
+    // }
   }
 }

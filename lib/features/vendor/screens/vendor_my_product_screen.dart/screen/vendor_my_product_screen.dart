@@ -5,14 +5,18 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 import '../../product_edit/model/product_attribute_response_model.dart';
+import '../logic/vendor_product_delete.dart';
 
 class VendorMyProductScreen extends ConsumerStatefulWidget {
   const VendorMyProductScreen({super.key});
@@ -71,14 +75,14 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
     // 4) value handle
     if (selected != null) {
       setState(() {
-        attributes.add(selected.name); // তোমার existing List<String> attributes
+        attributes.add(selected.name);
       });
-
-      // চাইলে name অনুসারে navigation
       if (selected.name == "Color") {
-        context.push("/myProductColorScreen");
+        ref.invalidate(attributeShowProvider);
+        context.push(MyProductColorScreen.routeName, extra: selected.id);
       } else if (selected.name == "Size") {
-        context.push("/myProductSizeScreen");
+        ref.invalidate(attributeShowProvider);
+        context.push(MyProductSizeScreen.routeName, extra: selected.id);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -253,7 +257,7 @@ class _AddBox extends StatelessWidget {
 }
 
 /// Product Card
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends ConsumerWidget {
   final String title;
   final String category;
   final String price;
@@ -269,7 +273,7 @@ class _ProductCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -318,22 +322,33 @@ class _ProductCard extends StatelessWidget {
           ),
           SizedBox(width: 6.w),
 
-          InkWell(
-            onTapDown: (TapDownDetails details) {
-              _showPopupMenu(context, details.globalPosition, product);
+          GestureDetector(
+            onTapDown: (details) {
+              _showPopupMenu(
+                context,
+                details.globalPosition,
+                ref,           // ← এখান থেকে ref পাঠাবে
+                product,
+              );
             },
-            child: const Icon(Icons.more_vert),
+            child: Icon(Icons.more_vert),
           ),
+
         ],
       ),
     );
   }
 
-  void _showPopupMenu(BuildContext context, Offset position,VendorProduct product,) async {
+  Future<void> _showPopupMenu(
+      BuildContext context,
+      Offset position,
+      WidgetRef ref,
+      VendorProduct product,
+      ) async {
     final RenderBox overlay =
     Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    final value = await showMenu(
+    final value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
         position.dx, // X position
@@ -343,9 +358,6 @@ class _ProductCard extends StatelessWidget {
       ),
       items: [
         PopupMenuItem(
-          onTap: () {
-            context.push(ProductEditScreen.routeName,extra: product);
-          },
           value: "edit",
           child: Row(
             children: [
@@ -370,12 +382,66 @@ class _ProductCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
 
-    // if (value == "edit") {
-    //   ScaffoldMessenger.of(context)
-    //       .showSnackBar(const SnackBar(content: Text("Edit clicked")));
-    // } else if (value == "delete") {
-    //   ScaffoldMessenger.of(context)
-    //       .showSnackBar(const SnackBar(content: Text("Delete clicked")));
-    // }
+    if (value == null) return;
+
+    // ----------------- EDIT -----------------
+    if (value == "edit") {
+      context.push(
+        ProductEditScreen.routeName,
+        extra: product,
+      );
+      return;
+    }
+
+    // ----------------- DELETE -----------------
+    if (value == "delete") {
+      // 1) confirm dialog
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("Delete product?"),
+          content: const Text("Are you sure you want to delete this product?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Delete"),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      try {
+        // 2) API call
+        await deleteVendorProduct(
+          ref: ref,
+          productId: product.id,
+        );
+
+
+        ref.invalidate(productNotifierProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product successfully deleted')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString())),
+          );
+        }
+      }
+    }   
   }
+
 }

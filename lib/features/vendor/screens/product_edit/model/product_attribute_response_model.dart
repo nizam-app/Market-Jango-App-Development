@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class ProductAttributeResponse {
   final String status;
   final String message;
@@ -57,10 +59,23 @@ class AttributeValue {
   });
 
   factory AttributeValue.fromJson(Map<String, dynamic> json) {
+    final raw = json['product_attribute_id'];
+
+    // GET API te sometimes 21 (int) ashbe
+    // CREATE API te "21" (String) ashbe
+    final int pid;
+    if (raw is int) {
+      pid = raw;
+    } else if (raw is String) {
+      pid = int.tryParse(raw) ?? 0;   // parse korte na parলে 0
+    } else {
+      pid = int.tryParse(raw.toString()) ?? 0;
+    }
+    
     return AttributeValue(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      productAttributeId: json['product_attribute_id'] ?? 0,
+      productAttributeId: pid,
     );
   }
 }

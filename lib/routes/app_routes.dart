@@ -613,12 +613,12 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: MyProductColorScreen.routeName,
       name: MyProductColorScreen.routeName,
-      builder: (context, state) => MyProductColorScreen(),
+      builder: (context, state) => MyProductColorScreen(attributeId: state.extra as int,),
     ),
     GoRoute(
       path: MyProductSizeScreen.routeName,
       name: MyProductSizeScreen.routeName,
-      builder: (context, state) => MyProductSizeScreen(),
+      builder: (context, state) => MyProductSizeScreen(attributeId: state.extra as int,),
     ),
     GoRoute(
       path: ProductAddPage.routeName,

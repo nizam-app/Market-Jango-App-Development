@@ -56,8 +56,8 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                     const SizedBox(height: 6),
 
                     _SegmentedToggle(
-                      leftText: 'Request transport',
-                      rightText: 'Track shipments',
+                      leftText: 'Track shipments',
+                      // rightText: 'Request transport',
                       value: _tab,
                       onChanged: (v) {
                         setState(() => _tab = v);
@@ -90,7 +90,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
               ),
             ),
 
-            // ---------- Bottom "Search" button ----------
+            
             Positioned(
               left: 16,
               right: 16,
@@ -119,13 +119,13 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
 
 class _SegmentedToggle extends StatelessWidget {
   final String leftText;
-  final String rightText;
+  // final String rightText;
   final int value; // 0/1
   final ValueChanged<int> onChanged;
 
   const _SegmentedToggle({
     required this.leftText,
-    required this.rightText,
+    // required this.rightText,
     required this.value,
     required this.onChanged,
   });
@@ -172,8 +172,8 @@ class _SegmentedToggle extends StatelessWidget {
     return Row(
       children: [
         seg(leftText, value == 0, () => onChanged(0)),
-        const SizedBox(width: 8),
-        seg(rightText, value == 1, () => onChanged(1)),
+        // const SizedBox(width: 8),
+        // seg(rightText, value == 1, () => onChanged(1)),
       ],
     );
   }

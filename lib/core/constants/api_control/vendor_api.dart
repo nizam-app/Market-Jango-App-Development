@@ -18,5 +18,10 @@ class VendorAPIController {
 
   static String vendorCompleteOrder({int page = 1}) =>
   "$_base_api/vendor/all/order?page=$page";
+  static String product_attribute_vendor_show = '$_base_api/product-attribute/vendor/show';
+  static String attribute_value_create = '$_base_api/attribute-value/create';
+  static String attribute_value_update = '$_base_api/attribute-value/update';
+  static String attribute_value_destroy = '$_base_api/attribute-value/destroy';
+  static String product_destroy = '$_base_api/product/destroy';
 
 }

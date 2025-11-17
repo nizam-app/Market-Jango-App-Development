@@ -2,12 +2,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/buyer/screens/order/screen/buyer_order_page.dart';
-import '../../features/vendor/widgets/custom_back_button.dart';
-import 'buyer_massage/screen/global_chat_screen.dart';
+import '../../../../features/buyer/screens/order/screen/buyer_order_page.dart';
+import '../../../../features/vendor/widgets/custom_back_button.dart';
+import '../../buyer_massage/screen/global_chat_screen.dart';
 
 
 // lib/routes/args/tracking_args.dart
@@ -23,7 +26,7 @@ class TrackingArgs {
   });
 }
 
-class GlobalTrackingScreen1 extends StatefulWidget {
+class GlobalTrackingScreen1 extends ConsumerStatefulWidget {
   const GlobalTrackingScreen1({
     super.key,
     required this.screenName,
@@ -38,12 +41,26 @@ class GlobalTrackingScreen1 extends StatefulWidget {
   final bool autoAdvance;
 
   @override
-  State<GlobalTrackingScreen1> createState() => _GlobalTrackingScreen1State();
+  ConsumerState<GlobalTrackingScreen1> createState() => _GlobalTrackingScreen1State();
 }
 
-class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
+class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
   late bool _advanced; // false = Screen-1 view, true = Screen-2 view
   Timer? _timer;
+
+  late String userId ;
+  Future<void> _loadUserId() async {
+    final pref = await SharedPreferences.getInstance();
+    final stored = pref.getString("user_id");
+
+
+
+    setState(() {
+      userId = stored ?? "";
+    });
+
+
+  }
 
   @override
   void initState() {
@@ -56,6 +73,7 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
         if (mounted) setState(() => _advanced = true);
       });
     }
+    _loadUserId();
   }
 
   @override
@@ -66,6 +84,7 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider(userId));
     return Scaffold(
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
@@ -79,10 +98,21 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
             // Header
             Row(
               children: [
-                CircleAvatar(
-                  radius: 20.r,
-                  backgroundImage: const NetworkImage(
-                    "https://randomuser.me/api/portraits/women/65.jpg",
+                userAsync.when(
+                  data: (data) {
+                    final images = data.image;
+                    return CircleAvatar(
+                      radius: 20.r,
+                      backgroundImage:  NetworkImage(
+                        images,
+                      ),
+                    );
+                  }     ,
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (error, stackTrace) => const Center(
+                    child: Text("Error"),
                   ),
                 ),
                 SizedBox(width: 12.w),

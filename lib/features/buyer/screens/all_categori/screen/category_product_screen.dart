@@ -1,4 +1,4 @@
-// lib/features/buyer/screens/category/category_product_screen.dart
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -378,32 +378,38 @@ class VendorSuggestionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      leading: CircleAvatar(
-        radius: 18.r,
-        backgroundColor: AllColor.grey200,
-        backgroundImage: (v.imageUrl != null && v.imageUrl!.isNotEmpty)
-            ? NetworkImage(v.imageUrl!)
-            : null,
-        child: (v.imageUrl == null || v.imageUrl!.isEmpty)
-            ? Text(
-                _initials(v.businessName),
-                style: TextStyle(fontSize: 12.sp, color: AllColor.black),
-              )
-            : null,
+    return GestureDetector(
+      onTap: () => context.push(
+        BuyerVendorProfileScreen.routeName,
+        extra: v.vendorId,
       ),
-      title: Text(
-        v.businessName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp),
-      ),
-      subtitle: Text(
-        v.ownerName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+        leading: CircleAvatar(
+          radius: 18.r,
+          backgroundColor: AllColor.grey200,
+          backgroundImage: (v.imageUrl != null && v.imageUrl!.isNotEmpty)
+              ? NetworkImage(v.imageUrl!)
+              : null,
+          child: (v.imageUrl == null || v.imageUrl!.isEmpty)
+              ? Text(
+                  _initials(v.businessName),
+                  style: TextStyle(fontSize: 12.sp, color: AllColor.black),
+                )
+              : null,
+        ),
+        title: Text(
+          v.businessName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp),
+        ),
+        subtitle: Text(
+          v.ownerName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+        ),
       ),
     );
   }

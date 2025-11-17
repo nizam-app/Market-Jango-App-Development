@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';

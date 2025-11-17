@@ -3,21 +3,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
-class BuyerOrderPage extends ConsumerWidget {
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+class BuyerOrderPage extends  ConsumerStatefulWidget{
   const BuyerOrderPage({super.key});
   static const routeName = "/buyerOrderPage";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BuyerOrderPage> createState() => _BuyerOrderPageState();
+}
+
+class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
+  late String userId ;
+  Future<void> _loadUserId() async {
+    final pref = await SharedPreferences.getInstance();
+    final stored = pref.getString("user_id");
+
+
+
+    setState(() {
+      userId = stored ?? "";          
+    });
+
+   
+  }
+  @override
+  void initState() {
+    super.initState();
+_loadUserId();
+  }
+  @override
+  Widget build(BuildContext context) {
     final ordersAsync = ref.watch(buyerOrdersProvider);
     final notifier = ref.read(buyerOrdersProvider.notifier);
+    final userAsync = ref.watch(userProvider(userId));
 
     return Scaffold(
       body: SafeArea(
@@ -27,10 +55,17 @@ class BuyerOrderPage extends ConsumerWidget {
             children: [
               Tuppertextandbackbutton(screenName: "My Order"),
               SizedBox(height: 12.h),
-              CustomBuyerOrderUpperImage(
-                imageUrl:
-                "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-                onTap: () {},
+              userAsync.when(
+                data: (data) {
+                  final image = data.image;
+                  return CustomBuyerOrderUpperImage(
+                    imageUrl:
+                    image,
+                    onTap: () {},
+                  );
+                }  ,
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text(e.toString())),
               ),
               SizedBox(height: 16.h),
 

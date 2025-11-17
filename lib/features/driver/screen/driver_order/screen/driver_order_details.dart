@@ -63,7 +63,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                 if (data.status == "AssignedOrder") {
                   return _BottomActions(
                     onMessage: () {
-                      context.push(ChatScreen.routeName);
+                      context.push(GlobalChatScreen.routeName);
                     },
                     onStartDelivery: () {
                       context.push(DriverTrakingScreen.routeName);

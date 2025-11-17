@@ -83,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: VendorBottomNav.routeName,
+  initialLocation: BuyerBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -200,9 +200,9 @@ final GoRouter router = GoRouter(
     // ),
 
     GoRoute(
-      path: AsignToOrderDriver.routeName,
+      path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
-      builder: (context, state) => const AsignToOrderDriver(),
+      builder: (context, state) => const AssignToOrderDriver(),
     ),
 
     GoRoute(
@@ -546,11 +546,11 @@ final GoRouter router = GoRouter(
       },
     ),
     GoRoute(
-      path: ChatScreen.routeName, // "/chatScreen"
-      name: ChatScreen.routeName,
+      path: GlobalChatScreen.routeName, // "/chatScreen"
+      name: GlobalChatScreen.routeName,
       builder: (context, state) {
         final args = state.extra as ChatArgs;
-        return ChatScreen(
+        return GlobalChatScreen(
           partnerId: args.partnerId,
           partnerName: args.partnerName,
           partnerImage: args.partnerImage,

@@ -155,55 +155,55 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     ),
                     const SizedBox(height: 14),
 
-                    /// Add Driver Routes (dropdown)
-                    _Label('Add Driver Routes'),
-                    _RoundedDropdown<String>(
-                      value: _selectedRoute,
-                      hint: 'Choose your driving routes',
-                      items: _availableRoutes
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null && !_savedRoutes.contains(v)) {
-                          setState(() {
-                            _selectedRoute = v;
-                            _savedRoutes.add(v);
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    /// Save Driver Routes (clickable chips)
-                    _Label('Save Driver Routes'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _savedRoutes
-                          .map(
-                            (route) => _RouteChip(
-                              text: route,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "You clicked on $route route",
-                                    ),
-                                  ),
-                                );
-                              },
-                              onRemove: () {
-                                setState(() {
-                                  _savedRoutes.remove(route);
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
+                    // /// Add Driver Routes (dropdown)
+                    // _Label('Add Driver Routes'),
+                    // _RoundedDropdown<String>(
+                    //   value: _selectedRoute,
+                    //   hint: 'Choose your driving routes',
+                    //   items: _availableRoutes
+                    //       .map(
+                    //         (e) => DropdownMenuItem(value: e, child: Text(e)),
+                    //       )
+                    //       .toList(),
+                    //   onChanged: (v) {
+                    //     if (v != null && !_savedRoutes.contains(v)) {
+                    //       setState(() {
+                    //         _selectedRoute = v;
+                    //         _savedRoutes.add(v);
+                    //       });
+                    //     }
+                    //   },
+                    // ),
+                    // const SizedBox(height: 14),
+                    //
+                    // /// Save Driver Routes (clickable chips)
+                    // _Label('Save Driver Routes'),
+                    // const SizedBox(height: 8),
+                    // Wrap(
+                    //   spacing: 8,
+                    //   runSpacing: 8,
+                    //   children: _savedRoutes
+                    //       .map(
+                    //         (route) => _RouteChip(
+                    //           text: route,
+                    //           onTap: () {
+                    //             ScaffoldMessenger.of(context).showSnackBar(
+                    //               SnackBar(
+                    //                 content: Text(
+                    //                   "You clicked on $route route",
+                    //                 ),
+                    //               ),
+                    //             );
+                    //           },
+                    //           onRemove: () {
+                    //             setState(() {
+                    //               _savedRoutes.remove(route);
+                    //             });
+                    //           },
+                    //         ),
+                    //       )
+                    //       .toList(),
+                    // ),
 
                     const SizedBox(height: 24),
 

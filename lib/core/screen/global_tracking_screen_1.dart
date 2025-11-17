@@ -579,7 +579,7 @@ class DeliveryFailedPopup {
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
-                  onPressed: () => context.push(ChatScreen.routeName),
+                  onPressed: () => context.push(GlobalChatScreen.routeName),
                   child: Text(
                     "Chat Now",
                     style: TextStyle(fontSize: 14.sp, color: Colors.white),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/data/vendor_product_tracking_data.dart';
@@ -43,13 +42,13 @@ class VendorShipmentsScreen extends ConsumerWidget {
                     value: state.segment,
                     onChanged: (v) {
                       notifier.setSegment(v);
-                      if (v == 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Go to Request transport'),
-                          ),
-                        );
-                      }
+                      // if (v == 0) {
+                      //   ScaffoldMessenger.of(context).showSnackBar(
+                      //     const SnackBar(
+                      //       content: Text('Go to Request transport'),
+                      //     ),
+                      //   );
+                      // }
                     },
                   ),
                   SizedBox(height: 30.h),

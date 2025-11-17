@@ -15,8 +15,8 @@ import 'package:market_jango/features/buyer/widgets/custom_see_all_product.dart'
 class BuyerVendorCetagoryScreen extends ConsumerWidget {
   const BuyerVendorCetagoryScreen({
     super.key,
-    required this.screenName, // ← রুট pathParameters থেকে আসা, API নামটাই
-    required this.vendorId,   // ← GoRouter.extra
+    required this.screenName,
+    required this.vendorId,
   });
 
   final String screenName;

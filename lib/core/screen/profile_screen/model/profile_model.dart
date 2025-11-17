@@ -211,6 +211,7 @@ class DriverInfo {
   final String location;
   final String price;
   final num rating;
+  final String description;
   final int userId;
   final int routeId;
   final String createdAt;
@@ -227,6 +228,7 @@ class DriverInfo {
     required this.routeId,
     required this.createdAt,
     required this.updatedAt,
+    required this.description,
   });
 
   factory DriverInfo.fromJson(Map<String, dynamic> json) => DriverInfo(
@@ -240,6 +242,7 @@ class DriverInfo {
     routeId: json['route_id'] ?? 0,
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
+    description: json['description'] ?? '',
   );
 }
 

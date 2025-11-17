@@ -23,5 +23,6 @@ class VendorAPIController {
   static String attribute_value_update = '$_base_api/attribute-value/update';
   static String attribute_value_destroy = '$_base_api/attribute-value/destroy';
   static String product_destroy = '$_base_api/product/destroy';
+  static String vendor_order_driver = '$_base_api/vendor/pending/order';
 
 }

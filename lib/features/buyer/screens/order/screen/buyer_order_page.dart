@@ -119,22 +119,22 @@ class CusotomShowOrder extends StatelessWidget {
         : const NeverScrollableScrollPhysics(),
     shrinkWrap: !scrollable,
     separatorBuilder: (_, __) => SizedBox(height: 10.h),
-    itemBuilder: (_, i) => _OrderCard(o: orders[i]),
+    itemBuilder: (_, i) => _OrderCard(oderDetails: orders[i]),
   );
 }
 
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.o});
-  final Order o;
+  const _OrderCard({required this.oderDetails});
+  final Order oderDetails;
 
   @override
   Widget build(BuildContext context) {
-    final images = o.items
+    final images = oderDetails.items
         .map((it) => it.product.image)
         .where((s) => s.isNotEmpty)
         .toList();
-    final deliveryType = o.shipCity.isNotEmpty ? o.shipCity : 'Home Delivery';
-    final status = o.effectiveStatus;
+    final deliveryType = oderDetails.shipCity.isNotEmpty ? oderDetails.shipCity : 'Home Delivery';
+    final status = oderDetails.effectiveStatus;
 
     return Stack(children: [
       Container(
@@ -155,17 +155,17 @@ class _OrderCard extends StatelessWidget {
           children: [
             _Collage(images),
             SizedBox(width: 14.w),
-            Expanded(child: _Texts(orderId: o.taxRef, deliveryType: deliveryType, status: status)),
+            Expanded(child: _Texts(orderId: oderDetails.taxRef, deliveryType: deliveryType, status: status)),
             _Track(onTap: () {
               context.pushNamed(
                 GlobalTrackingScreen1.routeName,
-                extra: const TrackingArgs(
+                extra:  TrackingArgs(
                   screenName: 'Transport Tracking',
-                  startAdvanced: false,
-                  autoAdvance: false,
+                  invoiceId:  oderDetails.id,
+                  
                 ),
               );
-              o.itemsCount;
+              oderDetails.itemsCount;
             }),
           ],
         ),

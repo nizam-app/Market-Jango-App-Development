@@ -12,10 +12,9 @@ final trackingDetailsProvider =
 FutureProvider.family<TrackingInvoice, int>((ref, int invoiceId) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   final token = prefs.getString('auth_token');
-
-  // BuyerAPIController.invoiceTrackingDetails = "http://.../api/buyer/invoice/tracking/details"
+  
   final uri = Uri.parse(
-      '${BuyerAPIController.paymen_tresponse}/$invoiceId');
+      BuyerAPIController.buyer_tracking_details(invoiceId));
 
   final res = await http.get(
     uri,

@@ -83,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: BuyerBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -338,39 +338,26 @@ final GoRouter router = GoRouter(
     //   builder: (context, state) => TransportChart(),
     // ),
     GoRoute(
-      path: GlobalTrackingScreen1.routeName,
+      path: GlobalTrackingScreen1.routeName, // "/transportTracking"
       name: GlobalTrackingScreen1.routeName,
       builder: (context, state) {
-        // primary: extra থেকে পার্স
         final extra = state.extra;
-        if (extra is TrackingArgs) {
-          return GlobalTrackingScreen1(
-            screenName: extra.screenName,
-            startAdvanced: extra.startAdvanced,
-            autoAdvance: extra.autoAdvance,
+
+        if (extra is! TrackingArgs) {
+          // safety fallback
+          return const Scaffold(
+            body: Center(
+              child: Text('Invalid tracking args'),
+            ),
           );
         }
 
-        // fallback: query/path থেকে পার্স (যদি extra না দেও)
-        bool _b(String? v, bool def) {
-          if (v == null) return def;
-          final s = v.toLowerCase();
-          return s == 'true' || s == '1';
-        }
-
-        String _s(String key, {String def = 'Tracking'}) {
-          return state.uri.queryParameters[key] ??
-              state.pathParameters[key] ??
-              def;
-        }
-
         return GlobalTrackingScreen1(
-          screenName: _s('screenName'),
-          startAdvanced: _b(state.uri.queryParameters['startAdvanced'], false),
-          autoAdvance: _b(state.uri.queryParameters['autoAdvance'], true),
+          screenName: extra.screenName,
+          invoiceId: extra.invoiceId,
         );
       },
-    ),
+    ) ,
 
     // GoRoute(
     //   path: TransportSetting.routeName,

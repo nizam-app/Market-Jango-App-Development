@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // Add google_maps_flutter
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
-import 'package:logger/logger.dart'; // Add this import
 
 class VendorTransportScreen extends StatefulWidget {
   const VendorTransportScreen({super.key});
@@ -16,15 +15,15 @@ class VendorTransportScreen extends StatefulWidget {
 }
 
 class _VendorTransportScreenState extends State<VendorTransportScreen> {
-  int _tab = 0;
+  int _tab = 0; // 0 = Request transport, 1 = Track shipments
   final _pickup = TextEditingController();
   final _destination = TextEditingController();
-  late GoogleMapController mapController;
+  late GoogleMapController mapController; // Controller for GoogleMap
   LatLng _pickupLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
-  LatLng _destinationLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
-
-  // Create a logger instance
-  final Logger _logger = Logger();
+  LatLng _destinationLatLng = LatLng(
+    23.8103,
+    90.4125,
+  ); // Default Dhaka coordinates
 
   @override
   void dispose() {
@@ -34,37 +33,20 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    checkApiKey(); // Check if API key is valid
-    _logger.i('VendorTransportScreen Initialized'); // Log the screen initialization
-  }
-
-  // Add logging to check the API key
-  void checkApiKey() {
-    try {
-      // Assuming you have a method to retrieve the API key
-      _logger.i("Google Maps API Key is properly set in the project.");
-    } catch (e) {
-      _logger.e("Error with Google Maps API key: $e");
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
+            // ---------- Google Map ----------
             Positioned.fill(
               child: GoogleMap(
                 onMapCreated: (controller) {
                   mapController = controller;
-                  _logger.i('Google Map Created');
                 },
                 initialCameraPosition: CameraPosition(
                   target: _pickupLatLng,
-                  zoom: 14.0,
+                  zoom: 14.0, // Initial zoom level
                 ),
                 markers: {
                   Marker(
@@ -78,8 +60,15 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                     infoWindow: InfoWindow(title: 'Destination'),
                   ),
                 },
+                // Enable zoom controls
+                zoomControlsEnabled: true,
+                onCameraMove: (CameraPosition position) {
+                  // You can add logic here to handle camera movement if needed
+                },
               ),
             ),
+
+            // ---------- Foreground UI ----------
             Positioned.fill(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -88,6 +77,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 6),
+
                     _SegmentedToggle(
                       leftText: 'Track shipments',
                       value: _tab,
@@ -100,13 +90,18 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                         }
                       },
                     ),
+
                     SizedBox(height: 12.h),
+
+                    // Pickup field
                     _LocationField(
                       controller: _pickup,
                       hint: 'Enter Pickup location',
                       icon: Icons.near_me_rounded,
                     ),
                     SizedBox(height: 10.h),
+
+                    // Destination field
                     _LocationField(
                       controller: _destination,
                       hint: 'Destination',
@@ -116,6 +111,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 ),
               ),
             ),
+
             Positioned(
               left: 16,
               right: 16,
@@ -136,15 +132,15 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   }
 
   void goToVendorDriverList(BuildContext context) {
-    _logger.i('Navigating to Vendor Driver List');
     context.push(VendorDriverList.routeName);
   }
 }
 
-// Custom pieces
+/* -------------------- Custom pieces -------------------- */
+
 class _SegmentedToggle extends StatelessWidget {
   final String leftText;
-  final int value;
+  final int value; // 0/1
   final ValueChanged<int> onChanged;
 
   const _SegmentedToggle({
@@ -171,12 +167,12 @@ class _SegmentedToggle extends StatelessWidget {
               ),
               boxShadow: active
                   ? [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Text(
@@ -192,11 +188,7 @@ class _SegmentedToggle extends StatelessWidget {
       );
     }
 
-    return Row(
-      children: [
-        seg(leftText, value == 0, () => onChanged(0)),
-      ],
-    );
+    return Row(children: [seg(leftText, value == 0, () => onChanged(0))]);
   }
 }
 

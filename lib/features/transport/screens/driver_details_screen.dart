@@ -4,9 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DriverDetailsScreen extends ConsumerWidget {
   const DriverDetailsScreen({super.key, required this.driverId});
@@ -38,10 +42,13 @@ class DriverDetailsScreen extends ConsumerWidget {
           // car brand/model from driver info (fallback text)
           final carBrand = d?.carName?.isNotEmpty == true
               ? d!.carName
-              : "Toyota";
+            : "Not available";
           final carModel = d?.carModel?.isNotEmpty == true
               ? d!.carModel
-              : "Cross Corolla";
+              : "Not available";
+          final description = d?.description?.isNotEmpty == true
+              ? d!.description
+              : "Not available";
 
           // car images from userImages (if any), otherwise fallback list
           final carImages = (user.userImages.isNotEmpty)
@@ -50,10 +57,10 @@ class DriverDetailsScreen extends ConsumerWidget {
                     .where((u) => u.isNotEmpty)
                     .toList()
               : <String>[
-                  "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
-                  "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
-                  "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
-                  "https://pngimg.com/uploads/porsche/porsche_PNG10613.png",
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
                 ];
           // Logger().d(user);
           Logger().d(driverId);
@@ -155,8 +162,7 @@ class DriverDetailsScreen extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(height: 6.h),
-                Text(
-                  "Lorem ipsum dolor sit amet consectetur. Id viverra elementum sit viverra vestibulum fames. Euismod habitasse habitant massa amet. Venenatis id netus orci dolor nulla ultricies dignissim vitae sagittis.",
+                Text(description,
                   style: TextStyle(fontSize: 13.sp, color: Colors.grey[800]),
                   textAlign: TextAlign.justify,
                 ),
@@ -175,7 +181,7 @@ class DriverDetailsScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 10.h),
 
-                GridView.builder(
+              if (user.userImages.isNotEmpty)    GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: carImages.isNotEmpty
@@ -200,7 +206,7 @@ class DriverDetailsScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 20.h),
 
-                /// Buttons
+               
                 Row(
                   children: [
                     Expanded(
@@ -212,8 +218,17 @@ class DriverDetailsScreen extends ConsumerWidget {
                           ),
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                         ),
-                        onPressed: () {
-                          context.push(GlobalMassageScreen.routeName);
+                        onPressed: ()async { SharedPreferences _prefs = await SharedPreferences.getInstance();
+                        final userId = _prefs.getString("user_id");
+                        if (userId == null) throw Exception("user id not founde");
+                     
+                        context.push(GlobalChatScreen.routeName, extra: ChatArgs(
+                          partnerId: user.id,
+                          partnerName: user.name,
+                          partnerImage: user.image,
+                          myUserId: int.parse(userId),
+                        ),
+                        );
                         },
                         child: Text(
                           "Send Message",

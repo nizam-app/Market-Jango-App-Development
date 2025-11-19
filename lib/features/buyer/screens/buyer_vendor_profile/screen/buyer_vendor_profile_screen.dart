@@ -9,6 +9,7 @@ import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_propuler_product_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
+import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
@@ -16,6 +17,7 @@ import 'buyer_vendor_cetagory_screen.dart';
 
 class BuyerVendorProfileScreen extends ConsumerWidget {
   const BuyerVendorProfileScreen({super.key, required this.vendorId});
+
   static final String routeName = '/vendorProfileScreen';
   final int vendorId;
 
@@ -49,17 +51,19 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                         return Column(
                           children: [
                             for (final c in categories) ...[
-                              SeeMoreButton(
-                                name: c.name,
-                                seeMoreAction: () {
-                                  context.pushNamed(
-                                    BuyerVendorCetagoryScreen.routeName,
-                                    pathParameters: {"screenName": c.name},
-                                    extra: vendorId,
-                                  );
-                                },
-                              ),
-                              FashionProduct(products: c.products),
+                              if (c.products.isNotEmpty)
+                                SeeMoreButton(
+                                  name: c.name,
+                                  seeMoreAction: () {
+                                    context.pushNamed(
+                                      BuyerVendorCetagoryScreen.routeName,
+                                      pathParameters: {"screenName": c.name},
+                                      extra: vendorId,
+                                    );
+                                  },
+                                ),
+                              if (c.products.isNotEmpty)
+                                FashionProduct(products: c.products),
                             ],
                           ],
                         );
@@ -78,6 +82,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
 
 class CustomVendorUpperSection extends ConsumerWidget {
   const CustomVendorUpperSection({super.key, required this.vendorId});
+
   final String vendorId;
 
   @override
@@ -105,7 +110,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
 
         final img = hasText(v.image)
             ? v.image!
-            : 'https://via.placeholder.com/200x200.png?text=Vendor';
+            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvulry9PHytXyLFph-HdGDizB7P5EF38IskQ&s';
 
         final location = (vendor != null && hasText(vendor.country))
             ? vendor.country
@@ -192,6 +197,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
 
 class FashionProduct extends StatelessWidget {
   const FashionProduct({super.key, this.products});
+
   final List<VcpProduct>? products;
 
   @override
@@ -204,15 +210,27 @@ class FashionProduct extends StatelessWidget {
         shrinkWrap: true,
         physics: const AlwaysScrollableScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        itemCount: items.isEmpty ? 10 : items.length,
+        itemCount: items.length,
         itemBuilder: (context, index) {
           if (items.isEmpty) {
-            return CustomNewProduct(
-              width: 130,
-              height: 140,
-              productName: 'Product Name',
-              productPricesh: 'prices',
-              imageHeight: 130,
+            return const SizedBox.shrink();
+          }
+
+          if (items.isNotEmpty) {
+            final p = items[index];
+            return GestureDetector(
+              onTap: () => context.push(
+                ProductDetails.routeName,
+                extra: p.id,
+              ),
+              child: CustomNewProduct(
+                width: 130,
+                height: 140,
+                productName: p.name,
+                productPricesh:p.sellPrice.toStringAsFixed(2),
+                image: p.image,
+                imageHeight: 130,
+              ),
             );
           }
 
@@ -235,6 +253,7 @@ class FashionProduct extends StatelessWidget {
 
 class PopularProduct extends ConsumerWidget {
   const PopularProduct({super.key, required this.vendorId});
+
   final int vendorId; // pass the ID you used in Postman (e.g., 1)
 
   @override
@@ -266,26 +285,30 @@ class PopularProduct extends ConsumerWidget {
           itemBuilder: (context, index) {
             final p = items[index].product;
 
-            return Stack(
-              children: [
-                CustomNewProduct(
-                  width: 162.w,
-                  height: 175.h,
-                  // Your widget’s param names are a bit swapped in example,
-                  // keeping exactly as your API expects:
-                  productPricesh: p.name, // title
-                  productName: p.sellPrice.toStringAsFixed(2), // price
-                  // If your CustomNewProduct supports image param, pass p.image.
-                ),
-                Positioned(
-                  top: 10,
-                  right: 30,
-                  child: CustomDiscountCord(
-                    // if your Discount widget accepts a value; else keep empty
-                    // value: p.discount,
+            return GestureDetector(
+              onTap: () => context.push(ProductDetails.routeName, extra: p.id),
+              child: Stack(
+                children: [
+                  CustomNewProduct(
+                    width: 162.w,
+                    height: 175.h,
+                    // Your widget’s param names are a bit swapped in example,
+                    // keeping exactly as your API expects:
+                    productPricesh: p.name,
+                    // title
+                    productName: p.sellPrice.toStringAsFixed(2),
+                    image: p.image,
                   ),
-                ),
-              ],
+                  if (p.discount != null && p.discount! > 0)
+                    Positioned(
+                      top: 10,
+                      right: 30,
+                      child: CustomDiscountCord(
+                        discount: p.discount.toString(),
+                      ),
+                    ),
+                ],
+              ),
             );
           },
         );

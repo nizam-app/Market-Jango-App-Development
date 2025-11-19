@@ -8,6 +8,7 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
 
@@ -32,77 +33,78 @@ class VendorHomeScreen extends ConsumerWidget {
 
     return SafeArea(
       child: Scaffold(
-        // backgroundColor: AllColor.white70,
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 25.h),
-              vendorAsync.when(
-                data: (vendor) => buildProfileSection(vendor),
-                loading: () => const CircularProgressIndicator(),
-                error: (err, _) => Text('Error: $err'),
+        body: Builder(    
+          builder: (innerContext) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 25.h),
+                  vendorAsync.when(
+                    data: (vendor) => buildProfileSection(innerContext, vendor),
+                    loading: () => const CircularProgressIndicator(),
+                    error: (err, _) => Text('Error: $err'),
+                  ),
+                  SizedBox(height: 30.h),
+                  GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
+                    provider: searchProvider,
+                    itemsSelector: (res) => res.products,
+                    itemBuilder: (context, p) => ProductSuggestionTile(p: p),
+                    onItemSelected: (p) {},
+                    hintText: 'Search products...',
+                    debounce: const Duration(seconds: 1),
+                    minChars: 1,
+                    showResults: true,
+                    resultsMaxHeight: 380,
+                    autofocus: false,
+                  ),
+                  SizedBox(height: 15.h),
+                  CategoryBar(
+                    endpoint: VendorAPIController.vendor_category,
+                    onCategorySelected: (categoryId) {
+                      productNotifier.changeCategory(categoryId);
+                    },
+                  ),
+                  SizedBox(height: 20.h),
+                  // Products with pagination
+                  productAsync.when(
+                    data: (paginated) {
+                      if (paginated == null) {
+                        return const Center(child: Text("No products found"));
+                      }
+                      final products = paginated.products;
+                      return Column(
+                        children: [
+                          _buildProductGridViewSection(products),
+                          SizedBox(height: 20.h),
+                          GlobalPagination(
+                            currentPage: paginated.currentPage,
+                            totalPages: paginated.lastPage,
+                            onPageChanged: (page) {
+                              productNotifier.changePage(page);
+                            },
+                          ),
+                          SizedBox(height: 20.h),
+                        ],
+                      );
+                    },
+                    loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                    error: (err, _) => Center(child: Text('Error: $err')),
+                  ),
+                ],
               ),
-              SizedBox(height: 30.h),
-              GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
-                provider: searchProvider,
-                itemsSelector: (res) => res.products,
-                itemBuilder: (context, p) => ProductSuggestionTile(p: p),
-                onItemSelected: (p) {
-                  // context.push('/product/${p.id}');
-                },
-                hintText: 'Search products...',
-                debounce: const Duration(seconds: 1),
-                minChars: 1,
-                showResults: true,
-                resultsMaxHeight: 380,
-                autofocus: false,
-              ),
-              SizedBox(height: 15.h),
-              // Category bar
-              CategoryBar(
-                endpoint: VendorAPIController.vendor_category,
-                onCategorySelected: (categoryId) {
-                  productNotifier.changeCategory(categoryId);
-                },
-              ),
-              SizedBox(height: 20.h),
-
-              // Products with pagination
-              productAsync.when(
-                data: (paginated) {
-                  if (paginated == null) {
-                    return const Center(child: Text("No products found"));
-                  }
-                  final products = paginated.products;
-                  return Column(
-                    children: [
-                      _buildProductGridViewSection(products),
-                      SizedBox(height: 20.h),
-                      GlobalPagination(
-                        currentPage: paginated.currentPage,
-                        totalPages: paginated.lastPage,
-                        onPageChanged: (page) {
-                          productNotifier.changePage(page);
-                        },
-                      ),
-                      SizedBox(height: 20.h),
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(child: Text('Error: $err')),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
+
   }
 
   Widget buildDrawer(BuildContext context) {
@@ -116,7 +118,7 @@ class VendorHomeScreen extends ConsumerWidget {
           SizedBox(height: 10.h),
           InkWell(
             onTap: () {
-              context.push("/vendorOrderPending");
+              context.push(VendorShipmentsScreen.routeName);
             },
             child: ListTile(
               leading: ImageIcon(
@@ -280,97 +282,76 @@ Widget buildAddUrProduct(BuildContext context) {
   );
 }
 
-Widget buildProfileSection(VendorDetailsModel vendor) {
-  return Column(
+Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
+  return Row(
     children: [
-      Center(
-        child: Stack(
-          children: [
-            Container(
-              height: 82.w,
-              width: 82.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 1.w,
-                  color: AllColor.loginButtomColor,
+      Spacer(),
+      Column(
+        children: [
+          Center(
+            child: Stack(
+              children: [
+                Container(
+                  height: 82.w,
+                  width: 82.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      width: 1.w,
+                      color: AllColor.loginButtomColor,
+                    ),
+                    image: DecorationImage(
+                      image: NetworkImage(vendor.image),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-                image: DecorationImage(
-                  image: NetworkImage(vendor.image),
-                  fit: BoxFit.cover,
+
+                // online dot
+                Positioned(
+                  top: 8.h,
+                  left: 2.w,
+                  child: Container(
+                    height: 12.w,
+                    width: 12.w,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 1.w,
+                        color: AllColor.grey100,
+                      ),
+                      color: AllColor.activityColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                 ),
-              ),
+
+                // 👇 এখানে ছোট icon দিলাম – চাপ দিলে endDrawer open হবে
+                
+              ],
             ),
-            Positioned(
-              top: 15.h,
-              left: 4.w,
-              child: Container(
-                height: 10.w,
-                width: 10.w,
-                decoration: BoxDecoration(
-                  color: AllColor.activityColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            // Positioned(
-            //   bottom: 10.h,
-            //   right: 0.w,
-            //   child: InkWell(
-            //     onTap: () {
-            //
-            //         // showModalBottomSheet(
-            //         //   context: context,
-            //         //   builder: (_) {
-            //         //     return SafeArea(
-            //         //       child: Wrap(
-            //         //         children: [
-            //         //           ListTile(
-            //         //             leading: const Icon(Icons.camera_alt),
-            //         //             title: const Text('Camera'),
-            //         //             onTap: () async{
-            //         //               Navigator.pop(context);
-            //         //
-            //         //
-            //         //                 var _picker;
-            //         //                 final x = await _picker.pickImage(
-            //         //                   source: ImageSource.camera,
-            //         //                   imageQuality: 85,
-            //         //                 );
-            //         //                 if (x != null) setState(() => _cover = x);
-            //         //
-            //         //
-            //         //
-            //         //             },
-            //         //           ),
-            //         //           ListTile(
-            //         //             leading: const Icon(Icons.photo_library),
-            //         //             title: const Text('Gallery'),
-            //         //             onTap: () {
-            //         //               Navigator.pop(context);
-            //         //               _pickCover(ImageSource.gallery);
-            //         //             },
-            //         //           ),
-            //         //         ],
-            //         //       ),
-            //         //     );
-            //         //   },
-            //         // );
-            //
-            //     },
-            //       child: CircleAvatar(radius: 10.r, child: Icon(Icons.edit, color: AllColor.black,size: 12.r,))),
-            // ),
-          ],
+          ),
+          
+          Text(
+            vendor.name,
+            style: TextStyle(fontSize: 16.sp, color: AllColor.loginButtomColor),
+          ),
+        ],
+      ),
+     Spacer()         ,
+     InkWell(
+          onTap: () {
+            Scaffold.of(context).openEndDrawer();
+          },
+          child: Icon(
+            Icons.menu,
+            size: 20.r,
+            color: Colors.black,
+          ),
         ),
-      ),
-      SizedBox(height: 20.h),
-      Text(
-        vendor.name,
-        style: TextStyle(fontSize: 16.sp, color: AllColor.loginButtomColor),
-      ),
     ],
   );
 }
+
 
 class CategoryBar extends ConsumerStatefulWidget {
   const CategoryBar({

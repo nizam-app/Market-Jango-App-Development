@@ -2,152 +2,205 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/data/global_tracking_data.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/model/global_tracking_model.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/buyer/screens/order/screen/buyer_order_page.dart';
-import '../../features/vendor/widgets/custom_back_button.dart';
-import 'buyer_massage/screen/global_chat_screen.dart';
+import '../../../../features/buyer/screens/order/screen/buyer_order_page.dart';
+import '../../../../features/vendor/widgets/custom_back_button.dart';
+import '../../buyer_massage/screen/global_chat_screen.dart';
 
-
-// lib/routes/args/tracking_args.dart
-class TrackingArgs {
-  final String screenName;
-  final bool startAdvanced;
-  final bool autoAdvance;
-
-  const TrackingArgs({
-    required this.screenName,
-    this.startAdvanced = false,
-    this.autoAdvance = true,
-  });
-}
-
-class GlobalTrackingScreen1 extends StatefulWidget {
+class GlobalTrackingScreen1 extends ConsumerStatefulWidget {
   const GlobalTrackingScreen1({
     super.key,
     required this.screenName,
-    this.startAdvanced = false,
-    this.autoAdvance = true, 
+    required this.invoiceId,
   });
 
   static const String routeName = "/transportTracking";
+
   final String screenName;
-  final bool startAdvanced;
-  
-  final bool autoAdvance;
+  final int invoiceId;
 
   @override
-  State<GlobalTrackingScreen1> createState() => _GlobalTrackingScreen1State();
+  ConsumerState<GlobalTrackingScreen1> createState() =>
+      _GlobalTrackingScreen1State();
 }
 
-class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
-  late bool _advanced; // false = Screen-1 view, true = Screen-2 view
-  Timer? _timer;
+class _GlobalTrackingScreen1State
+    extends ConsumerState<GlobalTrackingScreen1> {
+  bool _advanced = false; // false = basic info, true = logs
+
+  String? userId;
+
+  Future<void> _loadUserId() async {
+    final pref = await SharedPreferences.getInstance();
+    final stored = pref.getString("user_id");
+    setState(() {
+      userId = stored;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _advanced = widget.startAdvanced;
+    _loadUserId();
+  }
 
-    // ⏱️ Demo logic: after 3s move to the advanced (screen-2) state
-    if (widget.autoAdvance && !_advanced) {
-      _timer = Timer(const Duration(seconds: 3), () {
-        if (mounted) setState(() => _advanced = true);
-      });
+  // -------- delivery_status -> step index (0,1,2) ----------
+  int _mapDeliveryStatusToStep(String status) {
+    final s = status.toLowerCase();
+
+    if (s == 'assignedorder' ||
+        s == 'assigned_order' ||
+        s == 'assigned' ||
+        s == 'pending') {
+      return 0; // only first point active
     }
+    if (s == 'ongoing') {
+      return 1; // first + second active
+    }
+    if (s == 'completed' || s == 'complete' || s == 'cancelled') {
+      return 2; // all three active
+    }
+    return 0;
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  // avatar widget (userProvider only when userId available)
+  Widget _buildUserAvatar() {
+    final uid = userId;
+    if (uid == null || uid.isEmpty) {
+      return CircleAvatar(
+        radius: 20.r,
+        child: const Icon(Icons.person),
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 20.h),
-            const CustomBackButton(),
-            SizedBox(height: 10.h),
-
-            // Header
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20.r,
-                  backgroundImage: const NetworkImage(
-                    "https://randomuser.me/api/portraits/women/65.jpg",
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "To Receive",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      "Track Your Order",
-                      style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // small toggle to test quickly
-                Switch(
-                  value: _advanced,
-                  onChanged: (v) => setState(() => _advanced = v),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.h),
-
-            // Progress (reacts to _advanced)
-            Row(
-              children: [
-                _glossyCircle(active: true),
-                _glossyLine(active: true),
-                _glossyCircle(active: true),
-                _glossyLine(active: _advanced),
-                _glossyCircle(active: _advanced),
-              ],
-            ),
-            SizedBox(height: 20.h),
-
-            // Title for phase 1
-            if (!_advanced)
-              Text(
-                "Packed",
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-              ),
-
-            SizedBox(height: 16.h),
-
-            // Tracking number (common)
-            _trackingNumber(),
-
-            SizedBox(height: 20.h),
-
-            // Body switches by state
-            if (_advanced) _screen2Body(context) else _screen1Body(context),
-          ],
-        ),
+    final userAsync = ref.watch(userProvider(uid));
+    return userAsync.when(
+      data: (data) {
+        final image = data.image;
+        return CircleAvatar(
+          radius: 20.r,
+          backgroundImage: NetworkImage(image),
+        );
+      },
+      loading: () => SizedBox(
+        width: 24.r,
+        height: 24.r,
+        child: const CircularProgressIndicator(),
+      ),
+      error: (_, __) => CircleAvatar(
+        radius: 20.r,
+        child: const Icon(Icons.error),
       ),
     );
   }
 
-  // ---------- Common: Tracking number box ----------
-  Widget _trackingNumber() {
+  @override
+  Widget build(BuildContext context) {
+    final trackingAsync =
+    ref.watch(trackingDetailsProvider(widget.invoiceId));
+
+    return Scaffold(
+      body: trackingAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toString())),
+        data: (invoice) {
+          final stepIndex =
+          _mapDeliveryStatusToStep(invoice.deliveryStatus);
+          final logs = invoice.statusLogs;
+          final hasLogs = logs.isNotEmpty;
+
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20.h),
+                const CustomBackButton(),
+                SizedBox(height: 10.h),
+
+                // -------- Header ----------
+                Row(
+                  children: [
+                    _buildUserAvatar(),
+                    SizedBox(width: 12.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          invoice.deliveryStatus, // e.g. Pending
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          "Track your order",
+                          style: TextStyle(
+                              fontSize: 12.sp, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // শুধু manually toggle করার জন্য
+                    // Switch(
+                    //   value: _advanced,
+                    //   onChanged: (v) => setState(() => _advanced = v),
+                    // ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+
+                // -------- Progress stepper ----------
+                Row(
+                  children: [
+                    _glossyCircle(active: stepIndex >= 0),
+                    _glossyLine(active: stepIndex >= 1),
+                    _glossyCircle(active: stepIndex >= 1),
+                    _glossyLine(active: stepIndex >= 2),
+                    _glossyCircle(active: stepIndex >= 2),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+
+                Text(
+                  invoice.deliveryStatus,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+
+                // Tracking number
+                _trackingNumber(invoice.taxRef.isNotEmpty
+                    ? invoice.taxRef
+                    : 'INV-${invoice.id}'),
+                SizedBox(height: 20.h),
+
+         
+                if (_advanced && hasLogs)
+                  _screen2Body(context, logs)
+                else
+                  SizedBox()
+                  // _screen1Body(context, invoice),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ---------- Tracking number box ----------
+  Widget _trackingNumber(String trackingNumber) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -159,13 +212,35 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
         children: [
           Text(
             "Tracking Number",
-            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("LGS-129827839300763731", style: TextStyle(fontSize: 13.sp)),
-              Icon(Icons.copy, color: Colors.grey, size: 20.sp),
+              Expanded(
+                child: Text(
+                  trackingNumber,
+                  style: TextStyle(fontSize: 13.sp),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.copy, color: Colors.grey, size: 20.sp),
+                onPressed: () async {
+                  await Clipboard.setData(
+                    ClipboardData(text: trackingNumber),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Tracking ID copied"),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ],
@@ -173,53 +248,44 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
     );
   }
 
-  // ---------- Screen-1 body ----------
-  Widget _screen1Body(BuildContext context) {
+
+  // ---------- Screen-1 body (basic info) ----------
+  Widget _screen1Body(BuildContext context, TrackingInvoice invoice) {
+    final created =
+        invoice.createdAt?.toLocal().toString().substring(0, 16) ?? '';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _timelineItem(
-          title: "Packed",
+          title: "Order placed",
+          desc: "Customer: ${invoice.cusName}",
+          time: created,
+          active: true,
+        ),
+        _timelineItem(
+          title: "Payment status: ${invoice.status}",
+          desc: "Payable: ${invoice.payable} ${invoice.currency}",
+          time: "",
+          active: true,
+        ),
+        _timelineItem(
+          title: "Shipping address",
           desc:
-              "Your parcel is packed and will be handed over to our delivery partner.",
-          time: "April.19 12:31",
-          active: true,
-        ),
-        InkWell(
-          onTap: () {
-            // Example: when the user taps, go to booking step.
-            context.push("/transport_booking3");
-          },
-          child: _timelineItem(
-            title: "On the Way to Logistic Facility",
-            desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-            time: "April.19 16:20",
-            active: true,
-          ),
-        ),
-        _timelineItem(
-          title: "Arrived at Logistic Facility",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "April.19 19:07",
-          active: true,
-        ),
-        _timelineItem(
-          title: "Shipped",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "Expected on April.20",
-          active: false,
-          shipped: true,
+          "${invoice.shipAddress}, ${invoice.shipCity}, ${invoice.shipCountry}",
+          time: "",
         ),
         SizedBox(height: 20.h),
 
-        // Driver info (kept exactly like your original guard)
+        // Driver info (আগের guard 그대로)
         if (widget.screenName != BuyerOrderPage.routeName)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "Driver Information",
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10.h),
               Container(
@@ -276,47 +342,23 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
     );
   }
 
-  // ---------- Screen-2 body ----------
-  Widget _screen2Body(BuildContext context) {
+  // ---------- Screen-2 body = status_logs ----------
+  Widget _screen2Body(
+      BuildContext context, List<TrackingStatusLog> logs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _timelineItem(
-          title: "Packed",
-          desc:
-              "Your parcel is packed and will be handed over to our delivery partner.",
-          time: "April.19 12:31",
-        ),
-        _timelineItem(
-          title: "On the Way to Logistic Facility",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "April.19 16:20",
-        ),
-        _timelineItem(
-          title: "Arrived at Logistic Facility",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "April.19 19:07",
-        ),
-        _timelineItem(
-          title: "Shipped",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "April.20 06:15",
-        ),
-        _timelineItem(
-          title: "Out for Delivery",
-          desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-          time: "April.22 11:10",
-        ),
-        InkWell(
-          onTap: () => DeliveryFailedPopup.show(context),
-          child: _timelineItem(
-            title: "Attempt to deliver your parcel was not successful →",
-            desc: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-            time: "April.19 12:50",
-            highlight: true,
-          ),
-        ),
-      ],
+      children: logs.map((log) {
+        final created =
+            log.createdAt?.toLocal().toString().substring(0, 16) ?? '';
+        final highlight = log.isActive == 1;
+
+        return _timelineItem(
+          title: log.status,
+          desc: log.note,
+          time: created,
+          highlight: highlight,
+        );
+      }).toList(),
     );
   }
 
@@ -407,10 +449,10 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
               boxShadow: [
                 BoxShadow(
                   color:
-                      (active
-                              ? const Color(0xFF6DB2FF)
-                              : const Color(0xFFCAD4DE))
-                          .withOpacity(0.35),
+                  (active
+                      ? const Color(0xFF6DB2FF)
+                      : const Color(0xFFCAD4DE))
+                      .withOpacity(0.35),
                   blurRadius: 12.r,
                   spreadRadius: 1.r,
                 ),
@@ -467,9 +509,8 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
     final Color titleColor = highlight
         ? Colors.orange
         : (shipped ? Colors.blue : Colors.black);
-    final Color timeBg = highlight
-        ? Colors.orange.withOpacity(0.1)
-        : Colors.grey.shade200;
+    final Color timeBg =
+    highlight ? Colors.orange.withOpacity(0.1) : Colors.grey.shade200;
     final Color timeColor = highlight ? Colors.orange : Colors.black;
 
     return Padding(
@@ -490,21 +531,23 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
                   ),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: timeBg,
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                    color: timeColor,
+              if (time.isNotEmpty)
+                Container(
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: timeBg,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                      color: timeColor,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           SizedBox(height: 4.h),
@@ -512,7 +555,8 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
             desc,
             style: TextStyle(
               fontSize: 12.sp,
-              color: highlight ? const Color(0xFF0059A0) : Colors.grey[700],
+              color:
+              highlight ? const Color(0xFF0059A0) : Colors.grey[700],
             ),
           ),
         ],
@@ -521,7 +565,7 @@ class _GlobalTrackingScreen1State extends State<GlobalTrackingScreen1> {
   }
 }
 
-// ========== Bottom sheet from old Screen-2 ==========
+// ========== Bottom sheet ==========
 class DeliveryFailedPopup {
   static void show(BuildContext context) {
     showModalBottomSheet(
@@ -532,7 +576,8 @@ class DeliveryFailedPopup {
       ),
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          padding:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -560,13 +605,15 @@ class DeliveryFailedPopup {
               SizedBox(height: 20.h),
               Text(
                 "What should I do?",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    fontSize: 14.sp, fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 8.h),
               Text(
                 "Don’t worry, we will shortly contact you to arrange a more suitable time. "
-                "You can also call +00 000 000 000 or chat with our customer care service.",
-                style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
+                    "You can also call +00 000 000 000 or chat with our customer care service.",
+                style: TextStyle(
+                    fontSize: 13.sp, color: Colors.grey[700]),
               ),
               SizedBox(height: 20.h),
               SizedBox(
@@ -579,10 +626,12 @@ class DeliveryFailedPopup {
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
-                  onPressed: () => context.push(ChatScreen.routeName),
+                  onPressed: () =>
+                      context.push(GlobalChatScreen.routeName),
                   child: Text(
                     "Chat Now",
-                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 14.sp, color: Colors.white),
                   ),
                 ),
               ),
@@ -593,4 +642,14 @@ class DeliveryFailedPopup {
       },
     );
   }
+}
+
+class TrackingArgs {
+  final String screenName;
+  final int invoiceId;
+
+  const TrackingArgs({
+    required this.screenName,
+    required this.invoiceId,
+  });
 }

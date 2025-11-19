@@ -108,6 +108,8 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
   // Entity -> UI
   OrderItem _toOrderItem(DriverOrderEntity e) {
     final inv = e.invoice;
+
+    // UI তে show করার জন্য orderId (taxRef / tranId / fallback e.id)
     final orderId = (inv?.taxRef.isNotEmpty == true)
         ? inv!.taxRef
         : (e.tranId.isNotEmpty ? e.tranId : e.id.toString());
@@ -115,24 +117,27 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
     final pickup = inv?.pickupAddress.isNotEmpty == true
         ? inv!.pickupAddress
         : '-';
+
     final dest = inv?.dropOfAddress.isNotEmpty == true
         ? inv!.dropOfAddress
         : '-';
+
     final price = e.salePrice != 0 ? e.salePrice : _safeDouble(inv?.payable);
 
-    // 👉 label সরাসরি order.status; রঙের জন্য কেবল classify
     final label = (e.status).toString().trim();
     final kind = _classifyByLabel(label);
 
     return OrderItem(
-      orderId: orderId,
+      driverOrderId: e.id,   // 👈 এখানে DriverOrderEntity.id সেভ করলাম
+      orderId: orderId,      // 👈 শুধু display/search এর জন্য
       pickup: pickup,
       destination: dest,
       price: price,
-      statusLabel: label, // UI-তে যেটা দেখা যাবে
-      kind: kind, // কেবল রঙ ঠিক করতে
+      statusLabel: label,
+      kind: kind,
     );
   }
+
 }
 
 /* ===== UI-side model ===== */
@@ -140,14 +145,20 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
 enum OrderStatus { delivered, pending, onTheWay }
 
 class OrderItem {
+  /// 👇 এটা হবে DriverOrderEntity.id
+  final int driverOrderId;
+
+  /// display / search এর জন্য invoice.tax_ref / tran_id / ...
   final String orderId;
+
   final String pickup;
   final String destination;
   final double price;
-  final String statusLabel; // ← API-র status ঠিক যেমন আছে
-  final OrderStatus kind; // ← শুধু রঙ/স্টাইলের জন্য
+  final String statusLabel; // ← API-র status
+  final OrderStatus kind;
 
   const OrderItem({
+    required this.driverOrderId,
     required this.orderId,
     required this.pickup,
     required this.destination,
@@ -156,6 +167,7 @@ class OrderItem {
     required this.kind,
   });
 }
+
 
 /* helpers */
 String _norm(String s) =>

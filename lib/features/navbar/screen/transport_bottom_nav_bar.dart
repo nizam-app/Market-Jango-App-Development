@@ -5,7 +5,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_scr
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 
 import '../../transport/screens/my_booking/screen/transport_booking.dart';
-import '../../transport/screens/transport_home.dart';
+import '../../transport/screens/home/screen/transport_home.dart';
 
 // --- Providers ---------------------------------------------------------------
 

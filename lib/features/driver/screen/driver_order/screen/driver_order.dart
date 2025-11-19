@@ -81,13 +81,14 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
                     data: items[i],
                     onSeeDetails: () => context.push(
                       OrderDetailsScreen.routeName,
-                      extra: items[i].orderId,
+                      extra: items[i].driverOrderId,
                     ),
                     onTrackOrder: items[i].kind == OrderStatus.delivered
                         ? null
                         : () => context.push(
-                            '${DriverTrakingScreen.routeName}?id=${items[i].orderId}',
-                          ),
+                      // 👇 এখানেও DriverOrderEntity.id
+                      '${DriverTrakingScreen.routeName}?id=${items[i].driverOrderId}',
+                    ),
                   ),
                 ),
               ),

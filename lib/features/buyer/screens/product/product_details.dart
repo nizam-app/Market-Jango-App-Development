@@ -70,7 +70,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                     final myId = int.parse(myUserIdStr);
                     try {
                       await context.push(
-                        ChatScreen.routeName,
+                        GlobalChatScreen.routeName,
                         extra: ChatArgs(
                           partnerId:
                               product.vendor?.user?.id ?? product.vendorId,

@@ -24,7 +24,7 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
     String? country,
     String? address,
     String? shipCity,
-    File? image, // optional
+    File? image,
   }) async {
     try {
       state = const AsyncLoading();

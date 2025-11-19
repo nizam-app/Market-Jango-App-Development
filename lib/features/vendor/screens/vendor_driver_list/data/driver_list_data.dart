@@ -37,14 +37,14 @@ class DriverNotifier extends AsyncNotifier<PaginatedDrivers?> {
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
       final data = body['data'];
-      if (data == null) {
-        return PaginatedDrivers(
-          currentPage: 1,
-          lastPage: 1,
-          total: 0,
-          drivers: [],
-        );
-      }
+      // if (data == null) {
+      //   return PaginatedDrivers(
+      //     currentPage: 1,
+      //     lastPage: 1,
+      //     total: 0,
+      //     drivers: [],
+      //   );
+      // }
       return PaginatedDrivers.fromJson(data);
     } else {
       throw Exception('Failed to fetch drivers: ${response.statusCode}');

@@ -29,7 +29,7 @@ class _BuyerProfileEditScreenState extends ConsumerState<BuyerProfileEditScreen>
   void initState() {
     super.initState();
     // Set default value for gender dropdown
-    _selectedGender = "Female";
+    _selectedGender = widget.user.buyer?.gender;
   }
 
   @override
@@ -38,11 +38,11 @@ class _BuyerProfileEditScreenState extends ConsumerState<BuyerProfileEditScreen>
     final nameC = TextEditingController(text: widget.user.name);
     final emailC = TextEditingController(text: widget.user.email);
     final phoneC = TextEditingController(text: widget.user.phone);
-    final ageC = TextEditingController(text: "23");
+    final ageC = TextEditingController(text: widget.user.buyer?.age);
     final aboutC = TextEditingController(
         text:
-        "Lorem ipsum dolore amet. consectetur adipisicing elit n’s. Curabitur tempus donec con loreet, eget finibus pharetra.");
-    final locationC = TextEditingController(text: "Chicago, United States");
+        widget.user.buyer?.description);
+    final locationC = TextEditingController(text: widget.user.buyer?.address);
     final updateUserLoading = ref.watch(updateUserProvider).isLoading;
 
     return Scaffold(

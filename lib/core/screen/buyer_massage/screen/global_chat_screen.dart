@@ -10,13 +10,13 @@ import 'package:market_jango/core/screen/buyer_massage/data/chat_history_data.da
 import 'package:market_jango/core/screen/buyer_massage/logic/message_send_riverpod.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
-class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({
+class GlobalChatScreen extends ConsumerStatefulWidget {
+  const GlobalChatScreen({
     super.key,
     required this.partnerId,
     required this.partnerName,
     required this.partnerImage,
-    required this.myUserId,
+     required this.myUserId,
   });
 
   static const routeName = "/chatScreen";
@@ -27,16 +27,18 @@ class ChatScreen extends ConsumerStatefulWidget {
   final int myUserId;
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<GlobalChatScreen> createState() => _ChatScreenState();
 }
 
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
+
   
   @override
   void initState() {
     super.initState();
     debugPrint("CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}");
+
   }
 
   @override

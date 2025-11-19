@@ -203,7 +203,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                     data: (data) {
                       final colorAttr = data.data.firstWhere(
                         (attr) => attr.name.toLowerCase() == 'color',
-                        orElse: () => ProductAttribute(
+                        orElse: () => VendorProductAttribute(
                           id: 0,
                           name: '',
                           vendorId: 0,
@@ -216,7 +216,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
 
                       final sizeAttr = data.data.firstWhere(
                         (attr) => attr.name.toLowerCase() == 'size',
-                        orElse: () => ProductAttribute(
+                        orElse: () => VendorProductAttribute(
                           id: 0,
                           name: '',
                           vendorId: 0,

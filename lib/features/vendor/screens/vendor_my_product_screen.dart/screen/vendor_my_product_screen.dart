@@ -1,25 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
+import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
-class VendorMyProductScreen extends StatefulWidget {
+import '../../product_edit/model/product_attribute_response_model.dart';
+import '../logic/vendor_product_delete.dart';
+
+class VendorMyProductScreen extends ConsumerStatefulWidget {
   const VendorMyProductScreen({super.key});
   static const routeName = "/vendorMyProductScreen";
 
   @override
-  State<VendorMyProductScreen> createState() => _VendorMyProductScreenState();
+  ConsumerState<VendorMyProductScreen> createState() => _VendorMyProductScreenState();
 }
 
-class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
+class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
   final List<String> attributes = [];
 
-  void _showAttributeMenu(BuildContext context, Offset position) async {
+  Future<void> _showAttributeMenu(BuildContext context, Offset position) async {
+    // 1) API থেকে attribute list আনছি
+    ProductAttributeResponse res;
+    try {
+      res = await ref.read(productAttributesProvider.future);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+      return;
+    }
+
+    final attrs = res.data;
+    if (attrs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No attributes found')),
+      );
+      return;
+    }
+
+    // 2) popup position
     final RenderBox overlay =
     Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    final value = await showMenu<String>(
+    // 3) showMenu – name দেখাচ্ছি
+    final selected = await showMenu<VendorProductAttribute>(
       context: context,
       position: RelativeRect.fromLTRB(
         position.dx,
@@ -27,36 +62,40 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
         overlay.size.width - position.dx,
         overlay.size.height - position.dy,
       ),
-      items: const [
-        PopupMenuItem(value: "Color", child: Text("Color")),
-        PopupMenuItem(value: "Size", child: Text("Size")),
-        PopupMenuItem(value: "Others", child: Text("Others")),
-      ],
+      items: attrs
+          .map(
+            (a) => PopupMenuItem<VendorProductAttribute>(
+          value: a,
+          child: Text(a.name),
+        ),
+      )
+          .toList(),
     );
 
-    if (value != null) {
+    // 4) value handle
+    if (selected != null) {
       setState(() {
-        attributes.add(value);
+        attributes.add(selected.name);
       });
-
-      /// Navigation
-      if (value == "Color") {
-        context.push("/myProductColorScreen");
-      } else if (value == "Size") {
-        context.push("/myProductSizeScreen");
+      if (selected.name == "Color") {
+        ref.invalidate(attributeShowProvider);
+        context.push(MyProductColorScreen.routeName, extra: selected.id);
+      } else if (selected.name == "Size") {
+        ref.invalidate(attributeShowProvider);
+        context.push(MyProductSizeScreen.routeName, extra: selected.id);
       }
-     
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$value attribute added!")),
+        SnackBar(content: Text("${selected.name} attribute added!")),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final productAsync = ref.watch(productNotifierProvider);
+    final productNotifier = ref.read(productNotifierProvider.notifier);
     return Scaffold(
-     
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 16.h),
@@ -80,14 +119,14 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
                   _AddBox(
                     title: "Add your\nProduct",
                     onTap: () {
-                      context.push("/productEditePage");
+                      context.push(ProductAddPage.routeName);
                     },
                   ),
                   SizedBox(width: 12.w),
                   _AddBox(
                     title: "Add your\nCategory",
                     onTap: () {
-                      context.push("/categoryAddPage");
+                      context.push(CategoryAddPage.routeName);
                     },
                   ),
                 ],
@@ -130,19 +169,47 @@ class _VendorMyProductScreenState extends State<VendorMyProductScreen> {
               SizedBox(height: 12.h),
 
               /// Product items
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 5,
-                separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                itemBuilder: (context, index) {
-                  return _ProductCard(
-                    imageUrl:
-                    "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600", // ✅ placeholder image
-                    title: "Flowy summer dress",
-                    category: "Fashion",
-                    price: "\$65",
+              productAsync.when(
+                data: (paginetion) {
+                if(paginetion == null ) {
+                  return const Center(child: Text("No Data"));
+                }
+                 final products = paginetion.products ;
+                  return Column(
+                    children: [
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: products.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return _ProductCard(
+                            imageUrl:
+                            product.image, // ✅ placeholder image
+                            title: product.name,
+                            category: product.categoryName,
+                            price: product.sellPrice,
+                            product: product,
+                          );
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                      GlobalPagination(
+                        currentPage: paginetion.currentPage,
+                        totalPages: paginetion.lastPage,
+                        onPageChanged: (page) {
+                          productNotifier.changePage(page);
+                        },
+                      ),
+                    ],
                   );
+                }     ,
+                error: (error, stackTrace) {
+                  return Center(child: Text(error.toString()));
+                },
+                loading: () {
+                  return const Center(child: CircularProgressIndicator());
                 },
               ),
             ],
@@ -190,21 +257,23 @@ class _AddBox extends StatelessWidget {
 }
 
 /// Product Card
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends ConsumerWidget {
   final String title;
   final String category;
   final String price;
   final String imageUrl;
+  final VendorProduct product;
 
   const _ProductCard({
     required this.title,
     required this.category,
     required this.price,
     required this.imageUrl,
+    required this.product,  
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -253,22 +322,33 @@ class _ProductCard extends StatelessWidget {
           ),
           SizedBox(width: 6.w),
 
-          InkWell(
-            onTapDown: (TapDownDetails details) {
-              _showPopupMenu(context, details.globalPosition);
+          GestureDetector(
+            onTapDown: (details) {
+              _showPopupMenu(
+                context,
+                details.globalPosition,
+                ref,           // ← এখান থেকে ref পাঠাবে
+                product,
+              );
             },
-            child: const Icon(Icons.more_vert),
+            child: Icon(Icons.more_vert),
           ),
+
         ],
       ),
     );
   }
 
-  void _showPopupMenu(BuildContext context, Offset position) async {
+  Future<void> _showPopupMenu(
+      BuildContext context,
+      Offset position,
+      WidgetRef ref,
+      VendorProduct product,
+      ) async {
     final RenderBox overlay =
     Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    final value = await showMenu(
+    final value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
         position.dx, // X position
@@ -302,12 +382,66 @@ class _ProductCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
 
+    if (value == null) return;
+
+    // ----------------- EDIT -----------------
     if (value == "edit") {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Edit clicked")));
-    } else if (value == "delete") {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Delete clicked")));
+      context.push(
+        ProductEditScreen.routeName,
+        extra: product,
+      );
+      return;
     }
+
+    // ----------------- DELETE -----------------
+    if (value == "delete") {
+      // 1) confirm dialog
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("Delete product?"),
+          content: const Text("Are you sure you want to delete this product?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Delete"),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      try {
+        // 2) API call
+        await deleteVendorProduct(
+          ref: ref,
+          productId: product.id,
+        );
+
+
+        ref.invalidate(productNotifierProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product successfully deleted')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString())),
+          );
+        }
+      }
+    }   
   }
+
 }

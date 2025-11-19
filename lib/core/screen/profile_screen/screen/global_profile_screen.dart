@@ -200,7 +200,10 @@ class ProfileSection extends ConsumerWidget {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "vendor") {
               context.push(VendorEditProfile.routeName, extra: userType);
-            }
+            }  else if (userTypeAsync.value == "transport") {
+              // Transport
+              
+            }  
           },
 
           icon: Icon(Icons.edit_outlined, color: AllColor.black, size: 18.sp),

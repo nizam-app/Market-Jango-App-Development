@@ -131,9 +131,9 @@ class ChatListView extends ConsumerWidget {
             ref.read(chatListProvider.notifier).markAsRead(chat.chatId);
 
             context.push(
-              ChatScreen.routeName,
+              GlobalChatScreen.routeName,
               extra: ChatArgs(
-                partnerId: chat.partnerId, // তোমার list item থেকে
+                partnerId: chat.partnerId,
                 partnerName: chat.partnerName,
                 partnerImage: chat.partnerImage,
                 myUserId: myUserIdInt,

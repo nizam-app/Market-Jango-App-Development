@@ -5,7 +5,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
@@ -56,7 +56,7 @@ import 'package:market_jango/features/transport/screens/transport_cancelled.dart
 import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
-import 'package:market_jango/features/transport/screens/transport_home.dart';
+import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
@@ -83,7 +83,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: DriverBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -193,16 +193,16 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorTransportScreen(),
     ),
 
-    GoRoute(
-      path: VendorOrderPending.routeName,
-      name: 'vendorOrderPending',
-      builder: (context, state) => const VendorOrderPending(),
-    ),
+    // GoRoute(
+    //   path: VendorOrderPending.routeName,
+    //   name: 'vendorOrderPending',
+    //   builder: (context, state) => const VendorOrderPending(),
+    // ),
 
     GoRoute(
-      path: AsignToOrderDriver.routeName,
+      path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
-      builder: (context, state) => const AsignToOrderDriver(),
+      builder: (context, state) => const AssignToOrderDriver(),
     ),
 
     GoRoute(
@@ -211,17 +211,17 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorAssignedOrder(),
     ),
 
-    GoRoute(
-      path: VendorOrderComplete.routeName,
-      name: 'vendorOrderCompleted',
-      builder: (context, state) => const VendorOrderComplete(),
-    ),
-
-    GoRoute(
-      path: VendorOrderCancel.routeName,
-      name: 'vendorOrderCancel',
-      builder: (context, state) => const VendorOrderCancel(),
-    ),
+    // GoRoute(
+    //   path: VendorOrderComplete.routeName,
+    //   name: 'vendorOrderCompleted',
+    // //   builder: (context, state) => const VendorOrderComplete(),
+    // // ),
+    //
+    // GoRoute(
+    //   path: VendorOrderCancel.routeName,
+    //   name: 'vendorOrderCancel',
+    //   builder: (context, state) => const VendorOrderCancel(),
+    // ),
 
     GoRoute(
       path: VendorSalePlatformScreen.routeName,
@@ -247,11 +247,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const VendorShipmentsScreen(),
     ),
 
-    GoRoute(
-      path: VendorPendingScreen.routeName,
-      name: 'vendorPendingScreen',
-      builder: (context, state) => const VendorPendingScreen(),
-    ),
+    // GoRoute(
+    //   path: VendorPendingScreen.routeName,
+    //   name: 'vendorPendingScreen',
+    //   builder: (context, state) => const VendorPendingScreen(),
+    // ),
 
     GoRoute(
       path: VendorCancelledScreen.routeName,
@@ -338,39 +338,26 @@ final GoRouter router = GoRouter(
     //   builder: (context, state) => TransportChart(),
     // ),
     GoRoute(
-      path: GlobalTrackingScreen1.routeName,
+      path: GlobalTrackingScreen1.routeName, // "/transportTracking"
       name: GlobalTrackingScreen1.routeName,
       builder: (context, state) {
-        // primary: extra থেকে পার্স
         final extra = state.extra;
-        if (extra is TrackingArgs) {
-          return GlobalTrackingScreen1(
-            screenName: extra.screenName,
-            startAdvanced: extra.startAdvanced,
-            autoAdvance: extra.autoAdvance,
+
+        if (extra is! TrackingArgs) {
+          // safety fallback
+          return const Scaffold(
+            body: Center(
+              child: Text('Invalid tracking args'),
+            ),
           );
         }
 
-        // fallback: query/path থেকে পার্স (যদি extra না দেও)
-        bool _b(String? v, bool def) {
-          if (v == null) return def;
-          final s = v.toLowerCase();
-          return s == 'true' || s == '1';
-        }
-
-        String _s(String key, {String def = 'Tracking'}) {
-          return state.uri.queryParameters[key] ??
-              state.pathParameters[key] ??
-              def;
-        }
-
         return GlobalTrackingScreen1(
-          screenName: _s('screenName'),
-          startAdvanced: _b(state.uri.queryParameters['startAdvanced'], false),
-          autoAdvance: _b(state.uri.queryParameters['autoAdvance'], true),
+          screenName: extra.screenName,
+          invoiceId: extra.invoiceId,
         );
       },
-    ),
+    ) ,
 
     // GoRoute(
     //   path: TransportSetting.routeName,
@@ -546,11 +533,11 @@ final GoRouter router = GoRouter(
       },
     ),
     GoRoute(
-      path: ChatScreen.routeName, // "/chatScreen"
-      name: ChatScreen.routeName,
+      path: GlobalChatScreen.routeName, // "/chatScreen"
+      name: GlobalChatScreen.routeName,
       builder: (context, state) {
         final args = state.extra as ChatArgs;
-        return ChatScreen(
+        return GlobalChatScreen(
           partnerId: args.partnerId,
           partnerName: args.partnerName,
           partnerImage: args.partnerImage,
@@ -613,12 +600,12 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: MyProductColorScreen.routeName,
       name: MyProductColorScreen.routeName,
-      builder: (context, state) => MyProductColorScreen(),
+      builder: (context, state) => MyProductColorScreen(attributeId: state.extra as int,),
     ),
     GoRoute(
       path: MyProductSizeScreen.routeName,
       name: MyProductSizeScreen.routeName,
-      builder: (context, state) => MyProductSizeScreen(),
+      builder: (context, state) => MyProductSizeScreen(attributeId: state.extra as int,),
     ),
     GoRoute(
       path: ProductAddPage.routeName,

@@ -45,13 +45,13 @@ class ProductAddPage extends ConsumerWidget {
                 data: (data) {
                   final colorAttr = data.data.firstWhere(
                         (attr) => attr.name.toLowerCase() == 'color',
-                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
                   );
                   final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name ?? "").toList();
 
                   final sizeAttr = data.data.firstWhere(
                         (attr) => attr.name.toLowerCase() == 'size',
-                    orElse: () => ProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
+                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
                   );
                   final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name ?? "").toList();
 

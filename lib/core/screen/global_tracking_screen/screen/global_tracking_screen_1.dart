@@ -189,7 +189,8 @@ class _GlobalTrackingScreen1State
                 if (_advanced && hasLogs)
                   _screen2Body(context, logs)
                 else
-                  _screen1Body(context, invoice),
+                  SizedBox()
+                  // _screen1Body(context, invoice),
               ],
             ),
           );

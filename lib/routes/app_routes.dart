@@ -49,6 +49,7 @@ import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
 import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/transport/screens/my_booking/screen/transport_booking.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
 import 'package:market_jango/features/transport/screens/profile_edit.dart';
@@ -56,7 +57,6 @@ import 'package:market_jango/features/transport/screens/transport_cancelled.dart
 import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
-import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
@@ -65,10 +65,6 @@ import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/scr
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_cancel/screen/vendor_order_cancel.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_complete/screen/vendor_order_complete.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_pending/screen/vendor_order_pending.dart';
-import 'package:market_jango/features/vendor/screens/vendor_pending_secrren/screen/vendor_pending_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_other_screen/screen/vendor_product_color_name.dart';
 import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
@@ -198,7 +194,6 @@ final GoRouter router = GoRouter(
     //   name: 'vendorOrderPending',
     //   builder: (context, state) => const VendorOrderPending(),
     // ),
-
     GoRoute(
       path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
@@ -222,7 +217,6 @@ final GoRouter router = GoRouter(
     //   name: 'vendorOrderCancel',
     //   builder: (context, state) => const VendorOrderCancel(),
     // ),
-
     GoRoute(
       path: VendorSalePlatformScreen.routeName,
       name: 'vendorSalePlatform',
@@ -252,7 +246,6 @@ final GoRouter router = GoRouter(
     //   name: 'vendorPendingScreen',
     //   builder: (context, state) => const VendorPendingScreen(),
     // ),
-
     GoRoute(
       path: VendorCancelledScreen.routeName,
       name: 'vendorCancelledScreen',
@@ -346,9 +339,7 @@ final GoRouter router = GoRouter(
         if (extra is! TrackingArgs) {
           // safety fallback
           return const Scaffold(
-            body: Center(
-              child: Text('Invalid tracking args'),
-            ),
+            body: Center(child: Text('Invalid tracking args')),
           );
         }
 
@@ -357,7 +348,7 @@ final GoRouter router = GoRouter(
           invoiceId: extra.invoiceId,
         );
       },
-    ) ,
+    ),
 
     // GoRoute(
     //   path: TransportSetting.routeName,
@@ -600,12 +591,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: MyProductColorScreen.routeName,
       name: MyProductColorScreen.routeName,
-      builder: (context, state) => MyProductColorScreen(attributeId: state.extra as int,),
+      builder: (context, state) =>
+          MyProductColorScreen(attributeId: state.extra as int),
     ),
     GoRoute(
       path: MyProductSizeScreen.routeName,
       name: MyProductSizeScreen.routeName,
-      builder: (context, state) => MyProductSizeScreen(attributeId: state.extra as int,),
+      builder: (context, state) =>
+          MyProductSizeScreen(attributeId: state.extra as int),
     ),
     GoRoute(
       path: ProductAddPage.routeName,

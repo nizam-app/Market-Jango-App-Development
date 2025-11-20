@@ -67,6 +67,7 @@ dependencies:
   url_launcher: ^6.3.2
   webview_flutter: ^4.13.0
   google_maps_flutter: ^2.14.0
+  geolocator: ^14.0.2
 #  google_maps_flutter: ^2.7.0
 
 flutter_launcher_icons:

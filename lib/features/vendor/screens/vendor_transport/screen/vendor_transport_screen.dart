@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
-import 'package:logger/logger.dart'; // Add this import
 
 class VendorTransportScreen extends StatefulWidget {
   const VendorTransportScreen({super.key});
@@ -16,15 +14,9 @@ class VendorTransportScreen extends StatefulWidget {
 }
 
 class _VendorTransportScreenState extends State<VendorTransportScreen> {
-  int _tab = 0;
+  int _tab = 0; // 0 = Request transport, 1 = Track shipments
   final _pickup = TextEditingController();
   final _destination = TextEditingController();
-  late GoogleMapController mapController;
-  LatLng _pickupLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
-  LatLng _destinationLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
-
-  // Create a logger instance
-  final Logger _logger = Logger();
 
   @override
   void dispose() {
@@ -34,52 +26,26 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    checkApiKey(); // Check if API key is valid
-    _logger.i('VendorTransportScreen Initialized'); // Log the screen initialization
-  }
-
-  // Add logging to check the API key
-  void checkApiKey() {
-    try {
-      // Assuming you have a method to retrieve the API key
-      _logger.i("Google Maps API Key is properly set in the project.");
-    } catch (e) {
-      _logger.e("Error with Google Maps API key: $e");
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
-              child: GoogleMap(
-                onMapCreated: (controller) {
-                  mapController = controller;
-                  _logger.i('Google Map Created');
-                },
-                initialCameraPosition: CameraPosition(
-                  target: _pickupLatLng,
-                  zoom: 14.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AllColor.dropDown, // soft map-like tint
                 ),
-                markers: {
-                  Marker(
-                    markerId: MarkerId('pickup'),
-                    position: _pickupLatLng,
-                    infoWindow: InfoWindow(title: 'Pickup Location'),
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: Image.network(
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_uzX55GPbTMW9EXGX_QsxtqbBdWw-N0gq_rQ1khtjoye4YxsHBrvAUIEyCLF1ME9ZB4c&usqp=CAU',
                   ),
-                  Marker(
-                    markerId: MarkerId('destination'),
-                    position: _destinationLatLng,
-                    infoWindow: InfoWindow(title: 'Destination'),
-                  ),
-                },
+                ),
               ),
             ),
+
+            // ---------- Foreground UI ----------
             Positioned.fill(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -88,8 +54,10 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 6),
+
                     _SegmentedToggle(
                       leftText: 'Track shipments',
+                      // rightText: 'Request transport',
                       value: _tab,
                       onChanged: (v) {
                         setState(() => _tab = v);
@@ -100,13 +68,18 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                         }
                       },
                     ),
+
                     SizedBox(height: 12.h),
+
+                    // Pickup field
                     _LocationField(
                       controller: _pickup,
                       hint: 'Enter Pickup location',
                       icon: Icons.near_me_rounded,
                     ),
                     SizedBox(height: 10.h),
+
+                    // Destination field
                     _LocationField(
                       controller: _destination,
                       hint: 'Destination',
@@ -116,6 +89,8 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 ),
               ),
             ),
+
+
             Positioned(
               left: 16,
               right: 16,
@@ -136,19 +111,21 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   }
 
   void goToVendorDriverList(BuildContext context) {
-    _logger.i('Navigating to Vendor Driver List');
     context.push(VendorDriverList.routeName);
   }
 }
 
-// Custom pieces
+/* -------------------- Custom pieces -------------------- */
+
 class _SegmentedToggle extends StatelessWidget {
   final String leftText;
-  final int value;
+  // final String rightText;
+  final int value; // 0/1
   final ValueChanged<int> onChanged;
 
   const _SegmentedToggle({
     required this.leftText,
+    // required this.rightText,
     required this.value,
     required this.onChanged,
   });
@@ -171,12 +148,12 @@ class _SegmentedToggle extends StatelessWidget {
               ),
               boxShadow: active
                   ? [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Text(
@@ -195,6 +172,8 @@ class _SegmentedToggle extends StatelessWidget {
     return Row(
       children: [
         seg(leftText, value == 0, () => onChanged(0)),
+        // const SizedBox(width: 8),
+        // seg(rightText, value == 1, () => onChanged(1)),
       ],
     );
   }

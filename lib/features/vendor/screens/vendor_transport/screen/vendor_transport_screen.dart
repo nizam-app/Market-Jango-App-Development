@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
-import 'package:logger/logger.dart'; // Add this import
+
+const String kGoogleApiKey = 'AIzaSyDkSsblaqxoIpj1azSs7nBE7Xssv6O2v6k';
 
 class VendorTransportScreen extends StatefulWidget {
   const VendorTransportScreen({super.key});
@@ -19,12 +24,25 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   int _tab = 0;
   final _pickup = TextEditingController();
   final _destination = TextEditingController();
-  late GoogleMapController mapController;
-  LatLng _pickupLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
-  LatLng _destinationLatLng = LatLng(23.8103, 90.4125); // Default Dhaka coordinates
 
-  // Create a logger instance
-  final Logger _logger = Logger();
+  GoogleMapController? _mapController;
+  bool _mapReady = false;
+
+  // Default Dhaka
+  LatLng _pickupLatLng = const LatLng(23.8103, 90.4125);
+  LatLng _destinationLatLng = const LatLng(23.8103, 90.4125);
+  LatLng? _currentLatLng;
+
+  bool _locationPermissionGranted = false;
+
+  List<PlaceSuggestion> _pickupSuggestions = [];
+  List<PlaceSuggestion> _destinationSuggestions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initLocation();
+  }
 
   @override
   void dispose() {
@@ -33,20 +51,185 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    checkApiKey(); // Check if API key is valid
-    _logger.i('VendorTransportScreen Initialized'); // Log the screen initialization
+  Future<void> _initLocation() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!mounted) return;
+      _showLocationDialog(
+        title: 'Turn on Location',
+        message: 'Please turn on your location services to use the map.',
+        onPressed: () {
+          Geolocator.openLocationSettings();
+          Navigator.of(context).pop();
+        },
+      );
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (!mounted) return;
+        _showLocationDialog(
+          title: 'Location Permission',
+          message: 'We need your location permission to show the map.',
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
+      _showLocationDialog(
+        title: 'Location Permission Blocked',
+        message:
+            'You have blocked location permission. Please enable it from settings.',
+        onPressed: () {
+          Geolocator.openAppSettings();
+          Navigator.of(context).pop();
+        },
+      );
+      return;
+    }
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    _currentLatLng = LatLng(position.latitude, position.longitude);
+
+    setState(() {
+      _locationPermissionGranted = true;
+      _pickupLatLng = _currentLatLng!;
+    });
+
+    if (_mapReady && _currentLatLng != null) {
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(_currentLatLng!, 16),
+      );
+    }
   }
 
-  // Add logging to check the API key
-  void checkApiKey() {
-    try {
-      // Assuming you have a method to retrieve the API key
-      _logger.i("Google Maps API Key is properly set in the project.");
-    } catch (e) {
-      _logger.e("Error with Google Maps API key: $e");
+  void _showLocationDialog({
+    required String title,
+    required String message,
+    VoidCallback? onPressed,
+  }) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: onPressed ?? () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<List<PlaceSuggestion>> _fetchSuggestions(String input) async {
+    if (input.trim().isEmpty) return [];
+    final uri = Uri.parse(
+      'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+      '?input=$input&key=$kGoogleApiKey&types=geocode&language=en',
+    );
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) return [];
+
+    final data = jsonDecode(res.body);
+    if (data['status'] != 'OK') return [];
+
+    final List preds = data['predictions'] as List;
+
+    return preds
+        .map(
+          (p) => PlaceSuggestion(
+            description: p['description'],
+            placeId: p['place_id'],
+          ),
+        )
+        .toList();
+  }
+
+  Future<LatLng?> _getLatLngFromPlaceId(String placeId) async {
+    final uri = Uri.parse(
+      'https://maps.googleapis.com/maps/api/place/details/json'
+      '?place_id=$placeId&key=$kGoogleApiKey',
+    );
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) return null;
+
+    final data = jsonDecode(res.body);
+    if (data['status'] != 'OK') return null;
+
+    final loc = data['result']['geometry']['location'];
+    return LatLng(loc['lat'], loc['lng']);
+  }
+
+  Future<void> _onPickupChanged(String value) async {
+    setState(() {
+      _pickupSuggestions = [];
+    });
+    if (value.length < 3) return;
+
+    final suggestions = await _fetchSuggestions(value);
+    setState(() {
+      _pickupSuggestions = suggestions;
+    });
+  }
+
+  Future<void> _onDestinationChanged(String value) async {
+    setState(() {
+      _destinationSuggestions = [];
+    });
+    if (value.length < 3) return;
+
+    final suggestions = await _fetchSuggestions(value);
+    setState(() {
+      _destinationSuggestions = suggestions;
+    });
+  }
+
+  Future<void> _selectPickupSuggestion(PlaceSuggestion s) async {
+    _pickup.text = s.description;
+    setState(() {
+      _pickupSuggestions = [];
+    });
+
+    final latLng = await _getLatLngFromPlaceId(s.placeId);
+    if (latLng == null) return;
+
+    setState(() {
+      _pickupLatLng = latLng;
+    });
+
+    if (_mapReady) {
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 16));
+    }
+  }
+
+  Future<void> _selectDestinationSuggestion(PlaceSuggestion s) async {
+    _destination.text = s.description;
+    setState(() {
+      _destinationSuggestions = [];
+    });
+
+    final latLng = await _getLatLngFromPlaceId(s.placeId);
+    if (latLng == null) return;
+
+    setState(() {
+      _destinationLatLng = latLng;
+    });
+
+    if (_mapReady) {
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 16));
     }
   }
 
@@ -56,11 +239,17 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            // ---------- Google Map ----------
             Positioned.fill(
               child: GoogleMap(
                 onMapCreated: (controller) {
-                  mapController = controller;
-                  _logger.i('Google Map Created');
+                  _mapController = controller;
+                  _mapReady = true;
+                  if (_currentLatLng != null) {
+                    _mapController?.animateCamera(
+                      CameraUpdate.newLatLngZoom(_currentLatLng!, 16),
+                    );
+                  }
                 },
                 initialCameraPosition: CameraPosition(
                   target: _pickupLatLng,
@@ -68,18 +257,30 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 ),
                 markers: {
                   Marker(
-                    markerId: MarkerId('pickup'),
+                    markerId: const MarkerId('pickup'),
                     position: _pickupLatLng,
-                    infoWindow: InfoWindow(title: 'Pickup Location'),
+                    infoWindow: const InfoWindow(title: 'Pickup Location'),
                   ),
                   Marker(
-                    markerId: MarkerId('destination'),
+                    markerId: const MarkerId('destination'),
                     position: _destinationLatLng,
-                    infoWindow: InfoWindow(title: 'Destination'),
+                    infoWindow: const InfoWindow(title: 'Destination'),
                   ),
+                },
+                zoomControlsEnabled: true,
+                myLocationEnabled: _locationPermissionGranted,
+                myLocationButtonEnabled: _locationPermissionGranted,
+                onTap: (LatLng latLng) {
+                  if (_mapController != null) {
+                    _mapController?.animateCamera(
+                      CameraUpdate.newLatLng(latLng),
+                    );
+                  }
                 },
               ),
             ),
+
+            // ---------- Foreground UI ----------
             Positioned.fill(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -88,6 +289,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 6),
+
                     _SegmentedToggle(
                       leftText: 'Track shipments',
                       value: _tab,
@@ -100,22 +302,98 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                         }
                       },
                     ),
+
                     SizedBox(height: 12.h),
+
+                    // Pickup field + suggestions
                     _LocationField(
                       controller: _pickup,
                       hint: 'Enter Pickup location',
                       icon: Icons.near_me_rounded,
+                      onChanged: _onPickupChanged,
                     ),
+                    if (_pickupSuggestions.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: _pickupSuggestions
+                              .map(
+                                (s) => ListTile(
+                                  dense: true,
+                                  leading: const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 18,
+                                  ),
+                                  title: Text(
+                                    s.description,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                  onTap: () => _selectPickupSuggestion(s),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+
                     SizedBox(height: 10.h),
+
+                    // Destination field + suggestions
                     _LocationField(
                       controller: _destination,
                       hint: 'Destination',
                       icon: Icons.location_on_rounded,
+                      onChanged: _onDestinationChanged,
                     ),
+                    if (_destinationSuggestions.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: _destinationSuggestions
+                              .map(
+                                (s) => ListTile(
+                                  dense: true,
+                                  leading: const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 18,
+                                  ),
+                                  title: Text(
+                                    s.description,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                  onTap: () => _selectDestinationSuggestion(s),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
+
+            // ---------- Save Button ----------
             Positioned(
               left: 16,
               right: 16,
@@ -136,15 +414,30 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
   }
 
   void goToVendorDriverList(BuildContext context) {
-    _logger.i('Navigating to Vendor Driver List');
     context.push(VendorDriverList.routeName);
   }
 }
 
-// Custom pieces
+class PlaceSuggestion {
+  final String description;
+  final String placeId;
+
+  PlaceSuggestion({required this.description, required this.placeId});
+}
+
+void nextButonDone(BuildContext context) {
+  goToVendorDriverList(context);
+}
+
+void goToVendorDriverList(BuildContext context) {
+  context.push(VendorDriverList.routeName);
+}
+
+/* -------------------- Custom pieces -------------------- */
+
 class _SegmentedToggle extends StatelessWidget {
   final String leftText;
-  final int value;
+  final int value; // 0/1
   final ValueChanged<int> onChanged;
 
   const _SegmentedToggle({
@@ -171,12 +464,12 @@ class _SegmentedToggle extends StatelessWidget {
               ),
               boxShadow: active
                   ? [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
+                      const BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Text(
@@ -192,11 +485,7 @@ class _SegmentedToggle extends StatelessWidget {
       );
     }
 
-    return Row(
-      children: [
-        seg(leftText, value == 0, () => onChanged(0)),
-      ],
-    );
+    return Row(children: [seg(leftText, value == 0, () => onChanged(0))]);
   }
 }
 
@@ -204,11 +493,13 @@ class _LocationField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final IconData icon;
+  final ValueChanged<String>? onChanged;
 
   const _LocationField({
     required this.controller,
     required this.hint,
     required this.icon,
+    this.onChanged,
   });
 
   @override
@@ -235,6 +526,7 @@ class _LocationField extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: TextStyle(color: AllColor.textHintColor),
@@ -248,3 +540,11 @@ class _LocationField extends StatelessWidget {
     );
   }
 }
+
+// Helper model
+// class PlaceSuggestion {
+//   final String description;
+//   final String placeId;
+//
+//   PlaceSuggestion({required this.description, required this.placeId});
+// }

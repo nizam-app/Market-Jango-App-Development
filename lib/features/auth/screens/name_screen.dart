@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/api_control/auth_api.dart';
@@ -8,11 +8,11 @@ import '../../../core/constants/color_control/all_color.dart';
 import '../../../core/widget/custom_auth_button.dart';
 import '../../../core/widget/global_snackbar.dart';
 import '../../../core/widget/sreeen_brackground.dart';
-import '../logic/register_name_&_phone_riverpod.dart';
 import '../logic/empty_validator.dart';
+import '../logic/register_name_&_phone_riverpod.dart';
 import 'car_info_screen.dart';
 import 'phone_number_screen.dart';
-import 'vendor_request_screen.dart';
+import 'vendor/screen/vendor_request_screen.dart';
 
 class NameScreen extends ConsumerStatefulWidget {
   const NameScreen({super.key, required this.roleName});
@@ -41,7 +41,7 @@ class _NameScreenState extends ConsumerState<NameScreen> {
       keyname: "name",
       value: _nameCtrl.text.trim(),
       url: AuthAPIController.registerName,
-      context: context
+      context: context,
     );
 
     // ✅ এখন আমরা state read করব, listen না করে
@@ -80,7 +80,6 @@ class _NameScreenState extends ConsumerState<NameScreen> {
       loading: () {},
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +139,11 @@ class _NameForm extends StatelessWidget {
 }
 
 class _NextSection extends StatelessWidget {
-  const _NextSection({required this.role, required this.loading, required this.onNext});
+  const _NextSection({
+    required this.role,
+    required this.loading,
+    required this.onNext,
+  });
   final String role;
   final bool loading;
   final VoidCallback onNext;
@@ -150,18 +153,22 @@ class _NextSection extends StatelessWidget {
     return Column(
       children: [
         SizedBox(height: 12.h),
-        Text("This is how it'll appear on your $role profile",
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleSmall),
-        Text("Can't change it later",
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AllColor.loginButtomColor,
-              fontWeight: FontWeight.w300,
-            )),
+        Text(
+          "This is how it'll appear on your $role profile",
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        Text(
+          "Can't change it later",
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: AllColor.loginButtomColor,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
         SizedBox(height: 40.h),
         CustomAuthButton(
           buttonText: loading ? "Please wait..." : "Next",
-          onTap:loading ? (){} : onNext,
+          onTap: loading ? () {} : onNext,
         ),
       ],
     );

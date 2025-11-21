@@ -6,6 +6,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_scr
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
 import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
@@ -21,7 +22,7 @@ import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
 import 'package:market_jango/features/auth/screens/reset_password_screen.dart';
 import 'package:market_jango/features/auth/screens/splash_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
-import 'package:market_jango/features/auth/screens/vendor_request_screen.dart';
+import 'package:market_jango/features/auth/screens/vendor/screen/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
@@ -79,7 +80,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: VendorBottomNav.routeName,
+  initialLocation: SplashScreen.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -609,6 +610,11 @@ final GoRouter router = GoRouter(
       path: CategoryAddPage.routeName,
       name: CategoryAddPage.routeName,
       builder: (context, state) => CategoryAddPage(),
+    ),
+    GoRoute(
+      path: GoogleMapScreen.routeName,
+      name: GoogleMapScreen.routeName,
+      builder: (context, state) => GoogleMapScreen(),
     ),
     GoRoute(
       path: '${BuyerVendorCetagoryScreen.routeName}/:screenName',

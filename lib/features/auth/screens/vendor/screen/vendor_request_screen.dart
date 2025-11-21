@@ -1,18 +1,24 @@
 import 'dart:io';
+
 import 'package:country_picker/country_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/google_map/data/location_store.dart';
+import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/widget/global_locaiton_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/phone_number_screen.dart';
-import '../data/vendor_business_type_data.dart';
-import '../logic/register_vendor_request_riverpod.dart';
+
+import '../../../data/vendor_business_type_data.dart';
+import '../../../logic/register_vendor_request_riverpod.dart';
 
 class VendorRequestScreen extends ConsumerWidget {
   const VendorRequestScreen({super.key});
@@ -27,10 +33,9 @@ class VendorRequestScreen extends ConsumerWidget {
     );
 
     if (result != null) {
-      ref
-          .read(pickedFilesProvider.notifier)
-          .state =
-          result.paths.map((e) => File(e!)).toList();
+      ref.read(pickedFilesProvider.notifier).state = result.paths
+          .map((e) => File(e!))
+          .toList();
     }
   }
 
@@ -39,9 +44,7 @@ class VendorRequestScreen extends ConsumerWidget {
       context: context,
       showPhoneCode: false,
       onSelect: (country) {
-        ref
-            .read(selectedCountryProvider.notifier)
-            .state = country;
+        ref.read(selectedCountryProvider.notifier).state = country;
       },
     );
   }
@@ -52,6 +55,8 @@ class VendorRequestScreen extends ConsumerWidget {
     final businessType = ref.read(selectedBusinessTypeProvider);
     final address = ref.read(addressProvider);
     final files = ref.read(pickedFilesProvider);
+    final latitude = ref.read(selectedLatitudeProvider);
+    final longitude = ref.read(selectedLongitudeProvider);
 
     if (country == null ||
         businessName.isEmpty ||
@@ -67,9 +72,7 @@ class VendorRequestScreen extends ConsumerWidget {
       return;
     }
 
-    ref
-        .read(vendorLoadingProvider.notifier)
-        .state = true;
+    ref.read(vendorLoadingProvider.notifier).state = true;
 
     final notifier = ref.read(vendorRegisterProvider.notifier);
     await notifier.registerVendor(
@@ -79,11 +82,11 @@ class VendorRequestScreen extends ConsumerWidget {
       businessType: businessType,
       address: address,
       files: files,
+      latitude: latitude, // Pass latitude
+      longitude: longitude, // Pass longitude
     );
 
-    ref
-        .read(vendorLoadingProvider.notifier)
-        .state = false;
+    ref.read(vendorLoadingProvider.notifier).state = false;
 
     final state = ref.read(vendorRegisterProvider);
     state.when(
@@ -98,22 +101,19 @@ class VendorRequestScreen extends ConsumerWidget {
           context.push(PhoneNumberScreen.routeName);
         }
       },
-      error: (e, _) =>
-          GlobalSnackbar.show(
-            context,
-            title: "Error",
-            message: e.toString(),
-            type: CustomSnackType.error,
-          ),
+      error: (e, _) => GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: e.toString(),
+        type: CustomSnackType.error,
+      ),
       loading: () {},
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme
-        .of(context)
-        .textTheme;
+    final textTheme = Theme.of(context).textTheme;
     final country = ref.watch(selectedCountryProvider);
     final businessName = ref.watch(businessNameProvider);
     final address = ref.watch(addressProvider);
@@ -146,10 +146,15 @@ class VendorRequestScreen extends ConsumerWidget {
                   child: Container(
                     height: 60.h,
                     padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AllColor.orange50,
-                      border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
+                      border: Border.all(
+                        color: AllColor.textBorderColor,
+                        width: 0.5.sp,
+                      ),
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Row(
@@ -170,9 +175,7 @@ class VendorRequestScreen extends ConsumerWidget {
                 TextFormField(
                   initialValue: businessName,
                   onChanged: (v) =>
-                  ref
-                      .read(businessNameProvider.notifier)
-                      .state = v,
+                      ref.read(businessNameProvider.notifier).state = v,
                   decoration: const InputDecoration(
                     isDense: true,
                     hintText: 'Enter your Business Name',
@@ -188,60 +191,127 @@ class VendorRequestScreen extends ConsumerWidget {
                 TextFormField(
                   initialValue: address,
                   onChanged: (v) =>
-                  ref
-                      .read(addressProvider.notifier)
-                      .state = v,
+                      ref.read(addressProvider.notifier).state = v,
                   decoration: const InputDecoration(
                     isDense: true,
                     hintText: 'Enter your full address',
                   ),
                 ),
+
                 SizedBox(height: 28.h),
-
-                // File Upload
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.w),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Upload your documents",
-                        style: textTheme.bodyMedium),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                InkWell(
-                  onTap: () => _pickFiles(context, ref),
-                  child: Container(
-                    height: 60.h,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AllColor.textBorderColor, width: 0.5.sp),
-                      borderRadius: BorderRadius.circular(30.r),
-                      color: AllColor.orange50,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
+                      child: Text(
+                        "Store Location",
+                        style: textTheme.bodyMedium,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          files.isEmpty
-                              ? 'Upload Multiple Files'
-                              : '${files.length} file(s) selected',
-                          style: textTheme.bodyMedium!
-                              .copyWith(color: AllColor.textHintColor),
+                    SizedBox(height: 8.h),
+                    LocationButton(
+                      onTap: () async {
+                        final result = await context.push<LatLng>(
+                          GoogleMapScreen.routeName,
+                        );
+
+                        if (result != null) {
+                          print(
+                            "LOCATION RECEIVED → ${result.latitude}, ${result.longitude}",
+                          );
+
+                          // Store latitude and longitude in providers
+                          ref.read(selectedLatitudeProvider.notifier).state =
+                              result.latitude;
+                          ref.read(selectedLongitudeProvider.notifier).state =
+                              result.longitude;
+
+                          // Optional: Show success message
+                          GlobalSnackbar.show(
+                            context,
+                            title: "Success",
+                            message: "Location selected successfully!",
+                            type: CustomSnackType.success,
+                          );
+                        }
+                      },
+                    ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final lat = ref.watch(selectedLatitudeProvider);
+                        final lng = ref.watch(selectedLongitudeProvider);
+
+                        if (lat != null && lng != null) {
+                          return Padding(
+                            padding: EdgeInsets.only(top: 8.h, left: 15.w),
+                            child: Text(
+                              "Selected: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}",
+                              style: textTheme.bodySmall!.copyWith(
+                                color: Colors.green,
+                              ),
+                            ),
+                          );
+                        }
+                        return SizedBox();
+                      },
+                    ),
+
+                    // File Upload
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Upload your documents",
+                          style: textTheme.bodyMedium,
                         ),
-                        const Icon(Icons.upload_file),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(height: 62.h),
+                    SizedBox(height: 12.h),
+                    InkWell(
+                      onTap: () => _pickFiles(context, ref),
+                      child: Container(
+                        height: 60.h,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 14.h,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AllColor.textBorderColor,
+                            width: 0.5.sp,
+                          ),
+                          borderRadius: BorderRadius.circular(30.r),
+                          color: AllColor.orange50,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              files.isEmpty
+                                  ? 'Upload Multiple Files'
+                                  : '${files.length} file(s) selected',
+                              style: textTheme.bodyMedium!.copyWith(
+                                color: AllColor.textHintColor,
+                              ),
+                            ),
+                            const Icon(Icons.upload_file),
+                          ],
+                        ),
+                      ),
+                    ),
 
-                // Submit Button
-                CustomAuthButton(
-                  buttonText: loading ? "Submitting..." : "Next",
-                  onTap: loading ? () {} : () => _submit(context, ref),
+                    SizedBox(height: 50.h),
+
+                    // Submit Button
+                    CustomAuthButton(
+                      buttonText: loading ? "Submitting..." : "Next",
+                      onTap: loading ? () {} : () => _submit(context, ref),
+                    ),
+                    SizedBox(height: 40.h),
+                  ],
                 ),
-                SizedBox(height: 40.h),
               ],
             ),
           ),
@@ -250,7 +320,6 @@ class VendorRequestScreen extends ConsumerWidget {
     );
   }
 }
-
 
 final selectedCountryProvider = StateProvider<Country?>((ref) => null);
 
@@ -268,7 +337,6 @@ final pickedFilesProvider = StateProvider<List<File>>((ref) => []);
 
 // Loading State
 final vendorLoadingProvider = StateProvider<bool>((ref) => false);
-
 
 class BusinessTypeDropdown extends ConsumerWidget {
   const BusinessTypeDropdown({super.key});
@@ -292,10 +360,7 @@ class BusinessTypeDropdown extends ConsumerWidget {
             isExpanded: true,
             hint: Text(
               "Choose Your Business Type",
-              style: TextStyle(
-                color: AllColor.textHintColor,
-                fontSize: 14.sp,
-              ),
+              style: TextStyle(color: AllColor.textHintColor, fontSize: 14.sp),
             ),
             value: selectedType,
             icon: Icon(Icons.arrow_drop_down, size: 24.sp),
@@ -319,7 +384,8 @@ class BusinessTypeDropdown extends ConsumerWidget {
           ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => const Center(child: Text("Data is not available")),
+        error: (err, stack) =>
+            const Center(child: Text("Data is not available")),
       ),
     );
   }

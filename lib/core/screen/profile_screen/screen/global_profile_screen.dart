@@ -164,7 +164,9 @@ class ProfileSection extends ConsumerWidget {
             ),
           ],
         ),
+
         SizedBox(width: 12.w),
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

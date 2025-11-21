@@ -148,6 +148,10 @@ class BuyerInfo {
   final String shipName;
   final String shipEmail;
   final String shipAddress;
+  final String shipLocation;
+  final String latitude;
+  final String longitude;
+
   final String shipCity;
   final String shipState;
   final String shipCountry;
@@ -178,6 +182,9 @@ class BuyerInfo {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
+    required this.shipLocation,
+    required this.latitude,
+    required this.longitude,
   });
 
   factory BuyerInfo.fromJson(Map<String, dynamic> json) => BuyerInfo(
@@ -200,6 +207,9 @@ class BuyerInfo {
     userId: json['user_id'] ?? 0,
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
+    shipLocation: json['ship_location'] ?? '',
+    latitude: json['ship_latitude'] ?? "",
+    longitude: json['ship_longitude'] ?? "",
   );
 }
 

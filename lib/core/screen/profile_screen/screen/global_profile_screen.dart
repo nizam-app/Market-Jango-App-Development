@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
+import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
-import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../utils/get_user_type.dart';
@@ -196,14 +196,15 @@ class ProfileSection extends ConsumerWidget {
         ),
         IconButton(
           onPressed: () {
+            ref.invalidate(selectedLatitudeProvider);
+            ref.invalidate(selectedLongitudeProvider);
             if (userTypeAsync.value == "buyer") {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "vendor") {
-              context.push(VendorEditProfile.routeName, extra: userType);
-            }  else if (userTypeAsync.value == "transport") {
+              context.push(BuyerProfileEditScreen.routeName, extra: userType);
+            } else if (userTypeAsync.value == "transport") {
               // Transport
-              
-            }  
+            }
           },
 
           icon: Icon(Icons.edit_outlined, color: AllColor.black, size: 18.sp),

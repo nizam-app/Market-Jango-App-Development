@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../model/vendor_request_model.dart';
 
 final vendorRegisterProvider =
-StateNotifierProvider<VendorRegisterNotifier, AsyncValue<VendorModel?>>(
+    StateNotifierProvider<VendorRegisterNotifier, AsyncValue<VendorModel?>>(
       (ref) => VendorRegisterNotifier(),
-);
+    );
 
 class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
   VendorRegisterNotifier() : super(const AsyncData(null));
@@ -20,7 +22,9 @@ class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
     required String businessName,
     required String businessType,
     required String address,
-    required List<File> files, // ✅ any file type (image, pdf, doc, etc.)
+    required List<File> files,
+    double? latitude, // Add latitude
+    double? longitude, // Add longitude
   }) async {
     state = const AsyncLoading();
 
@@ -30,10 +34,7 @@ class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
       if (token == null || token.isEmpty) throw 'Missing auth token';
 
       var request = http.MultipartRequest('POST', Uri.parse(url));
-      request.headers.addAll({
-        'Accept': 'application/json',
-        'token': token,
-      });
+      request.headers.addAll({'Accept': 'application/json', 'token': token});
 
       // ✅ Add text fields
       request.fields['country'] = country;
@@ -41,14 +42,19 @@ class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
       request.fields['business_type'] = businessType;
       request.fields['address'] = address;
 
-      // ✅ Add any type of file (jpg, png, pdf, doc, docx etc.)
+      // ✅ Add location if available
+      if (latitude != null && longitude != null) {
+        request.fields['latitude'] = latitude.toString();
+        request.fields['longitude'] = longitude.toString();
+      }
+
+      // ✅ Add files
       for (var file in files) {
         final filename = file.path.split('/').last;
         final fileStream = await http.MultipartFile.fromPath(
           'files[]',
           file.path,
           filename: filename,
-          // contentType optional — http automatically detects mime type
         );
         request.files.add(fileStream);
       }

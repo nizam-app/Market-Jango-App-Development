@@ -4,15 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
-import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
-import 'package:market_jango/features/auth/screens/login/logic/password_validator.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
 import 'package:market_jango/features/auth/screens/login/logic/login_check.dart';
+import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart' show UserScreen;
-import 'package:market_jango/features/buyer/screens/home_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
+
 import '../../forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
    LoginScreen({super.key});
@@ -83,7 +82,9 @@ class LoginTextFormField extends ConsumerWidget {
             controller: controllerPassword,
             textInputAction: TextInputAction.done,
             autovalidateMode: AutovalidateMode.disabled,
-            validator: passwordValidator, // তোমার existing function
+            validator: (_) {},
+            // passwordValidator,
+            // তোমার existing function
             obscureText: isObscure,
            
             decoration: InputDecoration(

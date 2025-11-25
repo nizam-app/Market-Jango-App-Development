@@ -27,10 +27,10 @@ class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
     final items = _demoOrders
         .where(
           (e) => _tab == 0
-              ? e.status == OrderStatus.pending
+              ? e.status == VendorAssienOrderStatus.pending
               : _tab == 1
-              ? e.status == OrderStatus.assigned
-              : e.status == OrderStatus.completed,
+              ? e.status == VendorAssienOrderStatus.assigned
+              : e.status == VendorAssienOrderStatus.completed,
         )
         .where(
           (e) =>
@@ -96,7 +96,7 @@ class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
 
 /* -------------------- Models & Demo Data -------------------- */
 
-enum OrderStatus { pending, assigned, completed }
+enum VendorAssienOrderStatus { pending, assigned, completed }
 
 class AssignedOrderData {
   final String driverName;
@@ -104,7 +104,7 @@ class AssignedOrderData {
   final String pickup;
   final String destination;
   final double price;
-  final OrderStatus status;
+  final VendorAssienOrderStatus status;
 
   const AssignedOrderData({
     required this.driverName,
@@ -123,7 +123,7 @@ const _demoOrders = <AssignedOrderData>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.assigned,
+    status: VendorAssienOrderStatus.assigned,
   ),
   AssignedOrderData(
     driverName: 'MR. John doe',
@@ -131,7 +131,7 @@ const _demoOrders = <AssignedOrderData>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.assigned,
+    status: VendorAssienOrderStatus.assigned,
   ),
   AssignedOrderData(
     driverName: 'MR. John doe',
@@ -139,7 +139,7 @@ const _demoOrders = <AssignedOrderData>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.assigned,
+    status: VendorAssienOrderStatus.assigned,
   ),
   AssignedOrderData(
     driverName: 'MR. John doe',
@@ -147,7 +147,7 @@ const _demoOrders = <AssignedOrderData>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.assigned,
+    status: VendorAssienOrderStatus.assigned,
   ),
 ];
 

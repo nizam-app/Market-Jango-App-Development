@@ -1,72 +1,168 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
-import 'package:market_jango/features/buyer/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/buyer_vendor_profile_screen.dart';
-import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
-import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
-import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
-class ProductDetails extends StatelessWidget {
-  const ProductDetails({super.key});
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'logic/add_cart_quantity_logic.dart';
+import 'logic/product_details_data.dart';
+import 'model/product_all_details_model.dart';
+
+class ProductDetails extends ConsumerStatefulWidget {
+  const ProductDetails({super.key, required this.productId});
+  final int productId;
   static final String routeName = '/productDetails';
 
   @override
+  ConsumerState<ProductDetails> createState() => _ProductDetailsState();
+}
+class _ProductDetailsState extends ConsumerState<ProductDetails> {
+  String? _selectedSize;
+  String? _selectedColor;
+
+  @override
   Widget build(BuildContext context) {
+    final prod = ref.watch(productDetailsProvider(widget.productId));
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ProductImage(),
-              CustomSize(),
-              ProductMaterialAndStoreInfo(),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15.w),
-                child: Column(
-                  children: [
-                    const SeeMoreButton(name: "Top Products", seeMoreAction: null, isSeeMore: false),
-                    CustomTopProducts(),
-                    SeeMoreButton(name: "New Items", seeMoreAction: (){context.pushNamed(
-                        SeeJustForYouScreen.routeName, pathParameters: {"screenName": "New Items"});}),
-                    const CustomNewItemsShow(),
-                  ],
+      body: SingleChildScrollView(
+        child: prod.when(
+          data: (product) {
+            return Column(
+              children: [
+                ProductImage(product: product),
+                CustomSize(
+                  product: product,
+                  initial: _selectedSize,
+                  onSelected: (s) => setState(() => _selectedSize = s),
                 ),
-              ),
-            ],
-          ),
+                SizeColorAnd(text: "Color"),
+                CustomColor(
+                  product: product,
+                  initial: _selectedColor,
+                  onSelected: (c) => setState(() => _selectedColor = c),
+                ),
+                ProductMaterialAndStoreInfo(
+                  storeName:
+                      product.vendor?.user?.name ??
+                      product.vendor?.businessName ??
+                      '',
+                  image:
+                      product.vendor?.user?.image ??
+                      "https://www.selikoff.net/blog-files/null-value.gif",
+                  vendorId: product.vendor?.user?.id ?? product.vendorId,
+                  onChatTap: () async {
+                    final pref = await SharedPreferences.getInstance();
+                    final myUserIdStr = pref.getString('user_id');
+                    if (myUserIdStr == null)
+                      throw Exception("User ID not found");
+                    final myId = int.parse(myUserIdStr);
+                    try {
+                      await context.push(
+                        GlobalChatScreen.routeName,
+                        extra: ChatArgs(
+                          partnerId:
+                              product.vendor?.user?.id ?? product.vendorId,
+                          partnerName:
+                              product.vendor?.user?.name ??
+                              product.vendor?.businessName ??
+                              '',
+                          partnerImage: product.vendor?.user?.image ?? '',
+                          myUserId: myId,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Chat open failed: $e')),
+                      );
+                    }
+                  },
+                ),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15.w),
+                  child: Column(
+                    children: const [
+                      SeeMoreButton(
+                        name: "Top Products",
+                        seeMoreAction: null,
+                        isSeeMore: false,
+                      ),
+                      CustomTopProducts(),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text(error.toString())),
         ),
       ),
 
-      // 🔶 Bottom bar you wanted
-      bottomNavigationBar: QuantityBuyBar(
-        onBuyNow: (qty) {
-          // TODO: handle buy action
-          // e.g. context.push('/checkout?qty=$qty');
+      bottomNavigationBar: prod.when(
+        data: (data) {
+          return QuantityBuyBar(
+            onBuyNow: (qty) async {
+              try {
+                final resp = await CartService.create(
+                  productId: data.id,
+                  color: _selectedColor ?? '',
+                  size: _selectedSize ?? '',
+                  quantity: qty,
+                );
+
+                if (!mounted) return;
+                GlobalSnackbar.show(
+                  context,
+                  title: ("Success"),
+                  message: "Added to cart",
+                );
+                ref.invalidate(cartProvider);
+
+                context.push(CartScreen.routeName);
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(e.toString())));
+              }
+            },
+          );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text(error.toString())),
       ),
     );
   }
 }
 
 class ProductImage extends StatelessWidget {
-  const ProductImage({super.key});
+  const ProductImage({super.key, required this.product});
+  final DetailItem product;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     return Column(
       children: [
-        // 🔹 Product Image with Back Button
         Stack(
           children: [
-            Image.network(
-              "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1470&auto=format&fit=crop",
+            FirstTimeShimmerImage(
+              imageUrl: product.image,
               height: 350.h,
-              width: double.infinity,
+              width: 1.sw,
               fit: BoxFit.cover,
             ),
             Positioned(
@@ -74,106 +170,94 @@ class ProductImage extends StatelessWidget {
               left: 12.w,
               child: CircleAvatar(
                 backgroundColor: AllColor.white,
-                child:IconButton(onPressed: (){context.pop();}, icon:  Icon(Icons.arrow_back, color: AllColor.black)),
+                child: IconButton(
+                  onPressed: () {
+                    context.pop();
+                  },
+                  icon: Icon(Icons.arrow_back, color: AllColor.black),
+                ),
               ),
             ),
           ],
         ),
 
         // 🔹 White Container with Product Details
-
       ],
     );
   }
 }
+
 class CustomSize extends StatefulWidget {
-  const CustomSize({super.key});
+  const CustomSize({
+    super.key,
+    required this.product,
+    this.initial,
+    this.onSelected,
+  });
+  final DetailItem product;
+  final String? initial;
+  final ValueChanged<String>? onSelected;
 
   @override
   State<CustomSize> createState() => _CustomSizeState();
 }
 
 class _CustomSizeState extends State<CustomSize> {
-  final List<String> sizes = ["XS", "S", "M", "L", "XL", "2XL"];
-  int selectedIndex = 2; // Default selected = "M"
+  int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final i = widget.initial;
+    if (i != null) {
+      final idx = widget.product.size.indexOf(i);
+      if (idx >= 0) selectedIndex = idx;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
+    final product = widget.product;
     return Padding(
-      padding:  EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(16.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "\$15.00",
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AllColor.black,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  "Everyday Elegance in Women’s Fashion",
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AllColor.black,
-                  ),
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  "Discover a curated collection of stylish and fashionable "
-                      "women's dresses designed for every mood and moment. "
-                      "From elegant evenings to everyday charm — dress to express.",
-                  style: theme.titleMedium,
-                ),
-              ],
-            ),
-          ),
-
           SizeColorAnd(text: "Size"),
-
-
-          // 🔹 Container background
           Container(
-            padding: EdgeInsets.symmetric( horizontal: 8.w,vertical: 3.h),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
-              color: AllColor.lightBlue.withOpacity(0.15), // light blue background
+              color: AllColor.lightBlue.withOpacity(0.15),
               borderRadius: BorderRadius.circular(50.r),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(sizes.length, (index) {
-                bool isSelected = selectedIndex == index;
+              children: List.generate(product.size.length, (index) {
+                final isSelected = selectedIndex == index;
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
+                    setState(() => selectedIndex = index);
+                    widget.onSelected?.call(product.size[index]);
                   },
                   child: Container(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 7.h,
+                    ),
                     decoration: BoxDecoration(
-                      color:isSelected? AllColor.white : AllColor.transparent,
+                      color: isSelected ? AllColor.white : AllColor.transparent,
                       borderRadius: BorderRadius.circular(50.r),
                       border: isSelected
                           ? Border.all(color: AllColor.blue, width: 3.w)
                           : null,
                     ),
                     child: Text(
-                      sizes[index],
+                      product.size[index],
                       style: TextStyle(
-                        fontSize:isSelected? 16.sp:13.sp,
-                        fontWeight:isSelected? FontWeight.bold: FontWeight.w500,
+                        fontSize: isSelected ? 16.sp : 13.sp,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isSelected ? AllColor.blue : AllColor.black,
                       ),
                     ),
@@ -182,8 +266,6 @@ class _CustomSizeState extends State<CustomSize> {
               }),
             ),
           ),
-          SizeColorAnd(text: "Color"),
-          CustomColor()
         ],
       ),
     );
@@ -191,10 +273,7 @@ class _CustomSizeState extends State<CustomSize> {
 }
 
 class SizeColorAnd extends StatelessWidget {
-  const SizeColorAnd({
-    super.key,
-    required this.text,
-  });
+  const SizeColorAnd({super.key, required this.text});
 
   final String text;
 
@@ -204,13 +283,13 @@ class SizeColorAnd extends StatelessWidget {
       children: [
         SizedBox(height: 16.h),
         Text(
-              "$text",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: AllColor.black,
-              ),
-            ),
+          "$text",
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: AllColor.black,
+          ),
+        ),
         SizedBox(height: 10.h),
       ],
     );
@@ -218,24 +297,32 @@ class SizeColorAnd extends StatelessWidget {
 }
 
 class CustomColor extends StatefulWidget {
-  const CustomColor({super.key});
+  const CustomColor({
+    super.key,
+    required this.product,
+    this.initial,
+    this.onSelected,
+  });
+  final DetailItem product;
+  final String? initial; // raw string e.g. "red" / "d926cd"
+  final ValueChanged<String>? onSelected;
 
   @override
   State<CustomColor> createState() => _CustomColorState();
 }
 
 class _CustomColorState extends State<CustomColor> {
-  final List<Color> colors = [
-    Colors.grey.shade300,
-    Colors.black,
-    Colors.blue,
-    Colors.red,
-    Colors.teal,
-    Colors.amber,
-    Colors.purple,
-  ];
+  int selectedIndex = 0;
 
-  int selectedIndex = 0; // default selected
+  @override
+  void initState() {
+    super.initState();
+    final i = widget.initial;
+    if (i != null) {
+      final idx = widget.product.color.indexOf(i);
+      if (idx >= 0) selectedIndex = idx;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,14 +330,22 @@ class _CustomColorState extends State<CustomColor> {
       height: 60.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: colors.length,
+        itemCount: widget.product.color.length,
         itemBuilder: (context, index) {
-          bool isSelected = selectedIndex == index;
+          final isSelected = selectedIndex == index;
+          final raw = widget.product.color[index]; // e.g. "red" বা "d926cd"
+          // Hex হলে সেফলি দেখাতে try করলাম; না হলে ডিফল্ট grey
+          Color swatch;
+          try {
+            swatch = Color(int.parse('0xff${raw.replaceAll('#', '')}'));
+          } catch (_) {
+            swatch = Colors.grey; // named color হলে fallback
+          }
+
           return GestureDetector(
             onTap: () {
-              setState(() {
-                selectedIndex = index;
-              });
+              setState(() => selectedIndex = index);
+              widget.onSelected?.call(raw); // ✅ raw string parent-এ
             },
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 6.w),
@@ -266,23 +361,21 @@ class _CustomColorState extends State<CustomColor> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Color Circle
                   Container(
                     width: 40.w,
                     height: 40.w,
                     decoration: BoxDecoration(
-                      color: colors[index],
+                      color: swatch,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3.w),
                     ),
                   ),
-                  // ✅ Check Icon if selected
                   if (isSelected)
                     Icon(
                       Icons.check,
                       size: 25.sp,
                       color: Colors.white,
-                      weight: 900, // This makes the icon bold
+                      weight: 900,
                     ),
                 ],
               ),
@@ -293,6 +386,7 @@ class _CustomColorState extends State<CustomColor> {
     );
   }
 }
+
 class ProductMaterialAndStoreInfo extends StatelessWidget {
   const ProductMaterialAndStoreInfo({
     super.key,
@@ -300,10 +394,13 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
       MaterialChip(text: 'Cotton 95%'),
       MaterialChip(text: 'Nylon 5%'),
     ],
-    this.storeName = 'R2A Store',
+    this.storeName = '___',
     this.rating = 4.6,
     this.reviewCount = 56,
     this.onChatTap,
+    this.image =
+        "https://t3.ftcdn.net/jpg/05/62/05/20/360_F_562052065_yk3KPuruq10oyfeu5jniLTS4I2ky3bYX.jpg",
+    required this.vendorId,
   });
 
   final List<MaterialChip> materials;
@@ -311,17 +408,19 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
   final double rating;
   final int reviewCount;
   final VoidCallback? onChatTap;
+  final String image;
+  final int vendorId;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:  EdgeInsets.symmetric(horizontal:20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Materials row
-          SizeColorAnd(text: "Specifications",)  ,
-          
+          SizeColorAnd(text: "Specifications"),
+
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
@@ -334,16 +433,24 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
           // Store + chat
           Row(
             children: [
-              InkWell(onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
-                child: CircleAvatar(radius: 25,
-                backgroundImage: AssetImage("assets/images/promo2.jpg"),),
+              InkWell(
+                onTap: () {
+                  context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
+                },
+                child: CircleAvatar(
+                  radius: 25,
+                  // TODO: Replace with the actual vendor image URL from your product/vendor data
+                  backgroundImage: NetworkImage(image),
+                ),
               ),
-              SizedBox(width: 20.w,)    ,
+              SizedBox(width: 20.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: (){context.push(BuyerVendorProfileScreen.routeName);},
+                    onTap: () {
+                      context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
+                    },
                     child: Text(
                       storeName,
                       style: TextStyle(
@@ -371,15 +478,22 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       ),
                       SizedBox(width: 6.w),
 
-                      // Small badge around review count like in screenshot
                       InkWell(
-                        onTap: (){context.push(ReviewScreen.routeName);},
+                        onTap: () {
+                          context.push(ReviewScreen.routeName);
+                        },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 2.h,
+                          ),
                           decoration: BoxDecoration(
                             // color: AllColor.badgeBg,
                             borderRadius: BorderRadius.circular(6.r),
-                            border: Border.all(color: AllColor.black, width: 0.8),
+                            border: Border.all(
+                              color: AllColor.black,
+                              width: 0.8,
+                            ),
                           ),
                           child: Text(
                             '$reviewCount reviews',
@@ -393,7 +507,6 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       ),
                     ],
                   ),
-
                 ],
               ),
               Spacer(),
@@ -409,18 +522,17 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                         size: 16.r,
                         color: AllColor.blue,
                       ),
-                      SizedBox(width: 5.w,),
-                      InkWell(
-                        onTap: (){context.push(ChatScreen.routeName);},
-                          child: Text("Chat naw",style: TextStyle(color: Colors.blue,fontSize: 12),))
+                      SizedBox(width: 5.w),
+                      Text(
+                        "Chat naw",
+                        style: TextStyle(color: Colors.blue, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
               ),
-              
             ],
           ),
-        
         ],
       ),
     );
@@ -457,6 +569,7 @@ class MaterialChip {
   final String text;
   const MaterialChip({required this.text});
 }
+
 class QuantityBuyBar extends StatefulWidget {
   const QuantityBuyBar({
     super.key,
@@ -509,22 +622,33 @@ class _QuantityBuyBarState extends State<QuantityBuyBar> {
             ),
             child: Row(
               children: [
-                _QtyIcon(onTap: _dec, child: Text('−', style: TextStyle(fontSize: 16.sp))),
+                _QtyIcon(
+                  onTap: _dec,
+                  child: Text('−', style: TextStyle(fontSize: 16.sp)),
+                ),
                 SizedBox(width: 10.w),
-                Text('$qty', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                Text(
+                  '$qty',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 SizedBox(width: 10.w),
-                _QtyIcon(onTap: _inc, child: Text('+', style: TextStyle(fontSize: 16.sp))),
+                _QtyIcon(
+                  onTap: _inc,
+                  child: Text('+', style: TextStyle(fontSize: 16.sp)),
+                ),
               ],
             ),
           ),
-       Spacer() ,
+          Spacer(),
 
-          // 🔶 Buy now button (vertically same, horizontally smaller)
           SizedBox(
-            width: 180.w,   // ⬅️ fixed width, not Expanded → horizontally smaller
-            height: 44.h,   // ⬅️ vertical same as আগে
+            width: 180.w,
+            height: 44.h,
             child: ElevatedButton(
-              onPressed: () {context.push(BuyerPaymentScreen.routeName);},
+              onPressed: () => widget.onBuyNow(qty),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AllColor.orange,
                 shape: RoundedRectangleBorder(

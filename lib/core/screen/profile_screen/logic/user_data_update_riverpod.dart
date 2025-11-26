@@ -3,11 +3,10 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:market_jango/core/constants/api_control/vendor_api.dart'; // <- এখানে user_update URL রাখুন
+import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/utils/image_check_before_post.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Usage: ref.watch(updateUserProvider) for loading/error
 final updateUserProvider =
     StateNotifierProvider<UpdateUserNotifier, AsyncValue<void>>(
       (ref) => UpdateUserNotifier(),
@@ -16,18 +15,31 @@ final updateUserProvider =
 class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
   UpdateUserNotifier() : super(const AsyncData(null));
 
-  /// returns true on success
+  /// userType = "buyer" | "vendor" | "transport"
   Future<bool> updateUser({
+    required String userType,
+
+    // common
     String? name,
+    File? image,
+    double? latitude,
+    double? longitude,
+
+    // buyer only
     String? gender,
     String? age,
     String? description,
     String? country,
-    String? ship_location,
+    String? shipLocation,
     String? shipCity,
-    File? image,
-    double? latitude,
-    double? longitude,
+
+    // vendor only
+    // String? language,
+    String? businessName,
+    // String? businessType,
+    String? address,
+
+    // transport only (address ই reuse করব)
   }) async {
     try {
       state = const AsyncLoading();
@@ -36,8 +48,8 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
       final token = prefs.getString('auth_token');
 
       final uri = Uri.parse(VendorAPIController.user_update);
-
       final req = http.MultipartRequest('POST', uri);
+
       if (token != null) req.headers['token'] = token;
 
       void addField(String key, String? v) {
@@ -46,19 +58,46 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
         }
       }
 
-      addField('name', name);
-      addField('gender', gender);
-      addField('age', age);
-      addField('description', description);
-      addField('country', country);
-      addField('ship_location', ship_location);
-      addField('ship_latitude', latitude.toString());
-      addField('ship_longitude', longitude.toString());
-      addField('ship_city', shipCity);
+      void addDouble(String key, double? v) {
+        if (v != null) {
+          req.fields[key] = v.toString();
+        }
+      }
 
-      File? coverCompressed;
+      // ----- common -----
+      addField('name', name);
+
+      // ----- buyer payload (IMAGE-1 er sathe match kore) -----
+      if (userType == 'buyer') {
+        addField('gender', gender);
+        addField('age', age);
+        addField('description', description);
+        addField('country', country);
+        addField('ship_location', shipLocation);
+        addField('ship_city', shipCity);
+        addDouble('ship_latitude', latitude);
+        addDouble('ship_longitude', longitude);
+      }
+      // ----- vendor payload (screenshot-1 moto) -----
+      else if (userType == 'vendor') {
+        // addField('language', language);
+        addField('country', country);
+        addField('address', address);
+        addField('business_name', businessName);
+        // addField('business_type', businessType);
+        addDouble('latitude', latitude); // NOTE: এখানে ship_ নেই
+        addDouble('longitude', longitude);
+      }
+      // ----- transport payload (screenshot-2 moto) -----
+      else if (userType == 'transport') {
+        addField('address', address);
+        addDouble('latitude', latitude);
+        addDouble('longitude', longitude);
+      }
+
+      // ----- image -----
       if (image != null) {
-        coverCompressed = await ImageManager.compressFile(image);
+        final coverCompressed = await ImageManager.compressFile(image);
         req.files.add(
           await http.MultipartFile.fromPath('image', coverCompressed.path),
         );

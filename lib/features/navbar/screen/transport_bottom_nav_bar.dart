@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 
-import '../../transport/screens/transport_booking.dart';
-import '../../transport/screens/transport_chart.dart';
-import '../../transport/screens/transport_home.dart';
-import '../../transport/screens/transport_setting.dart';
+import '../../transport/screens/my_booking/screen/transport_booking.dart';
+import '../../transport/screens/home/screen/transport_home.dart';
 
 // --- Providers ---------------------------------------------------------------
 
@@ -13,12 +13,14 @@ import '../../transport/screens/transport_setting.dart';
 final transportNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap with your actual screens)
-final transportPagesProvider = Provider<List<Widget>>((_) => const [
-  TransportHomeScreen(),
-  TransportChart(),
-  TransportBooking(),
-  TransportSetting(),
-]);
+final transportPagesProvider = Provider<List<Widget>>(
+  (_) => const [
+    TransportHomeScreen(),
+    GlobalMassageScreen(),
+    TransportBooking(),
+    GlobalSettingScreen(),
+  ],
+);
 
 // --- Widget ------------------------------------------------------------------
 
@@ -45,10 +47,7 @@ class TransportBottomNavBar extends ConsumerWidget {
             label: "Home",
             icon: _SvgIcon('assets/images/homeicon.svg'),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: "Chat",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
           BottomNavigationBarItem(
             label: "My Bookings",
             icon: _SvgIcon('assets/images/bookicon.svg'),

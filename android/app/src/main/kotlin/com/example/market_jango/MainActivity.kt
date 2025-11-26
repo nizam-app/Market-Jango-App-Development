@@ -1,4 +1,4 @@
-package com.example.market_jango
+package com.korim.marketjango
 
 import io.flutter.embedding.android.FlutterActivity
 

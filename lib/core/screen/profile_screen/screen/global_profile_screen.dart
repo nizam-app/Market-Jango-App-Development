@@ -31,65 +31,68 @@ class GlobalSettingScreen extends ConsumerWidget {
       child: Padding(
         padding: EdgeInsets.all(20.r),
         child: userAsync.when(
-          data: (user) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 12.h),
-              Tuppertextandbackbutton(screenName: "My Settings"),
-              SizedBox(height: 16.h),
-              ProfileSection(
-                name: user.name,
-                username: user.email,
-                imageUrl: user.image,
-                userType: user,
-              ),
-
-              SizedBox(height: 20.h),
-              _SettingsLine(
-                icon: Icons.phone_in_talk_outlined,
-                text: user.phone,
-              ),
-              _DividerLine(),
-              _SettingsLine(icon: Icons.email_outlined, text: user.email),
-
-              SizedBox(height: 12.h),
-              _DividerLine(),
-
-              if (userTypeAsync.value == "buyer")
-                _SettingsTile(
-                  leadingIcon: Icons.shopping_bag_outlined,
-                  title: "My Order",
-                  onTap: () => context.push(BuyerOrderPage.routeName),
+          data: (user) => SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 12.h),
+                Tuppertextandbackbutton(screenName: "My Settings"),
+                SizedBox(height: 16.h),
+                ProfileSection(
+                  name: user.name,
+                  username: user.email,
+                  imageUrl: user.image,
+                  userType: user,
                 ),
-              if (userTypeAsync.value == "vendor")
-                _SettingsTile(
-                  leadingIcon: Icons.shopping_bag_outlined,
-                  title: "My Product",
-                  onTap: () => context.push(VendorMyProductScreen.routeName),
+
+                SizedBox(height: 20.h),
+                _SettingsLine(
+                  icon: Icons.phone_in_talk_outlined,
+                  text: user.phone,
                 ),
-              _DividerLine(),
-              if (userTypeAsync.value == "buyer")
+                _DividerLine(),
+                _SettingsLine(icon: Icons.email_outlined, text: user.email),
+
+                SizedBox(height: 12.h),
+                _DividerLine(),
+
+                if (userTypeAsync.value == "buyer")
+                  _SettingsTile(
+                    leadingIcon: Icons.shopping_bag_outlined,
+                    title: "My Order",
+                    onTap: () => context.push(BuyerOrderPage.routeName),
+                  ),
+                if (userTypeAsync.value == "vendor")
+                  _SettingsTile(
+                    leadingIcon: Icons.shopping_bag_outlined,
+                    title: "My Product",
+                    onTap: () => context.push(VendorMyProductScreen.routeName),
+                  ),
+                _DividerLine(),
+                if (userTypeAsync.value == "buyer")
+                  _SettingsTile(
+                    leadingIcon: Icons.event_note_outlined,
+                    title: "Order history",
+                    onTap: () =>
+                        context.push(BuyerOrderHistoryScreen.routeName),
+                  ),
+                _DividerLine(),
                 _SettingsTile(
-                  leadingIcon: Icons.event_note_outlined,
-                  title: "Order history",
-                  onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
+                  leadingIcon: Icons.language_outlined,
+                  title: "Language",
+                  onTap: () => context.push(GlobalLanguageScreen.routeName),
                 ),
-              _DividerLine(),
-              _SettingsTile(
-                leadingIcon: Icons.language_outlined,
-                title: "Language",
-                onTap: () => context.push(GlobalLanguageScreen.routeName),
-              ),
-              _DividerLine(),
-              _SettingsTile(
-                leadingIcon: Icons.logout_outlined,
-                title: "Log Out",
-                titleColor: AllColor.orange,
-                iconColor: AllColor.orange,
-                arrowColor: AllColor.orange,
-                onTap: () {},
-              ),
-            ],
+                _DividerLine(),
+                _SettingsTile(
+                  leadingIcon: Icons.logout_outlined,
+                  title: "Log Out",
+                  titleColor: AllColor.orange,
+                  iconColor: AllColor.orange,
+                  arrowColor: AllColor.orange,
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(child: Text('Error: $error')),

@@ -159,9 +159,17 @@ class _BuyerProfileEditScreenState
                 // ------------ Common fields ------------
                 CustomTextFormField(label: "Your Name", controller: nameC),
                 SizedBox(height: 12.h),
-                CustomTextFormField(label: "Email", controller: emailC),
+                CustomTextFormField(
+                  label: "Email",
+                  controller: emailC,
+                  enabled: false,
+                ),
                 SizedBox(height: 12.h),
-                CustomTextFormField(label: "Phone", controller: phoneC),
+                CustomTextFormField(
+                  label: "Phone",
+                  controller: phoneC,
+                  enabled: false,
+                ),
 
                 // ------------ Buyer only fields ------------
                 if (isBuyer) ...[
@@ -557,6 +565,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final bool? enabled;
 
   const CustomTextFormField({
     super.key,
@@ -565,6 +574,7 @@ class CustomTextFormField extends StatelessWidget {
     this.hintText,
     this.keyboardType,
     this.maxLines = 1,
+    this.enabled = true,
   });
 
   @override
@@ -578,6 +588,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         TextFormField(
+          enabled: enabled,
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,

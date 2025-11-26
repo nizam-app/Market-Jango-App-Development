@@ -37,7 +37,7 @@ class CustomSeeAllProduct extends ConsumerWidget {
                 CustomNewProduct(
                   width: 162,
                   height: 150,
-                  productPricesh: products.sellPrice,
+                  productPrices: products.sellPrice.toString(),
                   productName: products.name,
                   image: products.image,
                   imageHeight: 137,

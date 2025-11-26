@@ -1,23 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
-import 'package:market_jango/features/buyer/screens/prement/logic/global_logger.dart';
-import 'package:market_jango/features/buyer/screens/prement/logic/status_check_logic.dart';
-import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
+import 'package:market_jango/features/buyer/screens/prement/logic/prement_done_logic.dart';
+import 'package:market_jango/features/buyer/screens/prement/logic/prement_reverpod.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
-import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/show_shipping_contract_sheet.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../model/prement_page_data_model.dart'; // <-- PaymentPageData
 import '../widget/show_shipping_address_sheet.dart';
@@ -91,6 +83,9 @@ class BuyerPaymentScreen extends ConsumerWidget {
 
     final totalForBottom = args?.grandTotal ?? 40;
 
+    // ⬇️ currently selected shipping index (0 or 1)
+    final selectedShippingIndex = ref.watch(shippingMethodIndexProvider);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -120,8 +115,11 @@ class BuyerPaymentScreen extends ConsumerWidget {
                 CustomItemShow(
                   items: uiItems,
                   options: options,
-                  selectedIndex: 0,
-                  onShippingChanged: (i) {},
+                  selectedIndex: selectedShippingIndex,
+                  onShippingChanged: (i) {
+                    // ⬇️ user নতুন যেটা select করবে সেটা riverpod এ save করলাম
+                    ref.read(shippingMethodIndexProvider.notifier).state = i;
+                  },
                   currency: '\$',
                 ),
 
@@ -553,91 +551,100 @@ class _CustomItemShowState extends State<CustomItemShow> {
   }
 }
 
-Future<void> startCheckout(BuildContext context) async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const Dialog(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4)),
-            SizedBox(width: 12),
-            Text('Preparing checkout...'),
-          ],
-        ),
-      ),
-    ),
-  );
-
-  try {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final token = await container.read(authTokenProvider.future);
-
-    // ✅ এখানে তোমার কনস্ট্যান্ট যেটাই হোক (Uri/String) সেটি log করবো
-    final uri = Uri.parse(BuyerAPIController.invoice_createate);
-    log.i('InvoiceCreate → GET $uri  (token: ${maskToken(token)})');
-
-    final res = await http.get(uri, headers: {
-      'Accept': 'application/json',
-      if (token != null && token.isNotEmpty) 'token': token,
-    });
-
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
-
-    log.i('InvoiceCreate ← status=${res.statusCode}');
-    log.t('InvoiceCreate body: ${res.body.length > 400 ? res.body.substring(0, 400)+'…' : res.body}');
-
-    if (res.statusCode != 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invoice failed: ${res.statusCode}')),
-      );
-      return;
-    }
-
-    final body = jsonDecode(res.body) as Map<String, dynamic>;
-    final data = body['data'];
-    final obj = (data is List && data.isNotEmpty) ? data.first : data;
-    final paymentUrl = obj?['paymentMethod']?['payment_url']?.toString();
-
-    log.i('payment_url = $paymentUrl');
-
-    if (paymentUrl == null || paymentUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment URL not found')),
-      );
-      return;
-    }
-
-    final result = await Navigator.of(context).push<PaymentStatusResult>(
-      MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl)),
-    );
-
-    log.i('WebView result: ${result?.success}');
-
-    if (result?.success == true) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment completed successfully')),
-      );
-      Navigator.pop(context); // success → back
-    } else {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment not completed')),
-      );
-    }
-  } catch (e, st) {
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
-    log.e('Checkout exception: $e\nStack trace: $st');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Checkout failed: $e')),
-    );
-  }
-}
+// Future<void> startCheckout(BuildContext context) async {
+//   showDialog(
+//     context: context,
+//     barrierDismissible: false,
+//     builder: (_) => const Dialog(
+//       child: Padding(
+//         padding: EdgeInsets.all(16),
+//         child: Row(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             SizedBox(
+//               width: 22,
+//               height: 22,
+//               child: CircularProgressIndicator(strokeWidth: 2.4),
+//             ),
+//             SizedBox(width: 12),
+//             Text('Preparing checkout...'),
+//           ],
+//         ),
+//       ),
+//     ),
+//   );
+//
+//   try {
+//     final container = ProviderScope.containerOf(context, listen: false);
+//     final token = await container.read(authTokenProvider.future);
+//
+//     // ✅ এখানে তোমার কনস্ট্যান্ট যেটাই হোক (Uri/String) সেটি log করবো
+//     final uri = Uri.parse(BuyerAPIController.invoice_createate);
+//     log.i('InvoiceCreate → GET $uri  (token: ${maskToken(token)})');
+//
+//     final res = await http.get(
+//       uri,
+//       headers: {
+//         'Accept': 'application/json',
+//         if (token != null && token.isNotEmpty) 'token': token,
+//       },
+//     );
+//
+//     if (Navigator.of(context, rootNavigator: true).canPop()) {
+//       Navigator.of(context, rootNavigator: true).pop();
+//     }
+//
+//     log.i('InvoiceCreate ← status=${res.statusCode}');
+//     log.t(
+//       'InvoiceCreate body: ${res.body.length > 400 ? res.body.substring(0, 400) + '…' : res.body}',
+//     );
+//
+//     if (res.statusCode != 200) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text('Invoice failed: ${res.statusCode}')),
+//       );
+//       return;
+//     }
+//
+//     final body = jsonDecode(res.body) as Map<String, dynamic>;
+//     final data = body['data'];
+//     final obj = (data is List && data.isNotEmpty) ? data.first : data;
+//     final paymentUrl = obj?['paymentMethod']?['payment_url']?.toString();
+//
+//     log.i('payment_url = $paymentUrl');
+//
+//     if (paymentUrl == null || paymentUrl.isEmpty) {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Payment URL not found')));
+//       return;
+//     }
+//
+//     final result = await Navigator.of(context).push<PaymentStatusResult>(
+//       MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl)),
+//     );
+//
+//     log.i('WebView result: ${result?.success}');
+//
+//     if (result?.success == true) {
+//       if (!context.mounted) return;
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text('Payment completed successfully')),
+//       );
+//       Navigator.pop(context); // success → back
+//     } else {
+//       if (!context.mounted) return;
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text('Payment not completed')));
+//     }
+//   } catch (e, st) {
+//     if (Navigator.of(context, rootNavigator: true).canPop()) {
+//       Navigator.of(context, rootNavigator: true).pop();
+//     }
+//     log.e('Checkout exception: $e\nStack trace: $st');
+//     ScaffoldMessenger.of(
+//       context,
+//     ).showSnackBar(SnackBar(content: Text('Checkout failed: $e')));
+//   }
+// }

@@ -37,7 +37,7 @@ class VendorHomeScreen extends ConsumerWidget {
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: buildDrawer(context),
         ),
-        body: Builder(    
+        body: Builder(
           builder: (innerContext) {
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -94,7 +94,7 @@ class VendorHomeScreen extends ConsumerWidget {
                       );
                     },
                     loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                        const Center(child: CircularProgressIndicator()),
                     error: (err, _) => Center(child: Text('Error: $err')),
                   ),
                 ],
@@ -104,7 +104,6 @@ class VendorHomeScreen extends ConsumerWidget {
         ),
       ),
     );
-
   }
 
   Widget buildDrawer(BuildContext context) {
@@ -229,7 +228,7 @@ class VendorHomeScreen extends ConsumerWidget {
             CustomNewProduct(
               width: 161,
               height: 168,
-              productPricesh: prod.sellPrice,
+              productPrices: prod.sellPrice,
               productName: prod.name,
               image: prod.image,
             ),
@@ -315,10 +314,7 @@ Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
                     height: 12.w,
                     width: 12.w,
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1.w,
-                        color: AllColor.grey100,
-                      ),
+                      border: Border.all(width: 1.w, color: AllColor.grey100),
                       color: AllColor.activityColor,
                       shape: BoxShape.circle,
                     ),
@@ -326,32 +322,26 @@ Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
                 ),
 
                 // 👇 এখানে ছোট icon দিলাম – চাপ দিলে endDrawer open হবে
-                
               ],
             ),
           ),
-          
+
           Text(
             vendor.name,
             style: TextStyle(fontSize: 16.sp, color: AllColor.loginButtomColor),
           ),
         ],
       ),
-     Spacer()         ,
-     InkWell(
-          onTap: () {
-            Scaffold.of(context).openEndDrawer();
-          },
-          child: Icon(
-            Icons.menu,
-            size: 20.r,
-            color: Colors.black,
-          ),
-        ),
+      Spacer(),
+      InkWell(
+        onTap: () {
+          Scaffold.of(context).openEndDrawer();
+        },
+        child: Icon(Icons.menu, size: 20.r, color: Colors.black),
+      ),
     ],
   );
 }
-
 
 class CategoryBar extends ConsumerStatefulWidget {
   const CategoryBar({

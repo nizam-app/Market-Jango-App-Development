@@ -17,8 +17,6 @@ import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
-import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
-import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
@@ -26,7 +24,6 @@ import 'package:market_jango/features/buyer/widgets/custom_new_items_show.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
-import 'package:path/path.dart';
 
 import '../data/buyer_just_for_you_data.dart';
 import 'all_categori/screen/all_categori_screen.dart';
@@ -45,7 +42,9 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   Widget build(BuildContext context) {
     final bannerProvider = ref.watch(bannerNotifierProvider);
     final asyncData = ref.watch(topProductProvider);
-    final justForYou = ref.watch(justForYouProvider("${BuyerAPIController.just_for_you}"));
+    final justForYou = ref.watch(
+      justForYouProvider("${BuyerAPIController.just_for_you}"),
+    );
     final newItems = ref.watch(buyerNewItemsProvider);
     return Scaffold(
       backgroundColor: AllColor.white70,
@@ -119,8 +118,8 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
     );
   }
 
-  void goToAllCategoriesPage(BuildContext context,) {
-    context.push(CategoriesScreen.routeName,);
+  void goToAllCategoriesPage(BuildContext context) {
+    context.push(CategoriesScreen.routeName);
   }
 
   void goToNewItemsPage(
@@ -130,7 +129,10 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   ) {
     context.pushNamed(
       SeeJustForYouScreen.routeName,
-      extra: {'screenName': 'New Items', 'url': "${BuyerAPIController.new_items}"},
+      extra: {
+        'screenName': 'New Items',
+        'url': "${BuyerAPIController.new_items}",
+      },
     );
   }
 
@@ -149,10 +151,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   }
 
   void goToCategoriesProductPage(BuildContext context, int id, String name) {
-    context.push(
-      CategoryProductScreen.routeName,
-      extra: id
-    );
+    context.push(CategoryProductScreen.routeName, extra: id);
   }
 }
 
@@ -161,7 +160,9 @@ class JustForYouProduct extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncJustForYou = ref.watch(justForYouProvider("${BuyerAPIController.just_for_you}"));
+    final asyncJustForYou = ref.watch(
+      justForYouProvider("${BuyerAPIController.just_for_you}"),
+    );
 
     return asyncJustForYou.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -191,13 +192,16 @@ class JustForYouProduct extends ConsumerWidget {
               onTap: () {
                 final detail = p;
 
-                context.push(BuyerVendorProfileScreen.routeName, extra: detail.vendor.userId);
+                context.push(
+                  BuyerVendorProfileScreen.routeName,
+                  extra: detail.vendor.userId,
+                );
               },
               child: CustomNewProduct(
                 width: 162,
                 height: 170,
                 productName: p.name,
-                productPricesh: price,
+                productPrices: price,
                 image: p.image,
               ),
             );
@@ -222,7 +226,7 @@ Widget build(BuildContext context) {
         return CustomNewProduct(
           width: 130.w,
           height: 138.h,
-          productPricesh: "New T-shirt, sun-glass",
+          productPrices: "New T-shirt, sun-glass",
           productName: "New T-shirt,",
         );
       },
@@ -425,7 +429,10 @@ class BuyerHomeSearchBar extends StatelessWidget {
                 itemsSelector: (res) => res.products,
                 itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                 onItemSelected: (p) {
-                  context.push(BuyerVendorProfileScreen.routeName, extra: p.vendor?.userId);
+                  context.push(
+                    BuyerVendorProfileScreen.routeName,
+                    extra: p.vendor?.userId,
+                  );
                 },
                 hintText: 'Search products...',
                 debounce: const Duration(seconds: 1),

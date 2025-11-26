@@ -34,7 +34,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Column(
                   children: [
-                    SeeMoreButton(name: "Populer", isSeeMore: false),
+                    SeeMoreButton(name: "Popular", isSeeMore: false),
                     PopularProduct(vendorId: vendorId),
 
                     async.when(
@@ -219,15 +219,12 @@ class FashionProduct extends StatelessWidget {
           if (items.isNotEmpty) {
             final p = items[index];
             return GestureDetector(
-              onTap: () => context.push(
-                ProductDetails.routeName,
-                extra: p.id,
-              ),
+              onTap: () => context.push(ProductDetails.routeName, extra: p.id),
               child: CustomNewProduct(
                 width: 130,
                 height: 140,
                 productName: p.name,
-                productPricesh:p.sellPrice.toStringAsFixed(2),
+                productPrices: p.sellPrice.toStringAsFixed(2),
                 image: p.image,
                 imageHeight: 130,
               ),
@@ -241,7 +238,7 @@ class FashionProduct extends StatelessWidget {
             imageHeight: 130,
 
             productName: p.name,
-            productPricesh: p.sellPrice.toStringAsFixed(2),
+            productPrices: p.sellPrice.toStringAsFixed(2),
             image: p.image,
             //
           );
@@ -279,7 +276,7 @@ class PopularProduct extends ConsumerWidget {
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 8.w,
-            childAspectRatio: 0.68.h,
+            childAspectRatio: 0.60,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
@@ -294,7 +291,7 @@ class PopularProduct extends ConsumerWidget {
                     height: 175.h,
                     // Your widget’s param names are a bit swapped in example,
                     // keeping exactly as your API expects:
-                    productPricesh: p.name,
+                    productPrices: p.name,
                     // title
                     productName: p.sellPrice.toStringAsFixed(2),
                     image: p.image,

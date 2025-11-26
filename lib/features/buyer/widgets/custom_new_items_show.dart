@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
-import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
-import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomNewItemsShow extends ConsumerWidget {
   const CustomNewItemsShow({super.key});
@@ -33,7 +31,7 @@ class CustomNewItemsShow extends ConsumerWidget {
                   return CustomNewProduct(
                     width: 130,
                     height: 140,
-                    productPricesh: product.sellPrice,
+                    productPrices: product.sellPrice,
                     productName: product.name.toString(),
                     imageHeight: 130,
                     image: product.image,

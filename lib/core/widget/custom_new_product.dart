@@ -9,7 +9,7 @@ class CustomNewProduct extends StatelessWidget {
     this.width = 100,
     required this.height,
     this.imageHeight = 157,
-    required this.productPricesh,
+    required this.productPrices,
     required this.productName,
     this.checking = false,
     this.onTap,
@@ -19,7 +19,7 @@ class CustomNewProduct extends StatelessWidget {
   final double width;
   final double height;
   final double imageHeight;
-  final String productPricesh;
+  final String productPrices;
   final String productName;
   final String image;
 
@@ -46,7 +46,6 @@ class CustomNewProduct extends StatelessWidget {
                 spreadRadius: 0,
                 offset: const Offset(0, 10),
               ),
-
             ],
           ),
           clipBehavior: Clip.hardEdge,
@@ -94,9 +93,9 @@ class CustomNewProduct extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
               Text(
-                productPricesh.length < 12
-                    ? productPricesh
-                    : productPricesh.substring(0, 12) + "...",
+                productPrices.length < 12
+                    ? productPrices
+                    : productPrices.substring(0, 12) + "...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 18.sp),

@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
@@ -73,7 +75,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                   },
                 ),
                 SeeMoreButton(
-                  name: "Categories",
+                  name: ref.t(TKeys.categories),
                   seeMoreAction: () => goToAllCategoriesPage(context),
                 ),
                 CustomCategories(

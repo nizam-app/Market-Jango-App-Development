@@ -5,12 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
-import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
-import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
-import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/data/driver_list_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/model/driver_list_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -94,18 +92,25 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                             itemBuilder: (_, i) => _DriverCard(
                               data: drivers[i],
                               onAssign: () {
-                                context.push(AssignToOrderDriver.routeName);
+                                context.push(
+                                  AssignToOrderDriver.routeName,
+                                  extra: drivers[i].id,
+                                );
                               },
-                              onChat: ()async {
-                                SharedPreferences _prefs = await SharedPreferences.getInstance();
+                              onChat: () async {
+                                SharedPreferences _prefs =
+                                    await SharedPreferences.getInstance();
                                 final userId = _prefs.getString("user_id");
-                                if (userId == null) throw Exception("user id not founde");
-                                context.push(GlobalChatScreen.routeName, extra: ChatArgs(
-                                  partnerId: drivers[i].user.id,
-                                  partnerName: drivers[i].user.name,
-                                  partnerImage: drivers[i].user.image,
-                                  myUserId: int.parse(userId),
-                                ),
+                                if (userId == null)
+                                  throw Exception("user id not founde");
+                                context.push(
+                                  GlobalChatScreen.routeName,
+                                  extra: ChatArgs(
+                                    partnerId: drivers[i].user.id,
+                                    partnerName: drivers[i].user.name,
+                                    partnerImage: drivers[i].user.image,
+                                    myUserId: int.parse(userId),
+                                  ),
                                 );
                               },
                             ),
@@ -236,8 +241,8 @@ class _DriverCard extends StatelessWidget {
     final onlineColor = Colors.green;
 
     return GestureDetector(
-      onTap: (){
-        context.push(DriverDetailsScreen.routeName,extra:data.user.id);
+      onTap: () {
+        context.push(DriverDetailsScreen.routeName, extra: data.user.id);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -332,7 +337,7 @@ class _DriverCard extends StatelessWidget {
                 ),
               ],
             ),
-      
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -357,7 +362,7 @@ class _DriverCard extends StatelessWidget {
                     ),
                   ),
                 ),
-      
+
                 SizedBox(
                   height: 40.h,
                   width: 40.w,
@@ -367,7 +372,11 @@ class _DriverCard extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(10),
                       onTap: onChat,
-                      child: Icon(Icons.chat, size: 20.sp, color: AllColor.white),
+                      child: Icon(
+                        Icons.chat,
+                        size: 20.sp,
+                        color: AllColor.white,
+                      ),
                     ),
                   ),
                 ),

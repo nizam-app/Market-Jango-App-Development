@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/data/asign_to_order_driver_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/logic/vendor_driver_prement_logic.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/model/asign_to_order_driver_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
+
 class AssignToOrderDriver extends ConsumerStatefulWidget {
-  const AssignToOrderDriver({
-    super.key,
-    this.driverName = 'Murphy',
-  });
+  const AssignToOrderDriver({super.key, required this.driverId});
 
   static const routeName = "/assign_order_driver";
 
-  final String driverName;
+  final int driverId;
 
   @override
   ConsumerState<AssignToOrderDriver> createState() =>
       _AssignToOrderDriverState();
 }
 
-class _AssignToOrderDriverState
-    extends ConsumerState<AssignToOrderDriver> {
+class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
   final _search = TextEditingController();
   int? _selectedIndex;
 
@@ -42,13 +40,19 @@ class _AssignToOrderDriverState
         child: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text(e.toString())),
-          data: (orders) => _buildBody(context, orders),
+          data: (pageData) => _buildBody(context, ref, pageData),
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, List<VendorPendingOrder> orders) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    VendorPendingOrderPage pageData,
+  ) {
+    final orders = pageData.data;
+
     // search filter
     final q = _search.text.trim().toLowerCase();
 
@@ -68,7 +72,7 @@ class _AssignToOrderDriverState
           const CustomBackButton(),
           SizedBox(height: 20.h),
           Text(
-            'Assign order to driver ${widget.driverName}',
+            'Assign order to driver ${widget.driverId}',
             style: TextStyle(
               color: AllColor.black,
               fontSize: 18.sp,
@@ -85,10 +89,7 @@ class _AssignToOrderDriverState
             decoration: InputDecoration(
               hintText: 'Search orders',
               hintStyle: TextStyle(color: AllColor.textHintColor),
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: AllColor.black54,
-              ),
+              prefixIcon: Icon(Icons.search_rounded, color: AllColor.black54),
               filled: true,
               fillColor: AllColor.grey100,
               isDense: true,
@@ -133,8 +134,7 @@ class _AssignToOrderDriverState
                         Radio<int>(
                           value: i,
                           groupValue: _selectedIndex,
-                          onChanged: (v) =>
-                              setState(() => _selectedIndex = v),
+                          onChanged: (v) => setState(() => _selectedIndex = v),
                           activeColor: AllColor.loginButtomColor,
                         ),
                         SizedBox(width: 6.w),
@@ -188,6 +188,20 @@ class _AssignToOrderDriverState
               },
             ),
           ),
+          SizedBox(height: 12.h),
+
+          // 🔹 Pagination
+          GlobalPagination(
+            currentPage: pageData.currentPage,
+            totalPages: pageData.lastPage,
+            onPageChanged: (newPage) {
+              // page change করলে selection reset করতে চাইলে:
+              setState(() => _selectedIndex = null);
+              ref.read(vendorPendingCurrentPageProvider.notifier).state =
+                  newPage;
+            },
+          ),
+          SizedBox(height: 12.h),
 
           // Bottom CTA
           Container(
@@ -206,12 +220,16 @@ class _AssignToOrderDriverState
                   child: ElevatedButton(
                     onPressed: _selectedIndex == null
                         ? null
-                        : () {
-                      final chosen = items[_selectedIndex!];
-                      // TODO: এখানে assign API call করতে পারো / pop করতে পারো
-                      // এখন একই মতো demo navigation রাখলাম
-                      context.push("/addCard", extra: chosen);
-                    },
+                        : () async {
+                            final chosen = items[_selectedIndex!];
+
+                            // chosen.id = order_item_id
+                            await startVendorAssignCheckout(
+                              context,
+                              driverId: widget.driverId,
+                              orderItemId: chosen.id,
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AllColor.loginButtomColor,
                       disabledBackgroundColor: AllColor.grey200,
@@ -221,7 +239,7 @@ class _AssignToOrderDriverState
                       ),
                     ),
                     child: Text(
-                      'Book now',
+                      'Pyment now',
                       style: TextStyle(
                         color: AllColor.white,
                         fontWeight: FontWeight.w700,
@@ -245,8 +263,17 @@ class _AssignToOrderDriverState
   String _line1(VendorPendingOrder o) =>
       'Qty: ${o.quantity} • Sale: ${o.salePrice.toStringAsFixed(2)}';
 
+  /// 🔹 এখন line2 = pickup_address (fallback ship_address)
   String _line2(VendorPendingOrder o) {
-    final total = o.invoice?.total ?? o.invoice?.subTotal ?? '';
-    return total.isEmpty ? 'Invoice #${o.invoiceId}' : 'Invoice total: $total';
+    final pickup = (o.pickupAddress ?? '').trim();
+    final ship = (o.shipAddress ?? '').trim();
+
+    if (pickup.isNotEmpty) {
+      return 'Pickup: $pickup';
+    } else if (ship.isNotEmpty) {
+      return 'Ship to: $ship';
+    } else {
+      return 'Pickup address: Not set';
+    }
   }
 }

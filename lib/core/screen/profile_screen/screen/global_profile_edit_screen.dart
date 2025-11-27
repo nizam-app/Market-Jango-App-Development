@@ -45,6 +45,7 @@ class _BuyerProfileEditScreenState
   // late TextEditingController languageC; // vendor
   late TextEditingController countryC; // vendor
   late TextEditingController addressC; // vendor + transport
+  late TextEditingController priceC;
   late TextEditingController businessNameC; // vendor
   // late TextEditingController businessTypeC; // vendor
 
@@ -59,6 +60,7 @@ class _BuyerProfileEditScreenState
   bool get isBuyer => widget.user.userType?.toLowerCase() == 'buyer';
   bool get isVendor => widget.user.userType?.toLowerCase() == 'vendor';
   bool get isTransport => widget.user.userType?.toLowerCase() == 'transport';
+  bool get isDriver => widget.user.userType?.toLowerCase() == 'driver';
 
   @override
   void initState() {
@@ -72,6 +74,7 @@ class _BuyerProfileEditScreenState
     // --------- buyer ----------
     ageC = TextEditingController(text: widget.user.buyer?.age ?? '');
     aboutC = TextEditingController(text: widget.user.buyer?.description ?? '');
+    priceC = TextEditingController(text: widget.user.driver?.price ?? '');
     shipLocationC = TextEditingController(
       text: widget.user.buyer?.shipLocation ?? '',
     );
@@ -134,6 +137,7 @@ class _BuyerProfileEditScreenState
     countryC.dispose();
     addressC.dispose();
     businessNameC.dispose();
+    priceC.dispose();
     // businessTypeC.dispose();
 
     super.dispose();
@@ -304,50 +308,59 @@ class _BuyerProfileEditScreenState
                     hintText: "Enter Address",
                   ),
                 ],
+                if (isDriver) ...[
+                  SizedBox(height: 12.h),
+                  CustomTextFormField(
+                    label: "Price",
+                    controller: priceC,
+                    hintText: "Enter you price per km",
+                  ),
+                ],
 
                 SizedBox(height: 28.h),
 
                 // ------------ Location button (all user type) ------------
-                LocationButton(
-                  onTap: () async {
-                    final currentLat =
-                        ref.read(selectedLatitudeProvider) ?? _backupLat;
-                    final currentLng =
-                        ref.read(selectedLongitudeProvider) ?? _backupLng;
+                if (!isDriver)
+                  LocationButton(
+                    onTap: () async {
+                      final currentLat =
+                          ref.read(selectedLatitudeProvider) ?? _backupLat;
+                      final currentLng =
+                          ref.read(selectedLongitudeProvider) ?? _backupLng;
 
-                    LatLng? initialLocation;
-                    if (currentLat != null && currentLng != null) {
-                      initialLocation = LatLng(currentLat, currentLng);
-                    }
+                      LatLng? initialLocation;
+                      if (currentLat != null && currentLng != null) {
+                        initialLocation = LatLng(currentLat, currentLng);
+                      }
 
-                    final result = await context.push<LatLng>(
-                      GoogleMapScreen.routeName,
-                      extra: initialLocation,
-                    );
-
-                    if (result != null) {
-                      ref.read(selectedLatitudeProvider.notifier).state =
-                          result.latitude;
-                      ref.read(selectedLongitudeProvider.notifier).state =
-                          result.longitude;
-                      TempLocationStorage.setLocation(
-                        result.latitude,
-                        result.longitude,
+                      final result = await context.push<LatLng>(
+                        GoogleMapScreen.routeName,
+                        extra: initialLocation,
                       );
-                      setState(() {
-                        _backupLat = result.latitude;
-                        _backupLng = result.longitude;
-                      });
 
-                      GlobalSnackbar.show(
-                        context,
-                        title: "Success",
-                        message: "Location selected successfully!",
-                        type: CustomSnackType.success,
-                      );
-                    }
-                  },
-                ),
+                      if (result != null) {
+                        ref.read(selectedLatitudeProvider.notifier).state =
+                            result.latitude;
+                        ref.read(selectedLongitudeProvider.notifier).state =
+                            result.longitude;
+                        TempLocationStorage.setLocation(
+                          result.latitude,
+                          result.longitude,
+                        );
+                        setState(() {
+                          _backupLat = result.latitude;
+                          _backupLng = result.longitude;
+                        });
+
+                        GlobalSnackbar.show(
+                          context,
+                          title: "Success",
+                          message: "Location selected successfully!",
+                          type: CustomSnackType.success,
+                        );
+                      }
+                    },
+                  ),
 
                 Consumer(
                   builder: (context, ref, child) {
@@ -436,6 +449,16 @@ class _BuyerProfileEditScreenState
                         latitude: lat,
                         longitude: lng,
                         image: _mainImage,
+                      );
+                    } else if (isDriver) {
+                      ok = await notifier.updateUser(
+                        userType: 'driver',
+                        name: nameC.text.trim(),
+                        // address: addressC.text.trim(),
+                        // latitude: lat,
+                        // longitude: lng,
+                        image: _mainImage,
+                        driverPrice: double.tryParse(priceC.text.trim()),
                       );
                     }
 

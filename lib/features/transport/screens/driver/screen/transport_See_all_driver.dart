@@ -1,4 +1,4 @@
-// transport_driver.dart
+// transport_See_all_driver.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +8,7 @@ import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 
-import '../../driver_details_screen.dart';
+import 'driver_details_screen.dart';
 import '../data/transport_driver_data.dart';
 import 'model/transport_driver_model.dart';
 
@@ -189,15 +189,14 @@ class _DriverCard extends StatelessWidget {
             Row(
               children: [
                 InkWell(
-                  onTap: ()  {
-
+                  onTap: () {
                     Logger().e(driver.user.id);
 
-
                     context.push(
-      DriverDetailsScreen.routeName,
-      extra: driver.userId,
-      );}    ,
+                      DriverDetailsScreen.routeName,
+                      extra: driver.userId,
+                    );
+                  },
                   child: CircleAvatar(
                     radius: 20.r,
                     backgroundImage: NetworkImage(avatarUrl),

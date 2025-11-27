@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
@@ -86,20 +85,20 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
                     onTrackOrder: items[i].kind == OrderStatus.delivered
                         ? null
                         : () => context.push(
-                      // 👇 এখানেও DriverOrderEntity.id
-                      '${DriverTrakingScreen.routeName}?id=${items[i].driverOrderId}',
-                    ),
+                            // 👇 এখানেও DriverOrderEntity.id
+                            '${DriverTrakingScreen.routeName}?id=${items[i].driverOrderId}',
+                          ),
                   ),
                 ),
               ),
             ),
 
             SizedBox(height: 8.h),
-            GlobalPagination(
-              currentPage: notifier.currentPage,
-              totalPages: notifier.lastPage,
-              onPageChanged: (p) => notifier.changePage(p),
-            ),
+            // GlobalPagination(
+            //   currentPage: notifier.currentPage,
+            //   totalPages: notifier.lastPage,
+            //   onPageChanged: (p) => notifier.changePage(p),
+            // ),
           ],
         ),
       ),

@@ -1,4 +1,4 @@
-// vendor_pending_order_model.dart
+// vendor_pending_order_model.dart / asign_to_order_driver_model.dart
 
 class VendorPendingOrderResponse {
   final String status;
@@ -13,8 +13,8 @@ class VendorPendingOrderResponse {
 
   factory VendorPendingOrderResponse.fromJson(Map<String, dynamic> json) {
     return VendorPendingOrderResponse(
-      status: json['status'] ?? '',
-      message: json['message'] ?? '',
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
       data: VendorPendingOrderPage.fromJson(json['data'] ?? {}),
     );
   }
@@ -23,18 +23,33 @@ class VendorPendingOrderResponse {
 class VendorPendingOrderPage {
   final int currentPage;
   final List<VendorPendingOrder> data;
+  final int lastPage;
+  final int perPage;
+  final int total;
 
   VendorPendingOrderPage({
     required this.currentPage,
     required this.data,
+    required this.lastPage,
+    required this.perPage,
+    required this.total,
   });
 
   factory VendorPendingOrderPage.fromJson(Map<String, dynamic> json) {
+    int _toInt(dynamic v) {
+      if (v == null) return 0;
+      if (v is int) return v;
+      return int.tryParse(v.toString()) ?? 0;
+    }
+
     return VendorPendingOrderPage(
-      currentPage: json['current_page'] ?? 1,
+      currentPage: _toInt(json['current_page']),
       data: (json['data'] as List? ?? [])
           .map((e) => VendorPendingOrder.fromJson(e as Map<String, dynamic>))
           .toList(),
+      lastPage: _toInt(json['last_page']),
+      perPage: _toInt(json['per_page']),
+      total: _toInt(json['total']),
     );
   }
 }
@@ -51,6 +66,14 @@ class VendorPendingOrder {
   final int? driverId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// 🔹 নতুন ফিল্ডগুলো (JSON থেকে)
+  final String? pickupAddress;
+  final String? currentAddress;
+  final String? shipAddress;
+  final String? distance;
+  final String? deliveryCharge;
+
   final VendorInvoice? invoice;
 
   VendorPendingOrder({
@@ -65,6 +88,11 @@ class VendorPendingOrder {
     this.driverId,
     this.createdAt,
     this.updatedAt,
+    this.pickupAddress,
+    this.currentAddress,
+    this.shipAddress,
+    this.distance,
+    this.deliveryCharge,
     this.invoice,
   });
 
@@ -92,6 +120,13 @@ class VendorPendingOrder {
       driverId: json['driver_id'],
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
+
+      pickupAddress: json['pickup_address']?.toString(),
+      currentAddress: json['current_address']?.toString(),
+      shipAddress: json['ship_address']?.toString(),
+      distance: json['distance']?.toString(),
+      deliveryCharge: json['delivery_charge']?.toString(),
+
       invoice: json['invoice'] == null
           ? null
           : VendorInvoice.fromJson(json['invoice'] as Map<String, dynamic>),
@@ -101,23 +136,29 @@ class VendorPendingOrder {
 
 class VendorInvoice {
   final int id;
-  final String subTotal;
+  final String total;
   final String vat;
-  final String? total;
+  final String payable;
+  final String? paymentMethod;
+  final String status;
 
   VendorInvoice({
     required this.id,
-    required this.subTotal,
+    required this.total,
     required this.vat,
-    this.total,
+    required this.payable,
+    this.paymentMethod,
+    required this.status,
   });
 
   factory VendorInvoice.fromJson(Map<String, dynamic> json) {
     return VendorInvoice(
       id: json['id'] ?? 0,
-      subTotal: json['sub_total']?.toString() ?? '',
+      total: json['total']?.toString() ?? '',
       vat: json['vat']?.toString() ?? '',
-      total: json['total']?.toString(),
+      payable: json['payable']?.toString() ?? '',
+      paymentMethod: json['payment_method']?.toString(),
+      status: json['status']?.toString() ?? '',
     );
   }
 }

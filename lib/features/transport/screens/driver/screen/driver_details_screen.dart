@@ -6,14 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
-import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
-import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/features/transport/screens/driver/logic/transport_driver_perment_logic.dart';
+import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DriverDetailsScreen extends ConsumerWidget {
   const DriverDetailsScreen({super.key, required this.driverId});
+
   final int driverId;
   static const String routeName = "/driverDetails";
 
@@ -26,7 +27,7 @@ class DriverDetailsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (user) {
-          final d = user.driver; 
+          final d = user.driver;
           final avatarUrl = (user.image.isNotEmpty)
               ? user.image
               : "https://i.pravatar.cc/150?img=12";
@@ -42,7 +43,7 @@ class DriverDetailsScreen extends ConsumerWidget {
           // car brand/model from driver info (fallback text)
           final carBrand = d?.carName?.isNotEmpty == true
               ? d!.carName
-            : "Not available";
+              : "Not available";
           final carModel = d?.carModel?.isNotEmpty == true
               ? d!.carModel
               : "Not available";
@@ -162,7 +163,8 @@ class DriverDetailsScreen extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(height: 6.h),
-                Text(description,
+                Text(
+                  description,
                   style: TextStyle(fontSize: 13.sp, color: Colors.grey[800]),
                   textAlign: TextAlign.justify,
                 ),
@@ -181,32 +183,34 @@ class DriverDetailsScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 10.h),
 
-              if (user.userImages.isNotEmpty)    GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: carImages.isNotEmpty
-                      ? carImages.length.clamp(0, 4)
-                      : 4,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10.w,
-                    mainAxisSpacing: 10.h,
-                    childAspectRatio: 1.3,
+                if (user.userImages.isNotEmpty)
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: carImages.isNotEmpty
+                        ? carImages.length.clamp(0, 4)
+                        : 4,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10.w,
+                      mainAxisSpacing: 10.h,
+                      childAspectRatio: 1.3,
+                    ),
+                    itemBuilder: (context, index) {
+                      final img = index < carImages.length
+                          ? carImages[index]
+                          : "https://static.vecteezy.com/system/resources/previews/0"
+                                "24/228/025/non_2x/slashed-zero-icon-symbol-in-mathematics-null-set-empty-set-illustration-free-vector.jpg";
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: Card(
+                          child: Image.network(img, fit: BoxFit.cover),
+                        ),
+                      );
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    final img = index < carImages.length
-                        ? carImages[index]
-                        : "https://static.vecteezy.com/system/resources/previews/0"
-                        "24/228/025/non_2x/slashed-zero-icon-symbol-in-mathematics-null-set-empty-set-illustration-free-vector.jpg";
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8.r),
-                      child: Card(child: Image.network(img, fit: BoxFit.cover)),
-                    );
-                  },
-                ),
                 SizedBox(height: 20.h),
 
-               
                 Row(
                   children: [
                     Expanded(
@@ -218,17 +222,22 @@ class DriverDetailsScreen extends ConsumerWidget {
                           ),
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                         ),
-                        onPressed: ()async { SharedPreferences _prefs = await SharedPreferences.getInstance();
-                        final userId = _prefs.getString("user_id");
-                        if (userId == null) throw Exception("user id not founde");
-                     
-                        context.push(GlobalChatScreen.routeName, extra: ChatArgs(
-                          partnerId: user.id,
-                          partnerName: user.name,
-                          partnerImage: user.image,
-                          myUserId: int.parse(userId),
-                        ),
-                        );
+                        onPressed: () async {
+                          SharedPreferences _prefs =
+                              await SharedPreferences.getInstance();
+                          final userId = _prefs.getString("user_id");
+                          if (userId == null)
+                            throw Exception("user id not founde");
+
+                          context.push(
+                            GlobalChatScreen.routeName,
+                            extra: ChatArgs(
+                              partnerId: user.id,
+                              partnerName: user.name,
+                              partnerImage: user.image,
+                              myUserId: int.parse(userId),
+                            ),
+                          );
                         },
                         child: Text(
                           "Send Message",
@@ -249,8 +258,22 @@ class DriverDetailsScreen extends ConsumerWidget {
                           ),
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                         ),
-                        onPressed: () {
-                          context.push("/addCard");
+                        onPressed: () async {
+                          // 1) নতুন screen থেকে address + location নাও
+                          final dropData = await context
+                              .push<TransportDropLocation>(
+                                SetDropLocationScreen.routeName,
+                              );
+                          if (dropData == null) return;
+
+                          // 2) payment API + webview
+                          await startTransportInvoiceCheckout(
+                            context,
+                            driverId: driverId,
+                            dropAddress: dropData.address,
+                            dropLatitude: dropData.latitude,
+                            dropLongitude: dropData.longitude,
+                          );
                         },
                         child: Text(
                           "Pay Now",
@@ -307,4 +330,16 @@ class DriverDetailsScreen extends ConsumerWidget {
     final role = userType.toLowerCase() == "driver" ? "Driver" : userType;
     return "Verified $role Since $when";
   }
+}
+
+class TransportDropLocation {
+  final String address;
+  final double latitude;
+  final double longitude;
+
+  TransportDropLocation({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+  });
 }

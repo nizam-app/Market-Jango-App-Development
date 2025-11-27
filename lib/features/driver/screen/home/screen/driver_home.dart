@@ -11,38 +11,68 @@ import 'package:market_jango/features/driver/screen/driver_order/screen/driver_o
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
 
+import '../data/driver_home_status_data.dart';
 import '../model/new_oder_driver_model.dart';
 
 class DriverHomeScreen extends ConsumerWidget {
   const DriverHomeScreen({super.key});
-  static final routeName = "/driverHome";
+  static const routeName = "/driverHome";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(driverNewOrdersProvider);
+    final statsAsync = ref.watch(driverHomeStatsProvider);
+    final newOrdersAsync = ref.watch(driverNewOrdersProvider);
+
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _HeaderSection(
-              name: "John",
-              subtitle: "Keep going! You're doing great today.",
-            ),
-            SizedBox(height: 12),
-            _StatsGrid(
-              stats: const [
-                _StatItem(title: "Total Active Orders", value: "490"),
-                _StatItem(title: "Picked", value: "400"),
-                _StatItem(title: "Pending Deliveries", value: "300"),
-                _StatItem(title: "Delivered Today", value: "200"),
+        child: statsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Failed to load stats: $e')),
+          data: (stats) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HeaderSection(
+                  name: "John", // later tumi driver profile theke dibe
+                  subtitle: "Keep going! You're doing great today.",
+                ),
+                const SizedBox(height: 12),
+
+                _StatsGrid(
+                  stats: [
+                    _StatItem(
+                      title: "Total Active Orders",
+                      value: stats.totalActiveOrders.toString(),
+                    ),
+                    _StatItem(title: "Picked", value: stats.picked.toString()),
+                    _StatItem(
+                      title: "Pending Deliveries",
+                      value: stats.pendingsDeliveries.toString(),
+                    ),
+                    _StatItem(
+                      title: "Delivered Today",
+                      value: stats.deliveredToday.toString(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+                const _SectionTitle(title: "New Orders"),
+                const SizedBox(height: 10),
+
+                // আগের মতই new orders list – শুধু async handle করে দিচ্ছি
+                Expanded(
+                  child: newOrdersAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) =>
+                        Center(child: Text('Failed to load orders: $e')),
+                    data: (_) => const _OrdersList(),
+                  ),
+                ),
               ],
-            ),
-            SizedBox(height: 16),
-            const _SectionTitle(title: "New Orders"),
-            SizedBox(height: 10),
-            const _OrdersList(),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -84,7 +114,11 @@ class _HeaderSection extends ConsumerWidget {
                           ),
                         ),
                         SizedBox(width: 6.w),
-                        Icon(Icons.verified, color: AllColor.blue500, size: 18.sp),
+                        Icon(
+                          Icons.verified,
+                          color: AllColor.blue500,
+                          size: 18.sp,
+                        ),
                       ],
                     ),
                     SizedBox(height: 4.h),
@@ -98,7 +132,7 @@ class _HeaderSection extends ConsumerWidget {
                     ),
                   ],
                 );
-              }       ,
+              },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text(e.toString())),
             ),

@@ -48,8 +48,9 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
-import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
-import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
+import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
 import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/transport/screens/my_booking/screen/transport_booking.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
@@ -80,7 +81,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: BuyerBottomNavBar.routeName,
+  initialLocation: DriverBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -198,7 +199,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
-      builder: (context, state) => const AssignToOrderDriver(),
+      builder: (context, state) =>
+          AssignToOrderDriver(driverId: state.extra as int),
     ),
 
     GoRoute(
@@ -615,6 +617,11 @@ final GoRouter router = GoRouter(
       path: GoogleMapScreen.routeName,
       name: GoogleMapScreen.routeName,
       builder: (context, state) => GoogleMapScreen(),
+    ),
+    GoRoute(
+      path: SetDropLocationScreen.routeName,
+      name: SetDropLocationScreen.routeName,
+      builder: (context, state) => const SetDropLocationScreen(),
     ),
     GoRoute(
       path: '${BuyerVendorCetagoryScreen.routeName}/:screenName',

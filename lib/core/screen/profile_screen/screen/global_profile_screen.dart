@@ -62,6 +62,11 @@ class GlobalSettingScreen extends ConsumerWidget {
                     title: "My Order",
                     onTap: () => context.push(BuyerOrderPage.routeName),
                   ),
+                if (userTypeAsync.value == "driver")
+                  _SettingsLine(
+                    icon: Icons.price_change,
+                    text: user.driver?.price ?? "Not set now",
+                  ),
                 if (userTypeAsync.value == "vendor")
                   _SettingsTile(
                     leadingIcon: Icons.shopping_bag_outlined,
@@ -208,6 +213,9 @@ class ProfileSection extends ConsumerWidget {
             } else if (userTypeAsync.value == "vendor") {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "transport") {
+              // Transport
+            } else if (userTypeAsync.value == "driver") {
+              context.push(BuyerProfileEditScreen.routeName, extra: userType);
               // Transport
             }
           },

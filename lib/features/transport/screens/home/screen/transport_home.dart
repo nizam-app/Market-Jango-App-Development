@@ -288,8 +288,8 @@ import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
-import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
-import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 
 import '../../driver/data/transport_driver_data.dart';
 import '../../driver/screen/model/transport_driver_model.dart';
@@ -340,8 +340,9 @@ class TransportHomeScreen extends ConsumerWidget {
                         GlobalNotificationIcon(),
                       ],
                     );
-                  }    ,
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
                 Text("Find your Driver", style: TextStyle(fontSize: 10.sp)),
@@ -558,7 +559,10 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: driver.userId);
+                    context.push(
+                      DriverDetailsScreen.routeName,
+                      extra: driver.id,
+                    );
                   },
                   child: CircleAvatar(
                     radius: 20.r,
@@ -569,7 +573,10 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: driver.userId);
+                    context.push(
+                      DriverDetailsScreen.routeName,
+                      extra: driver.id,
+                    );
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,9 +655,10 @@ class _DriverCard extends StatelessWidget {
                     onTap: () {
                       Logger().e(driver.id);
                       context.push(
-                      DriverDetailsScreen.routeName,
-                      extra: driver.userId,
-                    );},
+                        DriverDetailsScreen.routeName,
+                        extra: driver.id,
+                      );
+                    },
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 16.w,

@@ -32,8 +32,7 @@ class GlobalTrackingScreen1 extends ConsumerStatefulWidget {
       _GlobalTrackingScreen1State();
 }
 
-class _GlobalTrackingScreen1State
-    extends ConsumerState<GlobalTrackingScreen1> {
+class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
   bool _advanced = false; // false = basic info, true = logs
 
   String? userId;
@@ -75,45 +74,35 @@ class _GlobalTrackingScreen1State
   Widget _buildUserAvatar() {
     final uid = userId;
     if (uid == null || uid.isEmpty) {
-      return CircleAvatar(
-        radius: 20.r,
-        child: const Icon(Icons.person),
-      );
+      return CircleAvatar(radius: 20.r, child: const Icon(Icons.person));
     }
 
     final userAsync = ref.watch(userProvider(uid));
     return userAsync.when(
       data: (data) {
         final image = data.image;
-        return CircleAvatar(
-          radius: 20.r,
-          backgroundImage: NetworkImage(image),
-        );
+        return CircleAvatar(radius: 20.r, backgroundImage: NetworkImage(image));
       },
       loading: () => SizedBox(
         width: 24.r,
         height: 24.r,
         child: const CircularProgressIndicator(),
       ),
-      error: (_, __) => CircleAvatar(
-        radius: 20.r,
-        child: const Icon(Icons.error),
-      ),
+      error: (_, __) =>
+          CircleAvatar(radius: 20.r, child: const Icon(Icons.error)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final trackingAsync =
-    ref.watch(trackingDetailsProvider(widget.invoiceId));
+    final trackingAsync = ref.watch(trackingDetailsProvider(widget.invoiceId));
 
     return Scaffold(
       body: trackingAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (invoice) {
-          final stepIndex =
-          _mapDeliveryStatusToStep(invoice.deliveryStatus);
+          final stepIndex = _mapDeliveryStatusToStep(invoice.deliveryStatus);
           final logs = invoice.statusLogs;
           final hasLogs = logs.isNotEmpty;
 
@@ -143,8 +132,7 @@ class _GlobalTrackingScreen1State
                         ),
                         Text(
                           "Track your order",
-                          style: TextStyle(
-                              fontSize: 12.sp, color: Colors.grey),
+                          style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -180,17 +168,18 @@ class _GlobalTrackingScreen1State
                 SizedBox(height: 16.h),
 
                 // Tracking number
-                _trackingNumber(invoice.taxRef.isNotEmpty
-                    ? invoice.taxRef
-                    : 'INV-${invoice.id}'),
+                _trackingNumber(
+                  invoice.taxRef.isNotEmpty
+                      ? invoice.taxRef
+                      : 'INV-${invoice.id}',
+                ),
                 SizedBox(height: 20.h),
 
-         
                 if (_advanced && hasLogs)
                   _screen2Body(context, logs)
                 else
-                  SizedBox()
-                  // _screen1Body(context, invoice),
+                  SizedBox(),
+                // _screen1Body(context, invoice),
               ],
             ),
           );
@@ -212,10 +201,7 @@ class _GlobalTrackingScreen1State
         children: [
           Text(
             "Tracking Number",
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -230,9 +216,7 @@ class _GlobalTrackingScreen1State
               IconButton(
                 icon: Icon(Icons.copy, color: Colors.grey, size: 20.sp),
                 onPressed: () async {
-                  await Clipboard.setData(
-                    ClipboardData(text: trackingNumber),
-                  );
+                  await Clipboard.setData(ClipboardData(text: trackingNumber));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Tracking ID copied"),
@@ -247,7 +231,6 @@ class _GlobalTrackingScreen1State
       ),
     );
   }
-
 
   // ---------- Screen-1 body (basic info) ----------
   Widget _screen1Body(BuildContext context, TrackingInvoice invoice) {
@@ -272,7 +255,7 @@ class _GlobalTrackingScreen1State
         _timelineItem(
           title: "Shipping address",
           desc:
-          "${invoice.shipAddress}, ${invoice.shipCity}, ${invoice.shipCountry}",
+              "${invoice.shipAddress}, ${invoice.shipCity}, ${invoice.shipCountry}",
           time: "",
         ),
         SizedBox(height: 20.h),
@@ -284,8 +267,7 @@ class _GlobalTrackingScreen1State
             children: [
               Text(
                 "Driver Information",
-                style: TextStyle(
-                    fontSize: 16.sp, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10.h),
               Container(
@@ -343,8 +325,7 @@ class _GlobalTrackingScreen1State
   }
 
   // ---------- Screen-2 body = status_logs ----------
-  Widget _screen2Body(
-      BuildContext context, List<TrackingStatusLog> logs) {
+  Widget _screen2Body(BuildContext context, List<TrackingStatusLog> logs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: logs.map((log) {
@@ -449,10 +430,10 @@ class _GlobalTrackingScreen1State
               boxShadow: [
                 BoxShadow(
                   color:
-                  (active
-                      ? const Color(0xFF6DB2FF)
-                      : const Color(0xFFCAD4DE))
-                      .withOpacity(0.35),
+                      (active
+                              ? const Color(0xFF6DB2FF)
+                              : const Color(0xFFCAD4DE))
+                          .withOpacity(0.35),
                   blurRadius: 12.r,
                   spreadRadius: 1.r,
                 ),
@@ -509,8 +490,9 @@ class _GlobalTrackingScreen1State
     final Color titleColor = highlight
         ? Colors.orange
         : (shipped ? Colors.blue : Colors.black);
-    final Color timeBg =
-    highlight ? Colors.orange.withOpacity(0.1) : Colors.grey.shade200;
+    final Color timeBg = highlight
+        ? Colors.orange.withOpacity(0.1)
+        : Colors.grey.shade200;
     final Color timeColor = highlight ? Colors.orange : Colors.black;
 
     return Padding(
@@ -533,8 +515,7 @@ class _GlobalTrackingScreen1State
               ),
               if (time.isNotEmpty)
                 Container(
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: timeBg,
                     borderRadius: BorderRadius.circular(6.r),
@@ -555,8 +536,7 @@ class _GlobalTrackingScreen1State
             desc,
             style: TextStyle(
               fontSize: 12.sp,
-              color:
-              highlight ? const Color(0xFF0059A0) : Colors.grey[700],
+              color: highlight ? const Color(0xFF0059A0) : Colors.grey[700],
             ),
           ),
         ],
@@ -576,8 +556,7 @@ class DeliveryFailedPopup {
       ),
       builder: (context) {
         return Padding(
-          padding:
-          EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,15 +584,13 @@ class DeliveryFailedPopup {
               SizedBox(height: 20.h),
               Text(
                 "What should I do?",
-                style: TextStyle(
-                    fontSize: 14.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 8.h),
               Text(
                 "Don’t worry, we will shortly contact you to arrange a more suitable time. "
-                    "You can also call +00 000 000 000 or chat with our customer care service.",
-                style: TextStyle(
-                    fontSize: 13.sp, color: Colors.grey[700]),
+                "You can also call +00 000 000 000 or chat with our customer care service.",
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
               ),
               SizedBox(height: 20.h),
               SizedBox(
@@ -626,12 +603,10 @@ class DeliveryFailedPopup {
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
-                  onPressed: () =>
-                      context.push(GlobalChatScreen.routeName),
+                  onPressed: () => context.push(GlobalChatScreen.routeName),
                   child: Text(
                     "Chat Now",
-                    style: TextStyle(
-                        fontSize: 14.sp, color: Colors.white),
+                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
                   ),
                 ),
               ),
@@ -648,8 +623,5 @@ class TrackingArgs {
   final String screenName;
   final int invoiceId;
 
-  const TrackingArgs({
-    required this.screenName,
-    required this.invoiceId,
-  });
+  const TrackingArgs({required this.screenName, required this.invoiceId});
 }

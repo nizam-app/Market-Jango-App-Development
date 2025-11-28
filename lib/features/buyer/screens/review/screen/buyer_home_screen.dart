@@ -27,10 +27,10 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../data/buyer_just_for_you_data.dart';
-import 'all_categori/screen/all_categori_screen.dart';
-import 'all_categori/screen/category_product_screen.dart';
-import 'filter/screen/buyer_filtering.dart';
+import '../../../data/buyer_just_for_you_data.dart';
+import '../../all_categori/screen/all_categori_screen.dart';
+import '../../all_categori/screen/category_product_screen.dart';
+import '../../filter/screen/buyer_filtering.dart';
 
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -85,7 +85,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                       goToCategoriesProductPage(context, cat.id, cat.name),
                 ),
                 SeeMoreButton(
-                  name: "Top Products",
+                  name: ref.t(TKeys.topProducts),
                   seeMoreAction: () {},
                   isSeeMore: false,
                 ),

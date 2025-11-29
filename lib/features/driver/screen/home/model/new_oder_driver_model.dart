@@ -6,20 +6,22 @@ DriverNewOrdersResponse driverNewOrdersResponseFromJson(String s) =>
 class DriverNewOrdersResponse {
   final String status;
   final String? message;
-  final OrdersPage data;
+  final OrdersPage? data; // <-- এখানে ? যোগ করো
 
-  DriverNewOrdersResponse({
-    required this.status,
-    this.message,
-    required this.data,
-  });
+  DriverNewOrdersResponse({required this.status, this.message, this.data});
 
-  factory DriverNewOrdersResponse.fromJson(Map<String, dynamic> j) =>
-      DriverNewOrdersResponse(
-        status: (j['status'] ?? '').toString(),
-        message: j['message']?.toString(),
-        data: OrdersPage.fromJson(j['data'] as Map<String, dynamic>),
-      );
+  factory DriverNewOrdersResponse.fromJson(Map<String, dynamic> j) {
+    final rawData = j['data'];
+
+    return DriverNewOrdersResponse(
+      status: (j['status'] ?? '').toString(),
+      message: j['message']?.toString(),
+      // 🔥 data null হলে বা Map না হলে simply null রাখছি
+      data: rawData is Map<String, dynamic>
+          ? OrdersPage.fromJson(rawData)
+          : null,
+    );
+  }
 }
 
 class OrdersPage {

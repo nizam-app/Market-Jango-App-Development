@@ -11,7 +11,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_details_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderDetailsScreen extends ConsumerWidget {
@@ -23,7 +23,7 @@ class OrderDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = int.parse(trackingId);
-    final trackingAsync = ref.watch(driverTrackingProvider(id));
+    final trackingAsync = ref.watch(driverTrackingStatusProvider(id));
 
     return Scaffold(
       backgroundColor: AllColor.white,
@@ -80,7 +80,10 @@ class OrderDetailsScreen extends ConsumerWidget {
                     );
                   },
                   onStartDelivery: () {
-                    context.push(DriverTrakingScreen.routeName);
+                    context.push(
+                      DriverTrakingScreen.routeName,
+                      extra: data.id.toString(),
+                    );
                   },
                 );
               },

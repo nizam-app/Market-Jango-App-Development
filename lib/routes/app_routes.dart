@@ -41,7 +41,7 @@ import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
 import 'package:market_jango/features/driver/screen/driver_ontheway.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/screen/driver_home.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
@@ -81,7 +81,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: DriverOrder.routeName,
+  initialLocation: DriverBottomNavBar.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),

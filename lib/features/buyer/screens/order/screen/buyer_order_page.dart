@@ -1,21 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/screen/global_tracking_screen_1.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
-import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
+import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
+import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// ✅ use the ONE true model
-import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart' as m;
-import '../data/orders_data.dart'; // contains List<OrderSummary> from the same model
-class BuyerOrderPage extends StatelessWidget {
-  const BuyerOrderPage({super.key,});
+class BuyerOrderPage extends ConsumerStatefulWidget {
+  const BuyerOrderPage({super.key});
   static const routeName = "/buyerOrderPage";
 
   @override
+  ConsumerState<BuyerOrderPage> createState() => _BuyerOrderPageState();
+}
+
+class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final pref = await SharedPreferences.getInstance();
+    final stored = pref.getString("user_id");
+    if (!mounted) return;
+    setState(() {
+      _userId = stored;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final ordersAsync = ref.watch(buyerOrdersProvider);
+    final notifier = ref.read(buyerOrdersProvider.notifier);
+
+    final userAsync = (_userId == null)
+        ? const AsyncValue.loading()
+        : ref.watch(userProvider(_userId!));
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -24,14 +52,50 @@ class BuyerOrderPage extends StatelessWidget {
             children: [
               Tuppertextandbackbutton(screenName: "My Order"),
               SizedBox(height: 12.h),
-              CustomBuyerOrderUpperImage(
-                imageUrl:
-                "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-                onTap: () {},
+
+              /// Top user image
+              userAsync.when(
+                data: (data) {
+                  final image = data.image;
+                  return CustomBuyerOrderUpperImage(
+                    imageUrl: image,
+                    onTap: () {},
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text(e.toString())),
               ),
               SizedBox(height: 16.h),
-              // 🔽 ListView must be inside Expanded to scroll
-              Expanded(child: CusotomShowOrder(orders: ordersData)),
+
+              /// Orders list
+              Expanded(
+                child: ordersAsync.when(
+                  data: (page) =>
+                      CusotomShowOrder(orders: page?.orders ?? const <Order>[]),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text(e.toString())),
+                ),
+              ),
+
+              /// Pagination
+              // ordersAsync.when(
+              //   data: (page) => GlobalPagination(
+              //     currentPage: page?.currentPage ?? 1,
+              //     totalPages: page?.lastPage ?? 1,
+              //     onPageChanged: notifier.changePage,
+              //   ),
+              //   loading: () => GlobalPagination(
+              //     currentPage: 1,
+              //     totalPages: 1,
+              //     onPageChanged: (_) {},
+              //   ),
+              //   error: (e, _) => GlobalPagination(
+              //     currentPage: 1,
+              //     totalPages: 1,
+              //     onPageChanged: (_) {},
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -48,7 +112,7 @@ class CusotomShowOrder extends StatelessWidget {
     this.scrollable = true,
   });
 
-  final List<m.OrderSummary> orders; // ✅ model alias
+  final List<Order> orders;
   final bool scrollable;
 
   @override
@@ -60,159 +124,178 @@ class CusotomShowOrder extends StatelessWidget {
         : const NeverScrollableScrollPhysics(),
     shrinkWrap: !scrollable,
     separatorBuilder: (_, __) => SizedBox(height: 10.h),
-    itemBuilder: (_, i) => _OrderCard(o: orders[i]),
+    itemBuilder: (_, i) => _OrderCard(order: orders[i]),
   );
 }
+
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.o});
-  final m.OrderSummary o; // ✅ model alias
+  const _OrderCard({required this.order});
+  final Order order;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Container(
-        padding: EdgeInsets.all(5.r),
-        decoration: BoxDecoration(
-          color: AllColor.white,
-          borderRadius: BorderRadius.circular(5.r),
-          boxShadow: [
-            BoxShadow(
-              color: AllColor.black.withOpacity(0.06),
-              blurRadius: 14,
-              offset: Offset(0, 6.h),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _Collage(o.imageUrls),
-            SizedBox(width: 14.w),
-            Expanded(child: _Texts(o)),
-    _Track(onTap: () {
-    context.pushNamed(
-    GlobalTrackingScreen1.routeName,                 // <- NAME, not path
-    pathParameters: {'screenName': BuyerOrderPage.routeName},
-    );
-    }),
-          ],
-        ),
+    final imageUrl = order.product.image;
+
+    final address = order.shipAddress?.isNotEmpty == true
+        ? order.shipAddress!
+        : (order.pickupAddress ?? '');
+
+    return Container(
+      padding: EdgeInsets.only(top: 10.h, bottom: 10.h, right: 8.w, left: 8.w),
+      decoration: BoxDecoration(
+        color: AllColor.white,
+        borderRadius: BorderRadius.circular(5.r),
+        boxShadow: [
+          BoxShadow(
+            color: AllColor.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: Offset(0, 6.h),
+          ),
+        ],
       ),
-      
-    ]);
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _ProductImage(imageUrl),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: _Texts(
+              orderCode: order.orderCode,
+              address: address,
+              description: order.statusDescription,
+              status: order.effectiveStatus,
+              paymentLabel: order.paymentLabel, // 👈 same row e jabe
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 /* ========= PARTS ========= */
+
 class _Texts extends StatelessWidget {
-  const _Texts(this.o);
-  final m.OrderSummary o;
+  const _Texts({
+    required this.orderCode,
+    required this.address,
+    required this.description,
+    required this.status,
+    required this.paymentLabel,
+  });
+
+  final String orderCode;
+  final String address;
+  final String description;
+  final String status;
+  final String paymentLabel; // 👈 new
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text("Order ${o.orderId}",
-          style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w800,
-              color: AllColor.black)),
+      Text(
+        "Order $orderCode",
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w800,
+          color: AllColor.black,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
       SizedBox(height: 4.h),
-      Text(o.deliveryType,
-          style: TextStyle(fontSize: 12.sp, color: AllColor.grey)),
+
+      // short description (status wise)
+      if (description.isNotEmpty)
+        Text(
+          description,
+          style: TextStyle(fontSize: 12.sp, color: AllColor.grey),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+
+      SizedBox(height: 4.h),
+
+      // address
+      Text(
+        address,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12.sp, color: AllColor.grey),
+      ),
+
       SizedBox(height: 10.h),
-      Text(o.status,
-          style: TextStyle(
+
+      // ✅ status + payment same row
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            status,
+            style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w900,
-              color: AllColor.black)),
+              color: AllColor.black,
+            ),
+          ),
+          if (paymentLabel.isNotEmpty) SizedBox(width: 8.w),
+          if (paymentLabel.isNotEmpty)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: AllColor.grey.withOpacity(0.16),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                paymentLabel, // "Payment successful" / "Cash on delivery"
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AllColor.black,
+                ),
+              ),
+            ),
+        ],
+      ),
     ],
   );
 }
 
-class _Track extends StatelessWidget {
-  const _Track({this.onTap});
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _Badge("items"),
-      SizedBox(height: 15.h,),
-        InkWell(
-          borderRadius: BorderRadius.circular(22.r),
-          onTap: onTap,
-          child: Container(
-            width: 88.w,
-            height: 36.h,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AllColor.orange, AllColor.orange500], // AllColor only
-              ),
-              borderRadius: BorderRadius.circular(22.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AllColor.orange.withOpacity(0.35),
-                  blurRadius: 12,
-                  offset: Offset(0, 6.h),
-                ),
-              ],
-            ),
-            child: Text(
-              "Track",
-              style: TextStyle(
-                color: AllColor.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 15.sp,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge(this.text);
+class _PaymentBadge extends StatelessWidget {
+  const _PaymentBadge(this.text);
   final String text;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: (){
-      context.push(CartScreen.routeName);
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AllColor.grey.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(16.r),
+  Widget build(BuildContext context) => Container(
+    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+    decoration: BoxDecoration(
+      color: AllColor.grey.withOpacity(0.16),
+      borderRadius: BorderRadius.circular(16.r),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w600,
+        color: AllColor.black,
       ),
-      child: Text(text,
-          style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: AllColor.black)),
     ),
   );
 }
 
-class _Collage extends StatelessWidget {
-  const _Collage(this.urls);
-  final List<String> urls;
+class _ProductImage extends StatelessWidget {
+  const _ProductImage(this.url);
+  final String url;
 
   @override
   Widget build(BuildContext context) {
-    final imgs = urls.take(4).toList();
-    final side = 100.w;
+    final side = 90.w;
     return Container(
       width: side,
       height: side,
       decoration: BoxDecoration(
         color: AllColor.white,
-        borderRadius: BorderRadius.circular(0.5.r),
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
             color: AllColor.black.withOpacity(0.06),
@@ -222,21 +305,9 @@ class _Collage extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: GridView.count(
-        crossAxisCount: 2,
-        padding: EdgeInsets.all(6.r),
-        mainAxisSpacing: 2.w,
-        crossAxisSpacing: 2.w,
-        physics: const NeverScrollableScrollPhysics(),
-        children: List.generate(4, (i) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8.r),
-            child: (i < imgs.length)
-                ? Image.network(imgs[i], fit: BoxFit.cover)
-                : Container(color: AllColor.grey.withOpacity(0.10)),
-          );
-        }),
-      ),
+      child: url.isNotEmpty
+          ? Image.network(url, fit: BoxFit.cover)
+          : Container(color: AllColor.grey.withOpacity(0.10)),
     );
   }
 }

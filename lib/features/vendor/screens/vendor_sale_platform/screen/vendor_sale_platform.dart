@@ -309,7 +309,7 @@ class SalesChart extends StatelessWidget {
                 "Sales",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
               ),
-              SizedBox(width: 80.w),
+              SizedBox(width: 40.w),
               _LegendItem(color: Colors.orange, text: "Previous Period"),
               SizedBox(width: 10.w),
               _LegendItem(color: Colors.grey, text: "Previous Period"),
@@ -427,7 +427,7 @@ class _LegendItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(radius: 6, backgroundColor: color),
+        CircleAvatar(radius: 4, backgroundColor: color),
         SizedBox(width: 4.w),
         Text(text, style: TextStyle(fontSize: 12.sp)),
       ],

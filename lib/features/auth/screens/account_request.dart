@@ -8,7 +8,8 @@ import 'package:market_jango/features/auth/screens/login/screen/login_screen.dar
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 
 class AccountRequest extends StatelessWidget {
-  const AccountRequest({super.key});
+  const AccountRequest({super.key,});
+
   static final String routeName = '/accountRequest';
 
   @override

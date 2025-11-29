@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/data/asign_to_order_driver_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/logic/vendor_driver_prement_logic.dart';
+import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/model/asign_to_order_driver_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-class AsignToOrderDriver extends StatefulWidget {
-  const AsignToOrderDriver({super.key, this.driverName = 'Murphy'});
+class AssignToOrderDriver extends ConsumerStatefulWidget {
+  const AssignToOrderDriver({super.key, required this.driverId});
+
   static const routeName = "/assign_order_driver";
 
-  final String driverName;
+  final int driverId;
 
   @override
-  State<AsignToOrderDriver> createState() => _AsignToOrderDriverState();
+  ConsumerState<AssignToOrderDriver> createState() =>
+      _AssignToOrderDriverState();
 }
 
-class _AsignToOrderDriverState extends State<AsignToOrderDriver> {
+class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
   final _search = TextEditingController();
   int? _selectedIndex;
 
@@ -26,241 +32,292 @@ class _AsignToOrderDriverState extends State<AsignToOrderDriver> {
 
   @override
   Widget build(BuildContext context) {
-    // filter by search
-    final items = _demoOrders.where((o) {
-      final q = _search.text.trim().toLowerCase();
-      return q.isEmpty ||
-          o.orderNo.toLowerCase().contains(q) ||
-          o.address1.toLowerCase().contains(q) ||
-          o.address2.toLowerCase().contains(q);
-    }).toList();
+    final async = ref.watch(vendorPendingOrdersProvider);
 
-    return Scaffold(
-      backgroundColor: AllColor.white,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomBackButton(),
-              SizedBox(height: 20.h),
-              Text(
-                'Assign order to driver ${widget.driverName}',
-                style: TextStyle(
-                  color: AllColor.black,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 12.h),
+    return async.when(
+      loading: () => const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      ),
+      error: (e, _) => Scaffold(
+        body: SafeArea(child: Center(child: Text(e.toString()))),
+      ),
+      data: (pageData) {
+        final orders = pageData.data;
 
-              // Search
-              TextField(
-                controller: _search,
-                onChanged: (_) => setState(() {}),
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: 'Search orders',
-                  hintStyle: TextStyle(color: AllColor.textHintColor),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: AllColor.black54,
-                  ),
-                  filled: true,
-                  fillColor: AllColor.grey100,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.grey200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.grey200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: AllColor.blue500),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
+        // search filter
+        final q = _search.text.trim().toLowerCase();
+        final items = orders.where((o) {
+          final orderNo = _orderNo(o).toLowerCase();
+          final line1 = _line1(o).toLowerCase();
+          final line2 = _line2(o).toLowerCase();
+          if (q.isEmpty) return true;
+          return orderNo.contains(q) || line1.contains(q) || line2.contains(q);
+        }).toList();
 
-              // Orders list
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (context, i) {
-                    final item = items[i];
-                    final selected = i == _selectedIndex;
-                    return InkWell(
-                      onTap: () => setState(() => _selectedIndex = i),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12.w),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Radio
-                            Radio<int>(
-                              value: i,
-                              groupValue: _selectedIndex,
-                              onChanged: (v) =>
-                                  setState(() => _selectedIndex = v),
-                              activeColor: AllColor.loginButtomColor,
-                            ),
-                            SizedBox(width: 6.w),
+        // jodi page change / search e selected index out of range hoy
+        if (_selectedIndex != null && _selectedIndex! >= items.length) {
+          _selectedIndex = null;
+        }
 
-                            // Order texts
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Order #${item.orderNo}',
-                                    style: TextStyle(
-                                      color: AllColor.black,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    item.address1,
-                                    style: TextStyle(
-                                      color: AllColor.black54,
-                                      fontSize: 13.sp,
-                                    ),
-                                  ),
-                                  Text(
-                                    item.address2,
-                                    style: TextStyle(
-                                      color: AllColor.black54,
-                                      fontSize: 13.sp,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+        return Scaffold(
+          backgroundColor: AllColor.white,
 
-                            // Status
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Text(
-                                'Pending',
-                                style: TextStyle(
-                                  color: AllColor.blue500,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+          // 🔹 Bottom button ta ekdom alada rakhlam — overflow possible na
+          bottomNavigationBar: _BottomAssignBar(
+            enabled: _selectedIndex != null && items.isNotEmpty,
+            onPressed: _selectedIndex == null
+                ? null
+                : () async {
+                    final chosen = items[_selectedIndex!];
+
+                    await startVendorAssignCheckout(
+                      context,
+                      driverId: widget.driverId,
+                      orderItemId: chosen.id, // order_item_id
                     );
                   },
-                ),
-              ),
+          ),
 
-              // Bottom CTA + grabber
-              Container(
-                color: AllColor.white,
-                padding: EdgeInsets.only(
-                  left: 16.h,
-                  right: 16.h,
-                  top: 6.h,
-                  bottom: 10.h + MediaQuery.of(context).padding.bottom,
-                ),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44.h,
-                      child: ElevatedButton(
-                        onPressed: _selectedIndex == null
-                            ? null
-                            : () {
-                                //final chosen = items[_selectedIndex!];
-                                //Navigation to Add Card Screen
-                                context.push("/addCard");
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AllColor.loginButtomColor,
-                          disabledBackgroundColor: AllColor.grey200,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 🔹 Header + search part
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const CustomBackButton(),
+                      SizedBox(height: 20.h),
+                      Text(
+                        'Assign order to driver ${widget.driverId}',
+                        style: TextStyle(
+                          color: AllColor.black,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w800,
                         ),
-                        child: Text(
-                          'Book now',
-                          style: TextStyle(
-                            color: AllColor.white,
-                            fontWeight: FontWeight.w700,
+                      ),
+                      SizedBox(height: 12.h),
+                      TextField(
+                        controller: _search,
+                        onChanged: (_) => setState(() {}),
+                        textInputAction: TextInputAction.search,
+                        decoration: InputDecoration(
+                          hintText: 'Search orders',
+                          hintStyle: TextStyle(color: AllColor.textHintColor),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: AllColor.black54,
+                          ),
+                          filled: true,
+                          fillColor: AllColor.grey100,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: BorderSide(color: AllColor.grey200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: BorderSide(color: AllColor.grey200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            borderSide: BorderSide(color: AllColor.blue500),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 8.h),
-                  ],
+                      SizedBox(height: 12.h),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // 🔹 Full scroll area: list + pagination
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: items.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No pending orders found',
+                              style: TextStyle(
+                                color: AllColor.black54,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.only(bottom: 12.h),
+                            itemCount: items.length + 1,
+                            separatorBuilder: (context, index) {
+                              // last separator = gap before pagination
+                              if (index < items.length - 1) {
+                                return const Divider(height: 1);
+                              }
+                              return SizedBox(height: 12.h);
+                            },
+                            itemBuilder: (context, index) {
+                              // last row = pagination
+                              if (index == items.length) {
+                                return GlobalPagination(
+                                  currentPage: pageData.currentPage,
+                                  totalPages: pageData.lastPage,
+                                  onPageChanged: (newPage) {
+                                    setState(() => _selectedIndex = null);
+                                    ref
+                                            .read(
+                                              vendorPendingCurrentPageProvider
+                                                  .notifier,
+                                            )
+                                            .state =
+                                        newPage;
+                                  },
+                                );
+                              }
+
+                              final item = items[index];
+                              final selected = index == _selectedIndex;
+
+                              return InkWell(
+                                onTap: () =>
+                                    setState(() => _selectedIndex = index),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 12.w),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // radio
+                                      Radio<int>(
+                                        value: index,
+                                        groupValue: _selectedIndex,
+                                        onChanged: (v) =>
+                                            setState(() => _selectedIndex = v),
+                                        activeColor: AllColor.loginButtomColor,
+                                      ),
+                                      SizedBox(width: 6.w),
+
+                                      // texts
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Order #${_orderNo(item)}',
+                                              style: TextStyle(
+                                                color: AllColor.black,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4.h),
+                                            Text(
+                                              _line1(item),
+                                              style: TextStyle(
+                                                color: AllColor.black54,
+                                                fontSize: 13.sp,
+                                              ),
+                                            ),
+                                            Text(
+                                              _line2(item),
+                                              style: TextStyle(
+                                                color: AllColor.black54,
+                                                fontSize: 13.sp,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // status text
+                                      Align(
+                                        alignment: Alignment.topRight,
+                                        child: Text(
+                                          item.status,
+                                          style: TextStyle(
+                                            color: AllColor.blue500,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ===== helper text =====
+  String _orderNo(VendorPendingOrder o) =>
+      o.tranId.isNotEmpty ? o.tranId : o.id.toString();
+
+  String _line1(VendorPendingOrder o) =>
+      'Qty: ${o.quantity} • Sale: ${o.salePrice.toStringAsFixed(2)}';
+
+  /// line2 = pickup_address (fallback ship_address)
+  String _line2(VendorPendingOrder o) {
+    final pickup = (o.pickupAddress ?? '').trim();
+    final ship = (o.shipAddress ?? '').trim();
+
+    if (pickup.isNotEmpty) {
+      return 'Pickup: $pickup';
+    } else if (ship.isNotEmpty) {
+      return 'Ship to: $ship';
+    } else {
+      return 'Pickup address: Not set';
+    }
+  }
+}
+
+/// ================= Bottom button =================
+
+class _BottomAssignBar extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback? onPressed;
+
+  const _BottomAssignBar({required this.enabled, this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      minimum: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
+      child: SizedBox(
+        width: double.infinity,
+        height: 44.h,
+        child: ElevatedButton(
+          onPressed: enabled ? onPressed : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AllColor.loginButtomColor,
+            disabledBackgroundColor: AllColor.grey200,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            'Payment now',
+            style: TextStyle(
+              color: AllColor.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-/* =================== Demo model & data =================== */
-
-class AssignOrderItem {
-  final String orderNo;
-  final String address1;
-  final String address2;
-
-  const AssignOrderItem({
-    required this.orderNo,
-    required this.address1,
-    required this.address2,
-  });
-}
-
-const _demoOrders = <AssignOrderItem>[
-  AssignOrderItem(
-    orderNo: '100134',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-  AssignOrderItem(
-    orderNo: '100135',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-  AssignOrderItem(
-    orderNo: '100134',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-  AssignOrderItem(
-    orderNo: '100134',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-  AssignOrderItem(
-    orderNo: '100134',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-  AssignOrderItem(
-    orderNo: '100134',
-    address1: '4517 Washington Ave.',
-    address2: 'Manchester, Kentucky 39495',
-  ),
-];

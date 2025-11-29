@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum CustomSnackType { info, success, error, warning }
 enum SnackPos { top, bottom }
 
-class CustomSnackbar {
+class GlobalSnackbar {
   static OverlayEntry? _entry;
 
   /// Show a floating snackbar (GetX-style) without GetX.

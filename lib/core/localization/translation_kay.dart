@@ -188,10 +188,10 @@ class TKeys {
   static const String loading = 'loading';
   static const String error = 'error';
   static const String t_shirt = 't_shirt';
-  static const String something_went_wrong = 'Something_went_wrong';
+  static const String something_went_wrong = 'something_went_wrong';
   static const String no_top_products = 'no_top_products';
   static const String no_popular_products_found = 'no_popular_products_found';
-  static const String all_categories = ' all_categories';
+  static const String all_categories = 'all_categories';
   static const String trend_Loop = ' trend_loop';
   static const String no_vendors = ' no_vendors';
   static const String please_add_the_cart_product =
@@ -200,4 +200,9 @@ class TKeys {
   static const String shipping_address_updated = 'shippingAddressUpdated';
   static const String no_completed_orders_yet = 'no_completed_orders_yet';
   static const String contactInformation = 'contactInformation';
+  static const String color = 'color';
+  static const String sizes = 'sizes';
+  static const String specifications = 'specifications';
+  static const String buyNow = 'buy_now';
+
 }

@@ -18,7 +18,7 @@ class CategoriesScreen extends ConsumerWidget {
   static const String routeName = '/categories_screen';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context,ref) {
     final asyncCats = ref.watch(categoriesProvider);
     final notifier = ref.read(categoriesProvider.notifier);
 
@@ -31,7 +31,6 @@ class CategoriesScreen extends ConsumerWidget {
               // "All Categories"
               Tuppertextandbackbutton(screenName: ref.t(TKeys.all_categories)),
               SizedBox(height: 12.h),
-
               // গ্রিড + Pagination
               Expanded(
                 child: asyncCats.when(
@@ -41,7 +40,6 @@ class CategoriesScreen extends ConsumerWidget {
                   data: (resp) {
                     if (resp == null) return const SizedBox.shrink();
                     final page = resp.data;
-
                     return Column(
                       children: [
                         // সব দেখাতে itemCount = page.data.length

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
@@ -14,7 +16,6 @@ import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'logic/add_cart_quantity_logic.dart';
 import 'logic/product_details_data.dart';
 import 'model/product_all_details_model.dart';
@@ -47,7 +48,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   initial: _selectedSize,
                   onSelected: (s) => setState(() => _selectedSize = s),
                 ),
-                SizeColorAnd(text: "Color"),
+                SizeColorAnd(text: ref.t(TKeys.color)),
                 CustomColor(
                   product: product,
                   initial: _selectedColor,
@@ -93,9 +94,10 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Column(
-                    children: const [
+                    children:  [
+                      //"Top Products"
                       SeeMoreButton(
-                        name: "Top Products",
+                        name: ref.t(TKeys.topProducts),
                         seeMoreAction: null,
                         isSeeMore: false,
                       ),
@@ -187,7 +189,7 @@ class ProductImage extends StatelessWidget {
   }
 }
 
-class CustomSize extends StatefulWidget {
+class CustomSize extends ConsumerStatefulWidget {
   const CustomSize({
     super.key,
     required this.product,
@@ -199,10 +201,10 @@ class CustomSize extends StatefulWidget {
   final ValueChanged<String>? onSelected;
 
   @override
-  State<CustomSize> createState() => _CustomSizeState();
+  ConsumerState<CustomSize> createState() => _CustomSizeState();
 }
 
-class _CustomSizeState extends State<CustomSize> {
+class _CustomSizeState extends ConsumerState<CustomSize> {
   int selectedIndex = 0;
 
   @override
@@ -223,7 +225,7 @@ class _CustomSizeState extends State<CustomSize> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizeColorAnd(text: "Size"),
+          SizeColorAnd(text: ref.t(TKeys.sizes)),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
@@ -387,7 +389,7 @@ class _CustomColorState extends State<CustomColor> {
   }
 }
 
-class ProductMaterialAndStoreInfo extends StatelessWidget {
+class ProductMaterialAndStoreInfo extends ConsumerWidget {
   const ProductMaterialAndStoreInfo({
     super.key,
     this.materials = const [
@@ -412,14 +414,14 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
   final int vendorId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Materials row
-          SizeColorAnd(text: "Specifications"),
+          // Materials row  "Specifications"
+          SizeColorAnd(text: ref.t(TKeys.specifications) ),
 
           Wrap(
             spacing: 8.w,
@@ -524,7 +526,7 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "Chat naw",
+                        ref.t(TKeys.chatNow),
                         style: TextStyle(color: Colors.blue, fontSize: 12),
                       ),
                     ],
@@ -540,12 +542,12 @@ class ProductMaterialAndStoreInfo extends StatelessWidget {
 }
 
 /// Single yellow rounded pill
-class _MaterialPill extends StatelessWidget {
+class _MaterialPill extends ConsumerWidget {
   const _MaterialPill({required this.text});
   final String text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -570,7 +572,7 @@ class MaterialChip {
   const MaterialChip({required this.text});
 }
 
-class QuantityBuyBar extends StatefulWidget {
+class QuantityBuyBar extends ConsumerStatefulWidget {
   const QuantityBuyBar({
     super.key,
     this.min = 1,
@@ -583,10 +585,10 @@ class QuantityBuyBar extends StatefulWidget {
   final void Function(int qty) onBuyNow;
 
   @override
-  State<QuantityBuyBar> createState() => _QuantityBuyBarState();
+  ConsumerState<QuantityBuyBar> createState() => _QuantityBuyBarState();
 }
 
-class _QuantityBuyBarState extends State<QuantityBuyBar> {
+class _QuantityBuyBarState extends ConsumerState<QuantityBuyBar> {
   int qty = 1;
 
   void _dec() {
@@ -657,7 +659,7 @@ class _QuantityBuyBarState extends State<QuantityBuyBar> {
                 elevation: 0,
               ),
               child: Text(
-                'Buy now',
+                ref.t(TKeys.buyNow),
                 style: TextStyle(
                   color: AllColor.white,
                   fontSize: 14.sp,

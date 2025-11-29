@@ -21,7 +21,6 @@ class DriverHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(driverHomeStatsProvider);
-    final newOrdersAsync = ref.watch(driverNewOrdersProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -33,7 +32,7 @@ class DriverHomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeaderSection(
-                  name: "John", // later tumi driver profile theke dibe
+                  name: "John", // later profile theke
                   subtitle: "Keep going! You're doing great today.",
                 ),
                 const SizedBox(height: 12),
@@ -60,16 +59,8 @@ class DriverHomeScreen extends ConsumerWidget {
                 const _SectionTitle(title: "New Orders"),
                 const SizedBox(height: 10),
 
-                // আগের মতই new orders list – শুধু async handle করে দিচ্ছি
-                Expanded(
-                  child: newOrdersAsync.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (e, _) =>
-                        Center(child: Text('Failed to load orders: $e')),
-                    data: (_) => const _OrdersList(),
-                  ),
-                ),
+                /// 🔹 শুধু একটাই Expanded – vitore _OrdersList nijer async handle korbe
+                const Expanded(child: _OrdersList()),
               ],
             );
           },
@@ -246,34 +237,59 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () =>
-          const Expanded(child: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Expanded(child: Center(child: Text(e.toString()))),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Failed to load orders: $e')),
       data: (resp) {
-        // raw entity list
-        final raw = resp?.data.data ?? const <DriverOrder>[];
+        final page = resp?.data;
+        final raw = page?.data ?? const <DriverOrder>[];
         final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
 
-        return Expanded(
-          child: Column(
+        // pagination safe values (backend jodi current_page, last_page na dey)
+        int cp = page?.currentPage ?? notifier.currentPage;
+        int lp = page?.lastPage ?? notifier.lastPage;
+        if (cp < 1) cp = 1;
+        if (lp < 1) lp = 1;
+        if (cp > lp) cp = lp;
+
+        if (orders.isEmpty) {
+          // empty state o scroll + pagination thakbe
+          return Column(
             children: [
               Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                  itemBuilder: (_, i) =>
-                      _OrderCard(order: orders[i], orderId: raw[i].id),
-                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                  itemCount: orders.length,
+                child: Center(
+                  child: Text(
+                    'No new orders found',
+                    style: TextStyle(color: AllColor.black54, fontSize: 13.sp),
+                  ),
                 ),
               ),
-              SizedBox(height: 8.h),
               GlobalPagination(
-                currentPage: notifier.currentPage,
-                totalPages: notifier.lastPage,
+                currentPage: cp,
+                totalPages: lp,
                 onPageChanged: notifier.changePage,
               ),
             ],
-          ),
+          );
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                itemBuilder: (_, i) =>
+                    _OrderCard(order: orders[i], orderId: raw[i].id),
+                separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                itemCount: orders.length,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            GlobalPagination(
+              currentPage: cp,
+              totalPages: lp,
+              onPageChanged: notifier.changePage,
+            ),
+          ],
         );
       },
     );
@@ -491,19 +507,35 @@ class _OrderModel {
 
   factory _OrderModel.fromEntity(DriverOrder o) {
     final inv = o.invoice;
-    final pickup = (inv?.pickupAddress?.trim().isNotEmpty ?? false)
+
+    // order id text
+    final idText = (inv?.taxRef.isNotEmpty ?? false)
+        ? inv!.taxRef
+        : (o.tranId.isNotEmpty ? o.tranId : o.id.toString());
+
+    // pickup / destination (jodi future e model e pickup_address add koro, ekhan theke use korte parba)
+    final pickup = (inv?.pickupAddress.trim().isNotEmpty ?? false)
         ? inv!.pickupAddress
-        : (inv?.shipAddress ?? '—');
-    final dest = (inv?.dropOfAddress?.trim().isNotEmpty ?? false)
+        : (inv?.shipAddress.trim().isNotEmpty ?? false)
+        ? inv!.shipAddress
+        : '—';
+
+    final destination = (inv?.dropOfAddress.trim().isNotEmpty ?? false)
         ? inv!.dropOfAddress
-        : (inv?.shipCity ?? '—');
-    // final id = int.parse(o.invoice!.taxRef);
+        : (inv?.shipCity.trim().isNotEmpty ?? false)
+        ? inv!.shipCity
+        : '—';
+
+    final price = o.salePrice != 0
+        ? o.salePrice
+        : double.tryParse(inv?.payable ?? '0') ?? 0.0;
+
     return _OrderModel(
-      id: o.invoice!.taxRef,
+      id: idText,
       status: o.status,
       pickup: pickup,
-      destination: dest,
-      price: o.salePrice,
+      destination: destination,
+      price: price,
     );
   }
 }

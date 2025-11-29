@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/driver/widgets/bottom_sheet.dart';
 
-class DriverTrakingScreen extends StatelessWidget {
-  const DriverTrakingScreen({super.key});
+import 'driver_order/data/driver_order_details_data.dart';
+
+class DriverTrakingScreen extends ConsumerWidget {
+  const DriverTrakingScreen({super.key, required this.trackingId});
+
   static final routeName = "/driverTrackingScreen";
+  final String trackingId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = int.parse(trackingId);
+    final trackingAsync = ref.watch(driverTrackingProvider(id));
     return Scaffold(
       body: SafeArea(
         child: Column(

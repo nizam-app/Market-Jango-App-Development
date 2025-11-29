@@ -212,8 +212,17 @@ class _OrderCard extends StatelessWidget {
   });
 
   @override
+  @override
   Widget build(BuildContext context) {
     final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
+
+    // 🔴 Not Deliver hole action button dekhabo na
+    final normStatus = data.statusLabel.toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
+    final bool hideActions = normStatus.contains('notdeliver');
+
     return Container(
       decoration: BoxDecoration(
         color: AllColor.white,
@@ -252,14 +261,17 @@ class _OrderCard extends StatelessWidget {
           SizedBox(height: 8.h),
           _kvBold('Destination: ', data.destination),
           SizedBox(height: 14.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _PrimaryButton(text: 'See details', onTap: onSeeDetails),
-              if (onTrackOrder != null)
-                _SecondaryButton(text: 'Track order', onTap: onTrackOrder!),
-            ],
-          ),
+
+          // 🔻 Not Deliver হলে কোন বোতামই দেখাবো না
+          if (!hideActions)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _PrimaryButton(text: 'See details', onTap: onSeeDetails),
+                if (onTrackOrder != null)
+                  _SecondaryButton(text: 'Track order', onTap: onTrackOrder!),
+              ],
+            ),
         ],
       ),
     );

@@ -81,7 +81,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: SplashScreen.routeName,
+  initialLocation: DriverOrder.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -501,7 +501,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: DriverTrakingScreen.routeName,
       name: 'driverTrackingScreen',
-      builder: (context, state) => const DriverTrakingScreen(),
+      builder: (context, state) =>
+          DriverTrakingScreen(trackingId: state.extra as String),
     ),
 
     GoRoute(

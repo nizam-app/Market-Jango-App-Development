@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_details_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
 import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderDetailsScreen extends ConsumerWidget {
   const OrderDetailsScreen({super.key, required this.trackingId});
@@ -45,32 +48,41 @@ class OrderDetailsScreen extends ConsumerWidget {
                 final invoice = data.invoice;
 
                 return _DetailsContent(
-                  orderId: invoice.id.toString(),
-                  pickupAddress: invoice.pickupAddress,
-                  dropoffAddress: invoice.dropOfAddress,
-                  customerName: invoice.cusName,
-                  customerPhone: invoice.cusPhone,
-                  instruction:
-                      "Delivery status: ${invoice.deliveryStatus} (${invoice.status})",
-                  // আপাতত static map image, পরে real map / static map URL use করবে
-                  imageUrl:
-                      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+                  orderId: invoice?.taxRef ?? "",
+                  pickupAddress: data.pickupAddress,
+                  dropoffAddress: data.shipAddress,
+                  customerName: invoice?.cusName ?? "___",
+                  customerPhone: invoice?.cusPhone ?? "___",
+                  lat: data.shipLatitude ?? 0,
+                  lot: data.shipLongitude ?? 0,
                 );
               },
             ),
             trackingAsync.when(
               data: (DriverTrackingData data) {
-                if (data.status == "AssignedOrder") {
-                  return _BottomActions(
-                    onMessage: () {
-                      context.push(GlobalChatScreen.routeName);
-                    },
-                    onStartDelivery: () {
-                      context.push(DriverTrakingScreen.routeName);
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
+                return _BottomActions(
+                  onMessage: () async {
+                    SharedPreferences pefa =
+                        await SharedPreferences.getInstance();
+                    String id = pefa.getString('user_id') ?? '';
+                    final intId = int.parse(id);
+
+                    context.push(
+                      GlobalChatScreen.routeName,
+                      extra: ChatArgs(
+                        partnerId: data.userId,
+                        partnerName: data.cusName,
+                        partnerImage:
+                            data.user?.image ??
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
+                        myUserId: intId,
+                      ),
+                    );
+                  },
+                  onStartDelivery: () {
+                    context.push(DriverTrakingScreen.routeName);
+                  },
+                );
               },
               loading: () => const Expanded(
                 child: Center(child: CircularProgressIndicator()),
@@ -100,8 +112,8 @@ class _DetailsContent extends StatelessWidget {
     required this.dropoffAddress,
     required this.customerName,
     required this.customerPhone,
-    required this.instruction,
-    required this.imageUrl,
+    required this.lat,
+    required this.lot,
   });
 
   final String orderId;
@@ -109,8 +121,8 @@ class _DetailsContent extends StatelessWidget {
   final String dropoffAddress;
   final String customerName;
   final String customerPhone;
-  final String instruction;
-  final String imageUrl;
+  final double lat;
+  final double lot;
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +154,7 @@ class _DetailsContent extends StatelessWidget {
             // _Label("Customer instruction"),
             // _InstructionBox(text: instruction),
             SizedBox(height: 10.h),
-            _MapImage(imageUrl: imageUrl),
+            _MapImage(latitude: lat, longitude: lot),
             SizedBox(height: 10.h),
           ],
         ),
@@ -224,16 +236,32 @@ class _InstructionBox extends StatelessWidget {
 }
 
 class _MapImage extends StatelessWidget {
-  const _MapImage({required this.imageUrl});
-  final String imageUrl;
+  const _MapImage({super.key, required this.latitude, required this.longitude});
+
+  final double latitude;
+  final double longitude;
 
   @override
   Widget build(BuildContext context) {
+    final position = LatLng(latitude, longitude);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.r),
       child: AspectRatio(
         aspectRatio: 16 / 10,
-        child: Image.network(imageUrl, fit: BoxFit.cover),
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: position, zoom: 13),
+          markers: {
+            Marker(
+              markerId: const MarkerId('orderLocation'),
+              position: position,
+            ),
+          },
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          compassEnabled: false,
+          mapToolbarEnabled: false,
+        ),
       ),
     );
   }

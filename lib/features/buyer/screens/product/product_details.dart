@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
@@ -16,6 +16,7 @@ import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'logic/add_cart_quantity_logic.dart';
 import 'logic/product_details_data.dart';
 import 'model/product_all_details_model.dart';
@@ -28,6 +29,7 @@ class ProductDetails extends ConsumerStatefulWidget {
   @override
   ConsumerState<ProductDetails> createState() => _ProductDetailsState();
 }
+
 class _ProductDetailsState extends ConsumerState<ProductDetails> {
   String? _selectedSize;
   String? _selectedColor;
@@ -48,7 +50,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   initial: _selectedSize,
                   onSelected: (s) => setState(() => _selectedSize = s),
                 ),
-                SizeColorAnd(text: ref.t(TKeys.color)),
+                SizeColorAnd(text: ref.t(BKeys.color)),
                 CustomColor(
                   product: product,
                   initial: _selectedColor,
@@ -94,10 +96,10 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Column(
-                    children:  [
+                    children: [
                       //"Top Products"
                       SeeMoreButton(
-                        name: ref.t(TKeys.topProducts),
+                        name: ref.t(BKeys.topProducts),
                         seeMoreAction: null,
                         isSeeMore: false,
                       ),
@@ -225,7 +227,7 @@ class _CustomSizeState extends ConsumerState<CustomSize> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizeColorAnd(text: ref.t(TKeys.sizes)),
+          SizeColorAnd(text: ref.t(BKeys.sizes)),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
             decoration: BoxDecoration(
@@ -414,14 +416,14 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
   final int vendorId;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Materials row  "Specifications"
-          SizeColorAnd(text: ref.t(TKeys.specifications) ),
+          SizeColorAnd(text: ref.t(BKeys.specifications)),
 
           Wrap(
             spacing: 8.w,
@@ -437,7 +439,10 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
             children: [
               InkWell(
                 onTap: () {
-                  context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
+                  context.push(
+                    BuyerVendorProfileScreen.routeName,
+                    extra: vendorId,
+                  );
                 },
                 child: CircleAvatar(
                   radius: 25,
@@ -451,7 +456,10 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      context.push(BuyerVendorProfileScreen.routeName, extra: vendorId);
+                      context.push(
+                        BuyerVendorProfileScreen.routeName,
+                        extra: vendorId,
+                      );
                     },
                     child: Text(
                       storeName,
@@ -526,7 +534,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        ref.t(TKeys.chatNow),
+                        ref.t(BKeys.chatNow),
                         style: TextStyle(color: Colors.blue, fontSize: 12),
                       ),
                     ],
@@ -547,7 +555,7 @@ class _MaterialPill extends ConsumerWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
@@ -659,7 +667,7 @@ class _QuantityBuyBarState extends ConsumerState<QuantityBuyBar> {
                 elevation: 0,
               ),
               child: Text(
-                ref.t(TKeys.buyNow),
+                ref.t(BKeys.buyNow),
                 style: TextStyle(
                   color: AllColor.white,
                   fontSize: 14.sp,

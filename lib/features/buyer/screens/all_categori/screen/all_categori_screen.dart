@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
-// যদি আপনার GlobalPagination উইজেট থাকে:
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/buyer/data/buyer_categori_data.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
@@ -18,7 +17,7 @@ class CategoriesScreen extends ConsumerWidget {
   static const String routeName = '/categories_screen';
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     final asyncCats = ref.watch(categoriesProvider);
     final notifier = ref.read(categoriesProvider.notifier);
 
@@ -29,7 +28,7 @@ class CategoriesScreen extends ConsumerWidget {
           child: Column(
             children: [
               // "All Categories"
-              Tuppertextandbackbutton(screenName: ref.t(TKeys.all_categories)),
+              Tuppertextandbackbutton(screenName: ref.t(BKeys.all_categories)),
               SizedBox(height: 12.h),
               // গ্রিড + Pagination
               Expanded(

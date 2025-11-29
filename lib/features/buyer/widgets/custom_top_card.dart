@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 
@@ -21,7 +21,7 @@ class CustomTopProducts extends ConsumerWidget {
         data: (products) {
           if (products.isEmpty) {
             //'No top products'
-            return Center(child: Text(ref.t(TKeys.no_top_products)));
+            return Center(child: Text(ref.t(BKeys.no_top_products)));
           }
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 6.w),

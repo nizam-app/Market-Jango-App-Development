@@ -38,6 +38,7 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
     String? businessName,
     // String? businessType,
     String? address,
+    double? driverPrice,
 
     // transport only (address ই reuse করব)
   }) async {
@@ -93,6 +94,8 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
         addField('address', address);
         addDouble('latitude', latitude);
         addDouble('longitude', longitude);
+      } else if (userType == 'driver') {
+        addDouble('price', driverPrice);
       }
 
       // ----- image -----

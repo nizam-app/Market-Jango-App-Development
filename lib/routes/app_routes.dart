@@ -25,7 +25,6 @@ import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor/screen/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_cetagory_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
@@ -35,6 +34,7 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
+import 'package:market_jango/features/buyer/screens/review/screen/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -48,8 +48,9 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
-import 'package:market_jango/features/transport/screens/driver/screen/transport_driver.dart';
-import 'package:market_jango/features/transport/screens/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
+import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
 import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
 import 'package:market_jango/features/transport/screens/my_booking/screen/transport_booking.dart';
 import 'package:market_jango/features/transport/screens/ongoing_order_screen.dart';
@@ -80,7 +81,7 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: BuyerBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
 
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
@@ -198,7 +199,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
-      builder: (context, state) => const AssignToOrderDriver(),
+      builder: (context, state) =>
+          AssignToOrderDriver(driverId: state.extra as int),
     ),
 
     GoRoute(
@@ -558,7 +560,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: ReviewScreen.routeName,
       name: ReviewScreen.routeName,
-      builder: (context, state) => const ReviewScreen(),
+      builder: (context, state) => ReviewScreen(vendorId: state.extra as int),
     ),
     GoRoute(
       path: ProductDetails.routeName,
@@ -615,6 +617,11 @@ final GoRouter router = GoRouter(
       path: GoogleMapScreen.routeName,
       name: GoogleMapScreen.routeName,
       builder: (context, state) => GoogleMapScreen(),
+    ),
+    GoRoute(
+      path: SetDropLocationScreen.routeName,
+      name: SetDropLocationScreen.routeName,
+      builder: (context, state) => const SetDropLocationScreen(),
     ),
     GoRoute(
       path: '${BuyerVendorCetagoryScreen.routeName}/:screenName',

@@ -22,14 +22,17 @@ class BuyerAPIController {
   static String paymen_tresponse = "$_base_api/payment/response";
   static String invoice_tracking(oderId) =>
       "$_base_api/invoice/tracking/$oderId";
-  static String all_order = "$_base_api/all-order";
+  static String all_order = "$_base_api/buyer/all-order";
   static String popular_product(id) => "$_base_api/popular/product/$id";
   static String vendor_first_product = "$_base_api/vendor/first/product";
   static String vendor_search(name) => "$_base_api/vendor/search/?name=$name";
-  static String buyer_tracking_details(int id) => "$_base_api/buyer/invoice/tracking/details/$id";
+  static String buyer_tracking_details(int id) =>
+      "$_base_api/buyer/invoice/tracking/details/$id";
 
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
+  static String review_buyer(id) => "$_base_api/review/create/buyer/$id";
+  static String review_vendor(id) => "$_base_api/review/vendor/$id";
 }
 
 // lib/core/constants/api_control/buyer_api.dart
@@ -41,5 +44,4 @@ class BuyerPaymentAPIController {
   static final Uri paymentResponse = Uri.parse(
     'http://103.208.183.253:8000/api/payment/response',
   );
-  
 }

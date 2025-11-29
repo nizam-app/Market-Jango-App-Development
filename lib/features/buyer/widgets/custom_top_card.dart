@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
-import 'package:market_jango/features/buyer/screens/product/model/buyer_product_details_model.dart';
-import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 
 class CustomTopProducts extends ConsumerWidget {
   const CustomTopProducts({super.key});
@@ -20,7 +20,8 @@ class CustomTopProducts extends ConsumerWidget {
       child: asyncData.when(
         data: (products) {
           if (products.isEmpty) {
-            return const Center(child: Text('No top products'));
+            //'No top products'
+            return Center(child: Text(ref.t(TKeys.no_top_products)));
           }
           return ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 6.w),
@@ -38,7 +39,7 @@ class CustomTopProducts extends ConsumerWidget {
                       );
                     },
                     child: Padding(
-                      padding: EdgeInsets.only(top: 4.h, left: 6.w,right: 6.w),
+                      padding: EdgeInsets.only(top: 4.h, left: 6.w, right: 6.w),
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -47,7 +48,10 @@ class CustomTopProducts extends ConsumerWidget {
                               color: Colors.grey.withOpacity(0.5),
                               spreadRadius: 2,
                               blurRadius: 5,
-                              offset: const Offset(0, 3), // changes position of shadow
+                              offset: const Offset(
+                                0,
+                                3,
+                              ), // changes position of shadow
                             ),
                           ],
                         ),
@@ -56,8 +60,12 @@ class CustomTopProducts extends ConsumerWidget {
                           backgroundColor: AllColor.white,
                           child: CircleAvatar(
                             radius: 28.r,
-                            backgroundImage: (p.image.isNotEmpty) ? NetworkImage(p.image) : null,
-                            child: (p.image.isEmpty) ? Icon(Icons.image_not_supported, size: 18.sp) : null,
+                            backgroundImage: (p.image.isNotEmpty)
+                                ? NetworkImage(p.image)
+                                : null,
+                            child: (p.image.isEmpty)
+                                ? Icon(Icons.image_not_supported, size: 18.sp)
+                                : null,
                           ),
                         ),
                       ),

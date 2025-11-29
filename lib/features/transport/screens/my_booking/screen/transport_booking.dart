@@ -1,12 +1,12 @@
-// transport_booking.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
+
 class TransportBooking extends StatefulWidget {
   const TransportBooking({super.key});
   static const String routeName = "/transport_booking";
@@ -16,8 +16,9 @@ class TransportBooking extends StatefulWidget {
 }
 
 class _TransportBookingState extends State<TransportBooking> {
+  /// tabs: VendorShipmentsScreen er moto simple chips
   String selectedTab = "All";
-  final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
+  final List<String> tabs = ["All", "On the way", "Completed"];
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +33,20 @@ class _TransportBookingState extends State<TransportBooking> {
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: const Tuppertextandbackbutton(screenName: "My Booking"),
+                  child: const Tuppertextandbackbutton(
+                    screenName: "My Booking",
+                  ),
                 ),
 
-                // Tabs
+                /// -------- Tabs (All / On the way / Completed) ----------
                 SizedBox(
                   height: 55.h,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
                     itemCount: tabs.length,
                     separatorBuilder: (_, __) => SizedBox(width: 10.w),
                     itemBuilder: (context, index) {
@@ -49,12 +55,19 @@ class _TransportBookingState extends State<TransportBooking> {
                       return GestureDetector(
                         onTap: () => setState(() => selectedTab = tab),
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 10.h,
+                          ),
                           decoration: BoxDecoration(
-                            color: isActive ? Colors.orange.shade700 : Colors.white,
+                            color: isActive
+                                ? Colors.orange.shade700
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(30.r),
                             border: Border.all(
-                              color: isActive ? Colors.orange.shade700 : Colors.grey.shade400,
+                              color: isActive
+                                  ? Colors.orange.shade700
+                                  : Colors.grey.shade400,
                             ),
                           ),
                           child: Center(
@@ -72,32 +85,38 @@ class _TransportBookingState extends State<TransportBooking> {
                     },
                   ),
                 ),
+
+                /// -------- List + pagination ----------
                 Expanded(
                   child: state.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Failed to load: $e')),
                     data: (resp) {
                       final page = resp?.data;
                       final items = page?.data ?? <TransportOrder>[];
 
-                      // delivery_status → tabs mapping
-                      final filters = <String, List<String>>{
-                        "All": const [],
-                        "Ongoing": const ["Pending", "Processing", "Ongoing"],
-                        "Completed": const ["Completed", "Delivered"],
-                        "Cancelled": const ["Cancelled", "Canceled", "Rejected"],
-                      };
+                      /// 🔹 deliveryStatus already:
+                      ///  - "Completed"
+                      ///  - "On the way"
+                      /// (Cancelled / Canceled / Rejected sob "On the way")
+                      List<TransportOrder> filtered;
 
-                      final allowed = filters[selectedTab]!;
-                      final filtered = (allowed.isEmpty)
-                          ? items
-                          : items.where((o) => allowed.contains(o.deliveryStatus)).toList();
+                      if (selectedTab == "All") {
+                        filtered = items;
+                      } else {
+                        filtered = items
+                            .where((o) => o.deliveryStatus == selectedTab)
+                            .toList();
+                      }
 
                       if (filtered.isEmpty) {
                         return ListView(
                           padding: EdgeInsets.all(16.w),
                           children: [
-                            _emptyBox("No ${selectedTab.toLowerCase()} orders found"),
+                            _emptyBox(
+                              "No ${selectedTab.toLowerCase()} orders found",
+                            ),
                           ],
                         );
                       }
@@ -107,24 +126,25 @@ class _TransportBookingState extends State<TransportBooking> {
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final o = filtered[index];
-                          final firstItem = (o.items.isNotEmpty) ? o.items.first : null;
+                          final firstItem = (o.items.isNotEmpty)
+                              ? o.items.first
+                              : null;
 
                           final orderIdText = "#${o.taxRef}";
                           final driverText = firstItem?.driver != null
                               ? "${firstItem!.driver!.carName} (${firstItem.driver!.carModel})"
                               : "Assigned Driver";
+
                           final dateText = _formatDate(o.createdAt);
                           final fromText = o.pickupAddress;
                           final toText = o.dropOfAddress;
 
-                          final status = o.deliveryStatus.isNotEmpty
-                              ? o.deliveryStatus
-                              : "Pending";
+                          final status = o.deliveryStatus;
                           final statusColor = _statusColor(status);
-                          final showTrack = ["Pending", "Processing", "Ongoing"]
-                              .contains(status);
 
-                          // UI stays same; just text is dynamic
+                          /// On the way holei track button dekhabo
+                          final showTrack = status == "Completed";
+
                           return _bookingCard(
                             status: status,
                             statusColor: statusColor,
@@ -141,7 +161,7 @@ class _TransportBookingState extends State<TransportBooking> {
                   ),
                 ),
 
-                // simple Prev / Next (pagination)
+                /// -------- Simple Prev / Next (pagination) ----------
                 Padding(
                   padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
                   child: state.maybeWhen(
@@ -151,7 +171,10 @@ class _TransportBookingState extends State<TransportBooking> {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Page $cp of $lp", style: TextStyle(fontSize: 12.sp)),
+                          Text(
+                            "Page $cp of $lp",
+                            style: TextStyle(fontSize: 12.sp),
+                          ),
                           Row(
                             children: [
                               TextButton(
@@ -179,6 +202,7 @@ class _TransportBookingState extends State<TransportBooking> {
   }
 
   // ---------- helpers ----------
+
   Widget _emptyBox(String text) => Container(
     padding: EdgeInsets.all(16.w),
     decoration: BoxDecoration(
@@ -189,13 +213,13 @@ class _TransportBookingState extends State<TransportBooking> {
     child: Text(text),
   );
 
+  /// ekhane amra only effective UI status color dicchi:
+  ///  - On the way -> blue
+  ///  - Completed -> green
   Color _statusColor(String status) {
     final s = status.toLowerCase();
-    if (s.contains('cancel')) return Colors.red;
-    if (s.contains('complete') || s.contains('deliver')) return Colors.green;
-    if (s.contains('pending') || s.contains('process') || s.contains('ongoing')) {
-      return Colors.blue;
-    }
+    if (s.contains('way')) return Colors.blue;
+    if (s.contains('complete')) return Colors.green;
     return Colors.grey;
   }
 
@@ -203,13 +227,23 @@ class _TransportBookingState extends State<TransportBooking> {
     final dt = DateTime.tryParse(iso);
     if (dt == null) return '';
     const months = [
-      "January","February","March","April","May","June",
-      "July","August","September","October","November","December"
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
     return "${months[dt.month - 1]} ${dt.day}, ${dt.year}";
   }
 
-  /// Booking Card Widget (UI unchanged; added optional texts)
+  /// Booking Card Widget (same UI, dynamic text)
   Widget _bookingCard({
     required String status,
     required Color statusColor,
@@ -235,8 +269,10 @@ class _TransportBookingState extends State<TransportBooking> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(orderIdText ?? "Order #12345",
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+              Text(
+                orderIdText ?? "Order #fond found",
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+              ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -275,22 +311,37 @@ class _TransportBookingState extends State<TransportBooking> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(driverText ?? "Driver Rahim Hossain",
-                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    Text(
+                      driverText ?? "Driver",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     SizedBox(height: 4.h),
                     Text(
-                      dateText ?? "July 24,2025",
-                      style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                      dateText ?? "",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[600],
+                      ),
                     ),
                     SizedBox(height: 6.h),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 14.sp, color: Colors.grey),
+                        Icon(
+                          Icons.location_on,
+                          size: 14.sp,
+                          color: Colors.grey,
+                        ),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
-                            fromText ?? "Dhanmondi, Dhaka",
-                            style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+                            fromText ?? "",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[700],
+                            ),
                           ),
                         ),
                       ],
@@ -301,8 +352,11 @@ class _TransportBookingState extends State<TransportBooking> {
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
-                            toText ?? "Agartala, India",
-                            style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+                            toText ?? "",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[700],
+                            ),
                           ),
                         ),
                       ],
@@ -329,8 +383,10 @@ class _TransportBookingState extends State<TransportBooking> {
                   onPressed: () {
                     context.push("/cancelledDetails");
                   },
-                  child: Text("See details",
-                      style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+                  child: Text(
+                    "See details",
+                    style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                  ),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -350,8 +406,10 @@ class _TransportBookingState extends State<TransportBooking> {
                         pathParameters: {"screenName": "transport"},
                       );
                     },
-                    child: Text("Track order",
-                        style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+                    child: Text(
+                      "Track order",
+                      style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                    ),
                   ),
                 ),
             ],

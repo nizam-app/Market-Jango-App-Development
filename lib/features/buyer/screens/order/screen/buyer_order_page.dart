@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../../core/localization/tr.dart';
 
 class BuyerOrderPage extends ConsumerStatefulWidget {
   const BuyerOrderPage({super.key});
@@ -50,7 +53,7 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
           padding: EdgeInsets.all(20.r),
           child: Column(
             children: [
-              Tuppertextandbackbutton(screenName: "My Order"),
+              Tuppertextandbackbutton(screenName: ref.t(TKeys.myOrders)),
               SizedBox(height: 12.h),
 
               /// Top user image

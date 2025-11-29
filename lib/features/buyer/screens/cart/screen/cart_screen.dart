@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_inc_dec_logic.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_update_logic.dart';
@@ -41,7 +41,7 @@ class CartScreen extends ConsumerWidget {
         centerTitle: false,
         title: cartAsync.when(
           loading: () => Text(
-            ref.t(TKeys.cart),
+            ref.t(BKeys.cart),
             style: theme.titleLarge!.copyWith(fontSize: 22.sp),
           ),
           error: (e, _) => Text(
@@ -53,7 +53,7 @@ class CartScreen extends ConsumerWidget {
             return Row(
               children: [
                 Text(
-                  ref.t(TKeys.cart),
+                  ref.t(BKeys.cart),
                   style: theme.titleLarge!.copyWith(fontSize: 22.sp),
                 ),
                 SizedBox(width: 20.w),
@@ -104,7 +104,7 @@ class CartScreen extends ConsumerWidget {
                 if (data.isEmpty) {
                   return Center(
                     //'Please add the cart product'
-                    child: Text(ref.t(TKeys.please_add_the_cart_product)),
+                    child: Text(ref.t(BKeys.please_add_the_cart_product)),
                   );
                 }
                 return ListView.builder(
@@ -325,7 +325,7 @@ class CartScreen extends ConsumerWidget {
             SizedBox(width: 8.w),
             // 'Updating...'
             Text(
-              ref.t(TKeys.updating),
+              ref.t(BKeys.updating),
               style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
           ],
@@ -464,4 +464,3 @@ class CartScreen extends ConsumerWidget {
     );
   }
 }
-

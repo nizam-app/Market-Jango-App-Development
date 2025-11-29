@@ -5,8 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
@@ -60,7 +60,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 bannerProvider.when(
                   data: (data) {
                     if (data == null) {
-                      return Center(child: Text(ref.t(TKeys.no_data)));
+                      return Center(child: Text(ref.t(BKeys.no_data)));
                     }
                     final banners = data.banners ?? [];
                     return PromoSlider(
@@ -68,14 +68,14 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                     );
                   },
                   loading: () {
-                    return Center(child: Text(ref.t(TKeys.loading)));
+                    return Center(child: Text(ref.t(BKeys.loading)));
                   },
                   error: (error, stackTrace) {
-                    return Center(child: Text(ref.t(TKeys.error)));
+                    return Center(child: Text(ref.t(BKeys.error)));
                   },
                 ),
                 SeeMoreButton(
-                  name: ref.t(TKeys.categories),
+                  name: ref.t(BKeys.categories),
                   seeMoreAction: () => goToAllCategoriesPage(context),
                 ),
                 CustomCategories(
@@ -85,7 +85,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                       goToCategoriesProductPage(context, cat.id, cat.name),
                 ),
                 SeeMoreButton(
-                  name: ref.t(TKeys.topProducts),
+                  name: ref.t(BKeys.topProducts),
                   seeMoreAction: () {},
                   isSeeMore: false,
                 ),
@@ -93,7 +93,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
 
                 newItems.when(
                   data: (data) => SeeMoreButton(
-                    name: ref.t(TKeys.newItems),
+                    name: ref.t(BKeys.newItems),
                     seeMoreAction: () => goToNewItemsPage(ref, context, data!),
                   ),
                   loading: () =>
@@ -103,7 +103,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 CustomNewItemsShow(),
                 justForYou.when(
                   data: (data) => SeeMoreButton(
-                    name: ref.t(TKeys.justForYou),
+                    name: ref.t(BKeys.justForYou),
                     seeMoreAction: () =>
                         goToJustForYouPage(ref, context, data!),
                   ),
@@ -418,7 +418,7 @@ class BuyerHomeSearchBar extends ConsumerWidget {
   const BuyerHomeSearchBar({super.key});
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return Column(
       children: [
         SizedBox(height: 20.h),
@@ -436,7 +436,7 @@ class BuyerHomeSearchBar extends ConsumerWidget {
                     extra: p.vendor?.userId,
                   );
                 },
-                hintText: ref.t(TKeys.searchProduct),
+                hintText: ref.t(BKeys.searchProduct),
                 debounce: const Duration(seconds: 1),
                 minChars: 1,
                 showResults: true,

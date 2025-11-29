@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 
 class DriverOrder extends ConsumerStatefulWidget {
   const DriverOrder({super.key});
@@ -85,8 +85,8 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
                     onTrackOrder: items[i].kind == OrderStatus.delivered
                         ? null
                         : () => context.push(
-                            // 👇 এখানেও DriverOrderEntity.id
-                            '${DriverTrakingScreen.routeName}?id=${items[i].driverOrderId}',
+                            DriverTrakingScreen.routeName,
+                            extra: items[i].orderId,
                           ),
                   ),
                 ),

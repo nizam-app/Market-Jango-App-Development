@@ -27,8 +27,8 @@ class DriverNewOrdersNotifier
     state = await AsyncValue.guard(() => _fetch(_page));
   }
 
-  int get currentPage => state.value?.data.currentPage ?? 1;
-  int get lastPage => state.value?.data.lastPage ?? 1;
+  int get currentPage => state.value?.data?.currentPage ?? 1;
+  int get lastPage => state.value?.data?.lastPage ?? 1;
 
   Future<DriverNewOrdersResponse> _fetch(int page) async {
     final token = await ref.read(authTokenProvider.future);

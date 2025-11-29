@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/features/buyer/screens/filter/model/all_categoris_show_model.dart';
 
 import '../data/all_categoris_show_data.dart';
@@ -57,14 +57,14 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       //"Enter your Location"
-                      ref.t(TKeys.enterLocation),
+                      ref.t(BKeys.enterLocation),
                       style: theme.headlineMedium!.copyWith(fontSize: 14),
                     ),
                   ),
                   SizedBox(height: 5.h),
                   TextField(
                     decoration: buildInputDecoration().copyWith(
-                      hintText: ref.t(TKeys.searchLocation),
+                      hintText: ref.t(BKeys.searchLocation),
                       prefixIcon: Icon(Icons.search_rounded, size: 27.sp),
                       fillColor: AllColor.grey100,
                     ),
@@ -76,7 +76,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(TKeys.categories),
+                      ref.t(BKeys.categories),
                       style: theme.headlineMedium!.copyWith(fontSize: 14),
                     ),
                   ),

@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/buyer_catagori_vendor_list_data.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/vendor_first_product_data.dart';
@@ -78,7 +78,7 @@ class _CategoryProductScreenState extends ConsumerState<CategoryProductScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               child: Text(
                 // "Trend Loop",
-                ref.t(TKeys.trend_Loop),
+                ref.t(BKeys.trend_Loop),
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 24.sp),
@@ -121,7 +121,7 @@ class VendorListSection extends ConsumerWidget {
         error: (e, _) => Center(child: Text(e.toString())),
         data: (vendors) {
           if (vendors.isEmpty) {
-            return Center(child: Text(ref.t(TKeys.no_vendors)));
+            return Center(child: Text(ref.t(BKeys.no_vendors)));
           }
           return ListView.builder(
             itemCount: vendors.length,

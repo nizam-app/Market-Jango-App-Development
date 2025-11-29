@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_update_logic.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart'; // cartProvider
 import 'package:market_jango/features/buyer/screens/cart/model/cart_model.dart';
@@ -120,7 +120,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           //'Shipping address updated'
-          SnackBar(content: Text(ref.t(TKeys.shipping_address_updated))),
+          SnackBar(content: Text(ref.t(BKeys.shipping_address_updated))),
         );
       }
     } catch (e) {
@@ -166,7 +166,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
             Row(
               children: [
                 Text(
-                  ref.t(TKeys.shippingAddress),
+                  ref.t(BKeys.shippingAddress),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -187,7 +187,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(TKeys.address),
+                      ref.t(BKeys.address),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -206,7 +206,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(TKeys.townCity),
+                      ref.t(BKeys.townCity),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -223,7 +223,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(TKeys.postCode),
+                      ref.t(BKeys.postCode),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -238,7 +238,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(TKeys.chooseCountry),
+                      ref.t(BKeys.chooseCountry),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -281,7 +281,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                       child: _submitting
                           ? const CircularProgressIndicator(color: Colors.white)
                           : Text(
-                              ref.t(TKeys.saveChanges),
+                              ref.t(BKeys.saveChanges),
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 16.sp,

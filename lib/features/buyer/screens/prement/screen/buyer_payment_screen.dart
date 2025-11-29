@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/prement_done_logic.dart';
@@ -93,10 +95,10 @@ class BuyerPaymentScreen extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             child: Column(
               children: [
-                Tuppertextandbackbutton(screenName: "Payment"),
+                Tuppertextandbackbutton(screenName: ref.t(TKeys.payment)),
                 SizedBox(height: 20.h),
                 CustomAddressAnddContract(
-                  title: 'Shipping Address',
+                  title: ref.t(TKeys.shippingAddress),
                   lines: shippingLines,
                   onEdit: () {
                     showShippingAddressSheet(context, ref, args);
@@ -104,7 +106,7 @@ class BuyerPaymentScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 20.h),
                 CustomAddressAnddContract(
-                  title: 'Contact Information',
+                  title: ref.t(TKeys.contactInformation),
                   lines: contactLines,
                   onEdit: () {
                     showShippingContractSheet(context, ref, args);

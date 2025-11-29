@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/data/vendor_product_tracking_data.dart';
+
 import '../model/vendor_product_tracking_model.dart';
 
 class VendorShipmentsScreen extends ConsumerWidget {
@@ -17,12 +18,9 @@ class VendorShipmentsScreen extends ConsumerWidget {
     final notifier = ref.read(vendorShipmentsProvider.notifier);
 
     return async.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, _) => Scaffold(
-        body: Center(child: Text(e.toString())),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
       data: (state) {
         final items = state.filtered;
 
@@ -42,23 +40,19 @@ class VendorShipmentsScreen extends ConsumerWidget {
                     value: state.segment,
                     onChanged: (v) {
                       notifier.setSegment(v);
-                      // if (v == 0) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     const SnackBar(
-                      //       content: Text('Go to Request transport'),
-                      //     ),
-                      //   );
-                      // }
                     },
                   ),
                   SizedBox(height: 30.h),
 
-                  // Tabs: All + sob status
+                  // Tabs
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        for (final tab in TrackingOrderStatus.values)
+                        for (final tab in TrackingOrderStatus.values.where(
+                          // ❗ Cancelled tab UI theke hide kore dilam
+                          (t) => t != TrackingOrderStatus.cancelled,
+                        ))
                           Padding(
                             padding: EdgeInsets.only(right: 8.w),
                             child: _TabChip(
@@ -81,11 +75,11 @@ class VendorShipmentsScreen extends ConsumerWidget {
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (_, i) => _ShipmentCard(
                         data: items[i],
-                        selected: state.selectedIndex == i &&
+                        selected:
+                            state.selectedIndex == i &&
                             state.status == TrackingOrderStatus.pending,
                         onTap: () {
                           notifier.selectIndex(i);
-                          // See Details button e o ei onTap dibe
                         },
                       ),
                     ),
@@ -131,12 +125,12 @@ class _SegmentedToggle extends StatelessWidget {
               ),
               boxShadow: active
                   ? [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 6.r,
-                  offset: const Offset(0, 2),
-                )
-              ]
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6.r,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
                   : null,
             ),
             child: Text(
@@ -152,11 +146,7 @@ class _SegmentedToggle extends StatelessWidget {
       );
     }
 
-    return Row(
-      children: [
-        seg(leftText, value == 0, () => onChanged(0)),
-      ],
-    );
+    return Row(children: [seg(leftText, value == 0, () => onChanged(0))]);
   }
 }
 
@@ -225,15 +215,15 @@ class _ShipmentCard extends StatelessWidget {
         pill = const _StatusPill('Complete', Colors.green, solid: false);
         break;
       case TrackingOrderStatus.cancelled:
-        pill = const _StatusPill('Cancelled', Colors.redAccent, solid: true);
+        // theoretically ekhane ar ashar kotha na,
+        // karon Cancelled ke already On the way e map korechi.
+        pill = const _StatusPill('On the way', Colors.blueAccent, solid: false);
         break;
       case TrackingOrderStatus.all:
       default:
         pill = const _StatusPill('Status', Colors.grey, solid: false);
         break;
     }
-
-    final isAssigned = data.status == TrackingOrderStatus.assigned;
 
     return Material(
       color: AllColor.transparent,
@@ -279,10 +269,7 @@ class _ShipmentCard extends StatelessWidget {
                       height: 56.h,
                       width: 56.w,
                       color: AllColor.grey100,
-                      child: Image.network(
-                        data.imageUrl,
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.network(data.imageUrl, fit: BoxFit.cover),
                     ),
                   ),
                   SizedBox(width: 10.w),
@@ -337,46 +324,8 @@ class _ShipmentCard extends StatelessWidget {
               SizedBox(height: 6.h),
               Text(
                 'Order placed on ${data.date}',
-                style: TextStyle(
-                  color: AllColor.black54,
-                  fontSize: 12.sp,
-                ),
+                style: TextStyle(color: AllColor.black54, fontSize: 12.sp),
               ),
-
-              // AssignedOrder হলে নিচে extra info + See Details
-              // if (isAssigned) ...[
-              //   SizedBox(height: 8.h),
-              //   if (data.driverName.isNotEmpty)
-              //     Text(
-              //       'Assigned Driver: ${data.driverName}',
-              //       style: TextStyle(
-              //         color: AllColor.black,
-              //         fontWeight: FontWeight.w600,
-              //         fontSize: 12.sp,
-              //       ),
-              //     ),
-              //   if (data.pickupLocation.isNotEmpty)
-              //     Text(
-              //       'Pick up location: ${data.pickupLocation}',
-              //       style: TextStyle(
-              //         color: AllColor.black,
-              //         fontSize: 12.sp,
-              //       ),
-              //     ),
-              //   if (data.destinationName.isNotEmpty)
-              //     Text(
-              //       'Destination: ${data.destinationName}',
-              //       style: TextStyle(
-              //         color: AllColor.black,
-              //         fontSize: 12.sp,
-              //       ),
-              //     ),
-              //   SizedBox(height: 10.h),
-              //   Align(
-              //     alignment: Alignment.centerLeft,
-              //     child: _SeeDetailsButton(onTap: onTap),
-              //   ),
-              // ],
             ],
           ),
         ),

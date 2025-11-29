@@ -27,10 +27,10 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../data/buyer_just_for_you_data.dart';
-import 'all_categori/screen/all_categori_screen.dart';
-import 'all_categori/screen/category_product_screen.dart';
-import 'filter/screen/buyer_filtering.dart';
+import '../../../data/buyer_just_for_you_data.dart';
+import '../../all_categori/screen/all_categori_screen.dart';
+import '../../all_categori/screen/category_product_screen.dart';
+import '../../filter/screen/buyer_filtering.dart';
 
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -60,7 +60,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 bannerProvider.when(
                   data: (data) {
                     if (data == null) {
-                      return const Center(child: Text("No Data"));
+                      return Center(child: Text(ref.t(TKeys.no_data)));
                     }
                     final banners = data.banners ?? [];
                     return PromoSlider(
@@ -68,10 +68,10 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                     );
                   },
                   loading: () {
-                    return const Center(child: Text("Loading..."));
+                    return Center(child: Text(ref.t(TKeys.loading)));
                   },
                   error: (error, stackTrace) {
-                    return const Center(child: Text('Error'));
+                    return Center(child: Text(ref.t(TKeys.error)));
                   },
                 ),
                 SeeMoreButton(
@@ -85,7 +85,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                       goToCategoriesProductPage(context, cat.id, cat.name),
                 ),
                 SeeMoreButton(
-                  name: "Top Products",
+                  name: ref.t(TKeys.topProducts),
                   seeMoreAction: () {},
                   isSeeMore: false,
                 ),
@@ -93,7 +93,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
 
                 newItems.when(
                   data: (data) => SeeMoreButton(
-                    name: "New Items",
+                    name: ref.t(TKeys.newItems),
                     seeMoreAction: () => goToNewItemsPage(ref, context, data!),
                   ),
                   loading: () =>
@@ -103,7 +103,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 CustomNewItemsShow(),
                 justForYou.when(
                   data: (data) => SeeMoreButton(
-                    name: "Just For You",
+                    name: ref.t(TKeys.justForYou),
                     seeMoreAction: () =>
                         goToJustForYouPage(ref, context, data!),
                   ),

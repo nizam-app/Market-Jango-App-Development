@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-
-import '../../../core/widget/global_review_dialog.dart';
 
 class TransportCompleted extends StatefulWidget {
   const TransportCompleted({super.key});
@@ -21,12 +18,11 @@ class _TransportCompletedState extends State<TransportCompleted> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: Column(
         children: [
-          SizedBox(height: 20.h,), 
-            CustomBackButton(), 
-            SizedBox(height: 10.h,), 
+          SizedBox(height: 20.h),
+          CustomBackButton(),
+          SizedBox(height: 10.h),
 
           /// Tabs Row
           SizedBox(
@@ -42,13 +38,16 @@ class _TransportCompletedState extends State<TransportCompleted> {
                 return GestureDetector(
                   onTap: () => setState(() => selectedTab = tab),
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 10.h,
+                    ),
                     decoration: BoxDecoration(
                       color: isActive ? Colors.orange : Colors.white,
                       borderRadius: BorderRadius.circular(30.r),
                       border: Border.all(
-                          color: isActive ? Colors.orange : Colors.grey.shade400),
+                        color: isActive ? Colors.orange : Colors.grey.shade400,
+                      ),
                     ),
                     child: Center(
                       child: Text(
@@ -85,10 +84,7 @@ class _TransportCompletedState extends State<TransportCompleted> {
   }
 
   /// Booking Card Widget
-  Widget _bookingCard({
-    required String status,
-    required Color statusColor,
-  }) {
+  Widget _bookingCard({required String status, required Color statusColor}) {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(12.w),
@@ -104,9 +100,10 @@ class _TransportCompletedState extends State<TransportCompleted> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Order #12345",
-                  style: TextStyle(
-                      fontSize: 14.sp, fontWeight: FontWeight.w600)),
+              Text(
+                "Order #12345",
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+              ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
@@ -116,9 +113,10 @@ class _TransportCompletedState extends State<TransportCompleted> {
                 child: Text(
                   status,
                   style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
                 ),
               ),
             ],
@@ -146,23 +144,38 @@ class _TransportCompletedState extends State<TransportCompleted> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Driver Rahim Hossain",
-                        style: TextStyle(
-                            fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                    Text(
+                      "Driver Rahim Hossain",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     SizedBox(height: 4.h),
-                    Text("July 24,2025",
-                        style:
-                            TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
+                    Text(
+                      "July 24,2025",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
                     SizedBox(height: 6.h),
                     Row(
                       children: [
-                        Icon(Icons.location_on,
-                            size: 14.sp, color: Colors.grey),
+                        Icon(
+                          Icons.location_on,
+                          size: 14.sp,
+                          color: Colors.grey,
+                        ),
                         SizedBox(width: 4.w),
                         Expanded(
-                          child: Text("Dhanmondi, Dhaka",
-                              style: TextStyle(
-                                  fontSize: 12.sp, color: Colors.grey[700])),
+                          child: Text(
+                            "Dhanmondi, Dhaka",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[700],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -171,9 +184,13 @@ class _TransportCompletedState extends State<TransportCompleted> {
                         Icon(Icons.flag, size: 14.sp, color: Colors.grey),
                         SizedBox(width: 4.w),
                         Expanded(
-                          child: Text("Agartala, India",
-                              style: TextStyle(
-                                  fontSize: 12.sp, color: Colors.grey[700])),
+                          child: Text(
+                            "Agartala, India",
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[700],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -198,10 +215,12 @@ class _TransportCompletedState extends State<TransportCompleted> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
-                    context.push("/completedDetails"); 
+                    context.push("/completedDetails");
                   },
-                  child: Text("See details",
-                      style: TextStyle(fontSize: 13.sp, color: Colors.white)),
+                  child: Text(
+                    "See details",
+                    style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                  ),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -217,10 +236,12 @@ class _TransportCompletedState extends State<TransportCompleted> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
-                    ReviewDialog.show(context); 
+                    // ReviewDialog.show(context);
                   },
-                  child: Text("Review",
-                      style: TextStyle(fontSize: 13.sp, color: Colors.orange)),
+                  child: Text(
+                    "Review",
+                    style: TextStyle(fontSize: 13.sp, color: Colors.orange),
+                  ),
                 ),
               ),
             ],

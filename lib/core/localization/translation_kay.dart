@@ -184,4 +184,20 @@ class TKeys {
   static const String assignOrderToDriver = 'assign_order_to_driver';
   static const String searchOrders = 'search_orders';
   static const String cancelled = 'cancelled';
+  static const String no_data = 'no_data';
+  static const String loading = 'loading';
+  static const String error = 'error';
+  static const String t_shirt = 't_shirt';
+  static const String something_went_wrong = 'Something_went_wrong';
+  static const String no_top_products = 'no_top_products';
+  static const String no_popular_products_found = 'no_popular_products_found';
+  static const String all_categories = ' all_categories';
+  static const String trend_Loop = ' trend_loop';
+  static const String no_vendors = ' no_vendors';
+  static const String please_add_the_cart_product =
+      'please_add_the_cart_product';
+  static const String updating = 'updating';
+  static const String shipping_address_updated = 'shippingAddressUpdated';
+  static const String no_completed_orders_yet = 'no_completed_orders_yet';
+  static const String contactInformation = 'contactInformation';
 }

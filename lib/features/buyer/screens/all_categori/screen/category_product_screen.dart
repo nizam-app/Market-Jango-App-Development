@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,11 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/buyer_catagori_vendor_list_data.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/vendor_first_product_data.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/model/buyer_vendor_search_model.dart';
-import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 
 import '../../buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
@@ -77,7 +77,8 @@ class _CategoryProductScreenState extends ConsumerState<CategoryProductScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               child: Text(
-                "Trend Loop",
+                // "Trend Loop",
+                ref.t(TKeys.trend_Loop),
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 24.sp),
@@ -120,7 +121,7 @@ class VendorListSection extends ConsumerWidget {
         error: (e, _) => Center(child: Text(e.toString())),
         data: (vendors) {
           if (vendors.isEmpty) {
-            return const Center(child: Text('No vendors'));
+            return Center(child: Text(ref.t(TKeys.no_vendors)));
           }
           return ListView.builder(
             itemCount: vendors.length,
@@ -266,7 +267,8 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push(BuyerVendorProfileScreen.routeName, extra: vendorId),
+      onTap: () =>
+          context.push(BuyerVendorProfileScreen.routeName, extra: vendorId),
       child: Container(
         decoration: BoxDecoration(
           color: AllColor.white,
@@ -379,10 +381,8 @@ class VendorSuggestionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(
-        BuyerVendorProfileScreen.routeName,
-        extra: v.vendorId,
-      ),
+      onTap: () =>
+          context.push(BuyerVendorProfileScreen.routeName, extra: v.vendorId),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         leading: CircleAvatar(

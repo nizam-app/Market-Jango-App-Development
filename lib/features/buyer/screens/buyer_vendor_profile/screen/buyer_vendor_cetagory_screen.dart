@@ -20,6 +20,10 @@ class BuyerVendorCetagoryScreen extends ConsumerWidget {
   static const String routeName = '/buyerVendorCetagoryScreen';
 
   @override
+  /* <<<<<<<<<<<<<<  ✨ Windsurf Command ⭐ >>>>>>>>>>>>>>>> */
+  /// Builds a BuyerVendorCetagoryScreen widget.
+  ///
+  /* <<<<<<<<<<  87556e86-6c50-432a-a9e2-5cfcdcf2f0f1  >>>>>>>>>>> */
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(
       vendorCategoryProductsProvider(vendorId).notifier,

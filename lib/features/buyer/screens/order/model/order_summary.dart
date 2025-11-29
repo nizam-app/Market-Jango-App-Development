@@ -1,3 +1,4 @@
+// lib/features/buyer/screens/order/model/order_summary.dart
 import 'dart:convert';
 
 class OrdersResponse {
@@ -19,114 +20,220 @@ class OrdersResponse {
       OrdersResponse.fromJson(jsonDecode(body) as Map<String, dynamic>);
 }
 
-/// Pagination container
+/// data -> [ { ...one order row... } ]
 class OrdersPageData {
-  final int currentPage;
   final List<Order> orders;
-  final String? firstPageUrl;
-  final int? from;
+  final int currentPage;
   final int lastPage;
-  final String? lastPageUrl;
-  final List<PageLink> links;
-  final String? nextPageUrl;
-  final String? path;
-  final int? perPage;
-  final String? prevPageUrl;
-  final int? to;
   final int? total;
 
   OrdersPageData({
-    required this.currentPage,
     required this.orders,
+    required this.currentPage,
     required this.lastPage,
-    required this.links,
-    this.firstPageUrl,
-    this.from,
-    this.lastPageUrl,
-    this.nextPageUrl,
-    this.path,
-    this.perPage,
-    this.prevPageUrl,
-    this.to,
     this.total,
   });
 
   factory OrdersPageData.fromJson(Map<String, dynamic> json) {
-    final List dataList =
-    (json['data'] is List) ? (json['data'] as List) : const [];
+    final list = (json['data'] as List?) ?? const [];
+
     return OrdersPageData(
-      currentPage: _toInt(json['current_page']),
-      orders: dataList
+      orders: list
           .map((e) => Order.fromJson(e as Map<String, dynamic>))
           .toList(),
-      lastPage: _toInt(json['last_page']),
-      links: ((json['links'] as List?) ?? const [])
-          .map((e) => PageLink.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      firstPageUrl: json['first_page_url']?.toString(),
-      from: _toIntNullable(json['from']),
-      lastPageUrl: json['last_page_url']?.toString(),
-      nextPageUrl: json['next_page_url']?.toString(),
-      path: json['path']?.toString(),
-      perPage: _toIntNullable(json['per_page']),
-      prevPageUrl: json['prev_page_url']?.toString(),
-      to: _toIntNullable(json['to']),
+      // API te na thakleo default 1/1 nibo
+      currentPage: _toIntNullable(json['current_page']) ?? 1,
+      lastPage: _toIntNullable(json['last_page']) ?? 1,
       total: _toIntNullable(json['total']),
     );
   }
 }
 
-class PageLink {
-  final String? url;
-  final String? label;
-  final int? page;
-  final bool active;
-
-  PageLink({this.url, this.label, this.page, required this.active});
-
-  factory PageLink.fromJson(Map<String, dynamic> json) => PageLink(
-    url: json['url']?.toString(),
-    label: json['label']?.toString(),
-    page: _toIntNullable(json['page']),
-    active: json['active'] == true,
-  );
-}
-
-/// ===================== ORDER =====================
+/// ===================== ORDER (ekta row) =====================
 class Order {
   final int id;
+  final String? cusName;
+  final String? cusEmail;
+  final String? cusPhone;
+
+  final String? pickupAddress;
+  final String? currentAddress;
+  final String? note;
+
+  final double? currentLatitude;
+  final double? currentLongitude;
+
+  final String? shipAddress;
+  final double? shipLatitude;
+  final double? shipLongitude;
+
+  final int quantity;
+  final String tranId;
+  final String status; // raw status from API (Pending / Not Deliver ...)
+  final double distance;
+  final double salePrice;
+  final double deliveryCharge;
+
+  final int invoiceId;
+  final int productId;
+  final int vendorId;
+  final int userId;
+  final int? driverId;
+
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  final Invoice invoice;
+  final Product product;
+
+  Order({
+    required this.id,
+    required this.cusName,
+    required this.cusEmail,
+    required this.cusPhone,
+    required this.pickupAddress,
+    required this.currentAddress,
+    required this.note,
+    required this.currentLatitude,
+    required this.currentLongitude,
+    required this.shipAddress,
+    required this.shipLatitude,
+    required this.shipLongitude,
+    required this.quantity,
+    required this.tranId,
+    required this.status,
+    required this.distance,
+    required this.salePrice,
+    required this.deliveryCharge,
+    required this.invoiceId,
+    required this.productId,
+    required this.vendorId,
+    required this.userId,
+    required this.driverId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.invoice,
+    required this.product,
+  });
+
+  /// UI te dekhabo ei order id
+  /// age tax_ref, na thakle tran_id
+  String get orderCode => invoice.taxRef.isNotEmpty ? invoice.taxRef : tranId;
+
+  /// main status (Not Deliver => Pending)
+  String get effectiveStatus {
+    final base = status.isNotEmpty ? status : (invoice.status ?? 'Pending');
+
+    final lower = base.toLowerCase();
+    if (lower == 'not deliver' || lower == 'not delivered') {
+      return 'Pending';
+    }
+    return base;
+  }
+
+  /// Order model er moddhe add koro (jaigata bhalo jekhane ichcha):
+  bool get isCompleted => effectiveStatus.toLowerCase() == 'complete';
+
+  /// short description for card
+  ///
+  /// Pending       → Driver has not received
+  /// AssignedOrder → Assigned to the driver
+  /// On The Way    → The product is on the way
+  /// Complete      → The order has complete
+  String get statusDescription {
+    switch (effectiveStatus.toLowerCase()) {
+      case 'pending':
+        return 'Driver has not received';
+      case 'assignedorder':
+      case 'assigned order':
+        return 'Assigned to the driver';
+      case 'on the way':
+      case 'ontheway':
+        return 'The product is on the way';
+      case 'complete':
+      case 'completed':
+        return 'The order has complete';
+      default:
+        return '';
+    }
+  }
+
+  /// Payment badge text
+  /// FW  → Payment successful
+  /// OPU → Cash on delivery
+  String get paymentLabel {
+    final method = (invoice.paymentMethod ?? '').toUpperCase();
+    if (method == 'FW') return 'Payment successful';
+    if (method == 'OPU') return 'Cash on delivery';
+    return '';
+  }
+
+  /// old name jodi onno jaiga use kore, same value return
+  String get paymentMethodLabel => paymentLabel;
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    final invoiceJson = (json['invoice'] as Map<String, dynamic>? ?? const {});
+    final productJson = (json['product'] as Map<String, dynamic>? ?? const {});
+
+    return Order(
+      id: _toInt(json['id']),
+      cusName: json['cus_name']?.toString(),
+      cusEmail: json['cus_email']?.toString(),
+      cusPhone: json['cus_phone']?.toString(),
+      pickupAddress: json['pickup_address']?.toString(),
+      currentAddress: json['current_address']?.toString(),
+      note: json['note']?.toString(),
+      currentLatitude: _toDoubleNullable(json['current_latitude']),
+      currentLongitude: _toDoubleNullable(json['current_longitude']),
+      shipAddress: json['ship_address']?.toString(),
+      shipLatitude: _toDoubleNullable(json['ship_latitude']),
+      shipLongitude: _toDoubleNullable(json['ship_longitude']),
+      quantity: _toInt(json['quantity']),
+      tranId: json['tran_id']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      distance: _toDouble(json['distance']),
+      salePrice: _toDouble(json['sale_price']),
+      deliveryCharge: _toDouble(json['delivery_charge']),
+      invoiceId: _toInt(json['invoice_id']),
+      productId: _toInt(json['product_id']),
+      vendorId: _toInt(json['vendor_id']),
+      userId: _toInt(json['user_id']),
+      driverId: _toIntNullable(json['driver_id']),
+      createdAt: _toDate(json['created_at']),
+      updatedAt: _toDate(json['updated_at']),
+      invoice: Invoice.fromJson(invoiceJson),
+      product: Product.fromJson(productJson),
+    );
+  }
+}
+
+/// ===================== INVOICE (nested object) =====================
+class Invoice {
+  final int id;
+  final String? cusPhone;
+  final String? cusEmail;
+  final String? cusName;
   final double total;
   final double vat;
   final double payable;
-  final String cusName;
-  final String cusEmail;
-  final String cusPhone;
-  final String shipAddress;
-  final String shipCity;
-  final String shipCountry;
-  final String deliveryStatus;
-  final String? status; // nullable
+  final String? paymentMethod;
+  final String? status;
   final String? transactionId;
   final String taxRef;
   final String currency;
   final int userId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final int itemsCount;
-  final List<OrderItem> items;
 
-  Order({
+  Invoice({
     required this.id,
+    required this.cusPhone,
+    required this.cusEmail,
+    required this.cusName,
     required this.total,
     required this.vat,
     required this.payable,
-    required this.cusName,
-    required this.cusEmail,
-    required this.cusPhone,
-    required this.shipAddress,
-    required this.shipCity,
-    required this.shipCountry,
-    required this.deliveryStatus,
+    required this.paymentMethod,
     required this.status,
     required this.transactionId,
     required this.taxRef,
@@ -134,87 +241,28 @@ class Order {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
-    required this.itemsCount,
-    required this.items,
   });
 
-  String get effectiveStatus =>
-      (status?.isNotEmpty == true) ? status! : (deliveryStatus.isNotEmpty ? deliveryStatus : 'Pending');
-
-  factory Order.fromJson(Map<String, dynamic> json) {
-    final List rawItems = (json['items'] is List) ? (json['items'] as List) : const [];
-    final items = rawItems
-        .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return Order(
-      id: _toInt(json['id']),
-      total: _toDouble(json['total']),
-      vat: _toDouble(json['vat']),
-      payable: _toDouble(json['payable']),
-      cusName: json['cus_name']?.toString() ?? '',
-      cusEmail: json['cus_email']?.toString() ?? '',
-      cusPhone: json['cus_phone']?.toString() ?? '',
-      shipAddress: json['ship_address']?.toString() ?? '',
-      shipCity: json['ship_city']?.toString() ?? '',
-      shipCountry: json['ship_country']?.toString() ?? '',
-      deliveryStatus: json['delivery_status']?.toString() ?? '',
-      status: json['status']?.toString(),
-      transactionId: json['transaction_id']?.toString(),
-      taxRef: json['tax_ref']?.toString() ?? '',
-      currency: json['currency']?.toString() ?? '',
-      userId: _toInt(json['user_id']),
-      createdAt: _toDate(json['created_at']),
-      updatedAt: _toDate(json['updated_at']),
-      itemsCount: (json['items_count'] is int)
-          ? (json['items_count'] as int)
-          : items.length,
-      items: items,
-    );
-  }
-}
-
-/// ===================== ORDER ITEM =====================
-class OrderItem {
-  final int id;
-  final int quantity;
-  final String? tranId;
-  final double salePrice;
-  final int invoiceId;
-  final int productId;
-  final int vendorId;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final Product product;
-
-  OrderItem({
-    required this.id,
-    required this.quantity,
-    required this.tranId,
-    required this.salePrice,
-    required this.invoiceId,
-    required this.productId,
-    required this.vendorId,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.product,
-  });
-
-  factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
+  factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
     id: _toInt(json['id']),
-    quantity: _toInt(json['quantity']),
-    tranId: json['tran_id']?.toString(),
-    salePrice: _toDouble(json['sale_price']),
-    invoiceId: _toInt(json['invoice_id']),
-    productId: _toInt(json['product_id']),
-    vendorId: _toInt(json['vendor_id']),
+    cusPhone: json['cus_phone']?.toString(),
+    cusEmail: json['cus_email']?.toString(),
+    cusName: json['cus_name']?.toString(),
+    total: _toDouble(json['total']),
+    vat: _toDouble(json['vat']),
+    payable: _toDouble(json['payable']),
+    paymentMethod: json['payment_method']?.toString(),
+    status: json['status']?.toString(),
+    transactionId: json['transaction_id']?.toString(),
+    taxRef: json['tax_ref']?.toString() ?? '',
+    currency: json['currency']?.toString() ?? '',
+    userId: _toInt(json['user_id']),
     createdAt: _toDate(json['created_at']),
     updatedAt: _toDate(json['updated_at']),
-    product: Product.fromJson(
-        (json['product'] as Map<String, dynamic>? ?? const {})),
   );
 }
 
-/// ===================== PRODUCT =====================
+/// ===================== PRODUCT (nested object) =====================
 class Product {
   final int id;
   final String name;
@@ -276,6 +324,7 @@ class Product {
 }
 
 /* ===================== helpers ===================== */
+
 int _toInt(dynamic v) {
   if (v == null) return 0;
   if (v is int) return v;
@@ -296,6 +345,12 @@ double _toDouble(dynamic v) {
   return double.tryParse(v.toString()) ?? 0.0;
 }
 
+double? _toDoubleNullable(dynamic v) {
+  if (v == null) return null;
+  if (v is num) return v.toDouble();
+  return double.tryParse(v.toString());
+}
+
 bool _toBool(dynamic v) {
   if (v is bool) return v;
   if (v is num) return v != 0;
@@ -311,6 +366,7 @@ DateTime? _toDate(dynamic v) {
 List<String> _normalizeStringList(dynamic v) {
   final out = <String>[];
   if (v == null) return out;
+
   void addFromString(String s) {
     if (s.contains(',')) {
       for (final p in s.split(',')) {

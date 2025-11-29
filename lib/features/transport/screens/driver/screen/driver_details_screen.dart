@@ -28,6 +28,7 @@ class DriverDetailsScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (user) {
           final d = user.driver;
+
           final avatarUrl = (user.image.isNotEmpty)
               ? user.image
               : "https://i.pravatar.cc/150?img=12";

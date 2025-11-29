@@ -3,6 +3,9 @@ import 'package:flutter_rating/flutter_rating.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
@@ -23,6 +26,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Logger().d(vendorId);
     final async = ref.watch(vendorCategoryProductsProvider(vendorId));
     return Scaffold(
       body: SafeArea(
@@ -117,8 +121,9 @@ class CustomVendorUpperSection extends ConsumerWidget {
             : '—';
 
         // যদি আসল রেটিং না থাকে, UI ঠিক রাখতে fallback
-        final double rating = 4.6;
-        final reviewText = '${rating.toStringAsFixed(1)} ( ${v.id} reviews )';
+        final double rating = vendor?.avgRating ?? 0;
+        final reviewText =
+            '${rating.toStringAsFixed(2)} ( ${v.vendor} reviews )';
 
         final opening = (v.createdAt != null && v.expiresAt != null)
             ? 'Opening time: ${v.createdAt} - ${v.expiresAt}'
@@ -169,7 +174,8 @@ class CustomVendorUpperSection extends ConsumerWidget {
                       StarRating(rating: rating, color: Colors.amber),
                       SizedBox(width: 8.w),
                       GestureDetector(
-                        onTap: () => goToReviewScreen(context),
+                        onTap: () =>
+                            goToReviewScreen(context, int.parse(vendorId)),
                         child: Text(
                           reviewText,
                           style: TextStyle(
@@ -190,8 +196,8 @@ class CustomVendorUpperSection extends ConsumerWidget {
     );
   }
 
-  void goToReviewScreen(BuildContext context) {
-    context.push(ReviewScreen.routeName);
+  void goToReviewScreen(BuildContext context, int vendorId) {
+    context.push(ReviewScreen.routeName, extra: vendorId);
   }
 }
 
@@ -264,9 +270,10 @@ class PopularProduct extends ConsumerWidget {
       data: (resp) {
         final items = resp?.data ?? const [];
         if (items.isEmpty) {
+          //'No popular products found'
           return Padding(
             padding: EdgeInsets.all(12.w),
-            child: const Text('No popular products found'),
+            child: Text(ref.t(TKeys.no_popular_products_found)),
           );
         }
 

@@ -64,7 +64,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   SizedBox(height: 5.h),
                   TextField(
                     decoration: buildInputDecoration().copyWith(
-                      hintText: "Search your location",
+                      hintText: ref.t(TKeys.searchLocation),
                       prefixIcon: Icon(Icons.search_rounded, size: 27.sp),
                       fillColor: AllColor.grey100,
                     ),

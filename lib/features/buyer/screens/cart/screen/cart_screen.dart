@@ -45,7 +45,7 @@ class CartScreen extends ConsumerWidget {
             style: theme.titleLarge!.copyWith(fontSize: 22.sp),
           ),
           error: (e, _) => Text(
-            ref.t(TKeys.cart),
+            "Error $e",
             style: theme.titleLarge!.copyWith(fontSize: 22.sp),
           ),
           data: (item) {
@@ -417,7 +417,7 @@ class CartScreen extends ConsumerWidget {
               children: [
                 //'Shipping Address'
                 Text(
-                  ref.t(TKeys.shippingAddress),
+                  "Shipping Address",
                   style: theme.titleLarge?.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),
@@ -464,3 +464,4 @@ class CartScreen extends ConsumerWidget {
     );
   }
 }
+

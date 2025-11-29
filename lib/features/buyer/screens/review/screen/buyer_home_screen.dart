@@ -414,11 +414,11 @@ class PromoSlider extends ConsumerWidget {
   }
 }
 
-class BuyerHomeSearchBar extends StatelessWidget {
+class BuyerHomeSearchBar extends ConsumerWidget {
   const BuyerHomeSearchBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return Column(
       children: [
         SizedBox(height: 20.h),
@@ -436,7 +436,7 @@ class BuyerHomeSearchBar extends StatelessWidget {
                     extra: p.vendor?.userId,
                   );
                 },
-                hintText: 'Search products...',
+                hintText: ref.t(TKeys.searchProduct),
                 debounce: const Duration(seconds: 1),
                 minChars: 1,
                 showResults: true,

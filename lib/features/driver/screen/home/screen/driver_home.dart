@@ -8,7 +8,7 @@ import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
 
 import '../data/driver_home_status_data.dart';
@@ -240,9 +240,13 @@ class _OrdersList extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Failed to load orders: $e')),
       data: (resp) {
+        if (resp == null) {
+          return const Center(child: Text("No found data"));
+        }
+
         final page = resp?.data;
         final raw = page?.data ?? const <DriverOrder>[];
-        final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
+        // final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
 
         // pagination safe values (backend jodi current_page, last_page na dey)
         int cp = page?.currentPage ?? notifier.currentPage;
@@ -251,7 +255,7 @@ class _OrdersList extends ConsumerWidget {
         if (lp < 1) lp = 1;
         if (cp > lp) cp = lp;
 
-        if (orders.isEmpty) {
+        if (raw.isEmpty && raw == null) {
           // empty state o scroll + pagination thakbe
           return Column(
             children: [
@@ -278,9 +282,9 @@ class _OrdersList extends ConsumerWidget {
               child: ListView.separated(
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
                 itemBuilder: (_, i) =>
-                    _OrderCard(order: orders[i], orderId: raw[i].id),
+                    _OrderCard(order: raw[i], orderId: raw[i].id),
                 separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemCount: orders.length,
+                itemCount: raw.length,
               ),
             ),
             SizedBox(height: 8.h),
@@ -298,7 +302,7 @@ class _OrdersList extends ConsumerWidget {
 
 class _OrderCard extends StatelessWidget {
   const _OrderCard({required this.order, required this.orderId});
-  final _OrderModel order;
+  final DriverOrder order;
   final int orderId;
 
   @override
@@ -338,13 +342,13 @@ class _OrderCard extends StatelessWidget {
                   SizedBox(height: 8.h),
                   _KVRow(
                     k: "Pick up location:",
-                    v: order.pickup,
+                    v: order.invoice?.pickupAddress ?? "___",
                     boldValue: true,
                   ),
                   SizedBox(height: 4.h),
                   _KVRow(
                     k: "Destination:",
-                    v: order.destination,
+                    v: order.invoice?.dropOfAddress ?? "___",
                     boldValue: true,
                   ),
                   SizedBox(height: 12.h),
@@ -360,7 +364,7 @@ class _OrderCard extends StatelessWidget {
 
                       _FilledBtn(
                         label: "Track order",
-                        onTap: () => _onTrack(context, order),
+                        onTap: () => _onTrack(context, orderId.toString()),
                         bg: AllColor.blue500,
                         fg: AllColor.white,
                       ),
@@ -376,7 +380,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 SizedBox(height: 6.h),
                 Text(
-                  _formatPrice(order.price),
+                  _formatPrice(order.salePrice),
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w800,
@@ -395,8 +399,8 @@ class _OrderCard extends StatelessWidget {
     context.push(OrderDetailsScreen.routeName, extra: orderId);
   }
 
-  void _onTrack(BuildContext context, _OrderModel order) {
-    context.push(DriverTrakingScreen.routeName);
+  void _onTrack(BuildContext context, String order) {
+    context.push(DriverTrakingScreen.routeName, extra: order);
   }
 }
 

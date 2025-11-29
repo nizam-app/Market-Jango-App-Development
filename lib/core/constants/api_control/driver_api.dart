@@ -8,4 +8,6 @@ class DriverAPIController {
       '$_base_api/all-order/driver?page=$page';
   static String invoiceTracking = '$_base_api/driver/invoice/tracking';
   static String driver_home_stats = '$_base_api/driver/home-stats';
+  static String invoiceUpdateStatus(id) =>
+      '$_base_api/driver/invoice/update-status/$id';
 }

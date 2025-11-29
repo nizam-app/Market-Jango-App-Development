@@ -111,13 +111,9 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
         ? inv!.taxRef
         : (e.tranId.isNotEmpty ? e.tranId : e.id.toString());
 
-    final pickup = inv?.pickupAddress.isNotEmpty == true
-        ? inv!.pickupAddress
-        : '-';
+    final pickup = e.pickupAddress.isNotEmpty == true ? e.pickupAddress : '-';
 
-    final dest = inv?.dropOfAddress.isNotEmpty == true
-        ? inv!.dropOfAddress
-        : '-';
+    final dest = e?.shipAddress.isNotEmpty == true ? e!.shipAddress : '-';
 
     final price = e.salePrice != 0 ? e.salePrice : _safeDouble(inv?.payable);
 

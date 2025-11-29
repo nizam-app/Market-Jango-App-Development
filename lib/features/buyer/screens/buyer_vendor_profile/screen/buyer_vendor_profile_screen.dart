@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
@@ -268,9 +270,10 @@ class PopularProduct extends ConsumerWidget {
       data: (resp) {
         final items = resp?.data ?? const [];
         if (items.isEmpty) {
+          //'No popular products found'
           return Padding(
             padding: EdgeInsets.all(12.w),
-            child: const Text('No popular products found'),
+            child: Text(ref.t(TKeys.no_popular_products_found)),
           );
         }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_review_dialog.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
@@ -42,7 +44,7 @@ class BuyerOrderHistoryScreen extends ConsumerWidget {
                       if (completedOrders.isEmpty) {
                         return Center(
                           child: Text(
-                            "No completed orders yet",
+                            ref.t(TKeys.no_completed_orders_yet),
                             style: TextStyle(
                               fontSize: 14.sp,
                               color: AllColor.grey,

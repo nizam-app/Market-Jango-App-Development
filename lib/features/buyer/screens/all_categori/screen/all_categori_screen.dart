@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 // যদি আপনার GlobalPagination উইজেট থাকে:
 import 'package:market_jango/core/widget/global_pagination.dart';
@@ -26,7 +28,8 @@ class CategoriesScreen extends ConsumerWidget {
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-              Tuppertextandbackbutton(screenName: "All Categories"),
+              // "All Categories"
+              Tuppertextandbackbutton(screenName: ref.t(TKeys.all_categories)),
               SizedBox(height: 12.h),
 
               // গ্রিড + Pagination
@@ -50,7 +53,7 @@ class CategoriesScreen extends ConsumerWidget {
                               context,
                               cat.id,
                               cat.name,
-                              cat.vendor.id
+                              cat.vendor.id,
                             ),
                           ),
                         ),
@@ -82,9 +85,6 @@ class CategoriesScreen extends ConsumerWidget {
     String title,
     int vendorId,
   ) {
-    context.pushNamed(
-      CategoryProductScreen.routeName,
-      extra: vendorId,
-    );
+    context.pushNamed(CategoryProductScreen.routeName, extra: vendorId);
   }
 }

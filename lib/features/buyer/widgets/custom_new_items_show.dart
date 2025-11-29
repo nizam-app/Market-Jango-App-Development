@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
@@ -47,8 +49,8 @@ class CustomNewItemsShow extends ConsumerWidget {
             },
           );
         },
-        error: (error, stack) => Text('Something went wrong'),
-        loading: () => Center(child: Text("Loading...")),
+        error: (error, stack) => Text(ref.t(TKeys.something_went_wrong)),
+        loading: () => Center(child: Text(ref.t(TKeys.loading))),
       ),
     );
   }

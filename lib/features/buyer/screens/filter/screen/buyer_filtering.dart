@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/localization/translation_kay.dart';
 import 'package:market_jango/features/buyer/screens/filter/model/all_categoris_show_model.dart';
 
 import '../data/all_categoris_show_data.dart';
@@ -54,7 +56,8 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Enter your Location",
+                      //"Enter your Location"
+                      ref.t(TKeys.enterLocation),
                       style: theme.headlineMedium!.copyWith(fontSize: 14),
                     ),
                   ),
@@ -73,7 +76,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Categories",
+                      ref.t(TKeys.categories),
                       style: theme.headlineMedium!.copyWith(fontSize: 14),
                     ),
                   ),
@@ -84,7 +87,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                       decoration: buildInputDecoration(),
                       items: const [],
                       onChanged: null,
-                      hint: const Text('Loading categories...'),
+                      hint: Text('Loading categories...'),
                     ),
                     error: (e, _) => DropdownButtonFormField<int>(
                       decoration: buildInputDecoration(),
@@ -114,13 +117,13 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                         items: list
                             .map(
                               (c) => DropdownMenuItem<int>(
-                            value: c.id,
-                            child: Text(
-                              c.name,
-                              style: theme.headlineMedium,
-                            ),
-                          ),
-                        )
+                                value: c.id,
+                                child: Text(
+                                  c.name,
+                                  style: theme.headlineMedium,
+                                ),
+                              ),
+                            )
                             .toList(),
                         onChanged: (value) {
                           setState(() => _selectedCategoryId = value);

@@ -60,7 +60,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 bannerProvider.when(
                   data: (data) {
                     if (data == null) {
-                      return const Center(child: Text("No Data"));
+                      return Center(child: Text(ref.t(TKeys.no_data)));
                     }
                     final banners = data.banners ?? [];
                     return PromoSlider(
@@ -68,10 +68,10 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                     );
                   },
                   loading: () {
-                    return const Center(child: Text("Loading..."));
+                    return Center(child: Text(ref.t(TKeys.loading)));
                   },
                   error: (error, stackTrace) {
-                    return const Center(child: Text('Error'));
+                    return Center(child: Text(ref.t(TKeys.error)));
                   },
                 ),
                 SeeMoreButton(
@@ -93,7 +93,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
 
                 newItems.when(
                   data: (data) => SeeMoreButton(
-                    name: "New Items",
+                    name: ref.t(TKeys.newItems),
                     seeMoreAction: () => goToNewItemsPage(ref, context, data!),
                   ),
                   loading: () =>
@@ -103,7 +103,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 CustomNewItemsShow(),
                 justForYou.when(
                   data: (data) => SeeMoreButton(
-                    name: "Just For You",
+                    name: ref.t(TKeys.justForYou),
                     seeMoreAction: () =>
                         goToJustForYouPage(ref, context, data!),
                   ),

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
-import 'package:market_jango/core/localization/tr.dart';
+
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';

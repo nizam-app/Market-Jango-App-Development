@@ -31,4 +31,9 @@ class VendorAPIController {
   static String vendor_order_driver = '$_base_api/vendor/all/order';
   static String vendorInvoiceCreate(int driverId, int orderItemId) =>
       '$_base_api/vendor/invoice/create/$driverId/$orderItemId';
+
+  static String vendor_income_update(day) =>
+      '$_base_api/vendor/income/update?days=$day';
+  static String weekly_sell = '$_base_api/vendor/weekly-sell';
+  static String sell_top_product = '$_base_api/vendor/sell-top-product';
 }

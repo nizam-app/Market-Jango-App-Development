@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_inc_dec_logic.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_update_logic.dart';
@@ -38,29 +40,37 @@ class CartScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: false,
         title: cartAsync.when(
-          loading: () =>
-              Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
-          error: (e, _) =>
-              Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
+          loading: () => Text(
+            ref.t(BKeys.cart),
+            style: theme.titleLarge!.copyWith(fontSize: 22.sp),
+          ),
+          error: (e, _) => Text(
+            "Error $e",
+            style: theme.titleLarge!.copyWith(fontSize: 22.sp),
+          ),
           data: (item) {
             final items = item.items;
             return Row(
-            children: [
-              Text('Cart', style: theme.titleLarge!.copyWith(fontSize: 22.sp)),
-              SizedBox(width: 20.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: AllColor.blue200,
-                  borderRadius: BorderRadius.circular(20.r),
+              children: [
+                Text(
+                  ref.t(BKeys.cart),
+                  style: theme.titleLarge!.copyWith(fontSize: 22.sp),
                 ),
-                child: Text(
-                  items.length.toString(),
-                  style: theme.titleLarge!.copyWith(fontSize: 14.sp),
+                SizedBox(width: 20.w),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: AllColor.blue200,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    items.length.toString(),
+                    style: theme.titleLarge!.copyWith(fontSize: 14.sp),
+                  ),
                 ),
-              ),
-            ],
-          );},
+              ],
+            );
+          },
         ),
       ),
       body: Column(
@@ -72,12 +82,13 @@ class CartScreen extends ConsumerWidget {
               loading: () => _buildShippingAddress(context, null, ref),
               error: (_, __) => _buildShippingAddress(context, null, ref),
               data: (item) {
-              final  items =item.items;
+                final items = item.items;
                 return _buildShippingAddress(
-                context,
-                items.isNotEmpty ? items.first.buyer : null,
-                ref,
-              );},
+                  context,
+                  items.isNotEmpty ? items.first.buyer : null,
+                  ref,
+                );
+              },
             ),
           ),
           SizedBox(height: 20.h),
@@ -89,10 +100,11 @@ class CartScreen extends ConsumerWidget {
               error: (error, stackTrace) =>
                   Center(child: Text(error.toString())),
               data: (dat) {
-                final data =dat.items;
+                final data = dat.items;
                 if (data.isEmpty) {
-                  return const Center(
-                    child: Text('Please add the cart product'),
+                  return Center(
+                    //'Please add the cart product'
+                    child: Text(ref.t(BKeys.please_add_the_cart_product)),
                   );
                 }
                 return ListView.builder(
@@ -168,7 +180,7 @@ class CartScreen extends ConsumerWidget {
           children: [
             // Image + delete
             Padding(
-              padding:  EdgeInsets.only(left: 7.w),
+              padding: EdgeInsets.only(left: 7.w),
               child: Stack(
                 alignment: Alignment.topLeft,
                 children: [
@@ -311,8 +323,9 @@ class CartScreen extends ConsumerWidget {
               child: const CircularProgressIndicator(strokeWidth: 2),
             ),
             SizedBox(width: 8.w),
+            // 'Updating...'
             Text(
-              'Updating...',
+              ref.t(BKeys.updating),
               style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
           ],
@@ -371,7 +384,7 @@ class CartScreen extends ConsumerWidget {
   //   );
   // }
 
-  Widget _buildShippingAddress(BuildContext context, Buyer? buyer, ref) {
+  Widget _buildShippingAddress(BuildContext context, Buyer? buyer,WidgetRef ref) {
     final theme = Theme.of(context).textTheme;
     final addressLine = [
       buyer?.shipAddress ?? buyer?.address,
@@ -402,8 +415,9 @@ class CartScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                //'Shipping Address'
                 Text(
-                  'Shipping Address',
+                  ref.t(BKeys.shippingAddress),
                   style: theme.titleLarge?.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),

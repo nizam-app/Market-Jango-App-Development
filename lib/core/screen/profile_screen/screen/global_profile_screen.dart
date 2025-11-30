@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
@@ -31,69 +33,81 @@ class GlobalSettingScreen extends ConsumerWidget {
       child: Padding(
         padding: EdgeInsets.all(20.r),
         child: userAsync.when(
-          data: (user) => SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 12.h),
-                Tuppertextandbackbutton(screenName: "My Settings"),
-                SizedBox(height: 16.h),
-                ProfileSection(
-                  name: user.name,
-                  username: user.email,
-                  imageUrl: user.image,
-                  userType: user,
-                ),
-
-                SizedBox(height: 20.h),
-                _SettingsLine(
-                  icon: Icons.phone_in_talk_outlined,
-                  text: user.phone,
-                ),
-                _DividerLine(),
-                _SettingsLine(icon: Icons.email_outlined, text: user.email),
-
-                SizedBox(height: 12.h),
-                _DividerLine(),
-
-                if (userTypeAsync.value == "buyer")
-                  _SettingsTile(
-                    leadingIcon: Icons.shopping_bag_outlined,
-                    title: "My Order",
-                    onTap: () => context.push(BuyerOrderPage.routeName),
+          data: (user) {
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 12.h),
+                  //"My Settings"
+                  Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
+                  SizedBox(height: 16.h),
+                  ProfileSection(
+                    name: user.name,
+                    username: user.email,
+                    imageUrl: user.image,
+                    userType: user,
                   ),
-                if (userTypeAsync.value == "vendor")
-                  _SettingsTile(
-                    leadingIcon: Icons.shopping_bag_outlined,
-                    title: "My Product",
-                    onTap: () => context.push(VendorMyProductScreen.routeName),
+
+                  SizedBox(height: 20.h),
+                  _SettingsLine(
+                    icon: Icons.phone_in_talk_outlined,
+                    text: user.phone,
                   ),
-                _DividerLine(),
-                if (userTypeAsync.value == "buyer")
+                  _DividerLine(),
+                  _SettingsLine(icon: Icons.email_outlined, text: user.email),
+
+                  SizedBox(height: 12.h),
+                  _DividerLine(),
+
+                  if (userTypeAsync.value == "buyer")
+                    _SettingsTile(
+                      leadingIcon: Icons.shopping_bag_outlined,
+                      // "My Order"
+                      title: ref.t(BKeys.myOrders),
+                      onTap: () => context.push(BuyerOrderPage.routeName),
+                    ),
+                  if (userTypeAsync.value == "driver")
+                    _SettingsLine(
+                      icon: Icons.price_change,
+                      text: user.driver?.price ?? "Not set now",
+                    ),
+                  if (userTypeAsync.value == "vendor")
+                    _SettingsTile(
+                      leadingIcon: Icons.shopping_bag_outlined,
+                      //"My Product"
+                      title: ref.t(BKeys.my_product),
+                      onTap: () =>
+                          context.push(VendorMyProductScreen.routeName),
+                    ),
+                  _DividerLine(),
+                  if (userTypeAsync.value == "buyer")
+                    _SettingsTile(
+                      leadingIcon: Icons.event_note_outlined,
+                      // "Order history"
+                      title: ref.t(BKeys.orderHistory),
+                      onTap: () =>
+                          context.push(BuyerOrderHistoryScreen.routeName),
+                    ),
+                  _DividerLine(),
                   _SettingsTile(
-                    leadingIcon: Icons.event_note_outlined,
-                    title: "Order history",
-                    onTap: () =>
-                        context.push(BuyerOrderHistoryScreen.routeName),
+                    leadingIcon: Icons.language_outlined,
+                    title: ref.t(BKeys.language),
+                    onTap: () => context.push(GlobalLanguageScreen.routeName),
                   ),
-                _DividerLine(),
-                _SettingsTile(
-                  leadingIcon: Icons.language_outlined,
-                  title: "Language",
-                  onTap: () => context.push(GlobalLanguageScreen.routeName),
-                ),
-                _DividerLine(),
-                _SettingsTile(
-                  leadingIcon: Icons.logout_outlined,
-                  title: "Log Out",
-                  titleColor: AllColor.orange,
-                  iconColor: AllColor.orange,
-                  arrowColor: AllColor.orange,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
+                  _DividerLine(),
+                  _SettingsTile(
+                    leadingIcon: Icons.logout_outlined,
+                    title: ref.t(BKeys.logOut),
+                    titleColor: AllColor.orange,
+                    iconColor: AllColor.orange,
+                    arrowColor: AllColor.orange,
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(child: Text('Error: $error')),
         ),
@@ -102,13 +116,14 @@ class GlobalSettingScreen extends ConsumerWidget {
   }
 }
 
-class SettingTitle extends StatelessWidget {
+class SettingTitle extends ConsumerWidget {
   const SettingTitle({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return Text(
-      "My Settings",
+     // "My Settings",
+      ref.t(BKeys.my_settings),
       style: TextStyle(
         fontSize: 24.sp,
         fontWeight: FontWeight.w800,
@@ -208,6 +223,9 @@ class ProfileSection extends ConsumerWidget {
             } else if (userTypeAsync.value == "vendor") {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "transport") {
+              context.push(BuyerProfileEditScreen.routeName, extra: userType);
+            } else if (userTypeAsync.value == "driver") {
+              context.push(BuyerProfileEditScreen.routeName, extra: userType);
               // Transport
             }
           },

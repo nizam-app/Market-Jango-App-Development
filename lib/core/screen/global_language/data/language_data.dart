@@ -27,7 +27,7 @@ class LanguageResponse {
 }
 
 /// Languages provider -> returns just the List<String> for convenience
-final languagesProvider =
+final globallanguagesProvider =
     AsyncNotifierProvider<LanguagesNotifier, List<String>>(
       LanguagesNotifier.new,
     );

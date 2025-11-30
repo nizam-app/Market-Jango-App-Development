@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+DriverTrackingResponse driverTrackingResponseFromJson(String s) =>
+    DriverTrackingResponse.fromJson(jsonDecode(s) as Map<String, dynamic>);
+
 class DriverTrackingResponse {
   final String status;
   final String message;
@@ -10,30 +15,50 @@ class DriverTrackingResponse {
   });
 
   factory DriverTrackingResponse.fromJson(Map<String, dynamic> json) {
+    final dataJson = json['data'] as Map<String, dynamic>?;
+
     return DriverTrackingResponse(
       status: json['status']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
-      data: DriverTrackingData.fromJson(
-        json['data'] as Map<String, dynamic>? ?? {},
-      ),
+      data: DriverTrackingData.fromJson(dataJson ?? <String, dynamic>{}),
     );
   }
 }
 
-/// data object (main info)
+/// ================== data object (main info) ==================
+
 class DriverTrackingData {
   final int id;
   final int quantity;
   final String tranId;
   final String status;
-  final num salePrice;
+  final double salePrice;
   final int invoiceId;
   final int productId;
   final int vendorId;
   final int driverId;
-  final String createdAt;
-  final String updatedAt;
-  final TrackingInvoice invoice;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  // JSON e je gula ache:
+  final String cusName;
+  final String cusEmail;
+  final String cusPhone;
+  final String pickupAddress;
+  final String shipAddress;
+  final String? currentAddress;
+  final String? note;
+  final String? currentLatitude;
+  final String? currentLongitude;
+  final double? shipLatitude;
+  final double? shipLongitude;
+  final String? distance;
+  final String deliveryCharge;
+  final int userId;
+
+  final TrackingInvoice? invoice;
+  final TrackingUser? user;
+  final TrackingDriver? driver;
 
   DriverTrackingData({
     required this.id,
@@ -47,30 +72,71 @@ class DriverTrackingData {
     required this.driverId,
     required this.createdAt,
     required this.updatedAt,
+    required this.cusName,
+    required this.cusEmail,
+    required this.cusPhone,
+    required this.pickupAddress,
+    required this.shipAddress,
+    required this.currentAddress,
+    required this.note,
+    required this.currentLatitude,
+    required this.currentLongitude,
+    required this.shipLatitude,
+    required this.shipLongitude,
+    required this.distance,
+    required this.deliveryCharge,
+    required this.userId,
     required this.invoice,
+    required this.user,
+    required this.driver,
   });
 
   factory DriverTrackingData.fromJson(Map<String, dynamic> json) {
     return DriverTrackingData(
-      id: json['id'] ?? 0,
-      quantity: json['quantity'] ?? 0,
-      tranId: json['tran_id']?.toString() ?? '',
-      status: json['status']?.toString() ?? '',
-      salePrice: json['sale_price'] ?? 0,
-      invoiceId: json['invoice_id'] ?? 0,
-      productId: json['product_id'] ?? 0,
-      vendorId: json['vendor_id'] ?? 0,
-      driverId: json['driver_id'] ?? 0,
-      createdAt: json['created_at']?.toString() ?? '',
-      updatedAt: json['updated_at']?.toString() ?? '',
-      invoice: TrackingInvoice.fromJson(
-        json['invoice'] as Map<String, dynamic>? ?? {},
-      ),
+      id: _toInt(json['id']),
+      quantity: _toInt(json['quantity']),
+      tranId: (json['tran_id'] ?? '').toString(),
+      status: (json['status'] ?? '').toString(),
+      salePrice: _toDouble(json['sale_price']),
+      invoiceId: _toInt(json['invoice_id']),
+      productId: _toInt(json['product_id']),
+      vendorId: _toInt(json['vendor_id']),
+      driverId: _toInt(json['driver_id']),
+      createdAt: _toDate(json['created_at']),
+      updatedAt: _toDate(json['updated_at']),
+
+      cusName: (json['cus_name'] ?? '').toString(),
+      cusEmail: (json['cus_email'] ?? '').toString(),
+      cusPhone: (json['cus_phone'] ?? '').toString(),
+      pickupAddress: (json['pickup_address'] ?? '').toString(),
+      shipAddress: (json['ship_address'] ?? '').toString(),
+      currentAddress: json['current_address']?.toString(),
+      note: json['note']?.toString(),
+      currentLatitude: json['current_latitude']?.toString(),
+      currentLongitude: json['current_longitude']?.toString(),
+      shipLatitude: _toDoubleOrNull(json['ship_latitude']),
+      shipLongitude: _toDoubleOrNull(json['ship_longitude']),
+      distance: json['distance']?.toString(),
+      deliveryCharge: (json['delivery_charge'] ?? '0').toString(),
+      userId: _toInt(json['user_id']),
+
+      invoice: json['invoice'] == null
+          ? null
+          : TrackingInvoice.fromJson(json['invoice'] as Map<String, dynamic>),
+
+      user: json['user'] == null
+          ? null
+          : TrackingUser.fromJson(json['user'] as Map<String, dynamic>),
+
+      driver: json['driver'] == null
+          ? null
+          : TrackingDriver.fromJson(json['driver'] as Map<String, dynamic>),
     );
   }
 }
 
-/// invoice object
+/// ================== invoice object (only existing fields) ==================
+
 class TrackingInvoice {
   final int id;
   final String total;
@@ -79,13 +145,7 @@ class TrackingInvoice {
   final String cusName;
   final String cusEmail;
   final String cusPhone;
-  final String shipAddress;
-  final String shipCity;
-  final String shipCountry;
-  final String pickupAddress;
-  final String dropOfAddress;
-  final String? distance;
-  final String deliveryStatus;
+  final String paymentMethod;
   final String status;
   final String transactionId;
   final String taxRef;
@@ -93,9 +153,6 @@ class TrackingInvoice {
   final int userId;
   final String createdAt;
   final String updatedAt;
-
-  /// raw list – future e chaile alada model banate parba
-  final List<dynamic> statusLogTransports;
 
   TrackingInvoice({
     required this.id,
@@ -105,13 +162,7 @@ class TrackingInvoice {
     required this.cusName,
     required this.cusEmail,
     required this.cusPhone,
-    required this.shipAddress,
-    required this.shipCity,
-    required this.shipCountry,
-    required this.pickupAddress,
-    required this.dropOfAddress,
-    required this.distance,
-    required this.deliveryStatus,
+    required this.paymentMethod,
     required this.status,
     required this.transactionId,
     required this.taxRef,
@@ -119,7 +170,6 @@ class TrackingInvoice {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
-    required this.statusLogTransports,
   });
 
   factory TrackingInvoice.fromJson(Map<String, dynamic> json) {
@@ -131,13 +181,7 @@ class TrackingInvoice {
       cusName: json['cus_name']?.toString() ?? '',
       cusEmail: json['cus_email']?.toString() ?? '',
       cusPhone: json['cus_phone']?.toString() ?? '',
-      shipAddress: json['ship_address']?.toString() ?? '',
-      shipCity: json['ship_city']?.toString() ?? '',
-      shipCountry: json['ship_country']?.toString() ?? '',
-      pickupAddress: json['pickup_address']?.toString() ?? '',
-      dropOfAddress: json['drop_of_address']?.toString() ?? '',
-      distance: json['distance']?.toString(),
-      deliveryStatus: json['delivery_status']?.toString() ?? '',
+      paymentMethod: json['payment_method']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       transactionId: json['transaction_id']?.toString() ?? '',
       taxRef: json['tax_ref']?.toString() ?? '',
@@ -145,8 +189,146 @@ class TrackingInvoice {
       userId: json['user_id'] ?? 0,
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',
-      statusLogTransports:
-          (json['status_log_transports'] as List?)?.toList() ?? const [],
     );
   }
+}
+
+/// ================== user object ==================
+
+class TrackingUser {
+  final int id;
+  final String userType;
+  final String name;
+  final String email;
+  final bool isOnline;
+  final String phone;
+  final String? otp;
+  final String? phoneVerifiedAt;
+  final String language;
+  final String image;
+  final String? publicId;
+  final String? inviteToken;
+  final String status;
+  final bool? isActive;
+  final String? lastActiveAt;
+  final int mustChangePassword;
+  final String? expiresAt;
+  final String createdAt;
+  final String updatedAt;
+
+  TrackingUser({
+    required this.id,
+    required this.userType,
+    required this.name,
+    required this.email,
+    required this.isOnline,
+    required this.phone,
+    required this.otp,
+    required this.phoneVerifiedAt,
+    required this.language,
+    required this.image,
+    required this.publicId,
+    required this.inviteToken,
+    required this.status,
+    required this.isActive,
+    required this.lastActiveAt,
+    required this.mustChangePassword,
+    required this.expiresAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory TrackingUser.fromJson(Map<String, dynamic> json) {
+    final ia = json['is_active'];
+
+    return TrackingUser(
+      id: json['id'] ?? 0,
+      userType: json['user_type']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      isOnline: json['is_online'] == true || json['is_online'] == 1,
+      phone: json['phone']?.toString() ?? '',
+      otp: json['otp']?.toString(),
+      phoneVerifiedAt: json['phone_verified_at']?.toString(),
+      language: json['language']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
+      publicId: json['public_id']?.toString(),
+      inviteToken: json['invite_token']?.toString(),
+      status: json['status']?.toString() ?? '',
+      isActive: ia == null ? null : (ia == true || ia == 1),
+      lastActiveAt: json['last_active_at']?.toString(),
+      mustChangePassword: _toInt(json['must_change_password']),
+      expiresAt: json['expires_at']?.toString(),
+      createdAt: json['created_at']?.toString() ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
+    );
+  }
+}
+
+/// ================== driver object ==================
+
+class TrackingDriver {
+  final int id;
+  final String carName;
+  final String carModel;
+  final String location;
+  final String price;
+  final int rating;
+  final String description;
+  final int userId;
+  final int routeId;
+  final String createdAt;
+  final String updatedAt;
+
+  TrackingDriver({
+    required this.id,
+    required this.carName,
+    required this.carModel,
+    required this.location,
+    required this.price,
+    required this.rating,
+    required this.description,
+    required this.userId,
+    required this.routeId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory TrackingDriver.fromJson(Map<String, dynamic> json) {
+    return TrackingDriver(
+      id: json['id'] ?? 0,
+      carName: json['car_name']?.toString() ?? '',
+      carModel: json['car_model']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      price: json['price']?.toString() ?? '',
+      rating: _toInt(json['rating']),
+      description: json['description']?.toString() ?? '',
+      userId: _toInt(json['user_id']),
+      routeId: _toInt(json['route_id']),
+      createdAt: json['created_at']?.toString() ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
+    );
+  }
+}
+
+/// ================== helpers ==================
+
+int _toInt(dynamic v) =>
+    v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);
+
+double _toDouble(dynamic v) => v == null
+    ? 0.0
+    : (v is num ? v.toDouble() : double.tryParse(v.toString()) ?? 0.0);
+
+DateTime? _toDate(dynamic v) {
+  if (v == null) return null;
+  return DateTime.tryParse(v.toString());
+}
+
+double? _toDoubleOrNull(dynamic v) {
+  if (v == null) return null;
+  if (v is num) return v.toDouble();
+  final s = v.toString().trim();
+  if (s.isEmpty) return null;
+  return double.tryParse(s);
 }

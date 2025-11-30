@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-/// ============== TOP LEVEL RESPONSE + PAGE ==============
+/// ================= TOP LEVEL RESPONSE =================
 
 VendorAllOrdersResponse vendorAllOrdersResponseFromJson(String source) =>
     VendorAllOrdersResponse.fromJson(
@@ -19,13 +19,20 @@ class VendorAllOrdersResponse {
   });
 
   factory VendorAllOrdersResponse.fromJson(Map<String, dynamic> j) {
+    final rawData = j['data'];
+
     return VendorAllOrdersResponse(
       status: (j['status'] ?? '').toString(),
       message: (j['message'] ?? '').toString(),
-      data: VendorOrdersPage.fromJson(j['data'] as Map<String, dynamic>),
+      // jodi data null / wrong type hoy, empty page return korbo
+      data: rawData is Map<String, dynamic>
+          ? VendorOrdersPage.fromJson(rawData)
+          : VendorOrdersPage.empty(),
     );
   }
 }
+
+/// ============== PAGE (pagination / list wrapper) ==============
 
 class VendorOrdersPage {
   final int currentPage;
@@ -52,6 +59,10 @@ class VendorOrdersPage {
       data: list,
     );
   }
+
+  /// empty fallback
+  factory VendorOrdersPage.empty() =>
+      VendorOrdersPage(currentPage: 1, lastPage: 1, total: 0, data: const []);
 }
 
 /// ===================== ORDER ENTITY =====================
@@ -60,7 +71,8 @@ class VendorOrderEntity {
   final int id;
   final int quantity;
   final String tranId;
-  final String status; // "Complete","AssignedOrder","On The Way",...
+  final String
+  status; // raw: "Complete","AssignedOrder","Pending","Not Deliver",...
   final double salePrice;
   final int invoiceId;
   final int productId;
@@ -68,6 +80,12 @@ class VendorOrderEntity {
   final int driverId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// root level theke asha info (order JSON theke):
+  final String cusName;
+  final String shipAddress;
+  final String shipCity;
+  final String pickupAddress;
 
   final ShipmentInvoice? invoice;
   final ShipmentProduct? product;
@@ -85,6 +103,10 @@ class VendorOrderEntity {
     required this.driverId,
     this.createdAt,
     this.updatedAt,
+    required this.cusName,
+    required this.shipAddress,
+    required this.shipCity,
+    required this.pickupAddress,
     this.invoice,
     this.product,
     this.driver,
@@ -103,6 +125,13 @@ class VendorOrderEntity {
       driverId: _toInt(j['driver_id']),
       createdAt: _toDate(j['created_at']),
       updatedAt: _toDate(j['updated_at']),
+
+      // root-level theke:
+      cusName: (j['cus_name'] ?? '').toString(),
+      shipAddress: (j['ship_address'] ?? '').toString(),
+      shipCity: (j['ship_city'] ?? '').toString(),
+      pickupAddress: (j['pickup_address'] ?? '').toString(),
+
       invoice: j['invoice'] == null
           ? null
           : ShipmentInvoice.fromJson(j['invoice'] as Map<String, dynamic>),
@@ -116,8 +145,7 @@ class VendorOrderEntity {
   }
 }
 
-/// শুধু দরকারি ফিল্ডগুলো নিলাম
-
+/// শুধু দরকারি invoice ফিল্ডগুলো নিলাম
 class ShipmentInvoice {
   final int id;
   final String cusName;
@@ -155,11 +183,7 @@ class ShipmentProduct {
   final String name;
   final String image;
 
-  ShipmentProduct({
-    required this.id,
-    required this.name,
-    required this.image,
-  });
+  ShipmentProduct({required this.id, required this.name, required this.image});
 
   factory ShipmentProduct.fromJson(Map<String, dynamic> j) {
     return ShipmentProduct(
@@ -174,10 +198,7 @@ class ShipmentDriver {
   final int id;
   final ShipmentDriverUser? user;
 
-  ShipmentDriver({
-    required this.id,
-    this.user,
-  });
+  ShipmentDriver({required this.id, this.user});
 
   factory ShipmentDriver.fromJson(Map<String, dynamic> j) {
     return ShipmentDriver(
@@ -193,10 +214,7 @@ class ShipmentDriverUser {
   final int id;
   final String name;
 
-  ShipmentDriverUser({
-    required this.id,
-    required this.name,
-  });
+  ShipmentDriverUser({required this.id, required this.name});
 
   factory ShipmentDriverUser.fromJson(Map<String, dynamic> j) {
     return ShipmentDriverUser(
@@ -208,14 +226,13 @@ class ShipmentDriverUser {
 
 /// ===================== STATUS + UI MODEL =====================
 
-/// Tab গুলো: All + sob status
 enum TrackingOrderStatus {
   all,
   pending,
   assigned,
   onTheWay,
   completed,
-  cancelled,
+  cancelled, // enum thakbe, kintu amra Cancelled use korbo na UI te
 }
 
 extension TrackingOrderStatusX on TrackingOrderStatus {
@@ -240,11 +257,11 @@ class ShipmentItem {
   final String imageUrl;
   final TrackingOrderStatus status;
 
-  // extra info for AssignedOrder card
+  // extra info
   final String driverName;
   final String pickupLocation;
   final String destinationName;
-  final String rawStatus;
+  final String rawStatus; // API theke asha original text
 
   const ShipmentItem({
     required this.orderNo,
@@ -274,27 +291,45 @@ class ShipmentItem {
     final productName = prod?.name ?? 'Product #${e.productId}';
     final title = '$productName x${e.quantity}';
 
-    final customer = inv?.cusName ?? '';
-    final address = inv == null
-        ? ''
-        : '${inv.shipAddress}'
-        '${inv.shipCity.isNotEmpty ? ', ${inv.shipCity}' : ''}';
+    // customer name
+    final customer = e.cusName.isNotEmpty ? e.cusName : (inv?.cusName ?? '');
+
+    // shipping address
+    final rootShipAddress = e.shipAddress;
+    final rootShipCity = e.shipCity;
+    final invShipAddress = inv?.shipAddress ?? '';
+    final invShipCity = inv?.shipCity ?? '';
+
+    final shipAddress = rootShipAddress.isNotEmpty
+        ? rootShipAddress
+        : invShipAddress;
+    final shipCity = rootShipCity.isNotEmpty ? rootShipCity : invShipCity;
+
+    final address = (() {
+      if (shipAddress.isEmpty && shipCity.isEmpty) return '';
+      if (shipAddress.isEmpty) return shipCity;
+      if (shipCity.isEmpty) return shipAddress;
+      return '$shipAddress, $shipCity';
+    })();
 
     final created = e.createdAt ?? inv?.createdAt;
     final date = created == null
         ? ''
         : '${created.day.toString().padLeft(2, '0')} '
-        '${_monthName(created.month)} ${created.year}';
+              '${_monthName(created.month)} ${created.year}';
 
     final price = e.salePrice != 0
         ? e.salePrice
         : double.tryParse(inv?.payable ?? '0') ?? 0.0;
 
-    final imageUrl = prod?.image ??
-        'https://via.placeholder.com/200x200.png?text=Product';
+    final imageUrl =
+        prod?.image ?? 'https://via.placeholder.com/200x200.png?text=Product';
 
-    final pickupLocation = inv?.pickupAddress ?? '';
-    final destinationName = inv?.cusName ?? '';
+    final pickupLocation = e.pickupAddress.isNotEmpty
+        ? e.pickupAddress
+        : (inv?.pickupAddress ?? '');
+
+    final destinationName = customer;
     final driverName = driverUser?.name ?? '';
 
     return ShipmentItem(
@@ -332,21 +367,23 @@ class VendorShipmentsState {
     required this.selectedIndex,
   });
 
+  /// Filter + search
   List<ShipmentItem> get filtered {
     final q = query.trim().toLowerCase();
 
     Iterable<ShipmentItem> list = allItems;
 
-    // All হলে filter hobena, otherwise status diye filter
+    // All হলে filter hobena, otherwise direct oi status diye filter
     if (status != TrackingOrderStatus.all) {
       list = list.where((e) => e.status == status);
     }
 
     return list.where((e) {
       if (q.isEmpty) return true;
-      return e.title.toLowerCase().contains(q) ||
-          e.customer.toLowerCase().contains(q) ||
-          e.orderNo.toLowerCase().contains(q);
+      final title = e.title.toLowerCase();
+      final customer = e.customer.toLowerCase();
+      final orderNo = e.orderNo.toLowerCase();
+      return title.contains(q) || customer.contains(q) || orderNo.contains(q);
     }).toList();
   }
 
@@ -362,13 +399,14 @@ class VendorShipmentsState {
       status: status ?? this.status,
       segment: segment ?? this.segment,
       query: query ?? this.query,
+      // ekhane always new value use korbo (null dileo override hobe)
       selectedIndex: selectedIndex,
     );
   }
 
   static VendorShipmentsState initial() => const VendorShipmentsState(
     allItems: [],
-    status: TrackingOrderStatus.all, // first tab = All
+    status: TrackingOrderStatus.all,
     segment: 0,
     query: '',
     selectedIndex: null,
@@ -383,9 +421,20 @@ TrackingOrderStatus _statusFromApi(String raw) {
   if (s.contains('assign')) return TrackingOrderStatus.assigned;
   if (s.contains('on the way')) return TrackingOrderStatus.onTheWay;
   if (s.contains('complete')) return TrackingOrderStatus.completed;
-  if (s.contains('cancel')) return TrackingOrderStatus.cancelled;
+
+  // 🔴 IMPORTANT:
+  // API theke "Cancelled" / "Cancel" / "Not Deliver" / "not_deliver"
+  // ashle amra sobgulo ke **On the way** e map korchi,
+  // jate UI te kokhono "Cancelled" text na ashe.
+  if (s.contains('cancel') ||
+      s.contains('not deliver') ||
+      s.contains('not_deliver')) {
+    return TrackingOrderStatus.onTheWay;
+  }
+
   if (s.contains('pending')) return TrackingOrderStatus.pending;
 
+  // default
   return TrackingOrderStatus.pending;
 }
 

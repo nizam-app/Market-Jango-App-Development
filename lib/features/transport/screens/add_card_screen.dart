@@ -25,7 +25,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SafeArea(
-          
+
           child: Column(
             children: [
               Expanded(
@@ -34,6 +34,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      //Add Card
                    Tuppertextandbackbutton(screenName: "Add Card"),
 
                   CustomPaymentMethod(
@@ -43,9 +44,9 @@ class _AddCardScreenState extends State<AddCardScreen> {
                    // handle selected method index
                  },
                ),
-          
+
                       SizedBox(height: 20.h),
-          
+
                       /// ✅ Add Card Section
                       Row(
                         children: [
@@ -66,7 +67,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                         ],
                       ),
                       SizedBox(height: 16.h),
-          
+
                       /// ✅ Card Form
                       Container(
                         padding: EdgeInsets.all(12.w),
@@ -87,7 +88,6 @@ class _AddCardScreenState extends State<AddCardScreen> {
                               icon: Icons.credit_card,
                             ),
                             SizedBox(height: 16.h),
-          
                             Text(
                               "Expire Date",
                               style: TextStyle(
@@ -115,7 +115,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   ),
                 ),
               ),
-          
+
               /// ✅ Bottom Payment Summary
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),

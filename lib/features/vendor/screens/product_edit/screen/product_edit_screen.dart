@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/delete_image_riverpod.dart';
@@ -324,7 +326,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                                 },
                               );
                             },
-                      child: Text(saving ? 'Saving...' : 'Save'),
+                      child: Text(saving ? 'Saving...' : ref.t(BKeys.save)),
                     ),
                   ),
                   SizedBox(height: 15.h),

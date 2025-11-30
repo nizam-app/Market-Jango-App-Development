@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
@@ -132,12 +134,13 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Category Title
-          const _Label('Category Title', labelBlue),
+           _Label(ref.t(BKeys.category_title), labelBlue),
           SizedBox(height: 6.h),
           TextField(
             controller: _titleC,
             decoration: InputDecoration(
-              hintText: 'Enter your title here',
+              //'Enter your title here',
+              hintText: ref.t(BKeys.enter_your_title_here),
               isDense: true,
               contentPadding:
               EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
@@ -148,14 +151,17 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
           ),
           SizedBox(height: 14.h),
 
-          // Description
-          const _Label('Category Description', labelBlue),
+          // 'Category Description'
+           _Label(
+              ref.t(BKeys.category_description),
+              labelBlue),
           SizedBox(height: 6.h),
           TextField(
             controller: _descC,
             maxLines: 6,
             decoration: InputDecoration(
-              hintText: 'Enter your description here',
+              //'Enter your description here'
+              hintText:'Enter your description here',
               alignLabelWithHint: true,
               contentPadding: EdgeInsets.all(12.w),
               border: _border(),
@@ -166,7 +172,10 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
           SizedBox(height: 14.h),
 
           // Upload
-          const _Label('Upload Category Images', labelBlue),
+           _Label(
+               // 'Upload Category Images'
+             ref.t(BKeys.upload_category_images)
+               , labelBlue),
           SizedBox(height: 6.h),
           InkWell(
             onTap: _pickImages,
@@ -206,7 +215,9 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
 
           // Preview grid
           if (_images.isNotEmpty) ...[
-            const _Label('Uploaded Preview', labelBlue),
+             _Label(''
+                'Uploaded Preview',
+                labelBlue),
             SizedBox(height: 8.h),
             SizedBox(
               height: 70.h,
@@ -283,7 +294,8 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
           // SizedBox(height: 20.h),
 
           GlobalSaveBotton(
-            bottonName: _isSaving ? "Saving..." : "Save Category",
+            //"Save Category" 
+            bottonName: _isSaving ? "Saving...": ref.t(BKeys.save_category) ,
             onPressed: _isSaving ? null : _submit,
           ),
         ],

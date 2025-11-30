@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class VendorAssignedOrder extends StatefulWidget {
+class VendorAssignedOrder extends ConsumerStatefulWidget {
   const VendorAssignedOrder({super.key});
   static const routeName = "/vendorOrderAssigned";
 
   @override
-  State<VendorAssignedOrder> createState() => _VendorAssignedOrderState();
+  ConsumerState<VendorAssignedOrder> createState() => _VendorAssignedOrderState();
 }
 
-class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
+class _VendorAssignedOrderState extends ConsumerState<VendorAssignedOrder> {
   final _search = TextEditingController();
   int _tab = 1; // 0=Pending, 1=Assigned order (default), 2=Completed
 
@@ -50,7 +53,8 @@ class _VendorAssignedOrderState extends State<VendorAssignedOrder> {
               padding: EdgeInsets.symmetric(horizontal: 16.h),
               child: _SearchField(
                 controller: _search,
-                hint: 'Search you product',
+                //'Search you product'
+                hint: ref.t(BKeys.searchProduct),
                 onChanged: (_) => setState(() {}),
               ),
             ),
@@ -194,13 +198,13 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-class _Tabs extends StatelessWidget {
+class _Tabs extends ConsumerWidget {
   final int current; // 0..2
   final ValueChanged<int> onChanged;
   const _Tabs({required this.current, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     Widget chip(String text, int index, {VoidCallback? onTap}) {
       final selected = current == index;
       return InkWell(
@@ -230,17 +234,22 @@ class _Tabs extends StatelessWidget {
     return Row(
       children: [
         chip(
-          'Pending',
+         // 'Pending',
+          ref.t(BKeys.pending),
           0,
           onTap: () {
             context.push("/vendorOrderPending");
           },
         ),
         SizedBox(width: 8.w),
-        chip('Assigned order', 1),
+        chip(
+            //'Assigned order',
+            ref.t(BKeys.assignedOrder),
+            1),
         SizedBox(width: 8.w),
         chip(
-          'Completed',
+          // 'Completed',
+          ref.t(BKeys.completed),
           2,
           onTap: () {
             context.push("/vendorOrderCompleted");
@@ -251,7 +260,7 @@ class _Tabs extends StatelessWidget {
   }
 }
 
-class _AssignedCard extends StatelessWidget {
+class _AssignedCard extends ConsumerWidget {
   final AssignedOrderData data;
   final VoidCallback onSeeDetails;
   final String driverName;
@@ -263,7 +272,7 @@ class _AssignedCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref ) {
     final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
 
     return Container(
@@ -313,9 +322,15 @@ class _AssignedCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            _kvBold('Pick up location: ', data.pickup),
+            _kvBold(
+            //'Pick up location: '
+              ref.t(BKeys.pick_up_location)
+            , data.pickup),
             const SizedBox(height: 6),
-            _kvBold('Destination: ', data.destination),
+            _kvBold(
+                // 'Destination: '
+                ref.t(BKeys.destination)
+                , data.destination),
             const SizedBox(height: 14),
 
             SizedBox(
@@ -331,7 +346,8 @@ class _AssignedCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
                 child: Text(
-                  'See Details',
+                  // 'See Details',
+                  ref.t(BKeys.see_details),
                   style: TextStyle(
                     color: AllColor.white,
                     fontWeight: FontWeight.w700,

@@ -80,29 +80,26 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
   }
 
   // API response থেকে ডাইনামিক ট্যাব বানানো (শুধু e.status)
+  // API response থেকে ডাইনামিক ট্যাব বানানো (শুধু e.status দিয়ে)
   void _rebuildTabsFrom(DriverAllOrdersResponse res) {
     final rows = res.data.data;
-    final map = <String, String>{}; // norm -> original
+    final map = <String, String>{}; // norm -> original label
+
     for (final e in rows) {
       final raw = (e.status).toString().trim();
       if (raw.isEmpty) continue;
-      final k = _norm(raw);
-      map.putIfAbsent(k, () => raw); // প্রথমবারের ক্যাপশনটাই রাখি
+
+      final norm = _norm(raw);
+
+      // ❌ "pending" ke tab hisebe dekhabo na
+      if (norm == 'pending') continue;
+
+      // same status jeno ekbar e add hoy
+      map.putIfAbsent(norm, () => raw);
     }
-    // Optional: একটি সুন্দর অর্ডার; না থাকলে ইনপুটের অর্ডারেই থাকবে
-    final preferred = [
-      'pending',
-      'on the way',
-      'assignedorder',
-      'complete',
-      'delivered',
-    ];
-    final rest = map.keys.where((k) => !preferred.contains(k)).toList();
-    _statusTabs = [
-      'All',
-      ...preferred.where(map.containsKey).map((k) => map[k]!).toList(),
-      ...rest.map((k) => map[k]!).toList(),
-    ];
+
+    // simple order: All + je je status paichi
+    _statusTabs = ['All', ...map.values.toList()];
   }
 
   // Entity -> UI
@@ -114,13 +111,9 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
         ? inv!.taxRef
         : (e.tranId.isNotEmpty ? e.tranId : e.id.toString());
 
-    final pickup = inv?.pickupAddress.isNotEmpty == true
-        ? inv!.pickupAddress
-        : '-';
+    final pickup = e.pickupAddress.isNotEmpty == true ? e.pickupAddress : '-';
 
-    final dest = inv?.dropOfAddress.isNotEmpty == true
-        ? inv!.dropOfAddress
-        : '-';
+    final dest = e?.shipAddress.isNotEmpty == true ? e!.shipAddress : '-';
 
     final price = e.salePrice != 0 ? e.salePrice : _safeDouble(inv?.payable);
 
@@ -128,8 +121,8 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
     final kind = _classifyByLabel(label);
 
     return OrderItem(
-      driverOrderId: e.id,   // 👈 এখানে DriverOrderEntity.id সেভ করলাম
-      orderId: orderId,      // 👈 শুধু display/search এর জন্য
+      driverOrderId: e.id, // 👈 এখানে DriverOrderEntity.id সেভ করলাম
+      orderId: orderId, // 👈 শুধু display/search এর জন্য
       pickup: pickup,
       destination: dest,
       price: price,
@@ -137,7 +130,6 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
       kind: kind,
     );
   }
-
 }
 
 /* ===== UI-side model ===== */
@@ -167,7 +159,6 @@ class OrderItem {
     required this.kind,
   });
 }
-
 
 /* helpers */
 String _norm(String s) =>

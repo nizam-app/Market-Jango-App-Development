@@ -3,46 +3,75 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
 
+import '../data/driver_home_status_data.dart';
 import '../model/new_oder_driver_model.dart';
 
 class DriverHomeScreen extends ConsumerWidget {
   const DriverHomeScreen({super.key});
-  static final routeName = "/driverHome";
+  static const routeName = "/driverHome";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(driverNewOrdersProvider);
+    final statsAsync = ref.watch(driverHomeStatsProvider);
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _HeaderSection(
-              name: "John",
-              subtitle: "Keep going! You're doing great today.",
-            ),
-            SizedBox(height: 12),
-            _StatsGrid(
-              stats: const [
-                _StatItem(title: "Total Active Orders", value: "490"),
-                _StatItem(title: "Picked", value: "400"),
-                _StatItem(title: "Pending Deliveries", value: "300"),
-                _StatItem(title: "Delivered Today", value: "200"),
+        child: statsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Failed to load stats: $e')),
+          data: (stats) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HeaderSection(
+                  name: "John", // later profile theke
+                  subtitle: "Keep going! You're doing great today.",
+                ),
+                const SizedBox(height: 12),
+
+                _StatsGrid(
+                  stats: [
+                    _StatItem(
+                      //"Total Active Orders"
+                      title: ref.t(BKeys.total_active_order),
+                      value: stats.totalActiveOrders.toString(),
+                    ),
+                    _StatItem(
+                        //"Picked"
+                        title: ref.t(BKeys.picked),
+                        value: stats.picked.toString()),
+                    _StatItem(
+                      //Pending Deliveries
+                      title: ref.t(BKeys.pending_deliveries),
+                      value: stats.pendingsDeliveries.toString(),
+                    ),
+                    _StatItem(
+                      //"Delivered Today"
+                      title: ref.t(BKeys.delivered_today),
+                      value: stats.deliveredToday.toString(),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+                //"New Orders"
+                 _SectionTitle(title: ref.t(BKeys.new_order)),
+                const SizedBox(height: 10),
+
+                /// 🔹 শুধু একটাই Expanded – vitore _OrdersList nijer async handle korbe
+                const Expanded(child: _OrdersList()),
               ],
-            ),
-            SizedBox(height: 16),
-            const _SectionTitle(title: "New Orders"),
-            SizedBox(height: 10),
-            const _OrdersList(),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -84,7 +113,11 @@ class _HeaderSection extends ConsumerWidget {
                           ),
                         ),
                         SizedBox(width: 6.w),
-                        Icon(Icons.verified, color: AllColor.blue500, size: 18.sp),
+                        Icon(
+                          Icons.verified,
+                          color: AllColor.blue500,
+                          size: 18.sp,
+                        ),
                       ],
                     ),
                     SizedBox(height: 4.h),
@@ -98,7 +131,7 @@ class _HeaderSection extends ConsumerWidget {
                     ),
                   ],
                 );
-              }       ,
+              },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text(e.toString())),
             ),
@@ -212,48 +245,79 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () =>
-          const Expanded(child: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Expanded(child: Center(child: Text(e.toString()))),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Failed to load orders: $e')),
       data: (resp) {
-        // raw entity list
-        final raw = resp?.data.data ?? const <DriverOrder>[];
-        final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
+        if (resp == null) {
+          return const Center(child: Text("No found data"));
+        }
 
-        return Expanded(
-          child: Column(
+        final page = resp?.data;
+        final raw = page?.data ?? const <DriverOrder>[];
+        // final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
+
+        // pagination safe values (backend jodi current_page, last_page na dey)
+        int cp = page?.currentPage ?? notifier.currentPage;
+        int lp = page?.lastPage ?? notifier.lastPage;
+        if (cp < 1) cp = 1;
+        if (lp < 1) lp = 1;
+        if (cp > lp) cp = lp;
+
+        if (raw.isEmpty && raw == null) {
+          // empty state o scroll + pagination thakbe
+          return Column(
             children: [
               Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                  itemBuilder: (_, i) =>
-                      _OrderCard(order: orders[i], orderId: raw[i].id),
-                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                  itemCount: orders.length,
+                child: Center(
+                  child: Text(
+                    'No new orders found',
+                    style: TextStyle(color: AllColor.black54, fontSize: 13.sp),
+                  ),
                 ),
               ),
-              SizedBox(height: 8.h),
               GlobalPagination(
-                currentPage: notifier.currentPage,
-                totalPages: notifier.lastPage,
+                currentPage: cp,
+                totalPages: lp,
                 onPageChanged: notifier.changePage,
               ),
             ],
-          ),
+          );
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                itemBuilder: (_, i) =>
+                    _OrderCard(order: raw[i], orderId: raw[i].id),
+                separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                itemCount: raw.length,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            GlobalPagination(
+              currentPage: cp,
+              totalPages: lp,
+              onPageChanged: notifier.changePage,
+            ),
+          ],
         );
       },
     );
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends ConsumerWidget {
   const _OrderCard({required this.order, required this.orderId});
-  final _OrderModel order;
+  final DriverOrder order;
   final int orderId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
+
     return Container(
+
       decoration: BoxDecoration(
         color: AllColor.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -272,6 +336,7 @@ class _OrderCard extends StatelessWidget {
           children: [
             // left block
             Expanded(
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -288,13 +353,13 @@ class _OrderCard extends StatelessWidget {
                   SizedBox(height: 8.h),
                   _KVRow(
                     k: "Pick up location:",
-                    v: order.pickup,
+                    v: order.invoice?.pickupAddress ?? "___",
                     boldValue: true,
                   ),
                   SizedBox(height: 4.h),
                   _KVRow(
                     k: "Destination:",
-                    v: order.destination,
+                    v: order.invoice?.dropOfAddress ?? "___",
                     boldValue: true,
                   ),
                   SizedBox(height: 12.h),
@@ -302,15 +367,17 @@ class _OrderCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _FilledBtn(
-                        label: "See details",
+                        //"See details"
+                        label: ref.t(BKeys.see_details),
                         onTap: () => _onSeeDetails(context, orderId),
                         bg: AllColor.loginButtomColor,
                         fg: AllColor.white,
                       ),
-
+                      // SizedBox(width: 5.w,),
                       _FilledBtn(
-                        label: "Track order",
-                        onTap: () => _onTrack(context, order),
+                        //"Track order"
+                        label: ref.t(BKeys.track_order),
+                        onTap: () => _onTrack(context, orderId.toString()),
                         bg: AllColor.blue500,
                         fg: AllColor.white,
                       ),
@@ -326,7 +393,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 SizedBox(height: 6.h),
                 Text(
-                  _formatPrice(order.price),
+                  _formatPrice(order.salePrice),
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w800,
@@ -345,8 +412,8 @@ class _OrderCard extends StatelessWidget {
     context.push(OrderDetailsScreen.routeName, extra: orderId);
   }
 
-  void _onTrack(BuildContext context, _OrderModel order) {
-    context.push(DriverTrakingScreen.routeName);
+  void _onTrack(BuildContext context, String order) {
+    context.push(DriverTrakingScreen.routeName, extra: order);
   }
 }
 
@@ -420,7 +487,7 @@ class _FilledBtn extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10.r),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10.r),
@@ -430,7 +497,7 @@ class _FilledBtn extends StatelessWidget {
           style: TextStyle(
             color: fg,
             fontWeight: FontWeight.w700,
-            fontSize: 12.sp,
+            fontSize: 10.sp,
           ),
         ),
       ),
@@ -457,19 +524,35 @@ class _OrderModel {
 
   factory _OrderModel.fromEntity(DriverOrder o) {
     final inv = o.invoice;
-    final pickup = (inv?.pickupAddress?.trim().isNotEmpty ?? false)
+
+    // order id text
+    final idText = (inv?.taxRef.isNotEmpty ?? false)
+        ? inv!.taxRef
+        : (o.tranId.isNotEmpty ? o.tranId : o.id.toString());
+
+    // pickup / destination (jodi future e model e pickup_address add koro, ekhan theke use korte parba)
+    final pickup = (inv?.pickupAddress.trim().isNotEmpty ?? false)
         ? inv!.pickupAddress
-        : (inv?.shipAddress ?? '—');
-    final dest = (inv?.dropOfAddress?.trim().isNotEmpty ?? false)
+        : (inv?.shipAddress.trim().isNotEmpty ?? false)
+        ? inv!.shipAddress
+        : '—';
+
+    final destination = (inv?.dropOfAddress.trim().isNotEmpty ?? false)
         ? inv!.dropOfAddress
-        : (inv?.shipCity ?? '—');
-    // final id = int.parse(o.invoice!.taxRef);
+        : (inv?.shipCity.trim().isNotEmpty ?? false)
+        ? inv!.shipCity
+        : '—';
+
+    final price = o.salePrice != 0
+        ? o.salePrice
+        : double.tryParse(inv?.payable ?? '0') ?? 0.0;
+
     return _OrderModel(
-      id: o.invoice!.taxRef,
+      id: idText,
       status: o.status,
       pickup: pickup,
-      destination: dest,
-      price: o.salePrice,
+      destination: destination,
+      price: price,
     );
   }
 }

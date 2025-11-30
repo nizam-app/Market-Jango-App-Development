@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_details_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderDetailsScreen extends ConsumerWidget {
   const OrderDetailsScreen({super.key, required this.trackingId});
@@ -20,7 +25,7 @@ class OrderDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = int.parse(trackingId);
-    final trackingAsync = ref.watch(driverTrackingProvider(id));
+    final trackingAsync = ref.watch(driverTrackingStatusProvider(id));
 
     return Scaffold(
       backgroundColor: AllColor.white,
@@ -45,32 +50,43 @@ class OrderDetailsScreen extends ConsumerWidget {
                 final invoice = data.invoice;
 
                 return _DetailsContent(
-                  orderId: invoice.id.toString(),
-                  pickupAddress: invoice.pickupAddress,
-                  dropoffAddress: invoice.dropOfAddress,
-                  customerName: invoice.cusName,
-                  customerPhone: invoice.cusPhone,
-                  instruction:
-                      "Delivery status: ${invoice.deliveryStatus} (${invoice.status})",
-                  // আপাতত static map image, পরে real map / static map URL use করবে
-                  imageUrl:
-                      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+                  orderId: invoice?.taxRef ?? "",
+                  pickupAddress: data.pickupAddress,
+                  dropoffAddress: data.shipAddress,
+                  customerName: invoice?.cusName ?? "___",
+                  customerPhone: invoice?.cusPhone ?? "___",
+                  lat: data.shipLatitude ?? 0,
+                  lot: data.shipLongitude ?? 0,
                 );
               },
             ),
             trackingAsync.when(
               data: (DriverTrackingData data) {
-                if (data.status == "AssignedOrder") {
-                  return _BottomActions(
-                    onMessage: () {
-                      context.push(GlobalChatScreen.routeName);
-                    },
-                    onStartDelivery: () {
-                      context.push(DriverTrakingScreen.routeName);
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
+                return _BottomActions(
+                  onMessage: () async {
+                    SharedPreferences pefa =
+                        await SharedPreferences.getInstance();
+                    String id = pefa.getString('user_id') ?? '';
+                    final intId = int.parse(id);
+                    context.push(
+                      GlobalChatScreen.routeName,
+                      extra: ChatArgs(
+                        partnerId: data.userId,
+                        partnerName: data.cusName,
+                        partnerImage:
+                            data.user?.image ??
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
+                        myUserId: intId,
+                      ),
+                    );
+                  },
+                  onStartDelivery: () {
+                    context.push(
+                      DriverTrakingScreen.routeName,
+                      extra: data.id.toString(),
+                    );
+                  },
+                );
               },
               loading: () => const Expanded(
                 child: Center(child: CircularProgressIndicator()),
@@ -93,15 +109,15 @@ class OrderDetailsScreen extends ConsumerWidget {
 
 /* ------------------------------ UI Part (unchanged mostly) ------------------------------ */
 
-class _DetailsContent extends StatelessWidget {
+class _DetailsContent extends ConsumerWidget {
   const _DetailsContent({
     required this.orderId,
     required this.pickupAddress,
     required this.dropoffAddress,
     required this.customerName,
     required this.customerPhone,
-    required this.instruction,
-    required this.imageUrl,
+    required this.lat,
+    required this.lot,
   });
 
   final String orderId;
@@ -109,11 +125,11 @@ class _DetailsContent extends StatelessWidget {
   final String dropoffAddress;
   final String customerName;
   final String customerPhone;
-  final String instruction;
-  final String imageUrl;
+  final double lat;
+  final double lot;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Expanded(
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -129,20 +145,25 @@ class _DetailsContent extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16.h),
-            _Label("Pickup address"),
+            _Label(
+                //"Pickup address"
+               ref.t(BKeys.pickup_address)
+            ),
             _BodyText(pickupAddress),
             _DividerLine(),
-            _Label("Drop-off address"),
+            //Drop-off address
+            _Label(ref.t(BKeys.drop_off_address)),
             _BodyText(dropoffAddress),
             _DividerLine(),
-            _Label("Customer Details"),
+            //Customer Details
+            _Label(ref.t(BKeys.customer_details)),
             _BodyText(customerName),
             _BodyText(customerPhone),
             // SizedBox(height: 10.h),
             // _Label("Customer instruction"),
             // _InstructionBox(text: instruction),
             SizedBox(height: 10.h),
-            _MapImage(imageUrl: imageUrl),
+            _MapImage(latitude: lat, longitude: lot),
             SizedBox(height: 10.h),
           ],
         ),
@@ -224,22 +245,38 @@ class _InstructionBox extends StatelessWidget {
 }
 
 class _MapImage extends StatelessWidget {
-  const _MapImage({required this.imageUrl});
-  final String imageUrl;
+  const _MapImage({super.key, required this.latitude, required this.longitude});
+
+  final double latitude;
+  final double longitude;
 
   @override
   Widget build(BuildContext context) {
+    final position = LatLng(latitude, longitude);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.r),
       child: AspectRatio(
         aspectRatio: 16 / 10,
-        child: Image.network(imageUrl, fit: BoxFit.cover),
+        child: GoogleMap(
+          initialCameraPosition: CameraPosition(target: position, zoom: 13),
+          markers: {
+            Marker(
+              markerId: const MarkerId('orderLocation'),
+              position: position,
+            ),
+          },
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          compassEnabled: false,
+          mapToolbarEnabled: false,
+        ),
       ),
     );
   }
 }
 
-class _BottomActions extends StatelessWidget {
+class _BottomActions extends ConsumerWidget {
   const _BottomActions({
     required this.onMessage,
     required this.onStartDelivery,
@@ -249,20 +286,22 @@ class _BottomActions extends StatelessWidget {
   final VoidCallback onStartDelivery;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
       child: Column(
         children: [
           _FilledButton(
-            label: "Message Now",
+            // "Message Now"
+            label:ref.t(BKeys.message_now),
             bg: AllColor.blue500,
             fg: AllColor.white,
             onTap: onMessage,
           ),
           SizedBox(height: 12.h),
           _FilledButton(
-            label: "Start Delivery",
+            //"Start Delivery"
+            label: ref.t(BKeys.start_delivery),
             bg: AllColor.loginButtomColor,
             fg: AllColor.white,
             onTap: onStartDelivery,

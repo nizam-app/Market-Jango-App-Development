@@ -1,26 +1,30 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 
+import '../../../../../core/localization/tr.dart';
+
 const String kGoogleApiKey = 'AIzaSyDkSsblaqxoIpj1azSs7nBE7Xssv6O2v6k';
 
-class VendorTransportScreen extends StatefulWidget {
+class VendorTransportScreen extends ConsumerStatefulWidget {
   const VendorTransportScreen({super.key});
   static const routeName = "/vendorTransporter";
 
   @override
-  State<VendorTransportScreen> createState() => _VendorTransportScreenState();
+  ConsumerState<VendorTransportScreen> createState() => _VendorTransportScreenState();
 }
 
-class _VendorTransportScreenState extends State<VendorTransportScreen> {
+class _VendorTransportScreenState extends ConsumerState<VendorTransportScreen> {
   int _tab = 0;
   final _pickup = TextEditingController();
   final _destination = TextEditingController();
@@ -257,14 +261,23 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                 ),
                 markers: {
                   Marker(
-                    markerId: const MarkerId('pickup'),
+                    markerId:  MarkerId('pickup'),
                     position: _pickupLatLng,
-                    infoWindow: const InfoWindow(title: 'Pickup Location'),
+                    infoWindow:  InfoWindow(title:
+                   // 'Pickup Location'
+                    ref.t(BKeys.pick_up_location),
+                    ),
                   ),
                   Marker(
-                    markerId: const MarkerId('destination'),
+                    markerId:  MarkerId(
+                        //'destination'
+                      ref.t(BKeys.destination),
+                    ),
                     position: _destinationLatLng,
-                    infoWindow: const InfoWindow(title: 'Destination'),
+                    infoWindow:  InfoWindow(title:
+                    //'Destination'
+                      ref.t(BKeys.destination),
+                    ),
                   ),
                 },
                 zoomControlsEnabled: true,
@@ -291,7 +304,9 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                     const SizedBox(height: 6),
 
                     _SegmentedToggle(
-                      leftText: 'Track shipments',
+                      leftText:
+                      //'Track shipments',
+                      ref.t(BKeys.track_shipments),
                       value: _tab,
                       onChanged: (v) {
                         setState(() => _tab = v);
@@ -308,7 +323,9 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                     // Pickup field + suggestions
                     _LocationField(
                       controller: _pickup,
-                      hint: 'Enter Pickup location',
+                      hint:
+                      //'Enter Pickup location',
+                      ref.t(BKeys.pick_up_location),
                       icon: Icons.near_me_rounded,
                       onChanged: _onPickupChanged,
                     ),
@@ -351,7 +368,9 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
                     // Destination field + suggestions
                     _LocationField(
                       controller: _destination,
-                      hint: 'Destination',
+                      hint:
+                      //'Destination',
+                      ref.t(BKeys.destination),
                       icon: Icons.location_on_rounded,
                       onChanged: _onDestinationChanged,
                     ),
@@ -399,7 +418,7 @@ class _VendorTransportScreenState extends State<VendorTransportScreen> {
               right: 16,
               bottom: 18 + MediaQuery.of(context).padding.bottom,
               child: CustomAuthButton(
-                buttonText: "Save",
+                buttonText: ref.t(BKeys.save),
                 onTap: () => nextButonDone(context),
               ),
             ),

@@ -1,4 +1,54 @@
-// profile_model.dart
+// profile_response_model.dart (chaile same file e rakhte paro)
+
+// Top level: status, message, data{ user, images, review_count }
+class UserProfileResponse {
+  final String status;
+  final String message;
+  final UserProfileData data;
+
+  UserProfileResponse({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory UserProfileResponse.fromJson(Map<String, dynamic> json) {
+    return UserProfileResponse(
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      data: UserProfileData.fromJson(
+        (json['data'] as Map<String, dynamic>? ?? const {}),
+      ),
+    );
+  }
+}
+
+class UserProfileData {
+  final UserModel user;
+  final List<UserImage> images;
+  final int reviewCount;
+
+  UserProfileData({
+    required this.user,
+    required this.images,
+    required this.reviewCount,
+  });
+
+  factory UserProfileData.fromJson(Map<String, dynamic> json) {
+    return UserProfileData(
+      user: UserModel.fromJson(
+        (json['user'] as Map<String, dynamic>? ?? const {}),
+      ),
+      images: (json['images'] as List? ?? [])
+          .where((e) => e is Map<String, dynamic>)
+          .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      reviewCount: json['review_count'] is int
+          ? json['review_count'] as int
+          : int.tryParse(json['review_count']?.toString() ?? '0') ?? 0,
+    );
+  }
+}
 
 class UserModel {
   // ==== your existing required fields (unchanged) ====
@@ -103,6 +153,7 @@ class UserModel {
 }
 
 // ---------------- Vendor ----------------
+// ---------------- Vendor ----------------
 class VendorInfo {
   final int id;
   final String country;
@@ -113,6 +164,16 @@ class VendorInfo {
   final String createdAt;
   final String updatedAt;
 
+  // 🔹 extra fields from JSON (optional)
+  final String? openTime;
+  final String? closeTime;
+  final String? latitude;
+  final String? longitude;
+  final double? avgRating;
+
+  // 🔹 vendor.reviews[]
+  final List<VendorReviewProfile> reviews;
+
   VendorInfo({
     required this.id,
     required this.country,
@@ -122,6 +183,12 @@ class VendorInfo {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
+    this.openTime,
+    this.closeTime,
+    this.latitude,
+    this.longitude,
+    this.avgRating,
+    this.reviews = const <VendorReviewProfile>[],
   });
 
   factory VendorInfo.fromJson(Map<String, dynamic> json) => VendorInfo(
@@ -133,6 +200,19 @@ class VendorInfo {
     userId: json['user_id'] ?? 0,
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
+
+    // extra
+    openTime: json['open_time']?.toString(),
+    closeTime: json['close_time']?.toString(),
+    latitude: json['latitude']?.toString(),
+    longitude: json['longitude']?.toString(),
+    avgRating: json['avg_rating']?.toDouble(),
+
+    // reviews list
+    reviews: (json['reviews'] as List? ?? [])
+        .where((e) => e is Map<String, dynamic>)
+        .map((e) => VendorReviewProfile.fromJson(e as Map<String, dynamic>))
+        .toList(),
   );
 }
 
@@ -310,4 +390,55 @@ class UserImage {
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
   );
+}
+
+class VendorReviewProfile {
+  final int id;
+  final String review;
+  final double rating;
+  final int userId;
+  final int vendorId;
+  final int productId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  VendorReviewProfile({
+    required this.id,
+    required this.review,
+    required this.rating,
+    required this.userId,
+    required this.vendorId,
+    required this.productId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory VendorReviewProfile.fromJson(Map<String, dynamic> json) {
+    double _parseDouble(dynamic v) {
+      if (v == null) return 0;
+      if (v is num) return v.toDouble();
+      return double.tryParse(v.toString()) ?? 0;
+    }
+
+    DateTime? _parseDate(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
+
+    int _parseInt(dynamic v) {
+      if (v == null) return 0;
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      return int.tryParse(v.toString()) ?? 0;
+    }
+
+    return VendorReviewProfile(
+      id: _parseInt(json['id']),
+      review: json['review']?.toString() ?? '',
+      rating: _parseDouble(json['rating']),
+      userId: _parseInt(json['user_id']),
+      vendorId: _parseInt(json['vendor_id']),
+      productId: _parseInt(json['product_id']),
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
+    );
+  }
 }

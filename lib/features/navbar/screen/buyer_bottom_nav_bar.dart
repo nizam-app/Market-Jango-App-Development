@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
+import 'package:market_jango/features/buyer/screens/review/screen/buyer_home_screen.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -55,28 +57,28 @@ class BuyerBottomNavBar extends ConsumerWidget {
         // Keep this if you want fixed labels
         // showSelectedLabels: true, // Optional: ensure selected label is shown
         // showUnselectedLabels: true, // Optional: ensure unselected labels are shown
-        items: const [
+        items:  [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled), // Changed Icon
-            label: "Home",
+            label: ref.t(BKeys.home),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline_rounded),
             // Kept similar, adjust if needed
-            label: "Chat",
+            label: ref.t(BKeys.chat),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.widgets_outlined),
             // Changed Icon (example for Categories)
-            label: "Categories",
+            label: ref.t(BKeys.categories),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined), // Changed Icon
-            label: "Cart",
+            label: ref.t(BKeys.cart),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline), // Changed Icon
-            label: "Account",
+            label: ref.t(BKeys.myProfile),
           ),
         ],
       ),

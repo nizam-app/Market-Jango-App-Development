@@ -1,3 +1,4 @@
+// lib/features/buyer/screens/order/data/buyer_orders_data.dart
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +8,9 @@ import 'package:market_jango/features/buyer/screens/order/model/order_summary.da
 import 'package:shared_preferences/shared_preferences.dart';
 
 final buyerOrdersProvider =
-AsyncNotifierProvider<BuyerOrdersNotifier, OrdersPageData?>(
-  BuyerOrdersNotifier.new,
-);
+    AsyncNotifierProvider<BuyerOrdersNotifier, OrdersPageData?>(
+      BuyerOrdersNotifier.new,
+    );
 
 class BuyerOrdersNotifier extends AsyncNotifier<OrdersPageData?> {
   int _page = 1;
@@ -29,16 +30,21 @@ class BuyerOrdersNotifier extends AsyncNotifier<OrdersPageData?> {
     final token = prefs.getString('auth_token');
 
     final uri = Uri.parse('${BuyerAPIController.all_order}?page=$_page');
-    final res = await http.get(uri, headers: {
-      'Accept': 'application/json',
-      if (token != null) 'token': token,
-    });
+    final res = await http.get(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        if (token != null) 'token': token,
+      },
+    );
 
     if (res.statusCode != 200) {
       throw Exception('Failed to fetch orders: ${res.statusCode}');
     }
 
-    final parsed = OrdersResponse.fromJson(jsonDecode(res.body));
+    final parsed = OrdersResponse.fromJson(
+      jsonDecode(res.body) as Map<String, dynamic>,
+    );
     return parsed.data; // OrdersPageData?
   }
 }

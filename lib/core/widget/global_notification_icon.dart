@@ -8,7 +8,7 @@ class GlobalNotificationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Container(
+    return Container(
       height: 35.h,
       width: 35.w,
       decoration: BoxDecoration(
@@ -18,18 +18,19 @@ class GlobalNotificationIcon extends StatelessWidget {
           BoxShadow(
             color: Colors.black12,
             blurRadius: 4,
-            offset: Offset(0,0.5.sp),
+            offset: Offset(0, 0.5.sp),
           ),
         ],
       ),
       child: IconButton(
-        icon: Icon(Icons.notifications, size: 20.sp),
+        icon: Icon(Icons.notifications, size: 15.sp),
         onPressed: () {
-          goToNotificationScreen(context);}
-        ,
+          goToNotificationScreen(context);
+        },
       ),
     );
   }
+
   void goToNotificationScreen(BuildContext context) {
     context.push(GlobalNotificationsScreen.routeName);
   }

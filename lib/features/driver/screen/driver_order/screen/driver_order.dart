@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
-import 'package:market_jango/features/driver/screen/driver_traking_screen.dart';
+import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 
 class DriverOrder extends ConsumerStatefulWidget {
   const DriverOrder({super.key});
@@ -86,20 +87,20 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
                     onTrackOrder: items[i].kind == OrderStatus.delivered
                         ? null
                         : () => context.push(
-                      // 👇 এখানেও DriverOrderEntity.id
-                      '${DriverTrakingScreen.routeName}?id=${items[i].driverOrderId}',
-                    ),
+                            DriverTrakingScreen.routeName,
+                            extra: items[i].driverOrderId.toString(),
+                          ),
                   ),
                 ),
               ),
             ),
 
             SizedBox(height: 8.h),
-            GlobalPagination(
-              currentPage: notifier.currentPage,
-              totalPages: notifier.lastPage,
-              onPageChanged: (p) => notifier.changePage(p),
-            ),
+            // GlobalPagination(
+            //   currentPage: notifier.currentPage,
+            //   totalPages: notifier.lastPage,
+            //   onPageChanged: (p) => notifier.changePage(p),
+            // ),
           ],
         ),
       ),
@@ -201,7 +202,7 @@ class _FilterChipsDynamic extends StatelessWidget {
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends ConsumerWidget {
   final OrderItem data;
   final VoidCallback onSeeDetails;
   final VoidCallback? onTrackOrder;
@@ -213,8 +214,17 @@ class _OrderCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context, ref) {
     final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
+
+    // 🔴 Not Deliver hole action button dekhabo na
+    final normStatus = data.statusLabel.toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
+    final bool hideActions = normStatus.contains('notdeliver');
+
     return Container(
       decoration: BoxDecoration(
         color: AllColor.white,
@@ -249,18 +259,26 @@ class _OrderCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          _kvBold('Pick up location: ', data.pickup),
+          //Pick up location:
+          _kvBold(ref.t(BKeys.pick_up_location ),  data.pickup),
           SizedBox(height: 8.h),
-          _kvBold('Destination: ', data.destination),
+          
+          //'Destination:
+          _kvBold(ref.t(BKeys.destination ), data.destination),
           SizedBox(height: 14.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _PrimaryButton(text: 'See details', onTap: onSeeDetails),
-              if (onTrackOrder != null)
-                _SecondaryButton(text: 'Track order', onTap: onTrackOrder!),
-            ],
-          ),
+
+          // 🔻 Not Deliver হলে কোন বোতামই দেখাবো না
+          if (!hideActions)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                //'See details'
+                _PrimaryButton(text:  ref.t(BKeys.see_details), onTap: onSeeDetails),
+                if (onTrackOrder != null)
+                  // 'Track order'
+                  _SecondaryButton(text:ref.t(BKeys.track_order), onTap: onTrackOrder!),
+              ],
+            ),
         ],
       ),
     );
@@ -368,7 +386,7 @@ class _SecondaryButton extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700, fontSize: 11.sp),
         ),
       ),
     );

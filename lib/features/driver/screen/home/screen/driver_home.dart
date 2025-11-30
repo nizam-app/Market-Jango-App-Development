@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
@@ -40,23 +42,30 @@ class DriverHomeScreen extends ConsumerWidget {
                 _StatsGrid(
                   stats: [
                     _StatItem(
-                      title: "Total Active Orders",
+                      //"Total Active Orders"
+                      title: ref.t(BKeys.total_active_order),
                       value: stats.totalActiveOrders.toString(),
                     ),
-                    _StatItem(title: "Picked", value: stats.picked.toString()),
                     _StatItem(
-                      title: "Pending Deliveries",
+                        //"Picked"
+                        title: ref.t(BKeys.picked),
+                        value: stats.picked.toString()),
+                    _StatItem(
+                      //Pending Deliveries
+                      title: ref.t(BKeys.pending_deliveries),
                       value: stats.pendingsDeliveries.toString(),
                     ),
                     _StatItem(
-                      title: "Delivered Today",
+                      //"Delivered Today"
+                      title: ref.t(BKeys.delivered_today),
                       value: stats.deliveredToday.toString(),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 16),
-                const _SectionTitle(title: "New Orders"),
+                //"New Orders"
+                 _SectionTitle(title: ref.t(BKeys.new_order)),
                 const SizedBox(height: 10),
 
                 /// 🔹 শুধু একটাই Expanded – vitore _OrdersList nijer async handle korbe
@@ -300,14 +309,16 @@ class _OrdersList extends ConsumerWidget {
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends ConsumerWidget {
   const _OrderCard({required this.order, required this.orderId});
   final DriverOrder order;
   final int orderId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
+
     return Container(
+
       decoration: BoxDecoration(
         color: AllColor.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -326,6 +337,7 @@ class _OrderCard extends StatelessWidget {
           children: [
             // left block
             Expanded(
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -356,14 +368,16 @@ class _OrderCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _FilledBtn(
-                        label: "See details",
+                        //"See details"
+                        label: ref.t(BKeys.see_details),
                         onTap: () => _onSeeDetails(context, orderId),
                         bg: AllColor.loginButtomColor,
                         fg: AllColor.white,
                       ),
-
+                      // SizedBox(width: 5.w,),
                       _FilledBtn(
-                        label: "Track order",
+                        //"Track order"
+                        label: ref.t(BKeys.track_order),
                         onTap: () => _onTrack(context, orderId.toString()),
                         bg: AllColor.blue500,
                         fg: AllColor.white,
@@ -474,7 +488,7 @@ class _FilledBtn extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10.r),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10.r),
@@ -484,7 +498,7 @@ class _FilledBtn extends StatelessWidget {
           style: TextStyle(
             color: fg,
             fontWeight: FontWeight.w700,
-            fontSize: 12.sp,
+            fontSize: 10.sp,
           ),
         ),
       ),

@@ -4,12 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart'; // chatListProvider
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../localization/Keys/buyer_kay.dart';
 import 'global_chat_screen.dart';
 
 class GlobalMassageScreen extends ConsumerWidget {
@@ -28,10 +30,10 @@ class GlobalMassageScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Messages', style: theme.titleLarge),
+              Text(ref.t(BKeys.messages), style: theme.titleLarge),
               SizedBox(height: 16.h),
               CustomTextFromField(
-                hintText: "Search",
+                hintText: ref.t(BKeys.search),
                 prefixIcon: Icons.search_rounded,
                 controller: TextEditingController(),
               ),

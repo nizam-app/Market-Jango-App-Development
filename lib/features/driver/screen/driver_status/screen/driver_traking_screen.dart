@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
@@ -61,7 +63,8 @@ class DriverTrakingScreen extends ConsumerWidget {
                         // ---------- 1) Packed ----------
                         _StatusTile(
                           checked: ui.packedChecked,
-                          title: 'Packed',
+                          //Picked
+                          title: ref.t(BKeys.picked),
                           time: _formatTime(data.createdAt),
                           body: ui.packedNote ?? '',
                           editable: ui.editableStep == TrackingStep.packed,

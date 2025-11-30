@@ -13,7 +13,6 @@ class BuyerVendorCetagoryScreen extends ConsumerWidget {
     required this.screenName,
     required this.vendorId,
   });
-
   final String screenName;
   final int vendorId;
 

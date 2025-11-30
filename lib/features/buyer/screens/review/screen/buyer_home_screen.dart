@@ -416,7 +416,6 @@ class PromoSlider extends ConsumerWidget {
 
 class BuyerHomeSearchBar extends ConsumerWidget {
   const BuyerHomeSearchBar({super.key});
-
   @override
   Widget build(BuildContext context, ref) {
     return Column(

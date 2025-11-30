@@ -6,6 +6,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -66,7 +68,6 @@ class OrderDetailsScreen extends ConsumerWidget {
                         await SharedPreferences.getInstance();
                     String id = pefa.getString('user_id') ?? '';
                     final intId = int.parse(id);
-
                     context.push(
                       GlobalChatScreen.routeName,
                       extra: ChatArgs(
@@ -108,7 +109,7 @@ class OrderDetailsScreen extends ConsumerWidget {
 
 /* ------------------------------ UI Part (unchanged mostly) ------------------------------ */
 
-class _DetailsContent extends StatelessWidget {
+class _DetailsContent extends ConsumerWidget {
   const _DetailsContent({
     required this.orderId,
     required this.pickupAddress,
@@ -128,7 +129,7 @@ class _DetailsContent extends StatelessWidget {
   final double lot;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Expanded(
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -144,13 +145,18 @@ class _DetailsContent extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16.h),
-            _Label("Pickup address"),
+            _Label(
+                //"Pickup address"
+               ref.t(BKeys.pickup_address)
+            ),
             _BodyText(pickupAddress),
             _DividerLine(),
-            _Label("Drop-off address"),
+            //Drop-off address
+            _Label(ref.t(BKeys.drop_off_address)),
             _BodyText(dropoffAddress),
             _DividerLine(),
-            _Label("Customer Details"),
+            //Customer Details
+            _Label(ref.t(BKeys.customer_details)),
             _BodyText(customerName),
             _BodyText(customerPhone),
             // SizedBox(height: 10.h),
@@ -270,7 +276,7 @@ class _MapImage extends StatelessWidget {
   }
 }
 
-class _BottomActions extends StatelessWidget {
+class _BottomActions extends ConsumerWidget {
   const _BottomActions({
     required this.onMessage,
     required this.onStartDelivery,
@@ -280,20 +286,22 @@ class _BottomActions extends StatelessWidget {
   final VoidCallback onStartDelivery;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
       child: Column(
         children: [
           _FilledButton(
-            label: "Message Now",
+            // "Message Now"
+            label:ref.t(BKeys.message_now),
             bg: AllColor.blue500,
             fg: AllColor.white,
             onTap: onMessage,
           ),
           SizedBox(height: 12.h),
           _FilledButton(
-            label: "Start Delivery",
+            //"Start Delivery"
+            label: ref.t(BKeys.start_delivery),
             bg: AllColor.loginButtomColor,
             fg: AllColor.white,
             onTap: onStartDelivery,

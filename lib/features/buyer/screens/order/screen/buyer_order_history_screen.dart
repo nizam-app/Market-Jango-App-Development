@@ -28,7 +28,8 @@ class BuyerOrderHistoryScreen extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Column(
               children: [
-                Tuppertextandbackbutton(screenName: "Order History"),
+                //"Order History"
+                Tuppertextandbackbutton(screenName: ref.t(BKeys.orderHistory)),
                 SizedBox(height: 12.h),
 
                 Expanded(
@@ -80,14 +81,14 @@ class BuyerOrderHistoryScreen extends ConsumerWidget {
   }
 }
 
-class _ReviewTile extends StatelessWidget {
+class _ReviewTile extends ConsumerWidget {
   const _ReviewTile({required this.order});
   final Order order;
 
   static const _orange = Color(0xFFFF8A00);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     // 🔹 image, text, date prepare
     final imageUrl = order.product.image;
     final subtitle = order.statusDescription.isNotEmpty
@@ -223,7 +224,8 @@ class _ReviewTile extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Review',
+                        //'Review'
+                        ref.t(BKeys.review),
                         style: TextStyle(
                           color: _orange,
                           fontWeight: FontWeight.w700,

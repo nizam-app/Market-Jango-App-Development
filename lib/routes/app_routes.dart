@@ -82,7 +82,7 @@ import '../features/vendor/screens/vendor_product_add_page/screen/product_add_pa
 
 final GoRouter router = GoRouter(
 
-  initialLocation: DriverBottomNavBar.routeName,
+  initialLocation: SplashScreen.routeName,
 
 
   errorBuilder: (context, state) =>

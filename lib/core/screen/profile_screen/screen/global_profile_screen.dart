@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
@@ -37,7 +39,8 @@ class GlobalSettingScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 12.h),
-                  Tuppertextandbackbutton(screenName: "My Settings"),
+                  //"My Settings"
+                  Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
                   SizedBox(height: 16.h),
                   ProfileSection(
                     name: user.name,
@@ -60,7 +63,8 @@ class GlobalSettingScreen extends ConsumerWidget {
                   if (userTypeAsync.value == "buyer")
                     _SettingsTile(
                       leadingIcon: Icons.shopping_bag_outlined,
-                      title: "My Order",
+                      // "My Order"
+                      title: ref.t(BKeys.myOrders),
                       onTap: () => context.push(BuyerOrderPage.routeName),
                     ),
                   if (userTypeAsync.value == "driver")
@@ -71,6 +75,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                   if (userTypeAsync.value == "vendor")
                     _SettingsTile(
                       leadingIcon: Icons.shopping_bag_outlined,
+                      //"My Product"
                       title: "My Product",
                       onTap: () =>
                           context.push(VendorMyProductScreen.routeName),
@@ -79,20 +84,21 @@ class GlobalSettingScreen extends ConsumerWidget {
                   if (userTypeAsync.value == "buyer")
                     _SettingsTile(
                       leadingIcon: Icons.event_note_outlined,
-                      title: "Order history",
+                      // "Order history"
+                      title: ref.t(BKeys.orderHistory),
                       onTap: () =>
                           context.push(BuyerOrderHistoryScreen.routeName),
                     ),
                   _DividerLine(),
                   _SettingsTile(
                     leadingIcon: Icons.language_outlined,
-                    title: "Language",
+                    title: ref.t(BKeys.language),
                     onTap: () => context.push(GlobalLanguageScreen.routeName),
                   ),
                   _DividerLine(),
                   _SettingsTile(
                     leadingIcon: Icons.logout_outlined,
-                    title: "Log Out",
+                    title: ref.t(BKeys.logOut),
                     titleColor: AllColor.orange,
                     iconColor: AllColor.orange,
                     arrowColor: AllColor.orange,

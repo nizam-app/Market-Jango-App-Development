@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
 
-import '../../transport/screens/transport_booking.dart';
-import '../../transport/screens/transport_chart.dart';
-import '../../transport/screens/transport_home.dart';
-import '../../transport/screens/transport_setting.dart';
+import '../../transport/screens/my_booking/screen/transport_booking.dart';
+import '../../transport/screens/home/screen/transport_home.dart';
 
 // --- Providers ---------------------------------------------------------------
 
@@ -13,12 +15,14 @@ import '../../transport/screens/transport_setting.dart';
 final transportNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap with your actual screens)
-final transportPagesProvider = Provider<List<Widget>>((_) => const [
-  TransportHomeScreen(),
-  TransportChart(),
-  TransportBooking(),
-  TransportSetting(),
-]);
+final transportPagesProvider = Provider<List<Widget>>(
+  (_) => const [
+    TransportHomeScreen(),
+    GlobalMassageScreen(),
+    TransportBooking(),
+    GlobalSettingScreen(),
+  ],
+);
 
 // --- Widget ------------------------------------------------------------------
 
@@ -40,22 +44,25 @@ class TransportBottomNavBar extends ConsumerWidget {
         selectedItemColor: const Color(0xFFFF8C00),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        items: const [
+        items:  [
           BottomNavigationBarItem(
-            label: "Home",
+            //"Home"
+            label: ref.t(BKeys.home),
             icon: _SvgIcon('assets/images/homeicon.svg'),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: "Chat",
+          BottomNavigationBarItem(icon: Icon(Icons.chat),
+              //Chat
+              label: ref.t(BKeys.chat)
           ),
           BottomNavigationBarItem(
-            label: "My Bookings",
+            //"My Bookings"
+            label: ref.t(BKeys.my_bookings),
             icon: _SvgIcon('assets/images/bookicon.svg'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),
-            label: "Settings",
+            //"Settings"
+            label:ref.t(BKeys.settings),
           ),
         ],
       ),

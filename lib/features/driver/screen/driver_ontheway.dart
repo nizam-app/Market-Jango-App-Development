@@ -25,9 +25,9 @@ class _DriverOnthewayState extends State<DriverOntheway> {
     final items = _demoOrders
         .where((e) {
           if (_tab == 0) return true;
-          if (_tab == 1) return e.status == OrderStatus.pending;
-          if (_tab == 2) return e.status == OrderStatus.onTheWay;
-          return e.status == OrderStatus.delivered;
+          if (_tab == 1) return e.status == DriverOrderStatus.pending;
+          if (_tab == 2) return e.status == DriverOrderStatus.onTheWay;
+          return e.status == DriverOrderStatus.delivered;
         })
         .where((e) =>
             _search.text.trim().isEmpty ||
@@ -106,14 +106,14 @@ class _DriverOnthewayState extends State<DriverOntheway> {
 
 /* -------------------- Models & Demo Data -------------------- */
 
-enum OrderStatus { delivered, pending, onTheWay }
+enum DriverOrderStatus { delivered, pending, onTheWay }
 
 class OrderItem {
   final String orderId;
   final String pickup;
   final String destination;
   final double price;
-  final OrderStatus status;
+  final DriverOrderStatus status;
 
   const OrderItem({
     required this.orderId,
@@ -130,21 +130,21 @@ const _demoOrders = <OrderItem>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.onTheWay,
+    status: DriverOrderStatus.onTheWay,
   ),
   OrderItem(
     orderId: 'ORD12346',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.onTheWay,
+    status: DriverOrderStatus.onTheWay,
   ),
   OrderItem(
     orderId: 'ORD12347',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.onTheWay,
+    status: DriverOrderStatus.onTheWay,
   ),
   // extra items for other tabs
   OrderItem(
@@ -152,14 +152,14 @@ const _demoOrders = <OrderItem>[
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.pending,
+    status: DriverOrderStatus.pending,
   ),
   OrderItem(
     orderId: 'ORD12349',
     pickup: 'Urban tech store',
     destination: 'Alex Hossain',
     price: 7.50,
-    status: OrderStatus.delivered,
+    status: DriverOrderStatus.delivered,
   ),
 ];
 
@@ -323,7 +323,7 @@ class _OrderCard extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  final OrderStatus status;
+  final DriverOrderStatus status;
   const _StatusPill({required this.status});
 
   @override
@@ -331,15 +331,15 @@ class _StatusPill extends StatelessWidget {
     late Color border;
     late String text;
     switch (status) {
-      case OrderStatus.delivered:
+      case DriverOrderStatus.delivered:
         border = AllColor.green500;
         text = 'Delivered';
         break;
-      case OrderStatus.pending:
+      case DriverOrderStatus.pending:
         border = AllColor.blue500;
         text = 'Pending';
         break;
-      case OrderStatus.onTheWay:
+      case DriverOrderStatus.onTheWay:
         border = AllColor.orange500;
         text = 'On the way';
         break;

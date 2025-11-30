@@ -6,12 +6,16 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 
-
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   static const String routeName = '/splashScreen';
 
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,8 +63,6 @@ class SplashScreenText extends ConsumerWidget {
         CustomAuthButton(
           buttonText: "Login",
           onTap: () {
-
-
             loginDone(context);
           },
         ),
@@ -68,10 +70,7 @@ class SplashScreenText extends ConsumerWidget {
         SplashSignUpButton(
           buttonText: "Sign Up",
           onTap: () {
-
-
             signupDone(context);
-
           },
         ),
         SizedBox(height: 28.h),

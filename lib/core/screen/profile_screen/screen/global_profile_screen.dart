@@ -222,7 +222,7 @@ class ProfileSection extends ConsumerWidget {
             } else if (userTypeAsync.value == "vendor") {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "transport") {
-              // Transport
+              context.push(BuyerProfileEditScreen.routeName, extra: userType);
             } else if (userTypeAsync.value == "driver") {
               context.push(BuyerProfileEditScreen.routeName, extra: userType);
               // Transport

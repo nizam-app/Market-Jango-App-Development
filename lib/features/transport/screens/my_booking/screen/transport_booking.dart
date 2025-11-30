@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
+
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
@@ -97,10 +99,9 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                       final page = resp?.data;
                       final items = page?.data ?? <TransportOrder>[];
 
-                      /// 🔹 deliveryStatus already:
+                      /// 🔹 deliveryStatus:
                       ///  - "Completed"
                       ///  - "On the way"
-                      /// (Cancelled / Canceled / Rejected sob "On the way")
                       List<TransportOrder> filtered;
 
                       if (selectedTab == "All") {
@@ -132,10 +133,16 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                               : null;
 
                           final orderIdText = "#${o.taxRef}";
+
+                          /// Driver text (car name + model)
                           final driverText = firstItem?.driver != null
                               ? "${firstItem!.driver!.carName} (${firstItem.driver!.carModel})"
                               : ref.t(BKeys.assigned_driver);
                           //"Assigned Driver"
+
+                          /// Driver image (nested driver.user.image theke)
+                          final driverImage =
+                              firstItem?.driver?.user?.image ?? "";
 
                           final dateText = _formatDate(o.createdAt);
                           final fromText = o.pickupAddress;
@@ -144,9 +151,14 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                           final status = o.deliveryStatus;
                           final statusColor = _statusColor(status);
 
+
                           /// On the way holei track button dekhabo
                           /// //"Completed"
                           final showTrack = status == ref.t(BKeys.completed);
+
+                          /// 🔥 On the way holei track button dekhabo
+                          final showTrack = status == "On the way";
+
 
                           return _bookingCard(
                             status: status,
@@ -157,6 +169,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             dateText: dateText,
                             fromText: fromText,
                             toText: toText,
+                            image: driverImage,
                           );
                         },
                       );
@@ -216,7 +229,6 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     child: Text(text),
   );
 
-  /// ekhane amra only effective UI status color dicchi:
   ///  - On the way -> blue
   ///  - Completed -> green
   Color _statusColor(String status) {
@@ -256,7 +268,12 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     String? dateText,
     String? fromText,
     String? toText,
+    String? image,
   }) {
+    final imageUrl = (image != null && image.isNotEmpty)
+        ? image
+        : "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png";
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(12.w),
@@ -273,7 +290,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                orderIdText ?? "Order #fond found",
+                orderIdText ?? "Order #not found",
                 style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
               ),
               Container(
@@ -302,7 +319,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(
-                  "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png",
+                  imageUrl,
                   height: 80.h,
                   width: 80.w,
                   fit: BoxFit.cover,
@@ -384,7 +401,11 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
+
                     //"/cancelledDetails"
+
+                    /// TODO: এখানে তোমার details route change korte paro
+
                     context.push("/cancelledDetails");
                   },
                   child: Text(
@@ -395,6 +416,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                 ),
               ),
               SizedBox(width: 10.w),
+
               if (showTrack)
                 Expanded(
                   child: ElevatedButton(
@@ -418,6 +440,30 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                     ),
                   ),
                 ),
+
+              // if (showTrack)
+              //   Expanded(
+              //     child: ElevatedButton(
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Colors.blue,
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(30.r),
+              //         ),
+              //         padding: EdgeInsets.symmetric(vertical: 12.h),
+              //       ),
+              //       onPressed: () {
+              //         context.pushNamed(
+              //           GlobalTrackingScreen1.routeName,
+              //           pathParameters: {"screenName": "transport"},
+              //         );
+              //       },
+              //       child: Text(
+              //         "Track order",
+              //         style: TextStyle(fontSize: 13.sp, color: Colors.white),
+              //       ),
+              //     ),
+              //   ),
+
             ],
           ),
         ],

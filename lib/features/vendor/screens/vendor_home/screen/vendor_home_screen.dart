@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
@@ -37,7 +41,7 @@ class VendorHomeScreen extends ConsumerWidget {
       child: Scaffold(
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-          child: buildDrawer(context),
+          child: buildDrawer(context, ref),
         ),
         body: Builder(
           builder: (innerContext) {
@@ -58,7 +62,9 @@ class VendorHomeScreen extends ConsumerWidget {
                     itemsSelector: (res) => res.products,
                     itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                     onItemSelected: (p) {},
+
                     hintText: ref.t(VKeys.searchProducts),
+
                     debounce: const Duration(seconds: 1),
                     minChars: 1,
                     showResults: true,
@@ -108,7 +114,7 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context) {
+  Widget buildDrawer(BuildContext context, ref ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Column(
@@ -127,7 +133,7 @@ class VendorHomeScreen extends ConsumerWidget {
                 size: 20.r,
               ),
               title: Text(
-                "Order",
+                ref.t(BKeys.order),
                 style: TextStyle(color: Colors.black, fontSize: 14.sp),
               ),
               trailing: const Icon(
@@ -147,7 +153,8 @@ class VendorHomeScreen extends ConsumerWidget {
                 size: 20.r,
               ),
               title: Text(
-                "Sale",
+                // "Sale",
+                ref.t(BKeys.sales),
                 style: TextStyle(color: Colors.black, fontSize: 14.sp),
               ),
               trailing: const Icon(
@@ -167,7 +174,8 @@ class VendorHomeScreen extends ConsumerWidget {
                 size: 20.r,
               ),
               title: Text(
-                "Language",
+                // "Language",
+                ref.t(BKeys.language),
                 style: TextStyle(color: Colors.black, fontSize: 14.sp),
               ),
               trailing: const Icon(
@@ -186,7 +194,8 @@ class VendorHomeScreen extends ConsumerWidget {
                 color: const Color(0xffFF3B3B),
               ),
               title: Text(
-                "Log Out",
+                // "Log Out",
+                ref.t(BKeys.logOut),
                 style: TextStyle(
                   color: const Color(0xffFF3B3B),
                   fontSize: 14.sp,

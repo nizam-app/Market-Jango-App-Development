@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
 import '../../product_edit/model/product_attribute_response_model.dart';
 class SizeRow {
@@ -63,7 +65,10 @@ class _MyProductSizeScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Size attribute',
+        title: Text(
+            
+            //'Size attribute',
+          ref.t(BKeys.size_attribute),
             style: TextStyle(color: AllColor.black)),
         backgroundColor: AllColor.white,
         foregroundColor: AllColor.black,
@@ -232,7 +237,8 @@ class _SizeAttributeTableState
       _Cell(
         pad: 12.w,
         child: Text(
-          'Name',
+          // 'Name',
+          ref.t(BKeys.name),
           style: TextStyle(
               fontWeight: FontWeight.w600,
               color: AllColor.black,
@@ -242,7 +248,7 @@ class _SizeAttributeTableState
       _Cell(
         pad: 12.w,
         child: Text(
-          'Value',
+          ref.t(BKeys.value),
           style: TextStyle(
               fontWeight: FontWeight.w600,
               color: AllColor.black,

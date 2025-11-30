@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
 // API model
 import '../../product_edit/model/product_attribute_response_model.dart';
@@ -28,7 +30,8 @@ class MyProductColorScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Color attribute"),
+        //("Color attribute"
+        title:  Text(ref.t(BKeys.color_attribute)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.3,

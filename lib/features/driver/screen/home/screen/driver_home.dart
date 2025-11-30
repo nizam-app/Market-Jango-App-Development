@@ -23,7 +23,6 @@ class DriverHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(driverHomeStatsProvider);
-
     return Scaffold(
       body: SafeArea(
         child: statsAsync.when(

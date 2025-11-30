@@ -17,7 +17,9 @@ class PageLink {
   factory PageLink.fromJson(Map<String, dynamic> json) => PageLink(
     url: json['url'],
     label: json['label']?.toString() ?? '',
-    page: json['page'] is int ? json['page'] as int : int.tryParse('${json['page'] ?? ''}'),
+    page: json['page'] is int
+        ? json['page'] as int
+        : int.tryParse('${json['page'] ?? ''}'),
     active: json['active'] == true,
   );
 }
@@ -63,10 +65,27 @@ class GlobalSearchResponse {
   });
 
   factory GlobalSearchResponse.fromJson(Map<String, dynamic> json) {
-    final data = (json['data'] ?? {}) as Map<String, dynamic>;
-    final list = (data['data'] is List) ? data['data'] as List : const [];
+    // ---- data field safely parse ----
+    final rawData = json['data'];
 
-    // per_page কখনো string হতে পারে
+    Map<String, dynamic> data;
+    if (rawData is Map<String, dynamic>) {
+      data = rawData;
+    } else if (rawData is Map) {
+      data = Map<String, dynamic>.from(rawData);
+    } else {
+      // data == null, "No products found" etc.
+      data = <String, dynamic>{};
+    }
+
+    final rawList = data['data'];
+    final list = rawList is List ? rawList : const [];
+
+    int _parseInt(dynamic v, {int fallback = 0}) {
+      if (v is int) return v;
+      return int.tryParse(v?.toString() ?? '') ?? fallback;
+    }
+
     int _parsePerPage(dynamic v) {
       if (v is int) return v;
       return int.tryParse(v?.toString() ?? '') ?? 0;
@@ -75,26 +94,36 @@ class GlobalSearchResponse {
     return GlobalSearchResponse(
       status: json['status']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
-      currentPage: data['current_page'] ?? 1,
-      firstPageUrl: data['first_page_url'],
-      from: data['from'],
-      lastPage: data['last_page'] ?? 1,
-      lastPageUrl: data['last_page_url'],
+      currentPage: _parseInt(data['current_page'], fallback: 1),
+      firstPageUrl: data['first_page_url']?.toString(),
+      from: _parseInt(data['from'], fallback: 0),
+      lastPage: _parseInt(data['last_page'], fallback: 1),
+      lastPageUrl: data['last_page_url']?.toString(),
       links: (data['links'] is List)
-          ? (data['links'] as List).map((e) => PageLink.fromJson(e)).toList()
+          ? (data['links'] as List)
+                .where((e) => e is Map)
+                .map(
+                  (e) => PageLink.fromJson(Map<String, dynamic>.from(e as Map)),
+                )
+                .toList()
           : const [],
-      nextPageUrl: data['next_page_url'],
+      nextPageUrl: data['next_page_url']?.toString(),
       path: data['path']?.toString() ?? '',
       perPage: _parsePerPage(data['per_page']),
-      prevPageUrl: data['prev_page_url'],
-      to: data['to'],
-      total: data['total'] ?? 0,
-      products: List<GlobalSearchProduct>.from(
-        list.map((x) => GlobalSearchProduct.fromJson(x as Map<String, dynamic>)),
-      ),
+      prevPageUrl: data['prev_page_url']?.toString(),
+      to: _parseInt(data['to'], fallback: 0),
+      total: _parseInt(data['total'], fallback: 0),
+      products: list
+          .where((x) => x is Map)
+          .map(
+            (x) => GlobalSearchProduct.fromJson(
+              Map<String, dynamic>.from(x as Map),
+            ),
+          )
+          .toList(),
     );
   }
-  // GlobalSearchResponse ক্লাসের ভিতরে যোগ করুন:
+
   factory GlobalSearchResponse.empty() => GlobalSearchResponse(
     status: 'success',
     message: '',
@@ -112,7 +141,6 @@ class GlobalSearchResponse {
     total: 0,
     products: const [],
   );
-
 }
 
 /// ---------- Product + nested objects ----------
@@ -125,8 +153,8 @@ class GlobalSearchProduct {
   final String sellPrice;
 
   // Newly added (from sample JSON)
-  final List<String> size;     // ["L,XL"] → normalize করে ["L","XL"]
-  final List<String> color;    // ["yellow,blue"] → ["yellow","blue"]
+  final List<String> size; // ["L,XL"] → normalize করে ["L","XL"]
+  final List<String> color; // ["yellow,blue"] → ["yellow","blue"]
   final int? vendorId;
   final int? categoryId;
   final SearchCategory? category;
@@ -149,24 +177,32 @@ class GlobalSearchProduct {
     this.images = const [],
   });
 
-  factory GlobalSearchProduct.fromJson(Map<String, dynamic> json) => GlobalSearchProduct(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-    description: json['description']?.toString() ?? '',
-    image: json['image']?.toString() ?? '',
-    regularPrice: json['regular_price']?.toString() ?? '',
-    // sell_price না থাকলে regular_price fallback
-    sellPrice: (json['sell_price'] ?? json['regular_price'] ?? '').toString(),
-    size: _parseFlexibleStringList(json['size']),
-    color: _parseFlexibleStringList(json['color']),
-    vendorId: json['vendor_id'],
-    categoryId: json['category_id'],
-    category: (json['category'] is Map) ? SearchCategory.fromJson(json['category']) : null,
-    vendor: (json['vendor'] is Map) ? SearchVendor.fromJson(json['vendor']) : null,
-    images: (json['images'] is List)
-        ? (json['images'] as List).map((e) => SearchProductImage.fromJson(e)).toList()
-        : const [],
-  );
+  factory GlobalSearchProduct.fromJson(Map<String, dynamic> json) =>
+      GlobalSearchProduct(
+        id: json['id'] ?? 0,
+        name: json['name']?.toString() ?? '',
+        description: json['description']?.toString() ?? '',
+        image: json['image']?.toString() ?? '',
+        regularPrice: json['regular_price']?.toString() ?? '',
+        // sell_price না থাকলে regular_price fallback
+        sellPrice: (json['sell_price'] ?? json['regular_price'] ?? '')
+            .toString(),
+        size: _parseFlexibleStringList(json['size']),
+        color: _parseFlexibleStringList(json['color']),
+        vendorId: json['vendor_id'],
+        categoryId: json['category_id'],
+        category: (json['category'] is Map)
+            ? SearchCategory.fromJson(json['category'])
+            : null,
+        vendor: (json['vendor'] is Map)
+            ? SearchVendor.fromJson(json['vendor'])
+            : null,
+        images: (json['images'] is List)
+            ? (json['images'] as List)
+                  .map((e) => SearchProductImage.fromJson(e))
+                  .toList()
+            : const [],
+      );
 }
 
 class SearchCategory {
@@ -175,10 +211,8 @@ class SearchCategory {
 
   const SearchCategory({required this.id, required this.name});
 
-  factory SearchCategory.fromJson(Map<String, dynamic> json) => SearchCategory(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-  );
+  factory SearchCategory.fromJson(Map<String, dynamic> json) =>
+      SearchCategory(id: json['id'] ?? 0, name: json['name']?.toString() ?? '');
 }
 
 class SearchProductImage {
@@ -194,12 +228,13 @@ class SearchProductImage {
     this.productId,
   });
 
-  factory SearchProductImage.fromJson(Map<String, dynamic> json) => SearchProductImage(
-    id: json['id'] ?? 0,
-    imagePath: json['image_path']?.toString() ?? '',
-    publicId: json['public_id']?.toString(),
-    productId: json['product_id'],
-  );
+  factory SearchProductImage.fromJson(Map<String, dynamic> json) =>
+      SearchProductImage(
+        id: json['id'] ?? 0,
+        imagePath: json['image_path']?.toString() ?? '',
+        publicId: json['public_id']?.toString(),
+        productId: json['product_id'],
+      );
 }
 
 class SearchVendor {
@@ -218,9 +253,13 @@ class SearchVendor {
   factory SearchVendor.fromJson(Map<String, dynamic> json) => SearchVendor(
     id: json['id'] ?? 0,
     userId: json['user_id'],
-    user: (json['user'] is Map) ? SearchVendorUser.fromJson(json['user']) : null,
+    user: (json['user'] is Map)
+        ? SearchVendorUser.fromJson(json['user'])
+        : null,
     reviews: (json['reviews'] is List)
-        ? (json['reviews'] as List).map((e) => SearchVendorReview.fromJson(e)).toList()
+        ? (json['reviews'] as List)
+              .map((e) => SearchVendorReview.fromJson(e))
+              .toList()
         : const [],
   );
 }
@@ -231,10 +270,11 @@ class SearchVendorUser {
 
   const SearchVendorUser({required this.id, required this.name});
 
-  factory SearchVendorUser.fromJson(Map<String, dynamic> json) => SearchVendorUser(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-  );
+  factory SearchVendorUser.fromJson(Map<String, dynamic> json) =>
+      SearchVendorUser(
+        id: json['id'] ?? 0,
+        name: json['name']?.toString() ?? '',
+      );
 }
 
 class SearchVendorReview {
@@ -250,12 +290,15 @@ class SearchVendorReview {
     this.rating,
   });
 
-  factory SearchVendorReview.fromJson(Map<String, dynamic> json) => SearchVendorReview(
-    id: json['id'] ?? 0,
-    vendorId: json['vendor_id'],
-    description: json['description']?.toString(),
-    rating: (json['rating'] is num) ? json['rating'] as num : num.tryParse('${json['rating'] ?? ''}'),
-  );
+  factory SearchVendorReview.fromJson(Map<String, dynamic> json) =>
+      SearchVendorReview(
+        id: json['id'] ?? 0,
+        vendorId: json['vendor_id'],
+        description: json['description']?.toString(),
+        rating: (json['rating'] is num)
+            ? json['rating'] as num
+            : num.tryParse('${json['rating'] ?? ''}'),
+      );
 }
 
 /// --- helper: ["L,XL"] / "L,XL" / ["L","XL"] / '["L","XL"]' → ["L","XL"]

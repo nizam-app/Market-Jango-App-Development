@@ -76,6 +76,7 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Language changed to $selectedLang')),
       );
+
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;

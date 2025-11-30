@@ -25,6 +25,7 @@ import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor/screen/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_cetagory_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
@@ -34,7 +35,6 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/review/screen/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -81,7 +81,6 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-
   initialLocation: SplashScreen.routeName,
 
   errorBuilder: (context, state) =>
@@ -392,7 +391,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: TransportCancelledDetails.routeName,
       name: 'cancelledDetails',
-      builder: (context, state) => TransportCancelledDetails(),
+      builder: (context, state) =>
+          TransportCancelledDetails(oderId: state.extra as int),
     ),
 
     GoRoute(

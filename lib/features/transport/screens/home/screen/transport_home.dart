@@ -349,7 +349,10 @@ class TransportHomeScreen extends ConsumerWidget {
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
                 //"Find your Driver"
-                Text(ref.t(BKeys.find_your_driver), style: TextStyle(fontSize: 10.sp)),
+                Text(
+                  ref.t(BKeys.find_your_driver),
+                  style: TextStyle(fontSize: 10.sp),
+                ),
                 SizedBox(height: 20.h),
 
                 /// Search Fields
@@ -398,7 +401,7 @@ class TransportHomeScreen extends ConsumerWidget {
                     // Pickup (light grey bg)
                     _softField(
                       //"Enter Pickup location"
-                      hint:ref.t(BKeys.pick_up_location),
+                      hint: ref.t(BKeys.pick_up_location),
                       icon: Icons.location_on_outlined,
                       bg: AllColor.grey300, // হালকা ধূসর
                     ),
@@ -427,7 +430,7 @@ class TransportHomeScreen extends ConsumerWidget {
                     ),
                     onPressed: () {},
                     child: Text(
-                     // "Search",
+                      // "Search",
                       ref.t(BKeys.search),
                       style: TextStyle(fontSize: 16.sp, color: AllColor.white),
                     ),
@@ -441,7 +444,7 @@ class TransportHomeScreen extends ConsumerWidget {
                   children: [
                     Text(
                       //"Drivers",
-                    ref.t(BKeys.driver),
+                      ref.t(BKeys.driver),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -451,7 +454,7 @@ class TransportHomeScreen extends ConsumerWidget {
                       onPressed: () {
                         context.push(TransportDriver.routeName);
                       },
-                      child:  Text(ref.t(BKeys.seeAll)),
+                      child: Text(ref.t(BKeys.seeAll)),
                     ),
                   ],
                 ),
@@ -464,8 +467,8 @@ class TransportHomeScreen extends ConsumerWidget {
                     child: Padding(
                       padding: EdgeInsets.only(top: 16.h),
                       child: Text(
-                          // 'Failed to load drivers'
-                        ref.t(BKeys.failed_to_load_drivers)
+                        // 'Failed to load drivers'
+                        ref.t(BKeys.failed_to_load_drivers),
                       ),
                     ),
                   ),
@@ -476,9 +479,9 @@ class TransportHomeScreen extends ConsumerWidget {
                     if (items.isEmpty) {
                       return Padding(
                         padding: EdgeInsets.only(top: 20.h),
-                        child:  Text(
-                            // ''No drivers available''
-                            ref.t(BKeys.no_drivers_available)
+                        child: Text(
+                          // ''No drivers available''
+                          ref.t(BKeys.no_drivers_available),
                         ),
                       );
                     }
@@ -548,7 +551,7 @@ class _DriverCard extends ConsumerWidget {
   final List<String> images;
 
   @override
-  Widget build(BuildContext context,ref ) {
+  Widget build(BuildContext context, ref) {
     final user = driver.user;
 
     // Safe fallbacks
@@ -575,10 +578,7 @@ class _DriverCard extends ConsumerWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(
-                      DriverDetailsScreen.routeName,
-                      extra: driver.id,
-                    );
+                    context.push(DriverDetailsScreen.routeName, extra: user.id);
                   },
                   child: CircleAvatar(
                     radius: 20.r,
@@ -589,10 +589,7 @@ class _DriverCard extends ConsumerWidget {
                 InkWell(
                   onTap: () {
                     Logger().i(user.id);
-                    context.push(
-                      DriverDetailsScreen.routeName,
-                      extra: driver.id,
-                    );
+                    context.push(DriverDetailsScreen.routeName, extra: user.id);
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,7 +669,7 @@ class _DriverCard extends ConsumerWidget {
                       Logger().e(driver.id);
                       context.push(
                         DriverDetailsScreen.routeName,
-                        extra: driver.id,
+                        extra: user.id,
                       );
                     },
                     child: Container(

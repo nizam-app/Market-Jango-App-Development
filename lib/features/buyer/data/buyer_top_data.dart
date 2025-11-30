@@ -1,4 +1,6 @@
 // buyer_top_data.dart
+import 'dart:convert'; // <-- add this
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
@@ -29,17 +31,44 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       );
 
       if (res.statusCode != 200) {
-        throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
+        Logger().e('Top products failed: ${res.statusCode} ${res.body}');
+        return []; // ❗ error holeo empty list
       }
-      
-      Logger().i(res.body);
-      final parsed = TopProductsResponse.fromRawJson(res.body);
 
-      // ✔️ প্রতিটি item থেকে শুধুই product নাও
-      final products = parsed.data.data.map((it) => it.product).toList();
+      final body = res.body.trim();
+      Logger().i(body);
+
+      // ✅ null / empty / [] hole empty list return
+      if (body.isEmpty || body == 'null' || body == '[]') {
+        return [];
+      }
+
+      // ekhane ashle body ekta Map expected
+      // (jodi ekhaneo List ashe, shekhetreo handle korchi)
+      final decoded = jsonDecode(body);
+
+      // jodi backend sudhu list of products dei
+      if (decoded is List) {
+        if (decoded.isEmpty) return [];
+        return decoded
+            .whereType<Map<String, dynamic>>()
+            .map((e) => TopProduct.fromJson(e))
+            .toList();
+      }
+
+      // normal case: object => model
+      final parsed = TopProductsResponse.fromJson(
+        decoded as Map<String, dynamic>,
+      );
+
+      final products = parsed.data.data
+          .map((it) => it.product)
+          .toList(); // tomar ager line
       return products;
-    } catch (e) {
-      throw Exception('Error: $e');
+    } catch (e, st) {
+      Logger().e('Top products error', error: e, stackTrace: st);
+      // ❗ kono exception holeo empty list
+      return [];
     }
   }
 }

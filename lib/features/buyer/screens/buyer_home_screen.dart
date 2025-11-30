@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
@@ -27,10 +28,10 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../../../data/buyer_just_for_you_data.dart';
-import '../../all_categori/screen/all_categori_screen.dart';
-import '../../all_categori/screen/category_product_screen.dart';
-import '../../filter/screen/buyer_filtering.dart';
+import '../data/buyer_just_for_you_data.dart';
+import 'all_categori/screen/all_categori_screen.dart';
+import 'all_categori/screen/category_product_screen.dart';
+import 'filter/screen/buyer_filtering.dart';
 
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -81,8 +82,11 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 CustomCategories(
                   categoriCount: 4,
                   physics: const NeverScrollableScrollPhysics(),
-                  onTapCategory: (cat) =>
-                      goToCategoriesProductPage(context, cat.id, cat.name),
+                  onTapCategory: (cat) => goToCategoriesProductPage(
+                    context,
+                    cat.vendorId,
+                    cat.name,
+                  ),
                 ),
                 SeeMoreButton(
                   name: ref.t(BKeys.topProducts),
@@ -92,21 +96,32 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                 CustomTopProducts(),
 
                 newItems.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.newItems),
-                    seeMoreAction: () => goToNewItemsPage(ref, context, data!),
-                  ),
+                  data: (data) {
+                    if (data == null || data.data.data.isEmpty) {
+                      return const Text('No new items');
+                    }
+                    return SeeMoreButton(
+                      name: ref.t(BKeys.newItems),
+                      seeMoreAction: () =>
+                          goToNewItemsPage(ref, context, data!),
+                    );
+                  },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (err, _) => Text('Error loading new items: $err'),
                 ),
                 CustomNewItemsShow(),
                 justForYou.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.justForYou),
-                    seeMoreAction: () =>
-                        goToJustForYouPage(ref, context, data!),
-                  ),
+                  data: (data) {
+                    if (data == null || data.data.data.isEmpty) {
+                      return const Text('No new items');
+                    }
+                    return SeeMoreButton(
+                      name: ref.t(BKeys.justForYou),
+                      seeMoreAction: () =>
+                          goToJustForYouPage(ref, context, data!),
+                    );
+                  },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (err, _) => Text('Error loading Just For You: $err'),
@@ -193,6 +208,7 @@ class JustForYouProduct extends ConsumerWidget {
             return GestureDetector(
               onTap: () {
                 final detail = p;
+                Logger().d(detail.vendor.userId);
 
                 context.push(
                   BuyerVendorProfileScreen.routeName,

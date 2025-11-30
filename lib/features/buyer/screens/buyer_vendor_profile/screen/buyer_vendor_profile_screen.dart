@@ -104,6 +104,12 @@ class CustomVendorUpperSection extends ConsumerWidget {
         final vendor = v.vendor; // may be null
         final hasText = (String? s) => s != null && s.trim().isNotEmpty;
 
+        String truncateWithEllipsis(int cutoff, String myString) {
+          return (myString.length <= cutoff)
+              ? myString
+              : '${myString.substring(0, cutoff)}...';
+        }
+
         final name = hasText(v.name)
             ? v.name
             : (vendor != null && hasText(vendor.businessName))
@@ -121,7 +127,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
         // যদি আসল রেটিং না থাকে, UI ঠিক রাখতে fallback
         final double rating = vendor?.avgRating ?? 0;
         final reviewText =
-            '${rating.toStringAsFixed(2)} ( ${v.vendor} reviews )';
+            '${rating.toStringAsFixed(2)} ( ${v.vendor!.id} reviews )';
 
         final opening = (v.createdAt != null && v.expiresAt != null)
             ? 'Opening time: ${v.createdAt} - ${v.expiresAt}'
@@ -150,7 +156,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        name,
+                        truncateWithEllipsis(15, name!),
                         style: theme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

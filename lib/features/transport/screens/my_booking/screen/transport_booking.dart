@@ -8,6 +8,7 @@ import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tr
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
+import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 
 class TransportBooking extends ConsumerStatefulWidget {
   const TransportBooking({super.key});
@@ -153,8 +154,6 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                           /// //"Completed"
                           final showTrack = status == ref.t(BKeys.completed);
 
-
-
                           return _bookingCard(
                             status: status,
                             statusColor: statusColor,
@@ -165,6 +164,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             fromText: fromText,
                             toText: toText,
                             image: driverImage,
+                            orderId: o.id,
                           );
                         },
                       );
@@ -264,6 +264,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     String? fromText,
     String? toText,
     String? image,
+    int? orderId,
   }) {
     final imageUrl = (image != null && image.isNotEmpty)
         ? image
@@ -400,7 +401,10 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
 
                     /// TODO: এখানে তোমার details route change korte paro
 
-                    context.push("/cancelledDetails");
+                    context.push(
+                      TransportCancelledDetails.routeName,
+                      extra: orderId,
+                    );
                   },
                   child: Text(
                     //"See details",

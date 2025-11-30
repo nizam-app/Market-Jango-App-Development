@@ -1,6 +1,6 @@
 // lib/core/language/app_translation_keys.dart
 
-class TKeys {
+class BKeys {
   // 🔹 Common / Marketplace
   static const String marketplaceSlogan = 'marketplace_slogan';
 
@@ -204,5 +204,4 @@ class TKeys {
   static const String sizes = 'sizes';
   static const String specifications = 'specifications';
   static const String buyNow = 'buy_now';
-
 }

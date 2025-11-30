@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
@@ -56,7 +58,7 @@ class VendorHomeScreen extends ConsumerWidget {
                     itemsSelector: (res) => res.products,
                     itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                     onItemSelected: (p) {},
-                    hintText: 'Search products...',
+                    hintText: ref.t(VKeys.searchProducts),
                     debounce: const Duration(seconds: 1),
                     minChars: 1,
                     showResults: true,

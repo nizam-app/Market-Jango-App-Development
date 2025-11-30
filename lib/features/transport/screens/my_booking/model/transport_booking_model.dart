@@ -32,6 +32,17 @@ class TransportOrdersResponse {
 }
 
 /// ================= PAGE (pagination wrapper) =================
+/// API structure:
+/// {
+///   "status": "success",
+///   "message": "...",
+///   "data": {
+///     "data": [ { row }, { row }, ... ],
+///     "current_page": ?,   // optional
+///     "last_page": ?,      // optional
+///     "total": ?           // optional
+///   }
+/// }
 
 class TransportOrdersPage {
   final int currentPage;
@@ -47,14 +58,19 @@ class TransportOrdersPage {
   });
 
   factory TransportOrdersPage.fromJson(Map<String, dynamic> j) {
-    final list = (j['data'] as List? ?? [])
+    final rawList = j['data'] as List? ?? [];
+    final list = rawList
         .map((e) => TransportOrder.fromJson(e as Map<String, dynamic>))
         .toList();
 
+    final cpRaw = j['current_page'];
+    final lpRaw = j['last_page'];
+    final totalRaw = j['total'];
+
     return TransportOrdersPage(
-      currentPage: _toInt(j['current_page']),
-      lastPage: _toInt(j['last_page']),
-      total: _toInt(j['total']),
+      currentPage: cpRaw == null ? 1 : _toInt(cpRaw),
+      lastPage: lpRaw == null ? 1 : _toInt(lpRaw),
+      total: totalRaw == null ? list.length : _toInt(totalRaw),
       data: list,
     );
   }
@@ -67,7 +83,15 @@ class TransportOrdersPage {
   );
 }
 
-/// ================= INVOICE / ORDER =================
+/// ================= INVOICE / ORDER (UI wrapper) =================
+/// Ekta row structure:
+/// {
+///   "id": ...
+///   "cus_name": ...
+///   ... item fields ...
+///   "invoice": { ... },
+///   "driver": { ... }
+/// }
 
 class TransportOrder {
   final int id;
@@ -80,13 +104,13 @@ class TransportOrder {
   final double payable;
 
   final String paymentMethod;
-  final String status; // invoice status: Pending / successful / Cancelled
+  final String status; // invoice status: Pending / Successful / Cancelled
   final String transactionId;
   final String taxRef;
   final String currency;
   final int userId;
 
-  /// iso string (UI te String diyei use korcho)
+  /// iso string
   final String createdAt;
   final String updatedAt;
 
@@ -94,11 +118,11 @@ class TransportOrder {
   final List<TransportOrderItem> items;
 
   /// convenience field for UI
-  final String pickupAddress; // first item theke
-  final String dropOfAddress; // first item ship_address
+  final String pickupAddress; // row / item theke
+  final String dropOfAddress; // row / item theke
 
   /// 🚚 UI combined status (Pending / On the way / Completed)
-  /// ❗ Cancelled / Canceled / Rejected -> ekhaneo "On the way"
+  /// ❗ Cancelled / Canceled / Rejected / Not Deliver -> ekhaneo "On the way"
   final String deliveryStatus;
 
   TransportOrder({
@@ -125,38 +149,41 @@ class TransportOrder {
   });
 
   factory TransportOrder.fromJson(Map<String, dynamic> j) {
-    final items = (j['items'] as List? ?? [])
-        .map((e) => TransportOrderItem.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // ek row theke real item (row = ekta item)
+    final item = TransportOrderItem.fromJson(j);
 
-    final firstItem = items.isNotEmpty ? items.first : null;
+    // nested invoice
+    final inv = j['invoice'] as Map<String, dynamic>?;
 
-    final pickupAddress = (firstItem?.pickupAddress ?? '').toString();
-    final dropOfAddress = (firstItem?.shipAddress ?? '').toString();
-
-    final invoiceStatus = (j['status'] ?? '').toString();
-    final itemStatus = (firstItem?.status ?? '').toString();
+    final invoiceStatus = (inv?['status'] ?? '').toString();
+    final itemStatus = item.status;
 
     final deliveryStatus = _combineDeliveryStatus(invoiceStatus, itemStatus);
 
+    final pickupAddress = (item.pickupAddress ?? j['pickup_address'] ?? '')
+        .toString();
+    final dropOfAddress = (item.shipAddress).toString();
+
     return TransportOrder(
-      id: _toInt(j['id']),
-      cusPhone: (j['cus_phone'] ?? '').toString(),
-      cusEmail: (j['cus_email'] ?? '').toString(),
-      cusName: (j['cus_name'] ?? '').toString(),
-      total: _toDouble(j['total']),
-      vat: _toDouble(j['vat']),
-      payable: _toDouble(j['payable']),
-      paymentMethod: (j['payment_method'] ?? '').toString(),
+      id: _toInt(inv?['id'] ?? j['id']),
+      cusPhone: (inv?['cus_phone'] ?? j['cus_phone'] ?? '').toString(),
+      cusEmail: (inv?['cus_email'] ?? j['cus_email'] ?? '').toString(),
+      cusName: (inv?['cus_name'] ?? j['cus_name'] ?? '').toString(),
+      total: _toDouble(inv?['total']),
+      vat: _toDouble(inv?['vat']),
+      payable: _toDouble(inv?['payable']),
+      paymentMethod: (inv?['payment_method'] ?? j['payment_method'] ?? '')
+          .toString(),
       status: invoiceStatus,
-      transactionId: (j['transaction_id'] ?? '').toString(),
-      taxRef: (j['tax_ref'] ?? '').toString(),
-      currency: (j['currency'] ?? '').toString(),
-      userId: _toInt(j['user_id']),
-      createdAt: (j['created_at'] ?? '').toString(),
-      updatedAt: (j['updated_at'] ?? '').toString(),
-      itemsCount: _toInt(j['items_count']),
-      items: items,
+      transactionId: (inv?['transaction_id'] ?? j['transaction_id'] ?? '')
+          .toString(),
+      taxRef: (inv?['tax_ref'] ?? j['tax_ref'] ?? '').toString(),
+      currency: (inv?['currency'] ?? j['currency'] ?? '').toString(),
+      userId: _toInt(inv?['user_id'] ?? j['user_id']),
+      createdAt: (inv?['created_at'] ?? j['created_at'] ?? '').toString(),
+      updatedAt: (inv?['updated_at'] ?? j['updated_at'] ?? '').toString(),
+      itemsCount: 1,
+      items: [item],
       pickupAddress: pickupAddress,
       dropOfAddress: dropOfAddress,
       deliveryStatus: deliveryStatus,
@@ -184,11 +211,14 @@ class TransportOrderItem {
 
   final int? quantity;
   final String tranId;
-  final String status; // AssignedOrder, Pending, Cancelled...
+  final String status; // AssignedOrder, Pending, Cancelled, Not Deliver...
 
   final double distance;
+  final String? paymentMethod; // item level
   final double? salePrice;
   final double deliveryCharge;
+  final String? paymentProofId;
+  final double? totalPay;
 
   final int invoiceId;
   final int? productId;
@@ -218,8 +248,11 @@ class TransportOrderItem {
     required this.tranId,
     required this.status,
     required this.distance,
+    required this.paymentMethod,
     required this.salePrice,
     required this.deliveryCharge,
+    required this.paymentProofId,
+    required this.totalPay,
     required this.invoiceId,
     required this.productId,
     required this.vendorId,
@@ -248,8 +281,11 @@ class TransportOrderItem {
       tranId: (j['tran_id'] ?? '').toString(),
       status: (j['status'] ?? '').toString(),
       distance: _toDouble(j['distance']),
+      paymentMethod: j['payment_method']?.toString(),
       salePrice: j['sale_price'] == null ? null : _toDouble(j['sale_price']),
       deliveryCharge: _toDouble(j['delivery_charge']),
+      paymentProofId: j['payment_proof_id']?.toString(),
+      totalPay: j['total_pay'] == null ? null : _toDouble(j['total_pay']),
       invoiceId: _toInt(j['invoice_id']),
       productId: j['product_id'] == null ? null : _toInt(j['product_id']),
       vendorId: j['vendor_id'] == null ? null : _toInt(j['vendor_id']),
@@ -279,6 +315,8 @@ class TransportOrderDriver {
   final String createdAt;
   final String updatedAt;
 
+  final TransportDriverUser? user;
+
   TransportOrderDriver({
     required this.id,
     required this.carName,
@@ -291,6 +329,7 @@ class TransportOrderDriver {
     required this.routeId,
     required this.createdAt,
     required this.updatedAt,
+    required this.user,
   });
 
   factory TransportOrderDriver.fromJson(Map<String, dynamic> j) {
@@ -306,39 +345,114 @@ class TransportOrderDriver {
       routeId: _toInt(j['route_id']),
       createdAt: (j['created_at'] ?? '').toString(),
       updatedAt: (j['updated_at'] ?? '').toString(),
+      user: j['user'] == null
+          ? null
+          : TransportDriverUser.fromJson(j['user'] as Map<String, dynamic>),
+    );
+  }
+}
+
+/// ================= DRIVER.USER =================
+
+class TransportDriverUser {
+  final int id;
+  final String userType;
+  final String name;
+  final String email;
+  final bool isOnline;
+  final String phone;
+  final String? otp;
+  final String? phoneVerifiedAt;
+  final String language;
+  final String image;
+  final String? publicId;
+  final String? inviteToken;
+  final String status;
+  final bool? isActive;
+  final String? lastActiveAt;
+  final int mustChangePassword;
+  final String? expiresAt;
+  final String createdAt;
+  final String updatedAt;
+
+  TransportDriverUser({
+    required this.id,
+    required this.userType,
+    required this.name,
+    required this.email,
+    required this.isOnline,
+    required this.phone,
+    required this.otp,
+    required this.phoneVerifiedAt,
+    required this.language,
+    required this.image,
+    required this.publicId,
+    required this.inviteToken,
+    required this.status,
+    required this.isActive,
+    required this.lastActiveAt,
+    required this.mustChangePassword,
+    required this.expiresAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory TransportDriverUser.fromJson(Map<String, dynamic> j) {
+    return TransportDriverUser(
+      id: _toInt(j['id']),
+      userType: (j['user_type'] ?? '').toString(),
+      name: (j['name'] ?? '').toString(),
+      email: (j['email'] ?? '').toString(),
+      isOnline: j['is_online'] == true,
+      phone: (j['phone'] ?? '').toString(),
+      otp: j['otp']?.toString(),
+      phoneVerifiedAt: j['phone_verified_at']?.toString(),
+      language: (j['language'] ?? '').toString(),
+      image: (j['image'] ?? '').toString(),
+      publicId: j['public_id']?.toString(),
+      inviteToken: j['invite_token']?.toString(),
+      status: (j['status'] ?? '').toString(),
+      isActive: j['is_active'] is bool ? j['is_active'] as bool? : null,
+      lastActiveAt: j['last_active_at']?.toString(),
+      mustChangePassword: _toInt(j['must_change_password']),
+      expiresAt: j['expires_at']?.toString(),
+      createdAt: (j['created_at'] ?? '').toString(),
+      updatedAt: (j['updated_at'] ?? '').toString(),
     );
   }
 }
 
 /// ================= STATUS COMBINE LOGIC =================
-/// ekhane amra invoice.status + item.status diye ekta
-/// high level "deliveryStatus" banacchi.
-///
 /// OUTPUT:
 ///  - "Completed"
 ///  - "On the way"
 ///
 /// 🔥 IMPORTANT:
-///   Cancelled / Canceled / Rejected -> "On the way"
-///   mane Cancelled kono jaygay dekhabo na, sob On the way hisabe show hobe.
+///   Cancelled / Canceled / Rejected / Not Deliver -> "On the way"
 
 String _combineDeliveryStatus(String invoiceStatus, String itemStatus) {
   final inv = invoiceStatus.toLowerCase().trim();
   final itm = itemStatus.toLowerCase().trim();
   final s = '$inv|$itm';
 
+  // 1) Not Deliver explicitly -> On the way
+  if (s.contains('not deliver')) {
+    return 'On the way';
+  }
+
+  // 2) Completed / Delivered / Successful
   if (s.contains('complete') ||
-      s.contains('deliver') ||
+      s.contains('delivered') ||
       s.contains('success')) {
     return 'Completed';
   }
 
-  // ❗ Cancelled, Canceled, Rejected -> On the way
+  // 3) Cancelled / Canceled / Rejected -> On the way
   if (s.contains('cancel') || s.contains('reject')) {
     return 'On the way';
   }
 
-  // Pending / AssignedOrder / Ongoing / Processing / others -> On the way
+  // 4) baki shob
   return 'On the way';
 }
 

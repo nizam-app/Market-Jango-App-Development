@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart'; // chatListProvider
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
@@ -28,7 +30,7 @@ class GlobalMassageScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Messages', style: theme.titleLarge),
+              Text(ref.t(VKeys.messages), style: theme.titleLarge),
               SizedBox(height: 16.h),
               CustomTextFromField(
                 hintText: "Search",
@@ -43,7 +45,7 @@ class GlobalMassageScreen extends ConsumerWidget {
                   return Expanded(child: ChatListView(chatData: list));
                 },
                 loading: () =>
-                    const Expanded(child: Center(child: Text("Loading..."))),
+                    Expanded(child: Center(child: Text(ref.t(VKeys.loding)))),
                 error: (e, _) =>
                     Expanded(child: Center(child: Text('Error: $e'))),
               ),

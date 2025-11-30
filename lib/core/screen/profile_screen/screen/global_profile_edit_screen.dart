@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
@@ -155,22 +157,28 @@ class _BuyerProfileEditScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Tuppertextandbackbutton(screenName: "My Profile"),
+                //"My Profile"
+                 Tuppertextandbackbutton(screenName: ref.t(BKeys.myProfile)),
                 SizedBox(height: 16.h),
                 buildStackProfileImage(widget.user.image),
                 SizedBox(height: 16.h),
 
                 // ------------ Common fields ------------
-                CustomTextFormField(label: "Your Name", controller: nameC),
+                CustomTextFormField(
+                    //"Your Name"
+                    label: ref.t(BKeys.yourName),
+                    controller: nameC),
                 SizedBox(height: 12.h),
                 CustomTextFormField(
-                  label: "Email",
+                  // "Email"
+                  label: ref.t(BKeys.email),
                   controller: emailC,
                   enabled: false,
                 ),
                 SizedBox(height: 12.h),
                 CustomTextFormField(
-                  label: "Phone",
+                 //"Phone"
+                  label:ref.t(BKeys.phone) ,
                   controller: phoneC,
                   enabled: false,
                 ),
@@ -185,7 +193,8 @@ class _BuyerProfileEditScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Gender",
+                              //"Gender"
+                              ref.t(BKeys.gender),
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
@@ -311,7 +320,8 @@ class _BuyerProfileEditScreenState
                 if (isDriver) ...[
                   SizedBox(height: 12.h),
                   CustomTextFormField(
-                    label: "Price",
+                    //"Price"
+                    label: ref.t(BKeys.price),
                     controller: priceC,
                     hintText: "Enter you price per km",
                   ),

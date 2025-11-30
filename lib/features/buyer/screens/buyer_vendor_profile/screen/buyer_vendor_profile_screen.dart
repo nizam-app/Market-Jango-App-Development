@@ -47,11 +47,9 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                       error: (e, _) => Center(child: Text(e.toString())),
                       data: (res) {
                         final categories = res?.data.categories.data ?? [];
-
                         if (categories.isEmpty) {
                           return const SizedBox.shrink();
                         }
-
                         return Column(
                           children: [
                             for (final c in categories) ...[
@@ -221,7 +219,6 @@ class FashionProduct extends StatelessWidget {
           if (items.isEmpty) {
             return const SizedBox.shrink();
           }
-
           if (items.isNotEmpty) {
             final p = items[index];
             return GestureDetector(
@@ -242,7 +239,6 @@ class FashionProduct extends StatelessWidget {
             width: 130,
             height: 140,
             imageHeight: 130,
-
             productName: p.name,
             productPrices: p.sellPrice.toStringAsFixed(2),
             image: p.image,

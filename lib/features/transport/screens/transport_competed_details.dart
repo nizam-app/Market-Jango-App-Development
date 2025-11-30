@@ -1,20 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportCompetedDetails extends StatefulWidget {
+class TransportCompetedDetails extends ConsumerStatefulWidget {
   const TransportCompetedDetails({super.key});
   static const String routeName = "/completedDetails";
 
   @override
-  State<TransportCompetedDetails> createState() =>
+  ConsumerState<TransportCompetedDetails> createState() =>
       _TransportCompetedDetailsState();
 }
 
-class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
+class _TransportCompetedDetailsState extends ConsumerState<TransportCompetedDetails> {
   // GoogleMapController? mapController;
   // final LatLng pickupLocation = const LatLng(37.7749, -122.4194);
   // final LatLng dropoffLocation = const LatLng(37.8044, -122.2711);
@@ -40,25 +43,25 @@ class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
 
             /// Pickup Address
             _infoSection(
-              "Pickup address",
+              ref.t(BKeys.pickup_address),
               "4517 Washington Ave. Manchester, Kentucky 39495",
             ),
             Divider(height: 24.h),
 
             /// Drop-off Address
             _infoSection(
-              "Drop- off address",
+              ref.t(BKeys.drop_off_address),
               "6391 Elgin St. Celina, Delaware 10299",
             ),
             Divider(height: 24.h),
 
             /// Customer Note
-            _infoSection("Customer note", "John appaeell\n(239) 555-0108"),
+            _infoSection(ref.t(BKeys.customer_note), "John appaeell\n(239) 555-0108"),
             Divider(height: 24.h),
 
             /// Special Instruction
             Text(
-              "Special instruction:",
+              ref.t(BKeys.special_instruction),
               style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 6.h),
@@ -70,6 +73,7 @@ class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
+
                 "Don’t ring the bell",
                 style: TextStyle(fontSize: 13.sp, color: Colors.black),
               ),
@@ -121,9 +125,9 @@ class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
 
             SizedBox(height: 20.h),
 
-            /// Driver Info
+            /// "Driver Information"
             Text(
-              "Driver Information",
+              ref.t(BKeys.driver_information),
               style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 10.h),
@@ -192,7 +196,8 @@ class _TransportCompetedDetailsState extends State<TransportCompetedDetails> {
                   context.pop();
                 },
                 child: Text(
-                  "Completed",
+                  // "Completed"
+                  ref.t(BKeys.completed),
                   style: TextStyle(fontSize: 15.sp, color: Colors.white),
                 ),
               ),

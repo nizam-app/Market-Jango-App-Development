@@ -1,7 +1,10 @@
 // driver_edit_profile.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class DriverEditProfile extends StatefulWidget {
@@ -48,11 +51,11 @@ class _DriverEditProfileState extends State<DriverEditProfile> {
 
 /* ------------------------------ Custom Codebase ------------------------------ */
 
-class _PageHeader extends StatelessWidget {
+class _PageHeader extends ConsumerWidget {
   const _PageHeader();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
       child: Column(
@@ -60,7 +63,8 @@ class _PageHeader extends StatelessWidget {
         children: [
          
           Text(
-            "Settings",
+            //settings
+            ref.t(BKeys.settings),
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
@@ -68,7 +72,8 @@ class _PageHeader extends StatelessWidget {
             ),
           ),
           Text(
-            "Your Profile",
+            //"Your Profile",
+            ref.t(BKeys.myProfile),
             style: TextStyle(fontSize: 13.sp, color: AllColor.black54),
           ),
         ],
@@ -77,7 +82,7 @@ class _PageHeader extends StatelessWidget {
   }
 }
 
-class _FormScroll extends StatelessWidget {
+class _FormScroll extends ConsumerWidget {
   const _FormScroll({
     required this.online,
     required this.onToggleOnline,
@@ -87,7 +92,7 @@ class _FormScroll extends StatelessWidget {
   final ValueChanged<bool> onToggleOnline;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return Expanded(
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -103,19 +108,22 @@ class _FormScroll extends StatelessWidget {
             ),
             SizedBox(height: 18.h),
 
-            _FieldLabel("Name"),
+            _FieldLabel(
+                //"Name"
+              ref.t(BKeys.yourName)
+            ),
             _EditField(hint: "Enter your full name"),
             SizedBox(height: 12.h),
-
-            _FieldLabel("Email"),
+            //"Email"
+            _FieldLabel(ref.t(BKeys.email)),
             _EditField(hint: "Enter your email", keyboardType: TextInputType.emailAddress),
             SizedBox(height: 12.h),
-
-            _FieldLabel("Phone number"),
+            //"Phone number"
+            _FieldLabel(ref.t(BKeys.phone)),
             _EditField(hint: "Enter your phone number", keyboardType: TextInputType.phone),
             SizedBox(height: 12.h),
-
-            _FieldLabel("Price"),
+            //"Price"
+            _FieldLabel(ref.t(BKeys.price)),
             _EditField(hint: "Enter your price", keyboardType: TextInputType.number),
             SizedBox(height: 16.h),
 

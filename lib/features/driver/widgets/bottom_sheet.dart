@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
 
 Future<String?> showNotDeliveryBottomSheet(BuildContext context) {
@@ -18,17 +21,17 @@ Future<String?> showNotDeliveryBottomSheet(BuildContext context) {
   );
 }
 
-class Bottom_Sheet extends StatefulWidget {
+class Bottom_Sheet extends ConsumerStatefulWidget {
   const Bottom_Sheet({super.key}); 
   
  
 
 
   @override
-  State<Bottom_Sheet> createState() => _BottomSheetState();
+  ConsumerState<Bottom_Sheet> createState() => _BottomSheetState();
 }
 
-class _BottomSheetState extends State<Bottom_Sheet> {
+class _BottomSheetState extends ConsumerState<Bottom_Sheet> {
   final _ctrl = TextEditingController();
 
   @override
@@ -49,7 +52,7 @@ class _BottomSheetState extends State<Bottom_Sheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context ) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
@@ -77,7 +80,8 @@ class _BottomSheetState extends State<Bottom_Sheet> {
               children: [
                 // Title
                 Text(
-                  'Delivery was not successful',
+                  //Delivery was not successful
+                  ref.t(BKeys.deliveryNotSuccessful),
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w800,
@@ -88,7 +92,8 @@ class _BottomSheetState extends State<Bottom_Sheet> {
 
                 // Label
                 Text(
-                  'Enter your current location?',
+                  //  'Enter your current location?'
+                  ref.t(BKeys.enter_your_current_location),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -104,7 +109,8 @@ class _BottomSheetState extends State<Bottom_Sheet> {
                   onSubmitted: (_) => _submit(),
                   style: TextStyle(color: AllColor.black87, fontSize: 14.sp),
                   decoration: InputDecoration(
-                    hintText: 'Enter your Location',
+                    //'Enter your Location' 
+                    hintText: ref.t(BKeys.enter_your_current_location),
                     hintStyle: TextStyle(color: AllColor.textHintColor),
                     filled: true,
                     fillColor: AllColor.orange50,
@@ -138,7 +144,8 @@ class _BottomSheetState extends State<Bottom_Sheet> {
                         ),
                       ),
                       child: Text(
-                        'Submit',
+                        //'Submit' 
+                        ref.t(BKeys.submit),
                         style: TextStyle(
                           color: AllColor.white,
                           fontWeight: FontWeight.w700,

@@ -204,4 +204,45 @@ class BKeys {
   static const String sizes = 'sizes';
   static const String specifications = 'specifications';
   static const String buyNow = 'buy_now';
+
+  //added to Driver item;
+  static const String new_order = 'new_order';
+  static const String total_active_order = 'total_active_order';
+  static const String picked = 'picked';
+  static const String pending_deliveries = 'pending_deliveries';
+  static const String delivered_today = 'delivered_today';
+  static const String see_details = 'see_details';
+  static const String track_order = 'track_order';
+  static const String  bottomName = 'bottomName';
+
+  //New item
+  static const String  pickup_address = 'pickup_address';
+  static const String  drop_off_address = 'drop_off_address =';
+  static const String  customer_details = 'customer_details';
+  static const String  message_now = 'message_now';
+  static const String  start_delivery = 'start_dlivery';
+ static const String  pick_up_location = 'pick_up_location';
+  static const String  destination = 'destination';
+  static const String  delivered = 'delivered';
+  static const String  enter_your_current_location = 'enter_your_current_location';
+  static const String  my_bookings = 'my_bookings';
+
+// Transport item;
+  static const String  find_your_driver = 'find_your_driver';
+  static const String  search_by_vendor_name = 'search_by_vendor_name';
+  static const String  or = 'or';
+   static const String  failed_to_load_drivers = 'failed_to_load_drivers';
+   static const String  no_drivers_available = 'No_drivers_available';
+  static const String  assigned_driver = 'assigned_driver';
+
+   static const String   customer_note= 'customer_note';
+   static const String  special_instruction = 'special_instruction';
+  static const String  driver_information = 'driver_information ';
+
+
+
+
+
+
+
 }

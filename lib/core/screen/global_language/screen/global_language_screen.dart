@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/data/language_data.dart';
 import 'package:market_jango/core/screen/global_language/data/language_update.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -100,12 +102,14 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
             SizedBox(height: 10.h),
 
             Text(
-              "Settings",
+              //"Settings"
+              ref.t(BKeys.settings),
               style: TextStyle(fontSize: 18.sp, color: Colors.black),
             ),
             SizedBox(height: 6.h),
             Text(
-              "Language",
+              //"Language"
+              ref.t(BKeys.language),
               style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 16.h),

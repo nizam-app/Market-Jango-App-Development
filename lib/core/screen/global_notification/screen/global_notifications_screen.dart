@@ -3,38 +3,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_notification/data/notification_data.dart';
 
+import '../../../localization/Keys/vendor_kay.dart';
 
 class GlobalNotificationsScreen extends ConsumerStatefulWidget {
   const GlobalNotificationsScreen({super.key});
 
-   static const String routeName = '/vendor_notificatons';
+  static const String routeName = '/vendor_notificatons';
 
   @override
-  ConsumerState<GlobalNotificationsScreen> createState() => _GlobalNotificationsState();
+  ConsumerState<GlobalNotificationsScreen> createState() =>
+      _GlobalNotificationsState();
 }
 
-class _GlobalNotificationsState extends ConsumerState<GlobalNotificationsScreen> {
-
+class _GlobalNotificationsState
+    extends ConsumerState<GlobalNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
-    final notification  = ref.watch(notificationProvider);
-    return  Scaffold(
-       body: SafeArea(
+    final notification = ref.watch(notificationProvider);
+    return Scaffold(
+      body: SafeArea(
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Column(
             children: [
               Align(
                 alignment: Alignment.topLeft,
-                child: Text("Notification",style:TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),), 
+                child: Text(
+                  ref.t(VKeys.notification),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
               Expanded(
                 child: notification.when(
                   data: (data) {
                     if (data.isEmpty) {
-                      return const Center(
-                        child: Text("There are no notifications now."),
+                      return Center(
+                        child: Text(ref.t(VKeys.thereAreNoNotificationsNow)),
                       );
                     }
 
@@ -53,10 +60,12 @@ class _GlobalNotificationsState extends ConsumerState<GlobalNotificationsScreen>
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, stackTrace) => Center(child: Text(error.toString())),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) =>
+                      Center(child: Text(error.toString())),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -82,63 +91,60 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin:  EdgeInsets.only(bottom: 16.h),
-      padding:  EdgeInsets.symmetric(horizontal: 16.w,vertical: 16.h),
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
-        color:isUnread ? AllColor.grey100:AllColor.white,
+        color: isUnread ? AllColor.grey100 : AllColor.white,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: AllColor.black.withOpacity(0.05),
             blurRadius: 10.r,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Row(
         children: [
-           CircleAvatar(
+          CircleAvatar(
             backgroundColor: AllColor.blue50,
             radius: 24.r,
             child: Icon(Icons.notifications_none, color: AllColor.blue),
           ),
-           SizedBox(width: 12.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style:Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.w500),
+                  style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                 SizedBox(height: 4.h),
-                 Text(
-                  massage,
-                  style: Theme.of(context).textTheme.titleMedium,
-                )
+                SizedBox(height: 4.h),
+                Text(massage, style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
           ),
-           SizedBox(width: 8.w),
+          SizedBox(width: 8.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 time,
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 8.sp),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium!.copyWith(fontSize: 8.sp),
               ),
 
-               SizedBox(height: 8.h),
+              SizedBox(height: 8.h),
               if (isUnread)
-                 CircleAvatar(
-                  radius: 5.r,
-                  backgroundColor: AllColor.orange700,
-                )
+                CircleAvatar(radius: 5.r, backgroundColor: AllColor.orange700),
             ],
-          )
+          ),
         ],
       ),
     );
   }
-   
 }

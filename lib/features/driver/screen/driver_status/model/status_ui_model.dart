@@ -1,102 +1,126 @@
-// features/driver/screen/driver_status/model/status_ui_model.dart
-
+// status_ui_model.dart
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
 
-enum TrackingStep { none, packed, confirmDelivery }
+enum TrackingStep { packed, cashReceive, confirmDelivery }
 
-class TrackingUiModel {
+class TrackingUi {
+  final int currentStep; // stepper er jonno
   final bool packedChecked;
-  final bool confirmChecked;
-  final bool cancelChecked;
-
   final String? packedNote;
+
+  final bool showCashStep;
+  final bool cashChecked;
+  final String? cashNote;
+
+  final bool confirmChecked;
   final String? confirmNote;
+
+  final bool cancelChecked;
   final String? cancelNote;
 
-  /// stepper er jonno (1..3)
-  final int currentStep;
-
-  /// kon step e user tick / note edit korte parbe
-  final TrackingStep editableStep;
-
-  /// Cancel row + bottom Cancel button dekhabo kina
   final bool showCancel;
+  final TrackingStep? editableStep;
 
-  const TrackingUiModel({
-    required this.packedChecked,
-    required this.confirmChecked,
-    required this.cancelChecked,
-    required this.packedNote,
-    required this.confirmNote,
-    required this.cancelNote,
+  TrackingUi({
     required this.currentStep,
-    required this.editableStep,
+    required this.packedChecked,
+    required this.packedNote,
+    required this.showCashStep,
+    required this.cashChecked,
+    required this.cashNote,
+    required this.confirmChecked,
+    required this.confirmNote,
+    required this.cancelChecked,
+    required this.cancelNote,
     required this.showCancel,
+    required this.editableStep,
   });
 }
 
-String _norm(String s) => s.toLowerCase().trim();
-
-/// Ei function e shob rule boshiye dilam
-TrackingUiModel buildTrackingUi(DriverTrackingData data) {
-  final s = _norm(data.status);
+TrackingUi buildTrackingUi(DriverTrackingData data) {
+  final status = (data.status ?? '')
+      .trim(); // AssignedOrder / On The Way / Ready for delivery / Complete / Not Deliver
+  final note = data.note;
+  final paymentMethod =
+      (data.invoice?.paymentMethod ?? data.invoice?.paymentMethod ?? '')
+          .toUpperCase();
+  final isOpu = paymentMethod == 'OPU';
 
   bool packedChecked = false;
+  bool cashChecked = false;
   bool confirmChecked = false;
   bool cancelChecked = false;
 
   String? packedNote;
+  String? cashNote;
   String? confirmNote;
   String? cancelNote;
 
-  int currentStep = 1;
-  TrackingStep editableStep = TrackingStep.none;
   bool showCancel = true;
+  TrackingStep? editableStep;
+  int currentStep = 1;
 
-  if (s == 'complete' || s == 'completed') {
-    // ✅ Complete
-    packedChecked = true;
-    confirmChecked = true;
-    confirmNote = data.note;
+  switch (status) {
+    case 'AssignedOrder':
+    case 'Pending':
+      currentStep = 1;
+      editableStep = TrackingStep.packed;
+      break;
 
-    currentStep = 3; // stepper full
-    editableStep = TrackingStep.none;
-    showCancel = false; // cancel button / row non-editable
-  } else if (s == 'on the way') {
-    // ✅ On The Way → Packed tick + note under Packed
-    packedChecked = true;
-    packedNote = data.note;
+    case 'On The Way':
+      // 👉 Packed done, note under Packed
+      currentStep = isOpu ? 2 : 2;
+      packedChecked = true;
+      packedNote = note;
+      // OPU হলে এখন cash step editable, নাহলে confirm editable
+      editableStep = isOpu
+          ? TrackingStep.cashReceive
+          : TrackingStep.confirmDelivery;
+      break;
 
-    currentStep = 2; // middle dot porjonto
-    editableStep = TrackingStep.confirmDelivery; // ekhon Confirm editable
-    showCancel = true;
-  } else if (s == 'not deliver') {
-    // ❌ Not Deliver (cancelled)
-    cancelChecked = true;
-    cancelNote = data.note;
+    case 'Ready for delivery':
+      // 👉 Cash receive done, note under Cash
+      currentStep = isOpu ? 3 : 2;
+      packedChecked = true;
+      cashChecked = true;
+      cashNote = note;
+      editableStep = TrackingStep.confirmDelivery;
+      break;
 
-    currentStep = 1; // delivery hoy nai
-    editableStep = TrackingStep.none;
-    showCancel = false; // abar cancel kora jabe na
-  } else {
-    // Others → Pending dhore nilam
-    packedChecked = false;
-    confirmChecked = false;
+    case 'Complete':
+      currentStep = isOpu ? 4 : 3;
+      packedChecked = true;
+      if (isOpu) cashChecked = true;
+      confirmChecked = true;
+      confirmNote = note;
+      showCancel = false;
+      editableStep = null;
+      break;
 
-    currentStep = 1;
-    editableStep = TrackingStep.packed; // prothom step editable
-    showCancel = true;
+    case 'Not Deliver':
+      currentStep = isOpu ? 4 : 3;
+      cancelChecked = true;
+      cancelNote = note;
+      showCancel = false;
+      editableStep = null;
+      break;
+
+    default:
+      editableStep = TrackingStep.packed;
   }
 
-  return TrackingUiModel(
-    packedChecked: packedChecked,
-    confirmChecked: confirmChecked,
-    cancelChecked: cancelChecked,
-    packedNote: packedNote,
-    confirmNote: confirmNote,
-    cancelNote: cancelNote,
+  return TrackingUi(
     currentStep: currentStep,
-    editableStep: editableStep,
+    packedChecked: packedChecked,
+    packedNote: packedNote,
+    showCashStep: isOpu,
+    cashChecked: cashChecked,
+    cashNote: cashNote,
+    confirmChecked: confirmChecked,
+    confirmNote: confirmNote,
+    cancelChecked: cancelChecked,
+    cancelNote: cancelNote,
     showCancel: showCancel,
+    editableStep: editableStep,
   );
 }

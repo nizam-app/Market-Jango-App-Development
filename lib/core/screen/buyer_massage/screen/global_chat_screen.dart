@@ -6,17 +6,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/chat_history_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/logic/message_send_riverpod.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
+
 class GlobalChatScreen extends ConsumerStatefulWidget {
   const GlobalChatScreen({
     super.key,
     required this.partnerId,
     required this.partnerName,
     required this.partnerImage,
-     required this.myUserId,
+    required this.myUserId,
   });
 
   static const routeName = "/chatScreen";
@@ -30,15 +33,13 @@ class GlobalChatScreen extends ConsumerStatefulWidget {
   ConsumerState<GlobalChatScreen> createState() => _ChatScreenState();
 }
 
-
 class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
-
-  
   @override
   void initState() {
     super.initState();
-    debugPrint("CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}");
-
+    debugPrint(
+      "CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}",
+    );
   }
 
   @override
@@ -213,6 +214,7 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
       );
     });
   }
+
   @override
   void dispose() {
     _textController.dispose();
@@ -281,7 +283,7 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
             Expanded(
               child: CustomTextFromField(
                 controller: _textController,
-                hintText: "Type a message...",
+                hintText: ref.t(VKeys.typeAMessage),
                 onFieldSubmitted: _handleSubmitted,
               ),
             ),
@@ -353,8 +355,6 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
       ),
     );
   }
-
-
 }
 
 /* ---------- Simple message bubble row (keeps your style) ---------- */

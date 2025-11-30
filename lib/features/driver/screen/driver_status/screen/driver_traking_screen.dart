@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
@@ -25,7 +26,6 @@ class DriverTrakingScreen extends ConsumerWidget {
   final String trackingId;
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = int.tryParse(trackingId) ?? 0;
     final trackingAsync = ref.watch(driverTrackingStatusProvider(id));
@@ -37,6 +37,10 @@ class DriverTrakingScreen extends ConsumerWidget {
           // ...
           data: (data) {
             final ui = buildTrackingUi(data);
+            final canConfirm =
+                ui.editableStep == TrackingStep.confirmDelivery &&
+                (!ui.showCashStep ||
+                    ui.cashChecked); // 🔥 OPU হলে cash না হলে confirm বন্ধ
 
             return Column(
               children: [
@@ -46,7 +50,10 @@ class DriverTrakingScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 // 3 step (Pending / On The Way / Complete)
-                _ProgressStepper(currentStep: ui.currentStep, totalSteps: 3),
+                _ProgressStepper(
+                  currentStep: ui.currentStep,
+                  totalSteps: ui.showCashStep ? 4 : 3, // 🔥 OPU hole 4 step
+                ),
 
                 const SizedBox(height: 16),
                 Expanded(
@@ -99,16 +106,84 @@ class DriverTrakingScreen extends ConsumerWidget {
 
                         const SizedBox(height: 10),
 
-                        // ---------- 2) Confirm Delivery ----------
+                        // // ---------- 1) Packed (same as before) ----------
+                        // _StatusTile(
+                        //   checked: ui.packedChecked,
+                        //   title: 'Packed',
+                        //   time: _formatTime(data.createdAt),
+                        //   body: ui.packedNote ?? '',
+                        //   editable: ui.editableStep == TrackingStep.packed,
+                        //   onBadgeTap: ui.editableStep == TrackingStep.packed
+                        //       ? () => _handleNotDeliver(
+                        //           context,
+                        //           ref,
+                        //           id,
+                        //           service,
+                        //           data,
+                        //         )
+                        //       : null,
+                        //   onChanged: ui.editableStep == TrackingStep.packed
+                        //       ? (_) => _handlePackedDone(
+                        //           context,
+                        //           ref,
+                        //           id,
+                        //           service,
+                        //           data,
+                        //         )
+                        //       : null,
+                        //   onTap: ui.editableStep == TrackingStep.packed
+                        //       ? () => _handlePackedDone(
+                        //           context,
+                        //           ref,
+                        //           id,
+                        //           service,
+                        //           data,
+                        //         )
+                        //       : null,
+                        // ),
+                        //
+                        // const SizedBox(height: 10),
+
+                        // ---------- 2) Cash Receive (only for OPU / showCashStep) ----------
+                        if (ui.showCashStep) ...[
+                          _StatusTile(
+                            checked: ui.cashChecked,
+                            title: 'Cash Receive',
+                            time: _formatTime(data.updatedAt),
+                            body: ui.cashNote ?? '',
+                            editable:
+                                ui.editableStep == TrackingStep.cashReceive,
+                            onChanged:
+                                ui.editableStep == TrackingStep.cashReceive
+                                ? (_) => _handleCashReceive(
+                                    context,
+                                    ref,
+                                    id,
+                                    service,
+                                    data,
+                                  )
+                                : null,
+                            onTap: ui.editableStep == TrackingStep.cashReceive
+                                ? () => _handleCashReceive(
+                                    context,
+                                    ref,
+                                    id,
+                                    service,
+                                    data,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+
+                        // ---------- 3) Confirm Delivery ----------
                         _StatusTile(
                           checked: ui.confirmChecked,
                           title: 'Confirm Delivery',
                           time: _formatTime(data.updatedAt),
                           body: ui.confirmNote ?? '',
-                          editable:
-                              ui.editableStep == TrackingStep.confirmDelivery,
-                          onBadgeTap:
-                              ui.editableStep == TrackingStep.confirmDelivery
+                          editable: canConfirm,
+                          onBadgeTap: canConfirm
                               ? () => _handleNotDeliver(
                                   context,
                                   ref,
@@ -117,8 +192,7 @@ class DriverTrakingScreen extends ConsumerWidget {
                                   data,
                                 )
                               : null,
-                          onChanged:
-                              ui.editableStep == TrackingStep.confirmDelivery
+                          onChanged: canConfirm
                               ? (_) => _handleComplete(
                                   context,
                                   ref,
@@ -127,7 +201,7 @@ class DriverTrakingScreen extends ConsumerWidget {
                                   data,
                                 )
                               : null,
-                          onTap: ui.editableStep == TrackingStep.confirmDelivery
+                          onTap: canConfirm
                               ? () => _handleComplete(
                                   context,
                                   ref,
@@ -192,6 +266,176 @@ class DriverTrakingScreen extends ConsumerWidget {
     final min = dt.minute.toString().padLeft(2, '0');
     return '$y-$m-$d  $h:$min';
   }
+
+  Future<void> _handleCashReceive(
+    BuildContext context,
+    WidgetRef ref,
+    int trackingId,
+    DriverTrackingService service,
+    DriverTrackingData data,
+  ) async {
+    final result = await _showCashReceiveDialog(
+      context,
+      initialNote: data.note,
+    );
+
+    if (result == null) return;
+
+    final note = result['note']!.trim();
+    final proofId = result['payment_proof_id']!.trim();
+
+    if (note.isEmpty || proofId.isEmpty) {
+      _showError(context, 'Note এবং Payment proof ID দুটোই লাগবে।');
+      return;
+    }
+
+    try {
+      await service.updateStatus(
+        id: data.id,
+        status: 'Ready for delivery',
+        note: note,
+        paymentProofId: proofId,
+      );
+
+      // fresh data
+      ref.invalidate(driverTrackingStatusProvider(trackingId));
+
+      _showError(context, 'Cash received, status "Ready for delivery".');
+    } catch (e) {
+      _showError(context, e.toString());
+    }
+  }
+}
+
+Future<Map<String, String>?> _showCashReceiveDialog(
+  BuildContext context, {
+  String? initialNote,
+}) {
+  final noteCtrl = TextEditingController(text: initialNote ?? '');
+  final proofCtrl = TextEditingController();
+
+  return showDialog<Map<String, String>>(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        title: Text(
+          'Cash Receive',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: AllColor.black,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Note *',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AllColor.textHintColor,
+                  ),
+                ),
+              ),
+              SizedBox(height: 4.h),
+              TextField(
+                controller: noteCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Cash receive note...',
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 10.h,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.blue500, width: 1.4),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Payment proof ID *',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AllColor.textHintColor,
+                  ),
+                ),
+              ),
+              SizedBox(height: 4.h),
+              TextField(
+                controller: proofCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'e.g. 65452145211',
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 10.h,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                    borderSide: BorderSide(color: AllColor.blue500, width: 1.4),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actionsPadding: EdgeInsets.only(bottom: 8.h, right: 8.w),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AllColor.blue500,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop<Map<String, String>>(ctx, {
+                'note': noteCtrl.text.trim(),
+                'payment_proof_id': proofCtrl.text.trim(),
+              });
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -425,6 +669,15 @@ class _StatusTileState extends State<_StatusTile> {
     _checked = widget.checked;
   }
 
+  @override
+  void didUpdateWidget(covariant _StatusTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // parent থেকে checked পরিবর্তন হলে লোকাল স্টেট sync করবে
+    if (oldWidget.checked != widget.checked) {
+      _checked = widget.checked;
+    }
+  }
+
   void _toggle() {
     if (!widget.editable) return; // শুধু editable হলে কাজ করবে
     setState(() => _checked = !_checked);
@@ -498,19 +751,6 @@ class _StatusTileState extends State<_StatusTile> {
                   ),
                 ),
               ],
-              // if (widget.badgeText != null) ...[
-              //   const SizedBox(height: 10),
-              //   Padding(
-              //     padding: const EdgeInsets.only(left: 6),
-              //     child: GestureDetector(
-              //       onTap: widget.onBadgeTap,
-              //       child: _Badge(
-              //         text: widget.badgeText!,
-              //         color: widget.badgeColor ?? AllColor.loginButtomColor,
-              //       ),
-              //     ),
-              //   ),
-              // ],
             ],
           ),
         ),
@@ -757,23 +997,66 @@ class _RoundIcon extends StatelessWidget {
 
 Future<String?> _showNoteDialog(BuildContext context, {String? initial}) async {
   final controller = TextEditingController(text: initial ?? '');
+
   return showDialog<String>(
     context: context,
     builder: (ctx) {
       return AlertDialog(
-        title: const Text('Add note'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(hintText: 'Write note here...'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
         ),
+        title: Text(
+          'Add Note',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: AllColor.black,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: TextField(
+            controller: controller,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Write note here...',
+              filled: true,
+              fillColor: AllColor.grey100,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 10.h,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: BorderSide(color: AllColor.grey300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: BorderSide(color: AllColor.grey300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: BorderSide(color: AllColor.blue500, width: 1.4),
+              ),
+            ),
+          ),
+        ),
+        actionsPadding: EdgeInsets.only(bottom: 8.h, right: 8.w),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AllColor.blue500,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx, controller.text.trim());
+            },
             child: const Text('Save'),
           ),
         ],
@@ -973,167 +1256,169 @@ class _NotDeliverSheetState extends ConsumerState<_NotDeliverSheet> {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // drag handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AllColor.grey300,
-                  borderRadius: BorderRadius.circular(4),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: AllColor.grey300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               ),
-            ),
-            Text(
-              'Cancel / Not Deliver',
-              style: TextStyle(
-                color: AllColor.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Text(
-              'Reason (note)*',
-              style: TextStyle(
-                color: AllColor.textHintColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            TextField(
-              controller: _noteCtrl,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Write why you cannot deliver...',
-                filled: true,
-                fillColor: AllColor.grey100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.grey300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.grey300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.blue500),
+              Text(
+                'Cancel / Not Deliver',
+                style: TextStyle(
+                  color: AllColor.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
+              const SizedBox(height: 12),
 
-            const SizedBox(height: 12),
-
-            Text(
-              'Current address (optional)',
-              style: TextStyle(
-                color: AllColor.textHintColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            TextField(
-              controller: _addressCtrl,
-              maxLines: 2,
-              decoration: InputDecoration(
-                hintText: 'Banani, Dhaka...',
-                filled: true,
-                fillColor: AllColor.grey100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.grey300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.grey300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AllColor.blue500),
+              Text(
+                'Reason (note)*',
+                style: TextStyle(
+                  color: AllColor.textHintColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
+              const SizedBox(height: 4),
+              TextField(
+                controller: _noteCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Write why you cannot deliver...',
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.blue500),
+                  ),
+                ),
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            /// 🔥 Location button – এইখানে তোমার দেওয়া কোডটাই ব্যবহার করা হয়েছে
-            LocationButton(
-              onTap: () async {
-                final currentLat =
-                    ref.read(selectedLatitudeProvider) ?? _backupLat;
-                final currentLng =
-                    ref.read(selectedLongitudeProvider) ?? _backupLng;
+              Text(
+                'Current address (optional)',
+                style: TextStyle(
+                  color: AllColor.textHintColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              TextField(
+                controller: _addressCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Enter your Address...',
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.grey300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AllColor.blue500),
+                  ),
+                ),
+              ),
 
-                LatLng? initialLocation;
-                if (currentLat != null && currentLng != null) {
-                  initialLocation = LatLng(currentLat, currentLng);
-                }
+              const SizedBox(height: 12),
 
-                final result = await context.push<LatLng>(
-                  GoogleMapScreen.routeName,
-                  extra: initialLocation,
-                );
+              /// 🔥 Location button – এইখানে তোমার দেওয়া কোডটাই ব্যবহার করা হয়েছে
+              LocationButton(
+                onTap: () async {
+                  final currentLat =
+                      ref.read(selectedLatitudeProvider) ?? _backupLat;
+                  final currentLng =
+                      ref.read(selectedLongitudeProvider) ?? _backupLng;
 
-                if (result != null) {
-                  ref.read(selectedLatitudeProvider.notifier).state =
-                      result.latitude;
-                  ref.read(selectedLongitudeProvider.notifier).state =
-                      result.longitude;
+                  LatLng? initialLocation;
+                  if (currentLat != null && currentLng != null) {
+                    initialLocation = LatLng(currentLat, currentLng);
+                  }
 
-                  TempLocationStorage.setLocation(
-                    result.latitude,
-                    result.longitude,
+                  final result = await context.push<LatLng>(
+                    GoogleMapScreen.routeName,
+                    extra: initialLocation,
                   );
 
-                  setState(() {
-                    _backupLat = result.latitude;
-                    _backupLng = result.longitude;
-                  });
+                  if (result != null) {
+                    ref.read(selectedLatitudeProvider.notifier).state =
+                        result.latitude;
+                    ref.read(selectedLongitudeProvider.notifier).state =
+                        result.longitude;
 
-                  GlobalSnackbar.show(
-                    context,
-                    title: "Success",
-                    message: "Location selected successfully!",
-                    type: CustomSnackType.success,
-                  );
-                }
-              },
-            ),
+                    TempLocationStorage.setLocation(
+                      result.latitude,
+                      result.longitude,
+                    );
 
-            const SizedBox(height: 20),
+                    setState(() {
+                      _backupLat = result.latitude;
+                      _backupLng = result.longitude;
+                    });
 
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AllColor.grey300),
+                    GlobalSnackbar.show(
+                      context,
+                      title: "Success",
+                      message: "Location selected successfully!",
+                      type: CustomSnackType.success,
+                    );
+                  }
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AllColor.grey300),
+                      ),
+                      child: const Text('Close'),
                     ),
-                    child: const Text('Close'),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomAuthButton(
-                    onTap: _submit,
-                    buttonText: 'Confirm',
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CustomAuthButton(
+                      onTap: _submit,
+                      buttonText: 'Confirm',
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

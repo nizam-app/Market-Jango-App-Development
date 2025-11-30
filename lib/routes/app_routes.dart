@@ -84,7 +84,6 @@ final GoRouter router = GoRouter(
 
   initialLocation: SplashScreen.routeName,
 
-
   errorBuilder: (context, state) =>
       Scaffold(body: Center(child: Text('Error: ${state.error} '))),
 

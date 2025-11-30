@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
-
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
@@ -36,7 +34,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child:  Tuppertextandbackbutton(
+                  child: Tuppertextandbackbutton(
                     screenName: ref.t(BKeys.my_bookings),
                   ),
                 ),
@@ -151,13 +149,10 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                           final status = o.deliveryStatus;
                           final statusColor = _statusColor(status);
 
-
                           /// On the way holei track button dekhabo
                           /// //"Completed"
                           final showTrack = status == ref.t(BKeys.completed);
 
-                          /// 🔥 On the way holei track button dekhabo
-                        //  final showTrack = status == "On the way";
 
 
                           return _bookingCard(
@@ -401,7 +396,6 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
-
                     //"/cancelledDetails"
 
                     /// TODO: এখানে তোমার details route change korte paro
@@ -410,7 +404,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                   },
                   child: Text(
                     //"See details",
-                    ref.t(BKeys.see_details), 
+                    ref.t(BKeys.see_details),
                     style: TextStyle(fontSize: 13.sp, color: Colors.white),
                   ),
                 ),
@@ -434,7 +428,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                       );
                     },
                     child: Text(
-                      // "Track order" 
+                      // "Track order"
                       ref.t(BKeys.track_order),
                       style: TextStyle(fontSize: 13.sp, color: Colors.white),
                     ),
@@ -463,7 +457,6 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
               //       ),
               //     ),
               //   ),
-
             ],
           ),
         ],

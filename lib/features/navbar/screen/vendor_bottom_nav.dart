@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
@@ -51,7 +53,8 @@ class VendorBottomNav extends ConsumerWidget {
         // showUnselectedLabels: true, // Optional: ensure unselected labels are shown
         items: [
           BottomNavigationBarItem(
-            label: "Home",
+            //"Home" 
+            label: ref.t(BKeys.home),
             icon: SvgPicture.asset(
               'assets/images/homeicon.svg',
               width: 24,
@@ -61,20 +64,24 @@ class VendorBottomNav extends ConsumerWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_outlined),
             // Kept similar, adjust if needed
-            label: "Chat",
+            //"Chat" 
+            label: ref.t(BKeys.chat),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications_none),
             // Changed Icon (example for Categories)
-            label: "Notification",
+            //"Notification" 
+            label: ref.t(BKeys.notifications),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.drive_eta), // Changed Icon
-            label: "Driver",
+            //"Driver", 
+            label: ref.t(BKeys.driver),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings), // Changed Icon
-            label: "Settings",
+            //"Settings"
+            label: ref.t(BKeys.settings),
           ),
         ],
       ),

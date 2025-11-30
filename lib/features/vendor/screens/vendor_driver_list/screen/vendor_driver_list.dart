@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -55,7 +57,7 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                   onChanged: (_) => setState(() {}),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search you transporter',
+                    hintText: ref.t(BKeys.searchYourTransporter),
                     hintStyle: TextStyle(color: AllColor.textHintColor),
                     prefixIcon: Icon(
                       Icons.search_rounded,
@@ -130,7 +132,10 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                     ),
                   );
                 },
-                loading: () => const Center(child: Text("Loading...")),
+                loading: () =>  Center(child: Text(
+                   // "Loading..."
+                ref.t(BKeys.loading),
+                )),
                 error: (error, stackTrace) =>
                     Center(child: Text(error.toString())),
               ),
@@ -225,7 +230,7 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
 
 /* ===================== CARD WIDGET ===================== */
 
-class _DriverCard extends StatelessWidget {
+class _DriverCard extends ConsumerWidget {
   final Driver data;
   final VoidCallback onAssign;
   final VoidCallback onChat;
@@ -237,7 +242,7 @@ class _DriverCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref ) {
     final onlineColor = Colors.green;
 
     return GestureDetector(
@@ -354,7 +359,8 @@ class _DriverCard extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 16.h),
                     ),
                     child: Text(
-                      'Assign to order',
+                      // 'Assign to order',
+                      ref.t(BKeys.assignedOrder),
                       style: TextStyle(
                         color: AllColor.white,
                         fontWeight: FontWeight.w700,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/data/vendor_product_tracking_data.dart';
 
@@ -36,7 +38,7 @@ class VendorShipmentsScreen extends ConsumerWidget {
 
                   // Segmented toggle
                   _SegmentedToggle(
-                    leftText: ' Track shipments',
+                    leftText: ref.t(BKeys.track_shipments),
                     value: state.segment,
                     onChanged: (v) {
                       notifier.setSegment(v);
@@ -203,7 +205,8 @@ class _ShipmentCard extends StatelessWidget {
     Widget pill;
     switch (data.status) {
       case TrackingOrderStatus.pending:
-        pill = _StatusPill('Pending', AllColor.loginButtomColor, solid: false);
+        pill = _StatusPill(
+            'Pending', AllColor.loginButtomColor, solid: false);
         break;
       case TrackingOrderStatus.assigned:
         pill = const _StatusPill('Assigned', Colors.orange, solid: false);

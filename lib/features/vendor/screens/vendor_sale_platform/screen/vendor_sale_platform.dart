@@ -1,15 +1,18 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-class VendorSalePlatformScreen extends StatelessWidget {
+class VendorSalePlatformScreen extends ConsumerWidget {
   const VendorSalePlatformScreen({super.key});
   static const routeName = "/vendorSalePlatform";
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Scaffold(
       backgroundColor: AllColor.white,
 
@@ -23,7 +26,8 @@ class VendorSalePlatformScreen extends StatelessWidget {
               CustomBackButton(),
               SizedBox(height: 20.h),
               Text(
-                'Store Performance',
+               // 'Store Performance',
+               ref.t(BKeys.storePerformance),
                 style: TextStyle(
                   color: AllColor.black,
                   fontSize: 24.sp,
@@ -32,7 +36,8 @@ class VendorSalePlatformScreen extends StatelessWidget {
               ),
               SizedBox(height: 4.h),
               Text(
-                'Last 30 days overview',
+               // 'Last 30 days overview',
+                ref.t(BKeys.last30DaysOverview),
                 style: TextStyle(
                   color: AllColor.black54,
                   fontSize: 13.sp,
@@ -83,24 +88,32 @@ class VendorSalePlatformScreen extends StatelessWidget {
 
               // KPI cards 2 x 2
               _KpiGrid(
-                items: const [
+                items:  [
                   _KpiData(
-                    title: 'Revenue',
+                    title: 
+                    //'Revenue',
+                    ref.t(BKeys.revenue),  
                     value: '\$3,490',
                     deltaText: '38% vs previous',
                   ),
                   _KpiData(
-                    title: 'Orders',
+                    title: 
+                    //'Orders',
+                    ref.t(BKeys.order), 
                     value: '280',
                     deltaText: '24% vs previous',
                   ),
                   _KpiData(
-                    title: 'Clicks',
+                    title: 
+                   // 'Clicks',
+                    ref.t(BKeys.clicks),  
                     value: '4,280',
                     deltaText: '9% vs previous',
                   ),
                   _KpiData(
-                    title: 'conversion rate',
+                    title:
+                    //'conversion rate',
+                    ref.t(BKeys.conversionRate),  
                     value: '1.2%',
                     deltaText: '13% vs previous',
                   ),
@@ -114,7 +127,8 @@ class VendorSalePlatformScreen extends StatelessWidget {
               SizedBox(height: 18.h),
               // Top Selling table
               Text(
-                'Top Selling Products',
+                //'Top Selling Products',
+                ref.t(BKeys.topSellingProducts), 
                 style: TextStyle(
                   color: AllColor.black,
                   fontSize: 18.sp,
@@ -124,9 +138,15 @@ class VendorSalePlatformScreen extends StatelessWidget {
               SizedBox(height: 10.h),
               _TopSellingTable(
                 rows: const [
-                  _TopRow('T-shirt', 780, 1200),
-                  _TopRow('Sneakers', 280, 1400),
-                  _TopRow('Backpack', 250, 1400),
+                  _TopRow(
+                      'T-shirt'
+                      , 780, 1200),
+                  _TopRow(
+                      'Sneakers'
+                      , 280, 1400),
+                  _TopRow(
+                      'Backpack'
+                      , 250, 1400),
                 ],
               ),
             ],
@@ -287,11 +307,11 @@ class _KpiCard extends StatelessWidget {
 
 /* ------------------------------ Sales ------------------------------ */
 
-class SalesChart extends StatelessWidget {
+class SalesChart extends ConsumerWidget {
   const SalesChart({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -306,7 +326,7 @@ class SalesChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Sales",
+             ref.t(BKeys.sales),
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
               ),
               SizedBox(width: 40.w),
@@ -345,15 +365,24 @@ class SalesChart extends StatelessWidget {
                       showTitles: true,
                       interval: 1, // 🔹 Add this line
                       getTitlesWidget: (value, _) {
-                        const days = [
-                          "Mon",
-                          "Tue",
-                          "Wed",
-                          "Thu",
-                          "Fri",
-                          "Sat",
-                          "Sun",
-                        ];
+                       final  days = [
+                          // "Mon",
+                          // "Tue",
+                          // "Wed",
+                          // "Thu",
+                          // "Fri",
+                          // "Sat",
+                          // "Sun",
+                           ref.t(BKeys.mon),
+                           ref.t(BKeys.tue),
+                           ref.t(BKeys.wed),
+                           ref.t(BKeys.thu),
+                           ref.t(BKeys.fri),
+                           ref.t(BKeys.sat),
+                           ref.t(BKeys.sun),
+
+
+                         ];
                         if (value.toInt() >= 0 && value.toInt() < days.length) {
                           return Text(days[value.toInt()]);
                         }
@@ -445,12 +474,12 @@ class _TopRow {
   const _TopRow(this.product, this.units, this.revenue);
 }
 
-class _TopSellingTable extends StatelessWidget {
+class _TopSellingTable extends ConsumerWidget {
   final List<_TopRow> rows;
   const _TopSellingTable({required this.rows});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref ) {
     final headerStyle = TextStyle(
       color: AllColor.black54,
       fontWeight: FontWeight.w700,
@@ -479,13 +508,19 @@ class _TopSellingTable extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(flex: 6, child: Text('Product', style: headerStyle)),
+                Expanded(flex: 6, child: Text(
+                   // 'Product',
+                  ref.t(BKeys.product),
+                    style: headerStyle)),
                 Expanded(flex: 2, child: Text('units', style: headerStyle)),
                 Expanded(
                   flex: 3,
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: Text('Revenues', style: headerStyle),
+                    child: Text(
+                        //'Revenues',
+                      ref.t(BKeys.revenues),
+                        style: headerStyle),
                   ),
                 ),
               ],

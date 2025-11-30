@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 
-class VendorTransportDetails extends StatelessWidget {
+import '../../../../../core/localization/tr.dart';
+
+class VendorTransportDetails extends ConsumerWidget {
   const VendorTransportDetails({
     super.key,
     this.imageUrl =
@@ -21,7 +25,7 @@ class VendorTransportDetails extends StatelessWidget {
   final String description;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref ) {
     final priceText = '\$${price.toStringAsFixed(2).replaceAll('.', ',')}';
 
     return Scaffold(
@@ -140,7 +144,9 @@ class VendorTransportDetails extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: Text('Pay Now',
+                        child: Text(
+                            ref.t(BKeys.pay),
+                           // 'Pay Now',
                             style: TextStyle(
                                 color: AllColor.white,
                                 fontWeight: FontWeight.w700)),

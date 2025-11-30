@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 
-class VendorProductColorName extends StatefulWidget {
+import '../../../../../core/localization/tr.dart';
+
+class VendorProductColorName extends ConsumerStatefulWidget {
   const VendorProductColorName({super.key});
   static const routeName = '/vendorProductColorName';
 
   @override
-  State<VendorProductColorName> createState() => _VendorProductColorNameState();
+  ConsumerState<VendorProductColorName> createState() => _VendorProductColorNameState();
 }
 
-class _VendorProductColorNameState extends State<VendorProductColorName> {
+class _VendorProductColorNameState extends ConsumerState<VendorProductColorName> {
   final List<Map<String, dynamic>> colors = [
     {"name": "Angel", "hex": "FFFFFF", "selected": false},
     {"name": "Shane", "hex": "653518", "selected": false},
@@ -69,26 +73,26 @@ class _VendorProductColorNameState extends State<VendorProductColorName> {
             /// Table widget
             Table(
               border: TableBorder.all(color: Colors.grey),
-              columnWidths: const {
+              columnWidths:  {
                 0: FlexColumnWidth(2), // Name
                 1: FlexColumnWidth(3), // Value
               },
               children: [
                 /// Header Row
-                const TableRow(
+                 TableRow(
                   decoration: BoxDecoration(color: Color(0xFFEFEFEF)),
                   children: [
                     Padding(
                       padding: EdgeInsets.all(8),
                       child: Text(
-                        "Name",
+                        ref.t(BKeys.name),
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        "Value",
+                        ref.t(BKeys.value),
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

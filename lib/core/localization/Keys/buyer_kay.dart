@@ -239,6 +239,31 @@ class BKeys {
    static const String  special_instruction = 'special_instruction';
   static const String  driver_information = 'driver_information ';
 
+  static const String   my_product= 'my_product';
+  static const String   my_settings = 'my_Settings';
+
+
+  // this is buyer
+
+  static const String  color_attribute = 'color_attribute ';
+
+  static const String   category_title= 'category_title';
+  static const String  enter_your_title_here = 'enter_your_title_here';
+  static const String  category_description = 'category_description ';
+  static const String   upload_category_images= 'upload_category_images';
+  static const String   save_category = 'save_category';
+
+  static const String  products_list = 'products_list ';
+
+  static const String   size_attribute= 'size_attribute';
+  static const String  name = 'name';
+  static const String  value = 'value ';
+  static const String   product_title= 'product_title';
+  static const String   track_shipments = 'track_shipments';
+
+
+
+
 
 
 

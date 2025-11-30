@@ -384,7 +384,7 @@ class CartScreen extends ConsumerWidget {
   //   );
   // }
 
-  Widget _buildShippingAddress(BuildContext context, Buyer? buyer, ref) {
+  Widget _buildShippingAddress(BuildContext context, Buyer? buyer,WidgetRef ref) {
     final theme = Theme.of(context).textTheme;
     final addressLine = [
       buyer?.shipAddress ?? buyer?.address,
@@ -417,7 +417,7 @@ class CartScreen extends ConsumerWidget {
               children: [
                 //'Shipping Address'
                 Text(
-                  "Shipping Address",
+                  ref.t(BKeys.shippingAddress),
                   style: theme.titleLarge?.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),

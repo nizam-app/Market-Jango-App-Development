@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class OngoingOrdersScreen extends StatefulWidget {
+class OngoingOrdersScreen extends ConsumerStatefulWidget {
   const OngoingOrdersScreen({super.key});
   static const String routeName = "/ongoingOrders";
 
   @override
-  State<OngoingOrdersScreen> createState() => _OngoingOrdersScreenState();
+  ConsumerState<OngoingOrdersScreen> createState() => _OngoingOrdersScreenState();
 }
 
-class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
+class _OngoingOrdersScreenState extends ConsumerState<OngoingOrdersScreen> {
   String selectedTab = "Ongoing";
   final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
 
@@ -193,7 +196,8 @@ class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {},
-                  child: Text("See details",
+                  //"See details"
+                  child: Text(ref.t(BKeys.see_details),
                       style: TextStyle(fontSize: 13.sp, color: Colors.white)),
                 ),
               ),
@@ -211,7 +215,8 @@ class _OngoingOrdersScreenState extends State<OngoingOrdersScreen> {
                     onPressed: () {
                       context.push("/transportTracking");
                     },
-                    child: Text("Track order",
+                    //"Track order"
+                    child: Text(ref.t(BKeys.track_order),
                         style: TextStyle(fontSize: 13.sp, color: Colors.white)),
                   ),
                 ),

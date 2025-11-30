@@ -2,19 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
+
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
 
-class TransportBooking extends StatefulWidget {
+class TransportBooking extends ConsumerStatefulWidget {
   const TransportBooking({super.key});
   static const String routeName = "/transport_booking";
 
   @override
-  State<TransportBooking> createState() => _TransportBookingState();
+  ConsumerState<TransportBooking> createState() => _TransportBookingState();
 }
 
-class _TransportBookingState extends State<TransportBooking> {
+class _TransportBookingState extends ConsumerState<TransportBooking> {
   /// tabs: VendorShipmentsScreen er moto simple chips
   String selectedTab = "All";
   final List<String> tabs = ["All", "On the way", "Completed"];
@@ -27,13 +32,12 @@ class _TransportBookingState extends State<TransportBooking> {
           builder: (context, ref, _) {
             final state = ref.watch(transportOrdersProvider);
             final notifier = ref.read(transportOrdersProvider.notifier);
-
             return Column(
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: const Tuppertextandbackbutton(
-                    screenName: "My Booking",
+                  child:  Tuppertextandbackbutton(
+                    screenName: ref.t(BKeys.my_bookings),
                   ),
                 ),
 
@@ -133,7 +137,8 @@ class _TransportBookingState extends State<TransportBooking> {
                           /// Driver text (car name + model)
                           final driverText = firstItem?.driver != null
                               ? "${firstItem!.driver!.carName} (${firstItem.driver!.carModel})"
-                              : "Assigned Driver";
+                              : ref.t(BKeys.assigned_driver);
+                          //"Assigned Driver"
 
                           /// Driver image (nested driver.user.image theke)
                           final driverImage =
@@ -146,8 +151,14 @@ class _TransportBookingState extends State<TransportBooking> {
                           final status = o.deliveryStatus;
                           final statusColor = _statusColor(status);
 
+
+                          /// On the way holei track button dekhabo
+                          /// //"Completed"
+                          final showTrack = status == ref.t(BKeys.completed);
+
                           /// 🔥 On the way holei track button dekhabo
                           final showTrack = status == "On the way";
+
 
                           return _bookingCard(
                             status: status,
@@ -390,16 +401,46 @@ class _TransportBookingState extends State<TransportBooking> {
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
                   onPressed: () {
+
+                    //"/cancelledDetails"
+
                     /// TODO: এখানে তোমার details route change korte paro
+
                     context.push("/cancelledDetails");
                   },
                   child: Text(
-                    "See details",
+                    //"See details",
+                    ref.t(BKeys.see_details), 
                     style: TextStyle(fontSize: 13.sp, color: Colors.white),
                   ),
                 ),
               ),
               SizedBox(width: 10.w),
+
+              if (showTrack)
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                    ),
+                    onPressed: () {
+                      context.pushNamed(
+                        GlobalTrackingScreen1.routeName,
+                        pathParameters: {"screenName": "transport"},
+                      );
+                    },
+                    child: Text(
+                      // "Track order" 
+                      ref.t(BKeys.track_order),
+                      style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                    ),
+                  ),
+                ),
+
               // if (showTrack)
               //   Expanded(
               //     child: ElevatedButton(
@@ -422,6 +463,7 @@ class _TransportBookingState extends State<TransportBooking> {
               //       ),
               //     ),
               //   ),
+
             ],
           ),
         ],

@@ -1,24 +1,27 @@
 // lib/features/buyer/screens/review/review_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_rating/flutter_rating.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/review/model/buyer_review_model.dart';
 
 import 'data/buyer_review_data.dart';
 
-class ReviewScreen extends StatefulWidget {
+class ReviewScreen extends ConsumerStatefulWidget {
   const ReviewScreen({super.key, required this.vendorId});
 
   static const String routeName = '/reviewScreen';
   final int vendorId;
 
   @override
-  State<ReviewScreen> createState() => _ReviewScreenState();
+  ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   int _currentPage = 1;
   late Future<VendorReviewsPage> _future;
 
@@ -48,7 +51,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-              Tuppertextandbackbutton(screenName: "Review Screen"),
+              Tuppertextandbackbutton(screenName: ref.t(BKeys.review)),
               SizedBox(height: 12.h),
               Expanded(
                 child: FutureBuilder<VendorReviewsPage>(

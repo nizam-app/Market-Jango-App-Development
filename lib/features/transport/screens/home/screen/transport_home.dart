@@ -284,6 +284,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
@@ -328,6 +330,7 @@ class TransportHomeScreen extends ConsumerWidget {
                         SizedBox(width: 10.w),
                         InkWell(
                           onTap: () {
+                            //"/transport_notificatons"
                             context.push("/transport_notificatons");
                           },
                           child: Icon(
@@ -345,7 +348,8 @@ class TransportHomeScreen extends ConsumerWidget {
                       const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
-                Text("Find your Driver", style: TextStyle(fontSize: 10.sp)),
+                //"Find your Driver"
+                Text(ref.t(BKeys.find_your_driver), style: TextStyle(fontSize: 10.sp)),
                 SizedBox(height: 20.h),
 
                 /// Search Fields
@@ -354,7 +358,8 @@ class TransportHomeScreen extends ConsumerWidget {
                   children: [
                     // Search (white bg)
                     _softField(
-                      hint: "Search by vendor name",
+                      //"Search by vendor name"
+                      hint: ref.t(BKeys.search_by_vendor_name),
                       icon: Icons.search,
                       bg: Colors.white, // image-2 এ সার্চটা সাদা
                     ),
@@ -372,7 +377,8 @@ class TransportHomeScreen extends ConsumerWidget {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8.w),
                           child: Text(
-                            "Or",
+                            //"Or",
+                            ref.t(BKeys.or),
                             style: TextStyle(
                               fontSize: 14.sp,
                               color: const Color(0xFF6B7280),
@@ -391,7 +397,8 @@ class TransportHomeScreen extends ConsumerWidget {
 
                     // Pickup (light grey bg)
                     _softField(
-                      hint: "Enter Pickup location",
+                      //"Enter Pickup location"
+                      hint:ref.t(BKeys.pick_up_location),
                       icon: Icons.location_on_outlined,
                       bg: AllColor.grey300, // হালকা ধূসর
                     ),
@@ -399,7 +406,8 @@ class TransportHomeScreen extends ConsumerWidget {
 
                     // Destination (light grey bg)
                     _softField(
-                      hint: "Destination",
+                      //"Destination"
+                      hint: ref.t(BKeys.destination),
                       icon: Icons.flag_outlined,
                       bg: AllColor.grey300,
                     ),
@@ -419,7 +427,8 @@ class TransportHomeScreen extends ConsumerWidget {
                     ),
                     onPressed: () {},
                     child: Text(
-                      "Search",
+                     // "Search",
+                      ref.t(BKeys.search),
                       style: TextStyle(fontSize: 16.sp, color: AllColor.white),
                     ),
                   ),
@@ -431,7 +440,8 @@ class TransportHomeScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Drivers",
+                      //"Drivers",
+                    ref.t(BKeys.driver),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -441,7 +451,7 @@ class TransportHomeScreen extends ConsumerWidget {
                       onPressed: () {
                         context.push(TransportDriver.routeName);
                       },
-                      child: const Text("See all"),
+                      child:  Text(ref.t(BKeys.seeAll)),
                     ),
                   ],
                 ),
@@ -453,7 +463,10 @@ class TransportHomeScreen extends ConsumerWidget {
                   error: (e, _) => Center(
                     child: Padding(
                       padding: EdgeInsets.only(top: 16.h),
-                      child: Text('Failed to load drivers'),
+                      child: Text(
+                          // 'Failed to load drivers'
+                        ref.t(BKeys.failed_to_load_drivers)
+                      ),
                     ),
                   ),
                   data: (resp) {
@@ -463,7 +476,10 @@ class TransportHomeScreen extends ConsumerWidget {
                     if (items.isEmpty) {
                       return Padding(
                         padding: EdgeInsets.only(top: 20.h),
-                        child: const Text('No drivers available'),
+                        child:  Text(
+                            // ''No drivers available''
+                            ref.t(BKeys.no_drivers_available)
+                        ),
                       );
                     }
                     final homeItems = items.take(10).toList();
@@ -525,14 +541,14 @@ class TransportHomeScreen extends ConsumerWidget {
 }
 
 /// Driver Card
-class _DriverCard extends StatelessWidget {
+class _DriverCard extends ConsumerWidget {
   const _DriverCard({required this.driver, required this.images});
 
   final Driver driver;
   final List<String> images;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     final user = driver.user;
 
     // Safe fallbacks
@@ -669,7 +685,8 @@ class _DriverCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30.r),
                       ),
                       child: Text(
-                        "See Details",
+                        // "See Details",
+                        ref.t(BKeys.see_details),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12.sp,

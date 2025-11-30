@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportCompleted extends StatefulWidget {
+class TransportCompleted extends ConsumerStatefulWidget {
   const TransportCompleted({super.key});
   static const String routeName = "/completedOrders";
 
   @override
-  State<TransportCompleted> createState() => _TransportCompletedState();
+  ConsumerState<TransportCompleted> createState() => _TransportCompletedState();
 }
 
-class _TransportCompletedState extends State<TransportCompleted> {
+class _TransportCompletedState extends ConsumerState<TransportCompleted> {
   String selectedTab = "Completed";
   final List<String> tabs = ["All", "Ongoing", "Completed", "Cancelled"];
 
@@ -72,7 +75,8 @@ class _TransportCompletedState extends State<TransportCompleted> {
               itemCount: 3, // example count
               itemBuilder: (context, index) {
                 return _bookingCard(
-                  status: "Completed",
+                  //"Completed"
+                  status: ref.t(BKeys.completed),
                   statusColor: Colors.green,
                 );
               },
@@ -218,7 +222,8 @@ class _TransportCompletedState extends State<TransportCompleted> {
                     context.push("/completedDetails");
                   },
                   child: Text(
-                    "See details",
+                    // "See details"
+                   ref.t(BKeys.see_details),
                     style: TextStyle(fontSize: 13.sp, color: Colors.white),
                   ),
                 ),
@@ -239,7 +244,8 @@ class _TransportCompletedState extends State<TransportCompleted> {
                     // ReviewDialog.show(context);
                   },
                   child: Text(
-                    "Review",
+                    //"Review",
+                    ref.t(BKeys.review),
                     style: TextStyle(fontSize: 13.sp, color: Colors.orange),
                   ),
                 ),

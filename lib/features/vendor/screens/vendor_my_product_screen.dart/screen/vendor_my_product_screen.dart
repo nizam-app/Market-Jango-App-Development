@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
@@ -106,7 +108,8 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                 children: [
                          CustomBackButton() , 
                   Text(
-                    "My Products",
+                    // "My Products",
+                    ref.t(BKeys.my_product),  
                     style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -117,7 +120,8 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
               Row(
                 children: [
                   _AddBox(
-                    title: "Add your\nProduct",
+                    title: 
+                    "Add your\nProduct",
                     onTap: () {
                       context.push(ProductAddPage.routeName);
                     },
@@ -163,7 +167,8 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
 
               /// Products List
               Text(
-                "Products List",
+                // "Products List",
+                ref.t(BKeys.products_list),
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
               ),
               SizedBox(height: 12.h),

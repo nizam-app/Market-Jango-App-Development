@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-class VendorEditProfile extends StatefulWidget {
+class VendorEditProfile extends ConsumerStatefulWidget {
   const VendorEditProfile({super.key, required this.userType});
   static const routeName = "/vendorEditProfile";
   final UserModel userType;
 
   @override
-  State<VendorEditProfile> createState() => _VendorEditProfileState();
+  ConsumerState<VendorEditProfile> createState() => _VendorEditProfileState();
 }
 
-class _VendorEditProfileState extends State<VendorEditProfile> {
+class _VendorEditProfileState extends ConsumerState<VendorEditProfile> {
   late final _name ;
   late final _email ;
   late final _phone ;
@@ -66,7 +69,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                   children: [
                     CustomBackButton(),  
                     Text(
-                      'Settings',
+                      // 'Settings',
+                      ref.t(BKeys.settings),
                       style: TextStyle(
                         color: AllColor.black,
                         fontSize: 28,
@@ -75,7 +79,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Your Profile',
+                      // 'Your Profile',
+                      ref.t(BKeys.myProfile),
                       style: TextStyle(
                         color: AllColor.textHintColor,
                         fontSize: 14,
@@ -129,7 +134,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 22),
 
                     /// Name
-                    _Label('Name'),
+                    _Label(
+                    //    'Name'
+                      ref.t(BKeys.name)
+                    ),
                     _RoundedField(
                       controller: _name,
                       hint: 'Enter your full name',
@@ -138,7 +146,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 14),
 
                     /// Email
-                    _Label('Email'),
+                    _Label(
+                       // 'Email'
+                      ref.t(BKeys.email)
+                    ),
                     _RoundedField(
                       controller: _email,
                       hint: 'Enter your email',
@@ -147,7 +158,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 14),
 
                     /// Phone
-                    _Label('Phone number'),
+                    _Label(
+                        //'Phone number'
+                    ref.t(BKeys.phone)
+                    ),
                     _RoundedField(
                       controller: _phone,
                       hint: 'Enter your phone number',
@@ -221,7 +235,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                           ),
                         ),
                         child: Text(
-                          'Save Changes',
+                          // 'Save Changes',
+                          ref.t(BKeys.saveChanges),
                           style: TextStyle(
                             color: AllColor.white,
                             fontWeight: FontWeight.w700,

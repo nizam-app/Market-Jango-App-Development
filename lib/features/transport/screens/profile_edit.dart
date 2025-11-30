@@ -59,15 +59,15 @@ class EditProfilScreen extends ConsumerWidget {
             const SizedBox(height: 25),
 
             // Name Input
-            _buildTextField("Name", "Enter your full name"),
+            _buildTextField(ref.t(BKeys.yourName), "Enter your full name"),
             const SizedBox(height: 15),
 
             // Email Input
-            _buildTextField("Email", "Enter your email"),
+            _buildTextField(ref.t(BKeys.email), "Enter your email"),
             const SizedBox(height: 15),
 
             // Phone Input
-            _buildTextField("Phone number", "Enter your phone number"),
+            _buildTextField(ref.t(BKeys.phone), "Enter your phone number"),
             const SizedBox(height: 30),
 
             // Save Button

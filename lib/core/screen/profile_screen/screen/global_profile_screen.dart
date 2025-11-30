@@ -76,7 +76,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                     _SettingsTile(
                       leadingIcon: Icons.shopping_bag_outlined,
                       //"My Product"
-                      title: "My Product",
+                      title: ref.t(BKeys.my_product),
                       onTap: () =>
                           context.push(VendorMyProductScreen.routeName),
                     ),
@@ -116,13 +116,14 @@ class GlobalSettingScreen extends ConsumerWidget {
   }
 }
 
-class SettingTitle extends StatelessWidget {
+class SettingTitle extends ConsumerWidget {
   const SettingTitle({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return Text(
-      "My Settings",
+     // "My Settings",
+      ref.t(BKeys.my_settings),
       style: TextStyle(
         fontSize: 24.sp,
         fontWeight: FontWeight.w800,

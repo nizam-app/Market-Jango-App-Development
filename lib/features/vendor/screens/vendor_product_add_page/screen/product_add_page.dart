@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
@@ -38,6 +40,7 @@ class ProductAddPage extends ConsumerWidget {
             padding: EdgeInsets.all(10.r),
             child: Column(
               children: [
+                //"Profile Edite"
                 Tuppertextandbackbutton(screenName: "Profile Edite"),
                 ProductBasicInfoSection(),
                 SizedBox(height: 16.h),
@@ -129,7 +132,10 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Label('Product Title', color: _lblColor),
+        _Label(
+            //'Product Title'
+          ref.t(BKeys.product_title)
+        , color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
           onChanged: (value) {
@@ -147,7 +153,10 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
 
         SizedBox(height: 16.h),
 
-        _Label('Category', color: _lblColor),
+        _Label(
+           'Category',
+        
+            color: _lblColor),
         SizedBox(height: 6.h),
         /// Category Dropdown
         categoryAsync.when(
@@ -214,7 +223,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
 
         SizedBox(height: 16.h),
 
-        _Label('Description', color: _lblColor),
+        _Label(ref.t(BKeys.destination), color: _lblColor),
         SizedBox(height: 6.h),
         TextFormField(
           onChanged: (value) {

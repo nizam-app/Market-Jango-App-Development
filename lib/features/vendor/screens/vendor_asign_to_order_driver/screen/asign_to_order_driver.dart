@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/data/asign_to_order_driver_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/logic/vendor_driver_prement_logic.dart';
@@ -104,7 +106,8 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
                         onChanged: (_) => setState(() {}),
                         textInputAction: TextInputAction.search,
                         decoration: InputDecoration(
-                          hintText: 'Search orders',
+                          //'Search orders',
+                          hintText: ref.t(BKeys.searchOrders),
                           hintStyle: TextStyle(color: AllColor.textHintColor),
                           prefixIcon: Icon(
                             Icons.search_rounded,
@@ -285,14 +288,14 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
 
 /// ================= Bottom button =================
 
-class _BottomAssignBar extends StatelessWidget {
+class _BottomAssignBar extends ConsumerWidget {
   final bool enabled;
   final VoidCallback? onPressed;
 
   const _BottomAssignBar({required this.enabled, this.onPressed});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return SafeArea(
       top: false,
       minimum: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
@@ -310,7 +313,8 @@ class _BottomAssignBar extends StatelessWidget {
             ),
           ),
           child: Text(
-            'Payment now',
+            //'Payment now'
+            ref.t(BKeys.payment),
             style: TextStyle(
               color: AllColor.white,
               fontWeight: FontWeight.w700,

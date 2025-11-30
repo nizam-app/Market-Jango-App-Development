@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -136,7 +137,7 @@ class VendorListSection extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: v.id,
+                        extra: v.userId,
                       );
                     },
                     child: CircleAvatar(
@@ -215,6 +216,7 @@ class ProductGridSection extends ConsumerWidget {
           itemBuilder: (context, index) {
             final v = items[index];
             final p = v.product!;
+            Logger().e(v.vendorId);
 
             return ProductCard(
               title: p.name, // product name

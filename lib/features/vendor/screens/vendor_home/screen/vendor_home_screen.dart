@@ -3,11 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
-
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
-
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
@@ -114,7 +111,7 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context, ref ) {
+  Widget buildDrawer(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Column(

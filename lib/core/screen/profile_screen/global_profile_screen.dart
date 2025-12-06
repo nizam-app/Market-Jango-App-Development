@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/transport/screens/language_screen.dart';
+import 'package:market_jango/business_logic/providers/user_provider.dart';
+import 'package:market_jango/business_logic/models/user_model.dart';
 
 import '../global_profile_edit_screen.dart';
 
-class SettingScreen extends StatefulWidget {
+class SettingScreen extends ConsumerStatefulWidget {
   const SettingScreen({super.key});
 
   static const String routeName = '/settingsScreen';
 
   @override
-  State<SettingScreen> createState() => _SettingScreenState();
+  ConsumerState<SettingScreen> createState() => _SettingScreenState();
 }
 
-class _SettingScreenState extends State<SettingScreen> {
+class _SettingScreenState extends ConsumerState<SettingScreen> {
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider);
+
     return ScreenBackground(child: Padding(
       padding:  EdgeInsets.all(20.r),
       child: Column(
@@ -30,12 +35,36 @@ class _SettingScreenState extends State<SettingScreen> {
           SizedBox(height: 12.h),
           Tuppertextandbackbutton(screenName: "My Settings") ,
           SizedBox(height: 16.h),
-          const ProfileSection(),
+          userAsync.when(
+            data: (user) => ProfileSection(user: user),
+            loading: () => ProfileSection(user: null, isLoading: true),
+            error: (error, stack) => ProfileSection(user: null, error: error.toString()),
+          ),
 
           SizedBox(height: 20.h),
-          _SettingsLine(icon: Icons.phone_in_talk_outlined, text: "(319) 555-0115"),
-          _DividerLine(),
-          _SettingsLine(icon: Icons.email_outlined, text: "mirable@gmail.com"),
+          userAsync.when(
+            data: (user) => Column(
+              children: [
+                _SettingsLine(icon: Icons.phone_in_talk_outlined, text: user.phone),
+                _DividerLine(),
+                _SettingsLine(icon: Icons.email_outlined, text: user.email),
+              ],
+            ),
+            loading: () => Column(
+              children: [
+                _SettingsLine(icon: Icons.phone_in_talk_outlined, text: "Loading..."),
+                _DividerLine(),
+                _SettingsLine(icon: Icons.email_outlined, text: "Loading..."),
+              ],
+            ),
+            error: (error, stack) => Column(
+              children: [
+                _SettingsLine(icon: Icons.phone_in_talk_outlined, text: "Error"),
+                _DividerLine(),
+                _SettingsLine(icon: Icons.email_outlined, text: "Error"),
+              ],
+            ),
+          ),
 
           SizedBox(height: 12.h),
           _DividerLine(),
@@ -92,80 +121,48 @@ class SettingTitle extends StatelessWidget {
   }
 }
 class ProfileSection extends StatelessWidget {
-  const ProfileSection({super.key});
+  final UserModel? user;
+  final bool isLoading;
+  final String? error;
+
+  const ProfileSection({
+    super.key,
+    this.user,
+    this.isLoading = false,
+    this.error,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            CircleAvatar(
-              radius: 26.r,
-              backgroundImage: const NetworkImage(
-                "https://randomuser.me/api/portraits/women/68.jpg",
-              ),
-            ),
-            Positioned(
-              bottom: -2.h,
-              right: -2.w,
-              child: Container(
-                width: 18.r,
-                height: 18.r,
-                decoration: BoxDecoration(
-                  color: AllColor.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AllColor.black.withOpacity(0.08),
-                      blurRadius: 4,
-                    )
-                  ],
-                ),
-                child: Icon(Icons.photo_camera_outlined,
-                    size: 12.sp, color: AllColor.black),
-              ),
-            ),
-          ],
+        CircleAvatar(
+          radius: 26.r,
+          backgroundImage: NetworkImage(user?.image ?? "https://randomuser.me/api/portraits/women/68.jpg"),
         ),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Miracle Lily",
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AllColor.black,
-                  )),
+              Text(
+                isLoading ? "Loading..." : user?.name ?? "No Name",
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: AllColor.black),
+              ),
               SizedBox(height: 4.h),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.alternate_email, size: 14.sp, color: AllColor.black),
-                  SizedBox(width: 4.w),
-                  Text("mirable123",
-                      style: TextStyle(fontSize: 13.sp, color: AllColor.black)),
-                  SizedBox(width: 8.w),
-                  _PrivateBadge(),
-                ],
+              Text(
+                isLoading ? "Loading..." : user?.email ?? "No Email",
+                style: TextStyle(fontSize: 13.sp, color: AllColor.black),
               ),
             ],
           ),
         ),
         IconButton(
-          onPressed: () => _gotoProfileEdit(context),
+          onPressed: () => context.push(BuyerProfileEditScreen.routeName),
           icon: Icon(Icons.edit_outlined, color: AllColor.black, size: 18.sp),
         ),
       ],
     );
-  }
-
-  void _gotoProfileEdit(BuildContext context) {
-    context.push(BuyerProfileEditScreen.routeName);
   }
 }
 

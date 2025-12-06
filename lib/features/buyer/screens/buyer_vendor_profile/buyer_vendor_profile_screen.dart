@@ -17,20 +17,20 @@ class BuyerVendorProfileScreen extends StatelessWidget {
       body: SafeArea(child: SingleChildScrollView(
         child: Column(
           children: [
-        CustomVendorUpperSection(),
+        const CustomVendorUpperSection(),
             Padding(
               padding:  EdgeInsets.symmetric(horizontal: 10.w),
               child: Column(
                 children: [
-                  SeeMoreButton(name: "Populer", isSeeMore: false, ),
-                  PopularProduct(),
+                  const SeeMoreButton(name: "Populer", isSeeMore: false, ),
+                  const PopularProduct(),
         
                   SeeMoreButton(name: "Fashion", seeMoreAction: () {context.pushNamed(
                       SeeJustForYouScreen.routeName, pathParameters: {"screenName": "Fashion"});}, ),
-                  FashionProduct(),
+                  const FashionProduct(),
                   SeeMoreButton(name: "Electronics", seeMoreAction: () {context.pushNamed(
                       SeeJustForYouScreen.routeName, pathParameters: {"screenName": "Electronics"});}, ),
-                  FashionProduct()
+                  const FashionProduct()
         
                 ],
               ),
@@ -58,8 +58,8 @@ class CustomVendorUpperSection extends StatelessWidget {
               onTap: () {
                 context.pop();
               },
-              child: Icon(Icons.arrow_back_ios)),
-          Spacer(),
+              child: const Icon(Icons.arrow_back_ios)),
+          const Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -125,7 +125,7 @@ class CustomVendorUpperSection extends StatelessWidget {
               ),
             ],
           ),
-          Spacer()
+          const Spacer()
         ],
       ),
     );
@@ -142,11 +142,11 @@ class FashionProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+      return SizedBox(
       height: 210.h,
       child: ListView.builder(
           shrinkWrap: true,
-          physics:AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           scrollDirection: Axis.horizontal,
           itemCount: 10,
           // Example item count
@@ -164,7 +164,7 @@ class PopularProduct extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           // mainAxisSpacing: 0.h,
@@ -177,7 +177,7 @@ class PopularProduct extends StatelessWidget {
           return Stack(
             children: [
               CustomNewProduct(width: 162.w, height: 175.h, text: 'Product Name', text2: 'price',),
-              Positioned(
+              const Positioned(
                 top: 10,
                   right: 30,
                   child: CustomDiscountCord())

@@ -13,6 +13,7 @@ class AllVendorProductScreen extends ConsumerStatefulWidget {
 
 class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen> {
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -20,12 +21,25 @@ class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen>
     _searchController.addListener(() {
       ref.read(vendorProductNotifierProvider.notifier).updateSearch(_searchController.text);
     });
+    
+    // Set up infinite scroll
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent * 0.8) {
+      // Load more when 80% scrolled
+      final notifier = ref.read(vendorProductNotifierProvider.notifier);
+      notifier.nextPage();
+    }
   }
 
   @override
@@ -58,13 +72,24 @@ class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen>
                   return const Center(child: Text('No products found'));
                 }
 
+                final hasMore = response.currentPage < response.lastPage;
+
                 return ListView.builder(
-                  itemCount: response.products.length,
+                  controller: _scrollController,
+                  itemCount: response.products.length + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index >= response.products.length) {
+                      // Show loading indicator at bottom
+                      return Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    
                     final product = response.products[index];
                     return _ProductCard(
                       product: product,
-                      onTap: () => _showOfferSheet(context, product),
+                      onTap: () => _onProductSelected(context, product),
                     );
                   },
                 );
@@ -78,10 +103,9 @@ class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen>
     );
   }
 
-  void _showOfferSheet(BuildContext context, VendorProduct product) {
-    // For now, just pop with a placeholder message
-    // TODO: Implement offer creation sheet
-    Navigator.of(context).pop();
+  void _onProductSelected(BuildContext context, VendorProduct product) {
+    // Return the selected product to the caller
+    Navigator.of(context).pop(product);
   }
 }
 

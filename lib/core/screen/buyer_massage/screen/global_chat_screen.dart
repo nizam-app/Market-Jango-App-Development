@@ -14,6 +14,8 @@ import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.
 import 'package:market_jango/core/screen/buyer_massage/model/chat_offer_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/offer_product_repository.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/all_vendor_product_screen.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/create_offer_sheet.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 
@@ -169,67 +171,87 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
   final Map<int, File> _localImageMap = {};
   
   void _askImageSource() {
-    final userTypeAsync = ref.read(getUserTypeProvider);
-    final isVendor = userTypeAsync.value?.toLowerCase() == 'vendor';
-
     showModalBottomSheet(
       context: context,
       builder: (_) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () {
-                  Navigator.pop(context);
-                  pickMainImage(ImageSource.camera);
-                },
+        // Use Consumer to ensure user type is properly watched/loaded
+        return Consumer(
+          builder: (context, ref, child) {
+            final userTypeAsync = ref.watch(getUserTypeProvider);
+            final isVendor = userTypeAsync.value?.toLowerCase() == 'vendor';
+            
+            return SafeArea(
+              child: Wrap(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt),
+                    title: const Text('Camera'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickMainImage(ImageSource.camera);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library),
+                    title: const Text('Gallery'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickMainImage(ImageSource.gallery);
+                    },
+                  ),
+                  if (isVendor) ...[
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.shopping_bag),
+                      title: const Text('Send product offer'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToProductOffer();
+                      },
+                    ),
+                  ],
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  pickMainImage(ImageSource.gallery);
-                },
-              ),
-              if (isVendor) ...[
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.shopping_bag),
-                  title: const Text('Send product offer'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _navigateToProductOffer();
-                  },
-                ),
-              ],
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
   Future<void> _navigateToProductOffer() async {
-    final result = await Navigator.of(context).push<ChatMessage>(
+    final selectedProduct = await Navigator.of(context).push<VendorProduct>(
       MaterialPageRoute(
         builder: (ctx) => const AllVendorProductScreen(),
         settings: RouteSettings(arguments: widget.partnerId),
       ),
     );
 
-    if (result != null) {
-      // Refresh chat history to show the new offer message
-      ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
-      
-      // Optionally show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offer sent successfully')),
-        );
-      }
+    if (selectedProduct != null && mounted) {
+      // Show the offer creation sheet
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => CreateOfferSheet(
+          product: selectedProduct,
+          receiverId: widget.partnerId,
+          onOfferCreated: (chatMessage) {
+            // Refresh chat history to show the new offer message
+            ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+            
+            // Show success message
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Offer sent successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          },
+        ),
+      );
     }
   }
 

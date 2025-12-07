@@ -51,6 +51,11 @@ class VendorProductNotifier extends AutoDisposeAsyncNotifier<VendorProductRespon
     if (current == null || _currentPage >= current.lastPage) return;
     if (state.isLoading) return;
 
+    // Ensure _allProducts is in sync with current state
+    if (_allProducts.length != current.products.length) {
+      _allProducts = List.from(current.products);
+    }
+
     _currentPage++;
     final repository = OfferProductRepository();
     

@@ -114,7 +114,7 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context, ref ) {
+  Widget buildDrawer(BuildContext context, WidgetRef ref ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Column(

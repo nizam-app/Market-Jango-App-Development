@@ -35,8 +35,9 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       Logger().i(res.body);
       final parsed = TopProductsResponse.fromRawJson(res.body);
 
-      // ✔️ data array contains TopProduct directly
-      return parsed.data.data;
+      // ✔️ parsed.data.data already contains TopProduct objects
+      final products = parsed.data.data;
+      return products;
     } catch (e) {
       throw Exception('Error: $e');
     }

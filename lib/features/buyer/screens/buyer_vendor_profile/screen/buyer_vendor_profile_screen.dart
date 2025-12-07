@@ -133,8 +133,9 @@ class CustomVendorUpperSection extends ConsumerWidget {
 
         // যদি আসল রেটিং না থাকে, UI ঠিক রাখতে fallback
         final double rating = vendor?.avgRating ?? 0;
+        final reviewCount = vendor?.reviews.length ?? 0;
         final reviewText =
-            '${rating.toStringAsFixed(2)} ( ${v.vendor} reviews )';
+            '${rating.toStringAsFixed(2)} ( $reviewCount reviews )';
 
         final opening = (v.createdAt != null && v.expiresAt != null)
             ? 'Opening time: ${v.createdAt} - ${v.expiresAt}'
@@ -161,16 +162,28 @@ class CustomVendorUpperSection extends ConsumerWidget {
                   SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        name,
-                        style: theme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          name,
+                          style: theme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                       SizedBox(width: 5.w),
                       Icon(Icons.location_on, size: 16.sp, color: Colors.red),
-                      Text(location, style: theme.titleMedium),
+                      Flexible(
+                        child: Text(
+                          location,
+                          style: theme.titleMedium,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
                     ],
                   ),
                   SizedBox(height: 4.h),
@@ -181,17 +194,21 @@ class CustomVendorUpperSection extends ConsumerWidget {
                   SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       StarRating(rating: rating, color: Colors.amber),
                       SizedBox(width: 8.w),
-                      GestureDetector(
-                        onTap: () =>
-                            goToReviewScreen(context, vendorId),
-                        child: Text(
-                          reviewText,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black87,
+                      Flexible(
+                        child: GestureDetector(
+                          onTap: () => goToReviewScreen(context, vendorId),
+                          child: Text(
+                            reviewText,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ),

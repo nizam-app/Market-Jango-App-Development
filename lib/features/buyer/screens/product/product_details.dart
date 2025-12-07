@@ -57,7 +57,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   onSelected: (c) => setState(() => _selectedColor = c),
                 ),
                 ProductMaterialAndStoreInfo(
-                  userID: product.vendor.user.id ?? 0,
+                  userId: product.vendor.userId,
                   storeName:
                       product.vendor.user.name ??
                       product.vendor.businessName ??
@@ -65,7 +65,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   image:
                       product.vendor.user.image ??
                       "https://www.selikoff.net/blog-files/null-value.gif",
-                  vendorId: product.vendor.user.id ?? product.vendorId,
+                  vendorId: product.vendor.id,
                   onChatTap: () async {
                     final authStorage = AuthLocalStorage();
                     final myUserIdStr = await authStorage.getUserId();
@@ -410,7 +410,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
     this.image =
         "https://t3.ftcdn.net/jpg/05/62/05/20/360_F_562052065_yk3KPuruq10oyfeu5jniLTS4I2ky3bYX.jpg",
     required this.vendorId,
-    required this.userID,
+    required this.userId,
   });
 
   final List<MaterialChip> materials;
@@ -420,7 +420,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
   final VoidCallback? onChatTap;
   final String image;
   final int vendorId;
-  final int userID;
+  final int userId;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -450,7 +450,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                     BuyerVendorProfileScreen.routeName,
                     extra: {
                       'vendorId': vendorId,
-                      'userId': userID,
+                      'userId': userId,
                     },
                   );
                 },
@@ -470,7 +470,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                         BuyerVendorProfileScreen.routeName,
                         extra: {
                           'vendorId': vendorId,
-                          'userId': userID,
+                          'userId': userId,
                         },
                       );
                     },

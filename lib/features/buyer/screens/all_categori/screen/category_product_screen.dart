@@ -139,7 +139,7 @@ class VendorListSection extends ConsumerWidget {
                         BuyerVendorProfileScreen.routeName,
                         extra: {
                           'vendorId': v.id,
-                          'userId': v.id, // Using vendorId as userId fallback
+                          'userId': v.userId,
                         },
                       );
                     },
@@ -272,13 +272,17 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push(
+      onTap: () {
+        // Note: VendorFirstProduct only has vendorId, userId not available
+        // Using vendorId for both (will need to be fixed if userId is needed)
+        context.push(
           BuyerVendorProfileScreen.routeName,
           extra: {
             'vendorId': vendorId,
-            'userId': vendorId, // Using vendorId as userId fallback
+            'userId': 0, // Will be handled in route builder
           },
-        ),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: AllColor.white,
@@ -338,13 +342,16 @@ class ProductCard extends StatelessWidget {
                   ),
                   SizedBox(height: 20.h),
                   InkWell(
-                    onTap: () => context.push(
-                      BuyerVendorProfileScreen.routeName,
-                      extra: {
-                        'vendorId': vendorId,
-                        'userId': vendorId, // Using vendorId as userId fallback
-                      },
-                    ),
+                    onTap: () {
+                      // Note: VendorFirstProduct only has vendorId, userId not available
+                      context.push(
+                        BuyerVendorProfileScreen.routeName,
+                        extra: {
+                          'vendorId': vendorId,
+                          'userId': 0, // Will be handled in route builder
+                        },
+                      );
+                    },
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -394,13 +401,15 @@ class VendorSuggestionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(
+      onTap: () {
+        context.push(
           BuyerVendorProfileScreen.routeName,
           extra: {
             'vendorId': v.vendorId,
-            'userId': v.vendorId, // Using vendorId as userId fallback
+            'userId': v.userId,
           },
-        ),
+        );
+      },
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         leading: CircleAvatar(

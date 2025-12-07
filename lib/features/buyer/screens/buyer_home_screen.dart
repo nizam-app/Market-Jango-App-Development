@@ -433,15 +433,13 @@ class BuyerHomeSearchBar extends ConsumerWidget {
                 itemsSelector: (res) => res.products,
                 itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                 onItemSelected: (p) {
-                  if (p.vendor != null) {
-                    context.push(
-                      BuyerVendorProfileScreen.routeName,
-                      extra: {
-                        'vendorId': p.vendor!.id,
-                        'userId': p.vendor!.userId,
-                      },
-                    );
-                  }
+                  context.push(
+                    BuyerVendorProfileScreen.routeName,
+                    extra: {
+                      'vendorId': p.vendor?.id ?? 0,
+                      'userId': p.vendor?.userId ?? 0,
+                    },
+                  );
                 },
                 hintText: ref.t(BKeys.searchProduct),
                 debounce: const Duration(seconds: 1),

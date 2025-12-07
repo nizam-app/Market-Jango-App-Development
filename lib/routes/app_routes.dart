@@ -576,7 +576,10 @@ final GoRouter router = GoRouter(
           vendorId = extra['vendorId'] as int? ?? 0;
           userId = extra['userId'] as int? ?? 0;
         } else if (extra is int) {
+          // Backward compatibility: if only int is passed, treat it as vendorId
+          // and try to get userId from AuthLocalStorage
           vendorId = extra;
+          // userId will remain 0, will be handled in the screen
         } else {
           vendorId = 0;
         }

@@ -10,7 +10,7 @@ import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/transport/screens/driver/logic/transport_driver_perment_logic.dart';
 import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class DriverDetailsScreen extends ConsumerWidget {
   const DriverDetailsScreen({super.key, required this.driverId});
@@ -224,11 +224,14 @@ class DriverDetailsScreen extends ConsumerWidget {
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                         ),
                         onPressed: () async {
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          final userId = prefs.getString("user_id");
-                          if (userId == null) {
+                          final authStorage = AuthLocalStorage();
+                          final userIdStr = await authStorage.getUserId();
+                          if (userIdStr == null || userIdStr.isEmpty) {
                             throw Exception("user id not founde");
+                          }
+                          final myUserId = int.tryParse(userIdStr);
+                          if (myUserId == null) {
+                            throw Exception("Invalid user id");
                           }
 
                           context.push(
@@ -237,7 +240,7 @@ class DriverDetailsScreen extends ConsumerWidget {
                               partnerId: user.id,
                               partnerName: user.name,
                               partnerImage: user.image,
-                              myUserId: int.parse(userId),
+                              myUserId: myUserId,
                             ),
                           );
                         },

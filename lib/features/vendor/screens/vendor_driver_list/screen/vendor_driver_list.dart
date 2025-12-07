@@ -13,7 +13,7 @@ import 'package:market_jango/features/transport/screens/driver/screen/driver_det
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/data/driver_list_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/model/driver_list_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class VendorDriverList extends ConsumerStatefulWidget {
   const VendorDriverList({super.key});
@@ -100,11 +100,14 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                                 );
                               },
                               onChat: () async {
-                                SharedPreferences prefs =
-                                    await SharedPreferences.getInstance();
-                                final userId = prefs.getString("user_id");
-                                if (userId == null) {
+                                final authStorage = AuthLocalStorage();
+                                final userIdStr = await authStorage.getUserId();
+                                if (userIdStr == null || userIdStr.isEmpty) {
                                   throw Exception("user id not founde");
+                                }
+                                final myUserId = int.tryParse(userIdStr);
+                                if (myUserId == null) {
+                                  throw Exception("Invalid user id");
                                 }
                                 context.push(
                                   GlobalChatScreen.routeName,
@@ -112,7 +115,7 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                                     partnerId: drivers[i].user.id,
                                     partnerName: drivers[i].user.name,
                                     partnerImage: drivers[i].user.image,
-                                    myUserId: int.parse(userId),
+                                    myUserId: myUserId,
                                   ),
                                 );
                               },

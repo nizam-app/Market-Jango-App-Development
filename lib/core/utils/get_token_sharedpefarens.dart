@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 
-import 'get_user_type.dart';
-
+/// Provider to get authentication token from AuthLocalStorage
+/// Returns login token if available, otherwise returns registration token
 final authTokenProvider = FutureProvider<String?>((ref) async {
-  final prefs = await ref.watch(sharedPreferencesProvider.future);
-
-  return prefs.getString('auth_token');
+  final authStorage = ref.watch(authLocalStorageProvider);
+  return await authStorage.getToken();
 });

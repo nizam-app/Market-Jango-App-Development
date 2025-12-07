@@ -8,7 +8,7 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../../../../../core/localization/tr.dart';
 
@@ -30,8 +30,8 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
   }
 
   Future<void> _loadUserId() async {
-    final pref = await SharedPreferences.getInstance();
-    final stored = pref.getString("user_id");
+    final authStorage = AuthLocalStorage();
+    final stored = await authStorage.getUserId();
     if (!mounted) return;
     setState(() {
       _userId = stored;

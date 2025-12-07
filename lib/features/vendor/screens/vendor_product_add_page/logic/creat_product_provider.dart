@@ -7,7 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final createProductProvider =
 StateNotifierProvider<CreateProductNotifier, AsyncValue<String>>(
@@ -50,8 +50,8 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
   }) async {
     try {
       state = const AsyncLoading(); // how loading state
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      final token = sharedPreferences.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       // 🔻 compress (cover + gallery)
       final cover = await _compress(image);
       final gallery = <File>[];

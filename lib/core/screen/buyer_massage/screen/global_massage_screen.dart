@@ -12,7 +12,7 @@ import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../../../localization/Keys/buyer_kay.dart';
 import 'global_chat_screen.dart';
@@ -131,20 +131,57 @@ class ChatListView extends ConsumerWidget {
             style: TextStyle(color: isUnread ? AllColor.grey : AllColor.black),
           ),
           onTap: () async {
-            SharedPreferences pefa = await SharedPreferences.getInstance();
-            String? myUserId = pefa.getString('user_id');
-            int myUserIdInt = int.parse(myUserId!);
-            ref.read(chatListProvider.notifier).markAsRead(chat.chatId);
+            try {
+              // Use centralized AuthLocalStorage to get user ID
+              final authStorage = AuthLocalStorage();
+              final myUserId = await authStorage.getUserId();
+              
+              if (myUserId == null || myUserId.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('User ID not found. Please login again.'),
+                    ),
+                  );
+                }
+                return;
+              }
 
-            context.push(
-              GlobalChatScreen.routeName,
-              extra: ChatArgs(
-                partnerId: chat.partnerId,
-                partnerName: chat.partnerName,
-                partnerImage: chat.partnerImage,
-                myUserId: myUserIdInt,
-              ),
-            );
+              final myUserIdInt = int.tryParse(myUserId);
+              if (myUserIdInt == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Invalid user ID. Please login again.'),
+                    ),
+                  );
+                }
+                return;
+              }
+
+              ref.read(chatListProvider.notifier).markAsRead(chat.chatId);
+
+              if (context.mounted) {
+                context.push(
+                  GlobalChatScreen.routeName,
+                  extra: ChatArgs(
+                    partnerId: chat.partnerId,
+                    partnerName: chat.partnerName,
+                    partnerImage: chat.partnerImage,
+                    myUserId: myUserIdInt,
+                  ),
+                );
+              }
+            } catch (e) {
+              Logger().e('Error navigating to chat: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to open chat: ${e.toString()}'),
+                  ),
+                );
+              }
+            }
           },
         );
       },

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// family: এখন স্ক্রিন থেকে url পাঠানো যাবে
 final justForYouProvider = AsyncNotifierProvider.family<
@@ -30,8 +30,8 @@ class JustForYouNotifier
   }
 
   Future<TopProductsResponse> _fetch() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final authStorage = AuthLocalStorage();
+    final token = await authStorage.getToken();
 
     // baseUrl-এ আগেই query থাকলে মর্জ করে page বসাচ্ছি
     final base = Uri.parse(_baseUrl);

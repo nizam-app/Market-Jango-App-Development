@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/image_check_before_post.dart';
 import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
 
 final updateProductProvider =
     StateNotifierProvider<UpdateProductNotifier, AsyncValue<void>>(
@@ -33,8 +33,8 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       state = const AsyncLoading();
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       final uri = Uri.parse(VendorAPIController.product_update(id));
 
       final req = http.MultipartRequest('POST', uri);

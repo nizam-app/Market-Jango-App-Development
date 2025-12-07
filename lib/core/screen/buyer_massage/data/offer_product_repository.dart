@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:market_jango/core/constants/api_control/chat_api.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/vendor_product_response_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class OfferProductRepository {
+  final AuthLocalStorage _authStorage = AuthLocalStorage();
+  
   Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    return await _authStorage.getToken();
   }
 
   /// Fetch vendor products with pagination and search

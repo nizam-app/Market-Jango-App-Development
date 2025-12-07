@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/constants/api_control/auth_api.dart';
+import '../../../../../core/utils/auth_local_storage.dart';
 import '../screens/reset_password_screen.dart';
 
 Future<void> verifyOtpFunction({
@@ -42,7 +43,9 @@ Future<void> verifyOtpFunction({
       final token = json['data']?['token']?.toString() ?? '';
 
       if (token.isNotEmpty) {
-        await prefs.setString('auth_token', token);
+        // This is a password reset token, save as registration token (temporary)
+        final authStorage = AuthLocalStorage();
+        await authStorage.saveRegistrationToken(token);
         Logger().i("🔑 Token saved: $token");
       } else {
         Logger().w("⚠️ Token missing in API response (json['data']['token'] is null)");

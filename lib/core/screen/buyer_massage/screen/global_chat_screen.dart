@@ -15,7 +15,9 @@ import 'package:market_jango/core/screen/buyer_massage/model/chat_offer_model.da
 import 'package:market_jango/core/screen/buyer_massage/data/offer_product_repository.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/all_vendor_product_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/create_offer_sheet.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 
@@ -40,13 +42,6 @@ class GlobalChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
-  @override
-  void initState() {
-    super.initState();
-    debugPrint(
-      "CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}",
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +58,14 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
         ),
         title: Row(
           children: [
-            CircleAvatar(backgroundImage: NetworkImage(widget.partnerImage)),
+            CircleAvatar(
+              child: FirstTimeShimmerImage(
+                imageUrl: widget.partnerImage,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
             SizedBox(width: 10.w),
             Text(
               widget.partnerName,
@@ -71,16 +73,16 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.videocam_outlined, size: 24.sp),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.call_outlined, size: 24.sp),
-            onPressed: () {},
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.videocam_outlined, size: 24.sp),
+        //     onPressed: () {},
+        //   ),
+        //   IconButton(
+        //     icon: Icon(Icons.call_outlined, size: 24.sp),
+        //     onPressed: () {},
+        //   ),
+        // ],
         backgroundColor: AllColor.white,
         elevation: 1,
       ),
@@ -169,6 +171,18 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
 
   // temp local image map: tempId -> File
   final Map<int, File> _localImageMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint(
+      "CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}",
+    );
+    // Listen to text changes to update Send button state
+    _textController.addListener(() {
+      setState(() {}); // Rebuild to update Send button state
+    });
+  }
   
   void _askImageSource() {
     showModalBottomSheet(
@@ -281,6 +295,12 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
         ),
       );
     });
+
+    // If there's no text in the input, send the image immediately
+    final text = _textController.text.trim();
+    if (text.isEmpty) {
+      _sendMessage();
+    }
   }
 
   @override
@@ -291,28 +311,84 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
 
   void _handleSubmitted(String text) {
     final t = text.trim();
-    if (t.isEmpty) return;
+    // Check if there's something to send (text or images)
+    if (t.isEmpty && _localImageMap.isEmpty) return;
+    
+    // If there are images, send everything together
+    if (_localImageMap.isNotEmpty) {
+      _sendMessage();
+    } else {
+      // Only text, send immediately
+      _textController.clear();
+      _sendMessage();
+    }
+  }
+
+  /// Check if there's something to send (text or images)
+  bool _hasContentToSend() {
+    final text = _textController.text.trim();
+    return text.isNotEmpty || _localImageMap.isNotEmpty;
+  }
+
+  /// Send message (text and/or images)
+  Future<void> _sendMessage() async {
+    final text = _textController.text.trim();
+    final localFiles = _localImageMap.values.toList();
+
+    // If nothing to send, return
+    if (text.isEmpty && localFiles.isEmpty) return;
+
+    // Optimistic UI update for text (if any)
+    if (text.isNotEmpty) {
+      final nowIso = DateTime.now().toIso8601String();
+      setState(() {
+        _messages.insert(
+          0,
+          ChatMessage(
+            id: -DateTime.now().millisecondsSinceEpoch,
+            senderId: widget.myUserId,
+            receiverId: widget.partnerId,
+            message: text,
+            image: null,
+            publicId: null,
+            isRead: 0,
+            replyTo: null,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+          ),
+        );
+      });
+    }
+
+    // Clear input box
     _textController.clear();
 
-    // Optimistic add (send API can be added later)
-    final nowIso = DateTime.now().toIso8601String();
-    setState(() {
-      _messages.insert(
-        0,
-        ChatMessage(
-          id: -DateTime.now().millisecondsSinceEpoch, // temp id
-          senderId: widget.myUserId,
-          receiverId: widget.partnerId,
-          message: t,
-          image: null,
-          publicId: null,
-          isRead: 0,
-          replyTo: null,
-          createdAt: nowIso,
-          updatedAt: nowIso,
-        ),
-      );
-    });
+    // Call API
+    final sent = await ref.read(chatSendProvider.notifier).send(
+          partnerId: widget.partnerId,
+          message: text.isEmpty ? null : text,
+          images: localFiles.isEmpty ? null : localFiles,
+        );
+
+    if (sent != null) {
+      // Remove all temp (negative id) bubbles we just added
+      setState(() {
+        _messages.removeWhere((m) => m.id < 0);
+        _localImageMap.clear();
+      });
+      // Pull fresh history so server URLs come in
+      ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+    } else {
+      // Restore text if send failed
+      if (text.isNotEmpty) {
+        _textController.text = text;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Message send failed')),
+        );
+      }
+    }
   }
 
   String _prettyTime(String? iso) {
@@ -362,60 +438,14 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.send, color: AllColor.black54, size: 24.sp),
-                onPressed: () async {
-                  final text = _textController.text.trim();
-                  // collect local images (temp ids)
-                  final localFiles = _localImageMap.values.toList();
-
-                  // optimistic text (if any)
-                  if (text.isNotEmpty) {
-                    final nowIso = DateTime.now().toIso8601String();
-                    setState(() {
-                      _messages.insert(
-                        0,
-                        ChatMessage(
-                          id: -DateTime.now().millisecondsSinceEpoch,
-                          senderId: widget.myUserId,
-                          receiverId: widget.partnerId,
-                          message: text,
-                          image: null,
-                          publicId: null,
-                          isRead: 0,
-                          replyTo: null,
-                          createdAt: nowIso,
-                          updatedAt: nowIso,
-                        ),
-                      );
-                    });
-                  }
-
-                  // clear input box for instant feel
-                  _textController.clear();
-
-                  // call API (existing provider)
-                  final sent = await ref
-                      .read(chatSendProvider.notifier)
-                      .send(
-                        partnerId: widget.partnerId,
-                        message: text.isEmpty ? null : text,
-                        images: localFiles, // send all local images
-                      );
-
-                  if (sent != null) {
-                    // remove all temp (negative id) bubbles we just added
-                    setState(() {
-                      _messages.removeWhere((m) => m.id < 0);
-                      _localImageMap.clear();
-                    });
-                    // pull fresh history so server URLs come in
-                    ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Message send failed')),
-                    );
-                  }
-                },
+                icon: Icon(
+                  Icons.send,
+                  color: _hasContentToSend()
+                      ? AllColor.blue
+                      : AllColor.grey.shade400,
+                  size: 24.sp,
+                ),
+                onPressed: _hasContentToSend() ? _sendMessage : null,
               ),
             ),
           ],
@@ -489,22 +519,26 @@ class _MessageRow extends ConsumerWidget {
               width: 220.w, // bubble width for image
               child: localImage != null
                   ? Image.file(localImage!, fit: BoxFit.cover)
-                  : Image.network(imageUrl!, fit: BoxFit.cover),
+                  : FirstTimeShimmerImage(
+                      imageUrl: imageUrl!,
+                      width: 220.w,
+                      height: 140.h,
+                      fit: BoxFit.cover,
+                      borderRadius: radius,
+                    ),
             ),
           ),
           if (uploading)
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: radius,
-              ),
-              height: 140.h,
-              width: 220.w,
-              alignment: Alignment.center,
-              child: const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
+            Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: radius,
+                ),
+                height: 140.h,
+                width: 220.w,
               ),
             ),
         ],

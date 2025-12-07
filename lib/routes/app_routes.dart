@@ -532,12 +532,22 @@ final GoRouter router = GoRouter(
       path: GlobalChatScreen.routeName, // "/chatScreen"
       name: GlobalChatScreen.routeName,
       builder: (context, state) {
-        final args = state.extra as ChatArgs;
+        final extra = state.extra;
+        
+        if (extra is! ChatArgs) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: const Center(
+              child: Text('Invalid chat arguments. Please try again.'),
+            ),
+          );
+        }
+
         return GlobalChatScreen(
-          partnerId: args.partnerId,
-          partnerName: args.partnerName,
-          partnerImage: args.partnerImage,
-          myUserId: args.myUserId,
+          partnerId: extra.partnerId,
+          partnerName: extra.partnerName,
+          partnerImage: extra.partnerImage,
+          myUserId: extra.myUserId,
         );
       },
     ),

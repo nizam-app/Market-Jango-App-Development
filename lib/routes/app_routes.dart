@@ -34,7 +34,7 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/review/screen/buyer_home_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -440,7 +440,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerBottomNavBar.routeName,
       name: 'bottom_nav_bar',
-      builder: (context, state) => const BuyerBottomNavBar(),
+      builder: (context, state) =>  BuyerBottomNavBar(),
     ),
 
     GoRoute(
@@ -567,8 +567,22 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerVendorProfileScreen.routeName,
       name: BuyerVendorProfileScreen.routeName,
-      builder: (context, state) =>
-          BuyerVendorProfileScreen(vendorId: state.extra as int),
+      builder: (context, state) {
+        final extra = state.extra;
+        int vendorId;
+        int userId = 0;
+        
+        if (extra is Map<String, dynamic>) {
+          vendorId = extra['vendorId'] as int? ?? 0;
+          userId = extra['userId'] as int? ?? 0;
+        } else if (extra is int) {
+          vendorId = extra;
+        } else {
+          vendorId = 0;
+        }
+        
+        return BuyerVendorProfileScreen(vendorId: vendorId, userId: userId);
+      },
     ),
     GoRoute(
       path: ReviewScreen.routeName,

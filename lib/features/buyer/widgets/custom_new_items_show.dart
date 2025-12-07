@@ -19,7 +19,7 @@ class CustomNewItemsShow extends ConsumerWidget {
       height: 210.h,
       child: newItemsAsync.when(
         data: (data) {
-          final products = data!.data.data.map((e) => e.product).toList();
+          final products = data!.data.data;
           return ListView.builder(
             shrinkWrap: true,
             physics: AlwaysScrollableScrollPhysics(),
@@ -40,7 +40,10 @@ class CustomNewItemsShow extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: product.vendor.userId,
+                        extra: {
+                          'vendorId': product.vendor.id,
+                          'userId': product.vendor.userId,
+                        },
                       );
                     },
                   );

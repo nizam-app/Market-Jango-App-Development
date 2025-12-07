@@ -35,7 +35,7 @@ class SeeJustForYouScreen extends ConsumerWidget {
                 children: [
                   Tuppertextandbackbutton(screenName: screenName),
                   CustomSeeAllProduct(
-                    product: products.data.data.map((e) => e.product).toList(),
+                    product: products.data.data,
                   ),
                   GlobalPagination(
                     currentPage: pagination.currentPage,

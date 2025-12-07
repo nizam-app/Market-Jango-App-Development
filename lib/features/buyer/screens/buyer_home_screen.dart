@@ -14,11 +14,15 @@ import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/banner_data.dart';
+import 'package:market_jango/features/buyer/data/buyer_just_for_you_data.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/buyer_filtering.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
@@ -27,10 +31,6 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../../../data/buyer_just_for_you_data.dart';
-import '../../all_categori/screen/all_categori_screen.dart';
-import '../../all_categori/screen/category_product_screen.dart';
-import '../../filter/screen/buyer_filtering.dart';
 
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -173,7 +173,7 @@ class JustForYouProduct extends ConsumerWidget {
         child: Text('Failed to load: $e'),
       ),
       data: (products) {
-        final topProducts = products!.data.data.map((e) => e.product).toList();
+        final topProducts = products!.data.data;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -196,7 +196,10 @@ class JustForYouProduct extends ConsumerWidget {
 
                 context.push(
                   BuyerVendorProfileScreen.routeName,
-                  extra: detail.vendor.userId,
+                  extra: {
+                    'vendorId': detail.vendor.id,
+                    'userId': detail.vendor.userId,
+                  },
                 );
               },
               child: CustomNewProduct(
@@ -430,10 +433,15 @@ class BuyerHomeSearchBar extends ConsumerWidget {
                 itemsSelector: (res) => res.products,
                 itemBuilder: (context, p) => ProductSuggestionTile(p: p),
                 onItemSelected: (p) {
-                  context.push(
-                    BuyerVendorProfileScreen.routeName,
-                    extra: p.vendor?.userId,
-                  );
+                  if (p.vendor != null) {
+                    context.push(
+                      BuyerVendorProfileScreen.routeName,
+                      extra: {
+                        'vendorId': p.vendor!.id,
+                        'userId': p.vendor!.userId,
+                      },
+                    );
+                  }
                 },
                 hintText: ref.t(BKeys.searchProduct),
                 debounce: const Duration(seconds: 1),

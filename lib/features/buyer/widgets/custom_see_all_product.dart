@@ -29,7 +29,10 @@ class CustomSeeAllProduct extends ConsumerWidget {
             onTap: () {
               context.push(
                 BuyerVendorProfileScreen.routeName,
-                extra: products.vendor.userId,
+                extra: {
+                  'vendorId': products.vendor.id,
+                  'userId': products.vendor.userId,
+                },
               );
             },
             child: Stack(

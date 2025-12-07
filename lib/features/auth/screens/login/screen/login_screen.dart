@@ -10,14 +10,11 @@ import 'package:market_jango/features/auth/screens/login/logic/email_validator.d
 import 'package:market_jango/features/auth/screens/login/logic/login_riverpod.dart';
 import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart' show UserScreen;
-import 'package:market_jango/features/buyer/screens/review/screen/buyer_home_screen.dart';
-
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import '../../forgot_password_screen.dart';
 class LoginScreen extends StatelessWidget {
    const LoginScreen({super.key});
   static const String routeName = '/loginScreen';
-
-
 
   @override
   Widget build(BuildContext context) {

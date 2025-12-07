@@ -35,7 +35,10 @@ class CustomTopProducts extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: p.vendor.userId,
+                        extra: {
+                          'vendorId': p.vendor.id,
+                          'userId': p.vendor.userId,
+                        },
                       );
                     },
                     child: Padding(

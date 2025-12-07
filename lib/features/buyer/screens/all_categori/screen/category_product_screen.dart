@@ -137,7 +137,10 @@ class VendorListSection extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: v.id,
+                        extra: {
+                          'vendorId': v.id,
+                          'userId': v.id, // Using vendorId as userId fallback
+                        },
                       );
                     },
                     child: CircleAvatar(
@@ -269,8 +272,13 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () =>
-          context.push(BuyerVendorProfileScreen.routeName, extra: vendorId),
+      onTap: () => context.push(
+          BuyerVendorProfileScreen.routeName,
+          extra: {
+            'vendorId': vendorId,
+            'userId': vendorId, // Using vendorId as userId fallback
+          },
+        ),
       child: Container(
         decoration: BoxDecoration(
           color: AllColor.white,
@@ -332,7 +340,10 @@ class ProductCard extends StatelessWidget {
                   InkWell(
                     onTap: () => context.push(
                       BuyerVendorProfileScreen.routeName,
-                      extra: vendorId,
+                      extra: {
+                        'vendorId': vendorId,
+                        'userId': vendorId, // Using vendorId as userId fallback
+                      },
                     ),
                     child: Row(
                       children: [
@@ -383,8 +394,13 @@ class VendorSuggestionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          context.push(BuyerVendorProfileScreen.routeName, extra: v.vendorId),
+      onTap: () => context.push(
+          BuyerVendorProfileScreen.routeName,
+          extra: {
+            'vendorId': v.vendorId,
+            'userId': v.vendorId, // Using vendorId as userId fallback
+          },
+        ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         leading: CircleAvatar(

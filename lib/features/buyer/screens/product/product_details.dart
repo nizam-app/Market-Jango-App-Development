@@ -57,6 +57,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   onSelected: (c) => setState(() => _selectedColor = c),
                 ),
                 ProductMaterialAndStoreInfo(
+                  userID: product.vendor.user.id ?? 0,
                   storeName:
                       product.vendor.user.name ??
                       product.vendor.businessName ??
@@ -409,6 +410,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
     this.image =
         "https://t3.ftcdn.net/jpg/05/62/05/20/360_F_562052065_yk3KPuruq10oyfeu5jniLTS4I2ky3bYX.jpg",
     required this.vendorId,
+    required this.userID,
   });
 
   final List<MaterialChip> materials;
@@ -418,6 +420,7 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
   final VoidCallback? onChatTap;
   final String image;
   final int vendorId;
+  final int userID;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -445,7 +448,10 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                 onTap: () {
                   context.push(
                     BuyerVendorProfileScreen.routeName,
-                    extra: vendorId,
+                    extra: {
+                      'vendorId': vendorId,
+                      'userId': userID,
+                    },
                   );
                 },
                 child: CircleAvatar(
@@ -462,7 +468,10 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: vendorId,
+                        extra: {
+                          'vendorId': vendorId,
+                          'userId': userID,
+                        },
                       );
                     },
                     child: Text(

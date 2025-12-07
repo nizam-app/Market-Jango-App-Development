@@ -19,10 +19,15 @@ import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
 import 'buyer_vendor_cetagory_screen.dart';
 
 class BuyerVendorProfileScreen extends ConsumerWidget {
-  const BuyerVendorProfileScreen({super.key, required this.vendorId});
+  const BuyerVendorProfileScreen({
+    super.key,
+    required this.vendorId,
+    required this.userId,
+  });
 
   static final String routeName = '/vendorProfileScreen';
   final int vendorId;
+  final int userId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +38,10 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              CustomVendorUpperSection(vendorId: vendorId.toString()),
+              CustomVendorUpperSection(
+                userId: userId.toString(),
+                vendorId: vendorId,
+              ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Column(
@@ -83,13 +91,18 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
 }
 
 class CustomVendorUpperSection extends ConsumerWidget {
-  const CustomVendorUpperSection({super.key, required this.vendorId});
+  const CustomVendorUpperSection({
+    super.key,
+    required this.userId,
+    required this.vendorId,
+  });
 
-  final String vendorId;
+  final String userId;
+  final int vendorId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(userProvider(vendorId));
+    final async = ref.watch(userProvider(userId));
     final theme = Theme.of(context).textTheme;
 
     return async.when(
@@ -173,7 +186,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
                       SizedBox(width: 8.w),
                       GestureDetector(
                         onTap: () =>
-                            goToReviewScreen(context, int.parse(vendorId)),
+                            goToReviewScreen(context, vendorId),
                         child: Text(
                           reviewText,
                           style: TextStyle(

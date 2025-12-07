@@ -6,6 +6,7 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/data/language_data.dart';
 import 'package:market_jango/core/screen/global_language/data/language_update.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/localization/translation_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalLanguageScreen extends ConsumerStatefulWidget {
@@ -71,6 +72,10 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
       final prefs = await SharedPreferences.getInstance();
       // eke bare code save korbo, future e easy
       await prefs.setString('app_language', code);
+
+      // Invalidate and refresh translations provider to load new language immediately
+      ref.invalidate(appTranslationsProvider);
+      await ref.read(appTranslationsProvider.notifier).refresh();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -19,6 +19,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
   late final WebViewController _c;
   bool _finished = false;
   bool _verifying = false;
+  bool _showWebView = true; // Control WebView visibility
 
   final successHints = const [
     'success',
@@ -36,11 +37,64 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (req) {
+            // Intercept payment response URLs BEFORE they load
+            final uri = Uri.tryParse(req.url);
+            final isPaymentResponse = uri != null && 
+                (uri.path.contains('/api/payment/response') ||
+                 req.url.toLowerCase().contains('/payment/response'));
+            
+            if (isPaymentResponse) {
+              // Prevent navigation to payment response URL
+              // Hide WebView and show loading immediately
+              setState(() {
+                _showWebView = false;
+              });
+              // Verify payment without loading the URL
+              _confirmAndClose(callback: uri);
+              return NavigationDecision.prevent;
+            }
+            
+            // Allow navigation for other URLs
             _maybeVerifyByUrl(req.url);
             return NavigationDecision.navigate;
           },
-          onUrlChange: (c) => _maybeVerifyByUrl(c.url),
-          onPageFinished: (_) => _inspectDom(),
+          onUrlChange: (c) {
+            // Also check URL changes (in case navigation request doesn't catch it)
+            final uri = Uri.tryParse(c.url ?? '');
+            final isPaymentResponse = uri != null && 
+                (uri.path.contains('/api/payment/response') ||
+                 (c.url ?? '').toLowerCase().contains('/payment/response'));
+            
+            if (isPaymentResponse && !_verifying && !_finished) {
+              setState(() {
+                _showWebView = false;
+              });
+              _confirmAndClose(callback: uri);
+            } else {
+              _maybeVerifyByUrl(c.url);
+            }
+          },
+          onPageFinished: (_) {
+            if (!_verifying && !_finished) {
+              _inspectDom();
+            }
+          },
+          onWebResourceError: (error) {
+            // Handle cleartext HTTP errors and other loading errors
+            if (error.errorCode == -2 || // ERR_FAILED
+                (error.description?.contains('ERR_CLEARTEXT_NOT_PERMITTED') == true) ||
+                (error.description?.contains('cleartext') == true)) {
+              debugPrint('WebView error: ${error.description}');
+              // If it's a payment response URL, hide WebView and verify
+              final uri = Uri.tryParse(error.url ?? '');
+              if (uri != null && uri.path.contains('/api/payment/response')) {
+                setState(() {
+                  _showWebView = false;
+                });
+                _confirmAndClose(callback: uri);
+              }
+            }
+          },
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
@@ -82,19 +136,31 @@ class _PaymentWebViewState extends State<PaymentWebView> {
 
   Future<void> _confirmAndClose({Uri? callback}) async {
     if (_finished || _verifying) return;
-    _verifying = true;
+    
+    setState(() {
+      _verifying = true;
+      _showWebView = false; // Hide WebView while verifying
+    });
 
     final ok = await verifyPaymentFromServer(
       context,
       callbackUri: callback, // থাকলে: tx_ref/transaction_id/status নিয়ে নিবে
     );
 
-    _verifying = false;
     if (!mounted || _finished) return;
+
+    setState(() {
+      _verifying = false;
+    });
 
     if (ok) {
       _finished = true;
       Navigator.pop(context, PaymentStatusResult(success: true));
+    } else {
+      // If verification fails, show WebView again
+      setState(() {
+        _showWebView = true;
+      });
     }
     // না হলে কিছুই করবে না—gateway/সার্ভার আপডেট নিলে আবার URL/DOM চেঞ্জে ট্রিগার হবে
   }
@@ -102,37 +168,34 @@ class _PaymentWebViewState extends State<PaymentWebView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:  Text('Complete Payment')),
+      appBar: AppBar(title: const Text('Complete Payment')),
       body: Stack(
         children: [
-          WebViewWidget(controller: _c),
-          // Positioned(
-          //   left: 16, right: 16, bottom: 16,
-          //   child: Row(
-          //     children: [
-          //       Expanded(
-          //         child: FilledButton(
-          //           onPressed: () async {
-          //             await _confirmAndClose(); // ম্যানুয়াল verify
-          //             if (mounted && !_finished) {
-          //               ScaffoldMessenger.of(context).showSnackBar(
-          //                 const SnackBar(content: Text('Not completed yet. Please wait…')),
-          //               );
-          //             }
-          //           },
-          //           child: const Text("I've paid — check status"),
-          //         ),
-          //       ),
-          //       const SizedBox(width: 12),
-          //       IconButton(
-          //         onPressed: () {
-          //           if (!_finished) Navigator.pop(context, PaymentStatusResult(success: false));
-          //         },
-          //         icon: const Icon(Icons.close),
-          //       ),
-          //     ],
-          //   ),
-          // ),
+          // Show WebView only when not verifying and not finished
+          if (_showWebView && !_verifying && !_finished)
+            WebViewWidget(controller: _c),
+          
+          // Show loading indicator when verifying payment
+          if (_verifying || (!_showWebView && !_finished))
+            Container(
+              color: Colors.white,
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Verifying payment...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

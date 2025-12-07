@@ -8,6 +8,7 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
+import 'package:market_jango/core/utils/auth_session_utils.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -21,6 +22,63 @@ import '../model/profile_model.dart';
 class GlobalSettingScreen extends ConsumerWidget {
   const GlobalSettingScreen({super.key});
   static const String routeName = '/settingsScreen';
+
+  /// Show logout confirmation dialog
+  static void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Logout',
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: AllColor.black87,
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: AllColor.black87,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await AuthSessionUtils.logoutAndGoToLogin(context);
+              },
+              child: Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: AllColor.orange,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,7 +160,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                     titleColor: AllColor.orange,
                     iconColor: AllColor.orange,
                     arrowColor: AllColor.orange,
-                    onTap: () {},
+                    onTap: () => GlobalSettingScreen._showLogoutConfirmation(context),
                   ),
                 ],
               ),

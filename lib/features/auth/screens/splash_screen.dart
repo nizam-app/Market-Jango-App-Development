@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/utils/auth_session_utils.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
@@ -62,8 +63,8 @@ class SplashScreenText extends ConsumerWidget {
         SizedBox(height: 20.h),
         CustomAuthButton(
           buttonText: "Login",
-          onTap: () {
-            loginDone(context);
+          onTap: () async {
+            await AuthSessionUtils.handleSplashLoginClick(context);
           },
         ),
         SizedBox(height: 20.h),

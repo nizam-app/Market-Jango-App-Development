@@ -7,13 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/constants/api_control/auth_api.dart';
+import '../../../../../core/utils/auth_session_utils.dart';
 import '../../../../../core/widget/global_snackbar.dart';
 
 // Login state provider
@@ -127,25 +123,11 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
     Map<String, dynamic> json,
     BuildContext context,
   ) async {
-    final data = json['data'];
-    final user = data['user'] ?? data['uer'];
+    // Save login data using AuthSessionUtils
+    await AuthSessionUtils.saveLoginData(json);
 
-    if (user == null) {
-      throw Exception("Invalid response: user data not found");
-    }
-
-    final userType = user['user_type'] ?? '';
-    final token = data['token'] ?? json['token'] ?? '';
-    final int id = user['id'];
-
-    // Batch SharedPreferences writes
-    final prefs = await SharedPreferences.getInstance();
-    await Future.wait([
-      if (token.isNotEmpty) prefs.setString('auth_token', token),
-      if (userType.isNotEmpty) prefs.setString('user_type', userType),
-      prefs.setString('user_id', id.toString()),
-    ]);
-
+    // Get user type for logging and navigation
+    final userType = await AuthSessionUtils.getUserType();
     Logger().i("💡 🔐 Login successful for user type: $userType");
 
     GlobalSnackbar.show(
@@ -158,26 +140,16 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
     // Navigate based on user type
     if (!context.mounted) return;
 
-    switch (userType.toLowerCase()) {
-      case 'buyer':
-        context.go(BuyerBottomNavBar.routeName);
-        break;
-      case 'vendor':
-        context.go(VendorBottomNav.routeName);
-        break;
-      case 'driver':
-        context.go(DriverBottomNavBar.routeName);
-        break;
-      case 'transport':
-        context.go(TransportBottomNavBar.routeName);
-        break;
-      default:
-        GlobalSnackbar.show(
-          context,
-          title: "Notice",
-          message: "Unknown or missing user type: $userType",
-          type: CustomSnackType.warning,
-        );
+    final homeRoute = await AuthSessionUtils.getHomeRouteForUserType();
+    if (homeRoute != null) {
+      context.go(homeRoute);
+    } else {
+      GlobalSnackbar.show(
+        context,
+        title: "Notice",
+        message: "Unknown or missing user type: $userType",
+        type: CustomSnackType.warning,
+      );
     }
   }
 }

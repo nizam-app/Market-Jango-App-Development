@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class CartService {
   static Future<Map<String, dynamic>> create({
@@ -11,9 +11,9 @@ class CartService {
     required String size,
     required int quantity,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    // যেটাতে সেভ করেছ সেটাই পড়বে—'auth_token' বা 'token'
-    final token = prefs.getString('auth_token') ?? prefs.getString('token');
+    final authStorage = AuthLocalStorage();
+    // getToken() returns login token if available, otherwise registration token
+    final token = await authStorage.getToken();
 
     final uri = Uri.parse(BuyerAPIController.cart_create);
     final headers = <String, String>{

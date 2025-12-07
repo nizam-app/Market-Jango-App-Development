@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/data/global_tracking_data.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/model/global_tracking_model.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../../../../features/buyer/screens/order/screen/buyer_order_page.dart';
 import '../../../../features/vendor/widgets/custom_back_button.dart';
@@ -38,8 +38,8 @@ class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
   String? userId;
 
   Future<void> _loadUserId() async {
-    final pref = await SharedPreferences.getInstance();
-    final stored = pref.getString("user_id");
+    final authStorage = AuthLocalStorage();
+    final stored = await authStorage.getUserId();
     setState(() {
       userId = stored;
     });

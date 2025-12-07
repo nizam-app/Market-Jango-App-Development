@@ -7,7 +7,7 @@ import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class CustomTotalCheckoutSection extends StatelessWidget {
@@ -114,8 +114,8 @@ class CustomTotalCheckoutSection extends StatelessWidget {
     );
 
     try {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      final token = pref.getString("auth_token");
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       final uri = Uri.parse(BuyerAPIController.invoice_createate);
       final res = await http.get(
         uri,

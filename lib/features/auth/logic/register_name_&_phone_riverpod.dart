@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:logger/logger.dart';
 
 /// StateNotifier for POST actions that use token
@@ -18,8 +18,8 @@ class PostNotifier extends StateNotifier<AsyncValue<bool>> {
     state = const AsyncLoading();
 
     try {
-      final sp = await SharedPreferences.getInstance();
-      final token = sp.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       if (token == null || token.isEmpty) throw 'Missing auth token';
 
       final res = await http.post(

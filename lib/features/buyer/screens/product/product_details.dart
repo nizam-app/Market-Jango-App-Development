@@ -10,12 +10,12 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'logic/add_cart_quantity_logic.dart';
 import 'logic/product_details_data.dart';
@@ -66,12 +66,15 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                       "https://www.selikoff.net/blog-files/null-value.gif",
                   vendorId: product.vendor.user.id ?? product.vendorId,
                   onChatTap: () async {
-                    final pref = await SharedPreferences.getInstance();
-                    final myUserIdStr = pref.getString('user_id');
-                    if (myUserIdStr == null) {
+                    final authStorage = AuthLocalStorage();
+                    final myUserIdStr = await authStorage.getUserId();
+                    if (myUserIdStr == null || myUserIdStr.isEmpty) {
                       throw Exception("User ID not found");
                     }
-                    final myId = int.parse(myUserIdStr);
+                    final myId = int.tryParse(myUserIdStr);
+                    if (myId == null) {
+                      throw Exception("Invalid user ID");
+                    }
                     try {
                       await context.push(
                         GlobalChatScreen.routeName,

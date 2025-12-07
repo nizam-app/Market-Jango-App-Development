@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final buyerOrdersProvider =
     AsyncNotifierProvider<BuyerOrdersNotifier, OrdersPageData?>(
@@ -26,8 +26,8 @@ class BuyerOrdersNotifier extends AsyncNotifier<OrdersPageData?> {
   }
 
   Future<OrdersPageData?> _fetch() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final authStorage = AuthLocalStorage();
+    final token = await authStorage.getToken();
 
     final uri = Uri.parse('${BuyerAPIController.all_order}?page=$_page');
     final res = await http.get(

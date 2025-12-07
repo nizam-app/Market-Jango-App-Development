@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
-import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
 
 /// ================= FETCH SPECIFIC ATTRIBUTE =================
@@ -12,8 +12,8 @@ Future<VendorProductAttribute> fetchAttributeShow({
   required Ref ref,
   required int attributeId,
 }) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final token = prefs.getString("auth_token");
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
   if (token == null) throw Exception("Token not found");
 
   // e.g.  http://..../api/product-attribute/vendor/show?id=21
@@ -53,8 +53,8 @@ Future<AttributeValue> addAttributeValue({
   required String name,
   required int attributeId,
 }) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final token = prefs.getString('auth_token');
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
 
   final url = Uri.parse(VendorAPIController.attribute_value_create);
 
@@ -84,8 +84,8 @@ Future<AttributeValue> updateAttributeValue({
   required int valueId,
   required String name,
 }) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final token = prefs.getString("auth_token");
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
 
   final url =
   Uri.parse("${VendorAPIController.attribute_value_update}/$valueId");
@@ -111,8 +111,8 @@ Future<bool> deleteAttributeValue({
   required WidgetRef ref,
   required int valueId,
 }) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final token = prefs.getString("auth_token");
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
 
   final url =
   Uri.parse("${VendorAPIController.attribute_value_destroy}/$valueId");

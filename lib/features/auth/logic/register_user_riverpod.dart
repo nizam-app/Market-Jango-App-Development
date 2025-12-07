@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/auth/data/user_type_selection_token_save.dart';
 import 'package:market_jango/features/auth/model/user_type_selection_model.dart';
 
@@ -16,7 +17,9 @@ final userTypeP = StateProvider<String>((_) => 'Buyer');
 // in-memory token (nullable)
 final tokenP = StateProvider<String?>((_) => null);
 
-// storage
+// storage - using AuthLocalStorage for centralized token management
+final authStorageProvider = Provider<AuthLocalStorage>((_) => AuthLocalStorage());
+// Legacy TokenStorage for backward compatibility
 final tokenStoreP = Provider<TokenStorage>((_) => TokenStorage());
 
 // register flow
@@ -58,6 +61,9 @@ class RegisterC extends StateNotifier<AsyncValue<RegisterResponse?>> {
       }
       if (parsed.data.token.isEmpty) throw 'Missing token';
 
+      // Save registration token using AuthLocalStorage (separate from login token)
+      await ref.read(authStorageProvider).saveRegistrationToken(parsed.data.token);
+      // Also save to legacy TokenStorage for backward compatibility
       await ref.read(tokenStoreP).save(parsed.data.token);
       ref.read(tokenP.notifier).state = parsed.data.token;
 

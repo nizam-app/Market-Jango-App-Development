@@ -24,9 +24,17 @@ final vendorCategoryProvider = FutureProvider.autoDispose
 
       final body = jsonDecode(res.body);
       final inner = body is Map ? body['data'] : body;
-      final List list = inner is Map
-          ? (inner['data'] ?? [])
-          : (inner is List ? inner : []);
+      
+      // Safely extract list - ensure we never use a Map as a List
+      List<dynamic> list = [];
+      if (inner is Map) {
+        final dataField = inner['data'];
+        if (dataField is List) {
+          list = dataField;
+        }
+      } else if (inner is List) {
+        list = inner;
+      }
 
       return list
           .whereType<Map<String, dynamic>>()

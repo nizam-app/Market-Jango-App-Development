@@ -21,6 +21,21 @@ class ChatOffer {
     required this.isAccepted,
   });
 
+  /// Helper to safely convert various types to int
+  static int _toInt(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null) return parsed;
+      // Try parsing as bool string
+      if (value.toLowerCase() == 'true') return 1;
+      if (value.toLowerCase() == 'false') return 0;
+    }
+    return defaultValue;
+  }
+
   factory ChatOffer.fromJson(Map<String, dynamic> json) {
     // Handle nested product data if present
     final product = json['product'] as Map<String, dynamic>?;
@@ -46,15 +61,15 @@ class ChatOffer {
     }
     
     return ChatOffer(
-      id: json['id'] ?? 0,
+      id: _toInt(json['id']),
       productName: productName,
       productImage: productImage,
       salePrice: (json['sale_price'] ?? json['salePrice'] ?? '0').toString(),
-      quantity: json['quantity'] ?? 0,
+      quantity: _toInt(json['quantity']),
       deliveryCharge: (json['delivery_charge'] ?? json['deliveryCharge'] ?? '0').toString(),
       color: json['color']?.toString(),
       size: json['size']?.toString(),
-      isAccepted: json['is_accepted'] ?? json['isAccepted'] ?? 0,
+      isAccepted: _toInt(json['is_accepted'] ?? json['isAccepted']),
     );
   }
 }

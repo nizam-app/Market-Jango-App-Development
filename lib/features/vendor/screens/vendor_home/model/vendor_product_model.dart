@@ -32,16 +32,25 @@ class VendorProduct {
     final rawSize = json['size'];
     final rawColor = json['color'];
 
+    // Helper to safely convert to int
+    int _toInt(dynamic value, {int defaultValue = 0}) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      if (value is num) return value.toInt();
+      return defaultValue;
+    }
+
     return VendorProduct(
-      id: json['id'],
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      regularPrice: json['regular_price'] ?? '',
-      sellPrice: json['sell_price'] ?? '',
-      image: json['image'] ?? '',
-      vendorId: json['vendor_id'],
-      categoryId: json['category_id'],
-      categoryName: json['category']?['name'] ?? '',
+      id: _toInt(json['id']),
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      regularPrice: json['regular_price']?.toString() ?? '',
+      sellPrice: json['sell_price']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
+      vendorId: _toInt(json['vendor_id']),
+      categoryId: _toInt(json['category_id']),
+      categoryName: json['category']?['name']?.toString() ?? '',
 
       /// ✅ Safe list conversion
       sizes: rawSize is List
@@ -56,10 +65,17 @@ class VendorProduct {
           ? [rawColor]
           : [],
 
-      /// ✅ images mapping
-      images: (json['images'] as List? ?? [])
-          .map((e) => ProductImage.fromJson(e))
-          .toList(),
+      /// ✅ images mapping - ensure it's a List, not a Map
+      images: () {
+        final imagesField = json['images'];
+        if (imagesField is List) {
+          return imagesField
+              .whereType<Map>()
+              .map((e) => ProductImage.fromJson(e.cast<String, dynamic>()))
+              .toList();
+        }
+        return <ProductImage>[];
+      }(),
     );
   }
 }
@@ -78,13 +94,36 @@ class PaginatedProducts {
   });
 
   factory PaginatedProducts.fromJson(Map<String, dynamic> json) {
+    // Helper to safely convert to int
+    int _toInt(dynamic value, {int defaultValue = 0}) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      if (value is num) return value.toInt();
+      return defaultValue;
+    }
+
+    // Safely extract products list
+    List<VendorProduct> productsList = [];
+    final dataField = json['data'];
+    
+    if (dataField is List) {
+      // If 'data' is a List, map it directly
+      productsList = dataField
+          .whereType<Map>()
+          .map((e) => VendorProduct.fromJson(e.cast<String, dynamic>()))
+          .toList();
+    } else if (dataField is Map) {
+      // If 'data' is a Map, it might contain nested data
+      // This shouldn't happen in normal cases, but handle it safely
+      productsList = [];
+    }
+
     return PaginatedProducts(
-      currentPage: json['current_page'] ?? 1,
-      lastPage: json['last_page'] ?? 1,
-      total: json['total'] ?? 0,
-      products: (json['data'] as List? ?? [])
-          .map((e) => VendorProduct.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      currentPage: _toInt(json['current_page'], defaultValue: 1),
+      lastPage: _toInt(json['last_page'], defaultValue: 1),
+      total: _toInt(json['total']),
+      products: productsList,
     );
   }
 }
@@ -127,10 +166,19 @@ class ProductImage {
   });
 
   factory ProductImage.fromJson(Map<String, dynamic> json) {
+    // Helper to safely convert to int
+    int _toInt(dynamic value, {int defaultValue = 0}) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      if (value is num) return value.toInt();
+      return defaultValue;
+    }
+
     return ProductImage(
-      id: json['id'] ?? 0,
-      imagePath: json['image_path'] ?? '',
-      productId: json['product_id'] ?? 0,
+      id: _toInt(json['id']),
+      imagePath: json['image_path']?.toString() ?? '',
+      productId: _toInt(json['product_id']),
     );
   }
 }

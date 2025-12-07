@@ -390,7 +390,7 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
                   setState(() => selectedIndex = index);
 
                   int selectedId = 0;
-                  if (index > 0) {
+                  if (index > 0 && index - 1 < categories.length) {
                     selectedId = categories[index - 1].id;
                   }
 

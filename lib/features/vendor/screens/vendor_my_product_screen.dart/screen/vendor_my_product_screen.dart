@@ -7,18 +7,23 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/attribute_values_screen.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/logic/vendor_details_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 import 'package:market_jango/features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 import '../../product_edit/model/product_attribute_response_model.dart';
 import '../logic/vendor_product_delete.dart';
+import '_attribute_menu_sheet.dart';
 
 class VendorMyProductScreen extends ConsumerStatefulWidget {
   const VendorMyProductScreen({super.key});
@@ -31,66 +36,45 @@ class VendorMyProductScreen extends ConsumerStatefulWidget {
 class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
   final List<String> attributes = [];
 
-  Future<void> _showAttributeMenu(BuildContext context, Offset position) async {
-    // 1) API থেকে attribute list আনছি
-    ProductAttributeResponse res;
-    try {
-      res = await ref.read(productAttributesProvider.future);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-      return;
-    }
-
-    final attrs = res.data;
-    if (attrs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No attributes found')),
-      );
-      return;
-    }
-
-    // 2) popup position
-    final RenderBox overlay =
-    Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    // 3) showMenu – name দেখাচ্ছি
-    final selected = await showMenu<VendorProductAttribute>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        overlay.size.width - position.dx,
-        overlay.size.height - position.dy,
-      ),
-      items: attrs
-          .map(
-            (a) => PopupMenuItem<VendorProductAttribute>(
-          value: a,
-          child: Text(a.name),
-        ),
-      )
-          .toList(),
+  Future<void> _showAttributeMenu(BuildContext context) async {
+    // Get vendor ID
+    final vendorAsync = ref.read(vendorProvider);
+    int? vendorId;
+    await vendorAsync.when(
+      data: (vendor) => vendorId = vendor.id,
+      loading: () => null,
+      error: (_, __) => null,
     );
 
-    // 4) value handle
-    if (selected != null) {
-      setState(() {
-        attributes.add(selected.name);
-      });
-      if (selected.name == "Color") {
-        ref.invalidate(attributeShowProvider);
-        context.push(MyProductColorScreen.routeName, extra: selected.id);
-      } else if (selected.name == "Size") {
-        ref.invalidate(attributeShowProvider);
-        context.push(MyProductSizeScreen.routeName, extra: selected.id);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${selected.name} attribute added!")),
+    if (vendorId == null) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Error',
+        message: 'Failed to get vendor information',
       );
+      return;
     }
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => AttributeMenuSheet(
+        vendorId: vendorId!,
+        onAttributeTapped: (attribute) {
+          Navigator.pop(ctx);
+          context.push(
+            AttributeValuesScreen.routeName,
+            extra: {
+              'attributeId': attribute.id,
+              'attributeName': attribute.name,
+            },
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -153,8 +137,8 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                     children: [
                       const Text("Add your custom attribute"),
                       InkWell(
-                        onTapDown: (details) {
-                          _showAttributeMenu(context, details.globalPosition);
+                        onTap: () {
+                          _showAttributeMenu(context);
                         },
                         child:   Icon(Icons.add),
                       ),

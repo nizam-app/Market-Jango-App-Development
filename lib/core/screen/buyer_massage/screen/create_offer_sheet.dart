@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
@@ -6,6 +7,33 @@ import 'package:market_jango/core/screen/buyer_massage/data/offer_product_reposi
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
+
+/// Custom input formatter for decimal numbers (allows digits and one decimal point)
+class DecimalTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Allow empty string
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Check if the new value contains only digits and at most one decimal point
+    final regex = RegExp(r'^\d*\.?\d*$');
+    if (regex.hasMatch(newValue.text)) {
+      // Count decimal points
+      final decimalCount = '.'.allMatches(newValue.text).length;
+      if (decimalCount <= 1) {
+        return newValue;
+      }
+    }
+
+    // Reject the change if it doesn't match the pattern
+    return oldValue;
+  }
+}
 
 class CreateOfferSheet extends ConsumerStatefulWidget {
   const CreateOfferSheet({
@@ -194,7 +222,10 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
               // Sale Price
               TextFormField(
                 controller: _salePriceController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  DecimalTextInputFormatter(),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Sale Price (৳)',
                   border: OutlineInputBorder(
@@ -219,6 +250,9 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
               TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 decoration: InputDecoration(
                   labelText: 'Quantity',
                   border: OutlineInputBorder(
@@ -241,7 +275,10 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
               // Delivery Charge
               TextFormField(
                 controller: _deliveryChargeController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  DecimalTextInputFormatter(),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Delivery Charge (৳)',
                   border: OutlineInputBorder(

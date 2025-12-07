@@ -60,6 +60,7 @@ import 'package:market_jango/features/transport/screens/transport_cancelled_deta
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/attribute_values_screen.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
@@ -614,6 +615,17 @@ final GoRouter router = GoRouter(
       name: MyProductSizeScreen.routeName,
       builder: (context, state) =>
           MyProductSizeScreen(attributeId: state.extra as int),
+    ),
+    GoRoute(
+      path: AttributeValuesScreen.routeName,
+      name: AttributeValuesScreen.routeName,
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>;
+        return AttributeValuesScreen(
+          attributeId: args['attributeId'] as int,
+          attributeName: args['attributeName'] as String,
+        );
+      },
     ),
     GoRoute(
       path: ProductAddPage.routeName,

@@ -52,16 +52,31 @@ class ChatMessage {
     this.offer,
   });
 
+  /// Helper to safely convert various types to int
+  static int _toInt(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is bool) return value ? 1 : 0;
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null) return parsed;
+      // Try parsing as bool string
+      if (value.toLowerCase() == 'true') return 1;
+      if (value.toLowerCase() == 'false') return 0;
+    }
+    return defaultValue;
+  }
+
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['id'] ?? 0,
-      senderId: json['sender_id'] ?? 0,
-      receiverId: json['receiver_id'] ?? 0,
+      id: _toInt(json['id']),
+      senderId: _toInt(json['sender_id']),
+      receiverId: _toInt(json['receiver_id']),
       message: json['message']?.toString() ?? '',
       image: json['image']?.toString(),
       publicId: json['public_id']?.toString(),
-      isRead: json['is_read'] ?? 0,
-      replyTo: (json['reply_to'] is int) ? json['reply_to'] : null,
+      isRead: _toInt(json['is_read']),
+      replyTo: json['reply_to'] != null ? _toInt(json['reply_to']) : null,
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
       offer: json['offer'] != null

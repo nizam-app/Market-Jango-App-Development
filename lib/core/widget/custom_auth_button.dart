@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 class CustomAuthButton extends StatelessWidget {
 
-  CustomAuthButton({
+  const CustomAuthButton({
     super.key,required this.buttonText, required this.onTap, 
     
   });
@@ -24,7 +24,7 @@ class CustomAuthButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(50.r),
         ),
         child: Center(
-          child: Text("${buttonText}",style: Theme.of(context).textTheme.titleSmall!.copyWith(fontSize: 16.sp),),
+          child: Text(buttonText,style: Theme.of(context).textTheme.titleSmall!.copyWith(fontSize: 16.sp),),
         ),
       ),
     );
@@ -34,7 +34,7 @@ class CustomAuthButton extends StatelessWidget {
 
 class SplashSignUpButton extends StatelessWidget {
 
-  SplashSignUpButton({
+  const SplashSignUpButton({
     super.key,required this.buttonText, required this.onTap,
   });
   final String buttonText;
@@ -52,7 +52,7 @@ class SplashSignUpButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(50.r),
         ),
         child: Center(
-          child: Text("${buttonText}",style: Theme.of(context).textTheme.titleSmall!.copyWith(fontSize: 16.sp, color: Colors.white),),
+          child: Text(buttonText,style: Theme.of(context).textTheme.titleSmall!.copyWith(fontSize: 16.sp, color: Colors.white),),
         ),
       ),
     );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
 class DriverDelivered extends StatefulWidget {
   const DriverDelivered({super.key});
@@ -84,17 +87,18 @@ class _DriverDeliveredState extends State<DriverDelivered> {
 }
 
 /// Search box
-class _SearchField extends StatelessWidget {
+class _SearchField extends ConsumerWidget {
   final TextEditingController controller;
   const _SearchField({required this.controller});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return TextField(
       controller: controller,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: 'Search order',
+        //'Search order'
+        hintText: ref.t(BKeys.search),
         hintStyle: TextStyle(color: AllColor.textHintColor),
         filled: true,
         fillColor: AllColor.grey100,
@@ -162,7 +166,7 @@ class _FilterChips extends StatelessWidget {
 }
 
 /// Delivered card
-class _DeliveredCard extends StatelessWidget {
+class _DeliveredCard extends ConsumerWidget {
   final String orderId;
   final String priceText;
   final String pickupLabel;
@@ -178,7 +182,7 @@ class _DeliveredCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return Container(
       decoration: BoxDecoration(
         color: AllColor.white,
@@ -192,7 +196,8 @@ class _DeliveredCard extends StatelessWidget {
           // Top row: status chip + price
           Row(
             children: [
-              _StatusPill(text: 'Delivered'),
+              //'Delivered'
+              _StatusPill(text: ref.t(BKeys.delivered)),
               const Spacer(),
               Text(
                 priceText,
@@ -214,12 +219,13 @@ class _DeliveredCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // Pickup
-          _kvBold('Pick up location: ', pickupLabel),
+          // Pickup  'Pick up location: '
+          
+          _kvBold(ref.t(BKeys.pick_up_location), pickupLabel),
           const SizedBox(height: 8),
 
           // Destination
-          _kvBold('Destination: ', destinationName),
+          _kvBold(ref.t(BKeys.destination), destinationName),
           const SizedBox(height: 14),
 
           // See details button
@@ -236,7 +242,8 @@ class _DeliveredCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
                 child: Text(
-                  'See details',
+                  //'See details'
+                  ref.t(BKeys.see_details),
                   style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700),
                 ),
               ),

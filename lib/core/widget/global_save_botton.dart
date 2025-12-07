@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
-class GlobalSaveBotton extends StatelessWidget {
+class GlobalSaveBotton extends ConsumerWidget {
   const GlobalSaveBotton({
     super.key, required this.bottonName,required this.onPressed,
   });
@@ -10,7 +11,7 @@ class GlobalSaveBotton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -25,7 +26,8 @@ class GlobalSaveBotton extends StatelessWidget {
           elevation: 0,
         ),
         child: Text(
-          bottonName,
+          // bottonName
+           bottonName,
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,

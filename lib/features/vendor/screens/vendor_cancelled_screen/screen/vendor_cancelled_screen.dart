@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
-class VendorCancelledScreen extends StatefulWidget {
+class VendorCancelledScreen extends ConsumerStatefulWidget {
   const VendorCancelledScreen({super.key});
   static const routeName = "/vendorCancelledScreen";
 
   @override
-  State<VendorCancelledScreen> createState() => _VendorCancelledScreenState();
+  ConsumerState<VendorCancelledScreen> createState() => _VendorCancelledScreenState();
 }
 
-class _VendorCancelledScreenState extends State<VendorCancelledScreen> {
+class _VendorCancelledScreenState extends ConsumerState<VendorCancelledScreen> {
   // 0 = Request transport, 1 = Track shipments (default)
   int _segment = 1;
 
@@ -59,13 +62,14 @@ class _VendorCancelledScreenState extends State<VendorCancelledScreen> {
           
               // Search
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding:  EdgeInsets.symmetric(horizontal: 16),
                 child: TextField(
                   controller: _search,
                   onChanged: (_) => setState(() {}),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search you product',
+                    //'Search you product' 
+                    hintText: ref.t(BKeys.searchProduct),
                     hintStyle: TextStyle(color: AllColor.textHintColor),
                     prefixIcon: Icon(Icons.search_rounded, color: AllColor.black54),
                     filled: true,
@@ -94,11 +98,16 @@ class _VendorCancelledScreenState extends State<VendorCancelledScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    _TabChip(text: 'Pending', selected: _tab == 0, onTap: () => setState(() => _tab = 0)),
+                    //'Pending' 
+                    _TabChip(text: ref.t(BKeys.pending), selected: _tab == 0, onTap: () => setState(() => _tab = 0)),
                     const SizedBox(width: 8),
-                    _TabChip(text: 'Completed', selected: _tab == 1, onTap: () => setState(() => _tab = 1)),
+                    _TabChip(
+                        //'Completed'
+                        text: ref.t(BKeys.completed), selected: _tab == 1, onTap: () => setState(() => _tab = 1)),
                     const SizedBox(width: 8),
-                    _TabChip(text: 'Cancelled', selected: _tab == 2, onTap: () => setState(() => _tab = 2)),
+                    _TabChip(
+                        //'Cancelled' 
+                        text: ref.t(BKeys.cancelled), selected: _tab == 2, onTap: () => setState(() => _tab = 2)),
                   ],
                 ),
               ),
@@ -254,12 +263,12 @@ class _TabChip extends StatelessWidget {
   }
 }
 
-class _ShipmentCard extends StatelessWidget {
+class _ShipmentCard extends ConsumerWidget {
   final ShipmentItem data;
   const _ShipmentCard({required this.data});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref ) {
     final cancelColor = Colors.redAccent;
 
     return Container(
@@ -284,7 +293,8 @@ class _ShipmentCard extends StatelessWidget {
                   color: cancelColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('Cancelled',
+                //'Cancelled'
+                child: Text(ref.t(BKeys.cancelled),
                     style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700, fontSize: 12)),
               ),
             ],

@@ -1,19 +1,20 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportCancelledDetails extends StatefulWidget {
+class TransportCancelledDetails extends ConsumerStatefulWidget {
   const TransportCancelledDetails({super.key});
   static const String routeName = "/cancelledDetails";
 
   @override
-  State<TransportCancelledDetails> createState() => _TransportCancelledDetailsState();
+  ConsumerState<TransportCancelledDetails> createState() => _TransportCancelledDetailsState();
 }
 
-class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
+class _TransportCancelledDetailsState extends ConsumerState<TransportCancelledDetails> {
   // GoogleMapController? mapController;
   //
   // final LatLng pickupLocation = const LatLng(37.7749, -122.4194);
@@ -39,21 +40,21 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
             SizedBox(height: 16.h),
 
             /// Pickup Address
-            _infoSection("Pickup address",
+            _infoSection(ref.t(BKeys.pickup_address),
                 "4517 Washington Ave. Manchester, Kentucky 39495"),
             Divider(height: 24.h),
 
             /// Drop-off Address
-            _infoSection("Drop- off address",
+            _infoSection(ref.t(BKeys.drop_off_address),
                 "6391 Elgin St. Celina, Delaware 10299"),
             Divider(height: 24.h),
 
             /// Customer Note
-            _infoSection("Customer note", "John appaeell\n(239) 555-0108"),
+            _infoSection(ref.t(BKeys.customer_note), "John appaeell\n(239) 555-0108"),
             Divider(height: 24.h),
 
             /// Special Instruction
-            Text("Special instruction:",
+            Text(ref.t(BKeys.special_instruction),
                 style: TextStyle(
                     fontSize: 14.sp, fontWeight: FontWeight.w600)),
             SizedBox(height: 6.h),
@@ -115,8 +116,8 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
 
             SizedBox(height: 20.h),
 
-            /// Driver Info
-            Text("Driver Information",
+            /// "Driver Information"
+            Text(ref.t(BKeys.driver_information),
                 style: TextStyle(
                     fontSize: 14.sp, fontWeight: FontWeight.w600)),
             SizedBox(height: 10.h),
@@ -176,7 +177,8 @@ class _TransportCancelledDetailsState extends State<TransportCancelledDetails> {
                 onPressed: () {
                   context.pop(); 
                 },
-                child: Text("Cancelled",
+                  //"Cancelled"
+                child: Text(ref.t(BKeys.cancelled),
                     style:
                         TextStyle(fontSize: 15.sp, color: Colors.white)),
               ),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 
-class EditProfilScreen extends StatelessWidget {
+class EditProfilScreen extends ConsumerWidget {
   const EditProfilScreen({super.key});
   static final routeName ="/editProfile"; 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -15,8 +18,9 @@ class EditProfilScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Settings",
+        title:  Text(
+          //  "Settings"
+         ref.t(BKeys.settings),
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -55,15 +59,15 @@ class EditProfilScreen extends StatelessWidget {
             const SizedBox(height: 25),
 
             // Name Input
-            _buildTextField("Name", "Enter your full name"),
+            _buildTextField(ref.t(BKeys.yourName), "Enter your full name"),
             const SizedBox(height: 15),
 
             // Email Input
-            _buildTextField("Email", "Enter your email"),
+            _buildTextField(ref.t(BKeys.email), "Enter your email"),
             const SizedBox(height: 15),
 
             // Phone Input
-            _buildTextField("Phone number", "Enter your phone number"),
+            _buildTextField(ref.t(BKeys.phone), "Enter your phone number"),
             const SizedBox(height: 30),
 
             // Save Button
@@ -80,8 +84,9 @@ class EditProfilScreen extends StatelessWidget {
                 onPressed: () {
                   // save changes logic
                 },
-                child: const Text(
-                  "Save Changes",
+                child:  Text(
+                  //"Save Changes"
+                 ref.t(BKeys.saveChanges),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

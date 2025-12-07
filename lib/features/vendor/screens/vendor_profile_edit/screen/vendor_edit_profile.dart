@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-class VendorEditProfile extends StatefulWidget {
-  const VendorEditProfile({super.key});
+class VendorEditProfile extends ConsumerStatefulWidget {
+  const VendorEditProfile({super.key, required this.userType});
   static const routeName = "/vendorEditProfile";
+  final UserModel userType;
 
   @override
-  State<VendorEditProfile> createState() => _VendorEditProfileState();
+  ConsumerState<VendorEditProfile> createState() => _VendorEditProfileState();
 }
 
-class _VendorEditProfileState extends State<VendorEditProfile> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
-  final _phone = TextEditingController();
+class _VendorEditProfileState extends ConsumerState<VendorEditProfile> {
+  late final _name ;
+  late final _email ;
+  late final _phone ;
   String? _selectedRoute;
 
   final List<String> _availableRoutes = const [
@@ -39,6 +44,13 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
     _phone.dispose();
     super.dispose();
   }
+  @override
+  void initState() {
+    _name = TextEditingController(text: widget.userType.name);
+    _email = TextEditingController(text: widget.userType.email);
+    _phone = TextEditingController(text: widget.userType.phone);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +69,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                   children: [
                     CustomBackButton(),  
                     Text(
-                      'Settings',
+                      // 'Settings',
+                      ref.t(BKeys.settings),
                       style: TextStyle(
                         color: AllColor.black,
                         fontSize: 28,
@@ -66,7 +79,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Your Profile',
+                      // 'Your Profile',
+                      ref.t(BKeys.myProfile),
                       style: TextStyle(
                         color: AllColor.textHintColor,
                         fontSize: 14,
@@ -120,7 +134,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 22),
 
                     /// Name
-                    _Label('Name'),
+                    _Label(
+                    //    'Name'
+                      ref.t(BKeys.name)
+                    ),
                     _RoundedField(
                       controller: _name,
                       hint: 'Enter your full name',
@@ -129,7 +146,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 14),
 
                     /// Email
-                    _Label('Email'),
+                    _Label(
+                       // 'Email'
+                      ref.t(BKeys.email)
+                    ),
                     _RoundedField(
                       controller: _email,
                       hint: 'Enter your email',
@@ -138,7 +158,10 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     const SizedBox(height: 14),
 
                     /// Phone
-                    _Label('Phone number'),
+                    _Label(
+                        //'Phone number'
+                    ref.t(BKeys.phone)
+                    ),
                     _RoundedField(
                       controller: _phone,
                       hint: 'Enter your phone number',
@@ -146,55 +169,55 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                     ),
                     const SizedBox(height: 14),
 
-                    /// Add Driver Routes (dropdown)
-                    _Label('Add Driver Routes'),
-                    _RoundedDropdown<String>(
-                      value: _selectedRoute,
-                      hint: 'Choose your driving routes',
-                      items: _availableRoutes
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v != null && !_savedRoutes.contains(v)) {
-                          setState(() {
-                            _selectedRoute = v;
-                            _savedRoutes.add(v);
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    /// Save Driver Routes (clickable chips)
-                    _Label('Save Driver Routes'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _savedRoutes
-                          .map(
-                            (route) => _RouteChip(
-                              text: route,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "You clicked on $route route",
-                                    ),
-                                  ),
-                                );
-                              },
-                              onRemove: () {
-                                setState(() {
-                                  _savedRoutes.remove(route);
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
+                    // /// Add Driver Routes (dropdown)
+                    // _Label('Add Driver Routes'),
+                    // _RoundedDropdown<String>(
+                    //   value: _selectedRoute,
+                    //   hint: 'Choose your driving routes',
+                    //   items: _availableRoutes
+                    //       .map(
+                    //         (e) => DropdownMenuItem(value: e, child: Text(e)),
+                    //       )
+                    //       .toList(),
+                    //   onChanged: (v) {
+                    //     if (v != null && !_savedRoutes.contains(v)) {
+                    //       setState(() {
+                    //         _selectedRoute = v;
+                    //         _savedRoutes.add(v);
+                    //       });
+                    //     }
+                    //   },
+                    // ),
+                    // const SizedBox(height: 14),
+                    //
+                    // /// Save Driver Routes (clickable chips)
+                    // _Label('Save Driver Routes'),
+                    // const SizedBox(height: 8),
+                    // Wrap(
+                    //   spacing: 8,
+                    //   runSpacing: 8,
+                    //   children: _savedRoutes
+                    //       .map(
+                    //         (route) => _RouteChip(
+                    //           text: route,
+                    //           onTap: () {
+                    //             ScaffoldMessenger.of(context).showSnackBar(
+                    //               SnackBar(
+                    //                 content: Text(
+                    //                   "You clicked on $route route",
+                    //                 ),
+                    //               ),
+                    //             );
+                    //           },
+                    //           onRemove: () {
+                    //             setState(() {
+                    //               _savedRoutes.remove(route);
+                    //             });
+                    //           },
+                    //         ),
+                    //       )
+                    //       .toList(),
+                    // ),
 
                     const SizedBox(height: 24),
 
@@ -212,7 +235,8 @@ class _VendorEditProfileState extends State<VendorEditProfile> {
                           ),
                         ),
                         child: Text(
-                          'Save Changes',
+                          // 'Save Changes',
+                          ref.t(BKeys.saveChanges),
                           style: TextStyle(
                             color: AllColor.white,
                             fontWeight: FontWeight.w700,
@@ -324,7 +348,7 @@ class _RoundedDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items,
       onChanged: onChanged,
       icon: Icon(Icons.keyboard_arrow_down_rounded, color: AllColor.black87),

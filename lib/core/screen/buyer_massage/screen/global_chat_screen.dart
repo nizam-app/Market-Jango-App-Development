@@ -1,218 +1,398 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart'; // Make sure this is imported
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/%20business_logic/models/chat_model.dart'; // Ensure ChatMessage model is compatible or adjust
+import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/screen/buyer_massage/data/chat_data.dart';
+import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/chat_history_data.dart';
+import 'package:market_jango/core/screen/buyer_massage/logic/message_send_riverpod.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_offer_model.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/offer_product_repository.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/all_vendor_product_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
-import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart'; // Ensure messages data is compatible or adjust
+import 'package:market_jango/core/utils/get_user_type.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class GlobalChatScreen extends ConsumerStatefulWidget {
+  const GlobalChatScreen({
+    super.key,
+    required this.partnerId,
+    required this.partnerName,
+    required this.partnerImage,
+    required this.myUserId,
+  });
 
-  static final routeName = "/chatScreen";
+  static const routeName = "/chatScreen";
+
+  final int partnerId;
+  final String partnerName;
+  final String partnerImage;
+  final int myUserId;
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<GlobalChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _textController = TextEditingController();
-
-  // Assuming 'messages' is defined in 'chat_data.dart'
-  // Make sure the ChatMessage model and 'messages' list are compatible
-  // with the properties used (text, isSender, time, isOrderSummary, etc.)
-
-  void _handleSubmitted(String text) {
-    _textController.clear();
-    if (text.isEmpty) return;
-    setState(() {
-      messages.insert(
-        0,
-        ChatMessage( // Ensure ChatMessage constructor matches
-          text: text,
-          isSender: true,
-          time: _getCurrentTime(),
-          // Add other necessary fields if your ChatMessage model requires them
-        ),
-      );
-    });
-  }
-
-  String _getCurrentTime() {
-    final now = DateTime.now();
-    final hour = now.hour % 12 == 0 ? 12 : now.hour % 12;
-    final minute = now.minute.toString().padLeft(2, '0');
-    final period = now.hour < 12 ? 'AM' : 'PM';
-    return '$hour:$minute $period';
+class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
+  @override
+  void initState() {
+    super.initState();
+    debugPrint(
+      "CHAT args → partnerId=${widget.partnerId}, myUserId=${widget.myUserId}, name=${widget.partnerName}, image = ${widget.partnerImage}",
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme
-        .of(context)
-        .textTheme;
+    final theme = Theme.of(context).textTheme;
+
+    // Fetch history
+    final history = ref.watch(chatHistoryStreamProvider(widget.partnerId));
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AllColor.black,
-            size: 17
-                .sp, // Use .sp for font sizes or icon sizes that should scale with text
-          ),
-          onPressed: () {
-            context.pop();
-          },
+          icon: Icon(Icons.arrow_back_ios, color: AllColor.black, size: 17.sp),
+          onPressed: context.pop,
         ),
         title: Row(
           children: [
-            CircleAvatar( // Consider making radius responsive if needed: radius: 20.r
-              backgroundImage: const NetworkImage(
-                  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fHww&w=1000&q=80'),
-            ),
-            SizedBox(width: 10.w), // Use .w for width
+            CircleAvatar(backgroundImage: NetworkImage(widget.partnerImage)),
+            SizedBox(width: 10.w),
             Text(
-              'Curtis Welsh',
-              style: theme.titleLarge!.copyWith(
-                fontSize: 20.sp, // Use .sp for font sizes
-              ),
+              widget.partnerName,
+              style: theme.titleLarge?.copyWith(fontSize: 20.sp),
             ),
           ],
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.videocam_outlined, size: 24.sp),
-            // Example responsive icon size
-            onPressed: () {
-              // Handle video call action
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: Icon(Icons.call_outlined, size: 24.sp),
-            // Example responsive icon size
-            onPressed: () {
-              // Handle call action
-            },
+            onPressed: () {},
           ),
         ],
         backgroundColor: AllColor.white,
-        elevation: 1, // Elevation doesn't typically need .r, .w, .h
+        elevation: 1,
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-              // Use .w and .h
-              reverse: true,
-              itemCount: messages.length,
-              itemBuilder: (_, int index) => _buildMessageRow(messages[index]),
-            ),
-          ),
-          const Divider(height: 1.0),
-          // Height of divider can also be responsive if needed: 1.h
-          Container(
-            decoration: BoxDecoration(color: Theme
-                .of(context)
-                .cardColor),
-            child: _buildTextComposer(),
-          ),
-        ],
+      body: history.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (serverMessages) {
+          final incoming = serverMessages.reversed.toList(); // newest first
+          if (!_seeded) {
+            _messages = incoming;
+            _seeded = true;
+          } else {
+            // add only those ids we don't have yet (ignore local negative ids)
+            final have = _messages
+                .where((m) => m.id > 0)
+                .map((m) => m.id)
+                .toSet();
+            for (final m in incoming) {
+              if (!have.contains(m.id)) {
+                _messages.insert(0, m);
+              }
+            }
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 10.h,
+                  ),
+                  reverse: true,
+                  itemCount: _messages.length,
+                  itemBuilder: (_, i) {
+                    final m = _messages[i];
+                    final mine = m.senderId == widget.myUserId;
+                    final isLocal = m.id < 0 && m.image == 'local';
+                    final file = isLocal ? _localImageMap[m.id] : null;
+
+                    return _MessageRow(
+                      message: m,
+                      text:
+                          (m.image != null &&
+                              m.image!.isNotEmpty &&
+                              m.image != 'local')
+                          ? null
+                          : (m.message ?? ''),
+                      imageUrl:
+                          (!isLocal &&
+                              (m.image ?? '').isNotEmpty &&
+                              m.image != 'local')
+                          ? m.image
+                          : null,
+                      localImage: file,
+                      uploading: isLocal, // show spinner on local images
+                      time: _prettyTime(m.createdAt),
+                      isSender: mine,
+                      myUserId: widget.myUserId,
+                      partnerId: widget.partnerId,
+                      onOfferAccepted: (offerId) {
+                        // Refresh chat history after offer acceptance
+                        ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+                      },
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 1),
+              Container(
+                decoration: BoxDecoration(color: Theme.of(context).cardColor),
+                child: _composer(),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildMessageRow(ChatMessage message) {
-    CrossAxisAlignment messageAlignment =
-    message.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    MainAxisAlignment rowAlignment =
-    message.isSender ? MainAxisAlignment.end : MainAxisAlignment.start;
+  final _textController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      // Use .h for vertical padding
-      child: Column(
-        crossAxisAlignment: messageAlignment,
-        children: [
-          Row(
-            mainAxisAlignment: rowAlignment,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              if (!message.isSender && !message.isOrderSummary)
-                SizedBox(width: 8.w), // Use .w
-              Flexible(
-                child: message.isOrderSummary
-                    ? OrderSummaryBubble(message: message)
-                    : MessageBubble(message: message),
+  List<ChatMessage> _messages = [];
+  bool _seeded = false;
+
+  // temp local image map: tempId -> File
+  final Map<int, File> _localImageMap = {};
+  
+  void _askImageSource() {
+    final userTypeAsync = ref.read(getUserTypeProvider);
+    final isVendor = userTypeAsync.value?.toLowerCase() == 'vendor';
+
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickMainImage(ImageSource.camera);
+                },
               ),
-              if (message.isSender && !message.isOrderSummary)
-                SizedBox(width: 8.w), // Use .w
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickMainImage(ImageSource.gallery);
+                },
+              ),
+              if (isVendor) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.shopping_bag),
+                  title: const Text('Send product offer'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _navigateToProductOffer();
+                  },
+                ),
+              ],
             ],
           ),
-          Padding(
-            padding: EdgeInsets.only(
-              top: 2.h, // Use .h
-              left: message.isSender ? 0 : (message.isOrderSummary ? 16.w : 16
-                  .w), // Use .w
-              right: !message.isSender ? 0 : (message.isOrderSummary ? 16.w : 16
-                  .w), // Use .w
-            ),
-            child: Text(
-              message.time,
-              style: TextStyle(
-                color: AllColor.grey,
-                fontSize: 10.sp, // Use .sp
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildTextComposer() {
+  Future<void> _navigateToProductOffer() async {
+    final result = await Navigator.of(context).push<ChatMessage>(
+      MaterialPageRoute(
+        builder: (ctx) => const AllVendorProductScreen(),
+        settings: RouteSettings(arguments: widget.partnerId),
+      ),
+    );
+
+    if (result != null) {
+      // Refresh chat history to show the new offer message
+      ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+      
+      // Optionally show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Offer sent successfully')),
+        );
+      }
+    }
+  }
+
+  Future<void> pickMainImage(ImageSource source) async {
+    final x = await _picker.pickImage(source: source, imageQuality: 85);
+    if (x == null) return;
+
+    final file = File(x.path);
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final nowIso = DateTime.now().toIso8601String();
+
+    setState(() {
+      _localImageMap[tempId] = file;
+      _messages.insert(
+        0,
+        ChatMessage(
+          id: tempId, // negative => local/temporary
+          senderId: widget.myUserId,
+          receiverId: widget.partnerId,
+          message: '', // no text
+          image: 'local', // marker
+          publicId: null,
+          isRead: 0,
+          replyTo: null,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _handleSubmitted(String text) {
+    final t = text.trim();
+    if (t.isEmpty) return;
+    _textController.clear();
+
+    // Optimistic add (send API can be added later)
+    final nowIso = DateTime.now().toIso8601String();
+    setState(() {
+      _messages.insert(
+        0,
+        ChatMessage(
+          id: -DateTime.now().millisecondsSinceEpoch, // temp id
+          senderId: widget.myUserId,
+          receiverId: widget.partnerId,
+          message: t,
+          image: null,
+          publicId: null,
+          isRead: 0,
+          replyTo: null,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        ),
+      );
+    });
+  }
+
+  String _prettyTime(String? iso) {
+    if (iso == null || iso.isEmpty) return '';
+    try {
+      final dt = DateTime.tryParse(iso)?.toLocal();
+      if (dt == null) return '';
+      final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final m = dt.minute.toString().padLeft(2, '0');
+      final ap = dt.hour < 12 ? 'AM' : 'PM';
+      return '$h:$m $ap';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Widget _composer() {
     return IconTheme(
-      data: IconThemeData(color: Theme
-          .of(context)
-          .colorScheme
-          .secondary),
+      data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
       child: Container(
         height: 60.h,
         margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-        // Use .w and .h
         child: Row(
-          children: <Widget>[
+          children: [
             Container(
-              // Consider making size responsive: padding: EdgeInsets.all(8.r)
               decoration: BoxDecoration(
                 color: AllColor.grey.shade200,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
                 icon: Icon(Icons.add, color: AllColor.black54, size: 24.sp),
-                // Example
-                onPressed: () {
-                  // Handle attachment button press
-                },
+                onPressed: _askImageSource,
               ),
             ),
-            SizedBox(width: 8.w), // Use .w
-            Flexible(
-              child: CustomTextFromField(hintText: "Type a message...",),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: CustomTextFromField(
+                controller: _textController,
+                hintText: ref.t(VKeys.typeAMessage),
+                onFieldSubmitted: _handleSubmitted,
+              ),
             ),
-            SizedBox(width: 8.w), // Use .w
+            SizedBox(width: 8.w),
             Container(
-              // Consider making size responsive: padding: EdgeInsets.all(8.r)
               decoration: BoxDecoration(
                 color: AllColor.grey.shade200,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.send, color: AllColor.black54,
-                    size: 24.sp), // Example
-                onPressed: () {
-                  // Handle camera button press
+                icon: Icon(Icons.send, color: AllColor.black54, size: 24.sp),
+                onPressed: () async {
+                  final text = _textController.text.trim();
+                  // collect local images (temp ids)
+                  final localFiles = _localImageMap.values.toList();
+
+                  // optimistic text (if any)
+                  if (text.isNotEmpty) {
+                    final nowIso = DateTime.now().toIso8601String();
+                    setState(() {
+                      _messages.insert(
+                        0,
+                        ChatMessage(
+                          id: -DateTime.now().millisecondsSinceEpoch,
+                          senderId: widget.myUserId,
+                          receiverId: widget.partnerId,
+                          message: text,
+                          image: null,
+                          publicId: null,
+                          isRead: 0,
+                          replyTo: null,
+                          createdAt: nowIso,
+                          updatedAt: nowIso,
+                        ),
+                      );
+                    });
+                  }
+
+                  // clear input box for instant feel
+                  _textController.clear();
+
+                  // call API (existing provider)
+                  final sent = await ref
+                      .read(chatSendProvider.notifier)
+                      .send(
+                        partnerId: widget.partnerId,
+                        message: text.isEmpty ? null : text,
+                        images: localFiles, // send all local images
+                      );
+
+                  if (sent != null) {
+                    // remove all temp (negative id) bubbles we just added
+                    setState(() {
+                      _messages.removeWhere((m) => m.id < 0);
+                      _localImageMap.clear();
+                    });
+                    // pull fresh history so server URLs come in
+                    ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Message send failed')),
+                    );
+                  }
                 },
               ),
             ),
@@ -223,171 +403,446 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class MessageBubble extends StatelessWidget {
-  final ChatMessage message;
+/* ---------- Simple message bubble row (keeps your style) ---------- */
 
-  const MessageBubble({super.key, required this.message});
+class _MessageRow extends ConsumerWidget {
+  const _MessageRow({
+    required this.message,
+    required this.time,
+    required this.isSender,
+    required this.myUserId,
+    required this.partnerId,
+    this.text,
+    this.imageUrl,
+    this.localImage, // <— File? for local preview
+    this.uploading = false,
+    this.onOfferAccepted,
+  });
+
+  final ChatMessage message;
+  final String? text;
+  final String time;
+  final bool isSender;
+  final int myUserId;
+  final int partnerId;
+  final String? imageUrl; // server url
+  final File? localImage; // local file (optimistic)
+  final bool uploading;
+  final Function(int)? onOfferAccepted;
 
   @override
-  Widget build(BuildContext context) {
-    final bgColor = message.isSender
-        ? AllColor.blue.withOpacity(0.2) // Adjusted to a similar color from AllColor
-        : AllColor.grey.shade100; // Adjusted to a similar color from AllColor
-    final textColor = message.isSender ? AllColor.black87 : AllColor.black87;
-    final alignment =
-    message.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(16.0.r), // Use .r
-      topRight: Radius.circular(16.0.r), // Use .r
-      bottomLeft: Radius.circular(message.isSender ? 16.0.r : 0), // Use .r
-      bottomRight: Radius.circular(message.isSender ? 0 : 16.0.r), // Use .r
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Check if this is an offer message
+    if (message.isOfferMessage && message.offer != null) {
+      return _OfferCard(
+        offer: message.offer!,
+        isSender: isSender,
+        time: time,
+        myUserId: myUserId,
+        partnerId: partnerId,
+        onOfferAccepted: onOfferAccepted,
+      );
+    }
+
+    final bubbleColor = isSender
+        ? AllColor.blue.withOpacity(.2)
+        : AllColor.grey.shade100;
+    final radius = BorderRadius.only(
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(isSender ? 16.r : 0),
+      bottomRight: Radius.circular(isSender ? 0 : 16.r),
     );
 
-    return Column(
-      crossAxisAlignment: alignment,
-      children: [
-        Container(
-          constraints: BoxConstraints(maxWidth: 0.75.sw),
-          // .sw for screen width percentage
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          // .w and .h
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: borderRadius,
+    final hasImage = (localImage != null) || ((imageUrl ?? '').isNotEmpty);
+
+    Widget body;
+    if (hasImage) {
+      body = Stack(
+        alignment: Alignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: radius,
+            child: SizedBox(
+              width: 220.w, // bubble width for image
+              child: localImage != null
+                  ? Image.file(localImage!, fit: BoxFit.cover)
+                  : Image.network(imageUrl!, fit: BoxFit.cover),
+            ),
           ),
-          child: Text(
-            message.text!, // Ensure message.text is not null
-            style: TextStyle(color: textColor, fontSize: 15.sp), // Use .sp
+          if (uploading)
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: radius,
+              ),
+              height: 140.h,
+              width: 220.w,
+              alignment: Alignment.center,
+              child: const SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
+      );
+    } else {
+      body = Text(
+        text ?? '',
+        style: TextStyle(fontSize: 15.sp, color: AllColor.black87),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Column(
+        crossAxisAlignment: isSender
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: isSender
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isSender) SizedBox(width: 8.w),
+              Flexible(
+                child: Container(
+                  constraints: hasImage
+                      ? const BoxConstraints() // image sets own width
+                      : BoxConstraints(maxWidth: 0.75.sw),
+                  padding: hasImage
+                      ? EdgeInsets.zero
+                      : EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: bubbleColor,
+                    borderRadius: radius,
+                  ),
+                  child: body,
+                ),
+              ),
+              if (isSender) SizedBox(width: 8.w),
+            ],
           ),
-        ),
-      ],
+          Padding(
+            padding: EdgeInsets.only(
+              top: 2.h,
+              left: isSender ? 0 : 16.w,
+              right: isSender ? 16.w : 0,
+            ),
+            child: Text(
+              time,
+              style: TextStyle(color: AllColor.grey, fontSize: 10.sp),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class OrderSummaryBubble extends StatelessWidget {
-  final ChatMessage message;
+/* ---------- Offer Card Widget ---------- */
 
-  const OrderSummaryBubble({super.key, required this.message});
+class _OfferCard extends ConsumerStatefulWidget {
+  const _OfferCard({
+    required this.offer,
+    required this.isSender,
+    required this.time,
+    required this.myUserId,
+    required this.partnerId,
+    this.onOfferAccepted,
+  });
+
+  final ChatOffer offer;
+  final bool isSender;
+  final String time;
+  final int myUserId;
+  final int partnerId;
+  final Function(int)? onOfferAccepted;
+
+  @override
+  ConsumerState<_OfferCard> createState() => _OfferCardState();
+}
+
+class _OfferCardState extends ConsumerState<_OfferCard> {
+  bool _isAccepting = false;
+  bool _isAccepted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAccepted = widget.offer.isAccepted == 1;
+  }
+
+  Future<void> _acceptOffer() async {
+    if (_isAccepting || _isAccepted) return;
+
+    setState(() => _isAccepting = true);
+
+    try {
+      final repository = OfferProductRepository();
+      await repository.acceptOffer(widget.offer.id);
+
+      setState(() {
+        _isAccepting = false;
+        _isAccepted = true;
+      });
+
+      if (widget.onOfferAccepted != null) {
+        widget.onOfferAccepted!(widget.offer.id);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Offer added to cart')),
+        );
+      }
+    } catch (e) {
+      setState(() => _isAccepting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to accept offer: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: 0.75.sw),
-      // .sw
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      // .w and .h
-      decoration: BoxDecoration(
-        color: AllColor.white,
-        borderRadius: BorderRadius.circular(16.0.r),
-        // .r
-        border: Border.all(color: AllColor.blue, width: 1.5.w),
-        // .w for border width
-        boxShadow: [
-          BoxShadow(
-            color: AllColor.grey.withOpacity(0.2),
-            spreadRadius: 1.r, // .r
-            blurRadius: 3.r, // .r
-            offset: Offset(0, 2.h), // .h for y-offset
-          ),
-        ],
-      ),
+    final bubbleColor = widget.isSender
+        ? AllColor.blue.withOpacity(.2)
+        : AllColor.grey.shade100;
+    final radius = BorderRadius.only(
+      topLeft: Radius.circular(16.r),
+      topRight: Radius.circular(16.r),
+      bottomLeft: Radius.circular(widget.isSender ? 16.r : 0),
+      bottomRight: Radius.circular(widget.isSender ? 0 : 16.r),
+    );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: widget.isSender
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: widget.isSender
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (message.imageUrls != null && message.imageUrls!.isNotEmpty)
-                Container(
-                  width: 50.w, // .w
-                  height: 50.h, // .h
+              if (!widget.isSender) SizedBox(width: 8.w),
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 0.75.sw),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.r), // .r
-                    image: DecorationImage(
-                      image: NetworkImage(message.imageUrls![0]),
-                      fit: BoxFit.cover,
-                    ),
+                    color: bubbleColor,
+                    borderRadius: radius,
                   ),
-                  margin: EdgeInsets.only(right: 8.w), // .w
-                ),
-              if (message.imageUrls != null && message.imageUrls!.length > 1)
-                Column(
-                  children: message.imageUrls!
-                      .sublist(1,
-                      message.imageUrls!.length > 3 ? 3 : message.imageUrls!
-                          .length)
-                      .map((url) {
-                    return Container(
-                      width: 23.w, // .w
-                      height: 23.h, // .h
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4.r), // .r
-                        image: DecorationImage(
-                          image: NetworkImage(url),
-                          fit: BoxFit.cover,
-                        ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Product image and name
+                      Row(
+                        children: [
+                          if (widget.offer.productImage != null &&
+                              widget.offer.productImage!.isNotEmpty)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8.r),
+                              child: Image.network(
+                                widget.offer.productImage!,
+                                width: 60.w,
+                                height: 60.h,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 60.w,
+                                  height: 60.h,
+                                  color: AllColor.grey200,
+                                  child: Icon(Icons.image, size: 30.sp),
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 60.w,
+                              height: 60.h,
+                              color: AllColor.grey200,
+                              child: Icon(Icons.image, size: 30.sp),
+                            ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.offer.productName ?? 'Product',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: AllColor.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'Special Offer',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: AllColor.blue,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      margin: EdgeInsets.only(bottom: 4.h), // .h
-                    );
-                  }).toList(),
-                ),
-              SizedBox(width: 12.w), // .w
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order ${message.orderNumber!}', // Ensure not null
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 14.sp), // .sp
-                    ),
-                    Text(
-                      message.deliveryType!, // Ensure not null
-                      style: TextStyle(
-                          color: AllColor.grey, fontSize: 12.sp), // .sp
-                    ),
-                  ],
+                      SizedBox(height: 12.h),
+                      Divider(height: 1),
+                      SizedBox(height: 12.h),
+                      // Offer details
+                      _OfferDetailRow(
+                        label: 'Price',
+                        value: '৳${widget.offer.salePrice}',
+                      ),
+                      SizedBox(height: 8.h),
+                      _OfferDetailRow(
+                        label: 'Quantity',
+                        value: '${widget.offer.quantity}',
+                      ),
+                      SizedBox(height: 8.h),
+                      _OfferDetailRow(
+                        label: 'Delivery',
+                        value: '৳${widget.offer.deliveryCharge}',
+                      ),
+                      if (widget.offer.color != null &&
+                          widget.offer.color!.isNotEmpty) ...[
+                        SizedBox(height: 8.h),
+                        _OfferDetailRow(
+                          label: 'Color',
+                          value: widget.offer.color!,
+                        ),
+                      ],
+                      if (widget.offer.size != null &&
+                          widget.offer.size!.isNotEmpty) ...[
+                        SizedBox(height: 8.h),
+                        _OfferDetailRow(
+                          label: 'Size',
+                          value: widget.offer.size!,
+                        ),
+                      ],
+                      SizedBox(height: 12.h),
+                      // Accept button (only for buyer, not sender)
+                      if (!widget.isSender && !_isAccepted)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isAccepting ? null : _acceptOffer,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AllColor.blue,
+                              padding: EdgeInsets.symmetric(vertical: 10.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                            ),
+                            child: _isAccepting
+                                ? SizedBox(
+                                    height: 18.h,
+                                    width: 18.w,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    'Accept Offer',
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: AllColor.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      if (!widget.isSender && _isAccepted)
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          decoration: BoxDecoration(
+                            color: AllColor.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '✓ Accepted',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AllColor.green,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
+              if (widget.isSender) SizedBox(width: 8.w),
             ],
           ),
-          SizedBox(height: 10.h), // .h
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: () {
-                 context.push(BuyerPaymentScreen.routeName);
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 16.w, vertical: 8.h), // .w and .h
-                  backgroundColor: AllColor.orange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r), // .r
-                  ),
-                ),
-                child: Text(
-                  'Pay Now',
-                  style: TextStyle(color: AllColor.white, fontSize: 14.sp), // .sp
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                // .w and .h
-                decoration: BoxDecoration(
-                  color: AllColor.grey.shade200,
-                  borderRadius: BorderRadius.circular(8.r), // .r
-                ),
-                child: Text(
-                  '${message.itemCount} Items', // Ensure not null
-                  style: TextStyle(fontSize: 12.sp, color: AllColor.black54), // .sp
-                ),
-              ),
-            ],
+          Padding(
+            padding: EdgeInsets.only(
+              top: 2.h,
+              left: widget.isSender ? 0 : 16.w,
+              right: widget.isSender ? 16.w : 0,
+            ),
+            child: Text(
+              widget.time,
+              style: TextStyle(color: AllColor.grey, fontSize: 10.sp),
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _OfferDetailRow extends StatelessWidget {
+  const _OfferDetailRow({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: AllColor.grey,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            color: AllColor.black87,
+          ),
+        ),
+      ],
     );
   }
 }

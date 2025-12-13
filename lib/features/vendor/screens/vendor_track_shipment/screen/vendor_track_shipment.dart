@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/data/vendor_product_tracking_data.dart';
 
@@ -21,7 +22,7 @@ class VendorShipmentsScreen extends ConsumerWidget {
 
     return async.when(
       loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+          const Scaffold(body: Center(child: Text('Loading...'))),
       error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
       data: (state) {
         final items = state.filtered;
@@ -272,7 +273,10 @@ class _ShipmentCard extends StatelessWidget {
                       height: 56.h,
                       width: 56.w,
                       color: AllColor.grey100,
-                      child: Image.network(data.imageUrl, fit: BoxFit.cover),
+                      child: FirstTimeShimmerImage(
+                        imageUrl: data.imageUrl,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   SizedBox(width: 10.w),

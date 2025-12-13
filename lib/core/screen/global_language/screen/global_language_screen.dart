@@ -121,7 +121,7 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
 
             Expanded(
               child: asyncLangs.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (languages) {
                   if (languages.isEmpty) {

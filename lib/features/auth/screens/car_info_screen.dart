@@ -190,7 +190,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                       ),
                     );
                   },
-                  loading: () => const CircularProgressIndicator(),
+                  loading: () => const Center(child: Text('Loading...')),
                   error: (e, _) => Text("Failed to load routes: $e"),
                 ),
 

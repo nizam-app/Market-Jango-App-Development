@@ -1,6 +1,7 @@
 // lib/features/buyer/screens/review/data/vendor_review_data.dart
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
@@ -35,3 +36,14 @@ Future<VendorReviewsPage> fetchVendorReviews({
   }
   return pageData;
 }
+
+// Provider to get total review count for a vendor
+final vendorReviewCountProvider = FutureProvider.family<int, int>((ref, vendorId) async {
+  try {
+    final pageData = await fetchVendorReviews(vendorId: vendorId, page: 1);
+    return pageData.total;
+  } catch (e) {
+    // If error, return 0
+    return 0;
+  }
+});

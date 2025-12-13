@@ -48,7 +48,16 @@ class JustForYouNotifier
     );
 
     if (res.statusCode == 200) {
-      return TopProductsResponse.fromJson(jsonDecode(res.body));
+      final decoded = jsonDecode(res.body);
+      // Handle case where response might be a List or Map
+      final jsonData = decoded is Map<String, dynamic>
+          ? decoded
+          : <String, dynamic>{
+              'status': 'success',
+              'message': '',
+              'data': decoded is List ? decoded : [],
+            };
+      return TopProductsResponse.fromJson(jsonData);
     } else {
       throw Exception(
         'Failed: ${res.statusCode} ${res.reasonPhrase}',

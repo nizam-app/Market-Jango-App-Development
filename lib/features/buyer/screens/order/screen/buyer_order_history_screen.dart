@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_review_dialog.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
@@ -63,7 +64,7 @@ class BuyerOrderHistoryScreen extends ConsumerWidget {
                       );
                     },
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                        const Center(child: Text('Loading...')),
                     error: (e, _) => Center(
                       child: Text(
                         e.toString(),
@@ -124,8 +125,8 @@ class _ReviewTile extends ConsumerWidget {
                       color: AllColor.grey,
                     ),
                   )
-                : Image.network(
-                    imageUrl,
+                : FirstTimeShimmerImage(
+                    imageUrl: imageUrl,
                     width: 90.w,
                     height: 90.h,
                     fit: BoxFit.cover,

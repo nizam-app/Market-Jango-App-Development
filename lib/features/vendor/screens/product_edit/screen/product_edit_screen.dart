@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,17 +10,17 @@ import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/delete_image_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
-import 'package:market_jango/features/vendor/screens/vendor_product_add_page/widget/custom_variant_picker.dart';
+import 'package:market_jango/features/vendor/screens/vendor_product_add_page/widget/generic_attribute_picker.dart';
 
 import '../../../widgets/custom_back_button.dart';
 import '../../vendor_home/model/vendor_product_model.dart';
-import '../model/product_attribute_response_model.dart';
 
 class ProductEditScreen extends ConsumerStatefulWidget {
   const ProductEditScreen({super.key, required this.product});
@@ -42,8 +43,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
       vendorCategoryProvider(VendorAPIController.vendor_category),
     );
     final attributeAsync = ref.watch(productAttributesProvider);
-    final selectedColors = ref.watch(selectedColorsProvider);
-    final selectedSizes = ref.watch(selectedSizesProvider);
+    final selectedAttributes = ref.watch(selectedAttributesProvider);
     final saving = ref.watch(updateProductProvider).isLoading;
     return Scaffold(
       body: SingleChildScrollView(
@@ -57,14 +57,12 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                     Container(
                       height: 439.h,
                       width: double.maxFinite,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: mainImage != null
-                              ? FileImage(mainImage!)
-                              : NetworkImage(widget.product.image),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                      child: mainImage != null
+                          ? Image.file(mainImage!, fit: BoxFit.cover)
+                          : FirstTimeShimmerImage(
+                              imageUrl: widget.product.image,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                     Positioned(
                       bottom: 15,
@@ -91,6 +89,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 15.h),
                   // ProductEditScreen এর ভিতরে
@@ -103,167 +102,176 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                   SizedBox(height: 10.h),
 
                   /// Category Dropdown
+                  _Label('Category', color: const Color(0xFF436AA0)),
+                  SizedBox(height: 6.h),
+
+                  /// --- state ---
+                  //  int? _selectedCategoryId; // ✅ use id, not name
                   categoryAsync.when(
                     data: (categories) {
-                      final categoryNames = categories
-                          .map((e) => e.name)
-                          .toList();
-                      return Theme(
-                        data: dropTheme,
-                        child: Container(
-                          height: 56.h,
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          decoration: BoxDecoration(
-                            color: AllColor.white,
-                            // borderRadius: BorderRadius.circular(24.r),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 14.r,
-                                offset: Offset(0, 6.h),
-                                color: Colors.black.withOpacity(0.06),
-                              ),
-                            ],
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              isExpanded: true,
-                              value: _selectedCategory,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                              ),
-                              dropdownColor: Colors.white,
-                              borderRadius: BorderRadius.circular(16.r),
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                color: Colors.black87,
-                              ),
-                              items: categoryNames.map((e) {
-                                return DropdownMenuItem(
-                                  value: e,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12.h,
-                                    ),
-                                    child: Text(e),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (v) {
-                                setState(() => _selectedCategory = v);
-                                final selected = categories.firstWhere(
-                                  (e) => e.name == v,
-                                );
-                                _selectedCategoryId = selected.id;
-                              },
-                            ),
-                          ),
-                        ),
+                      if (categories.isEmpty)
+                        return const Text("No category found");
+
+                      // ✅ ensure selected id exists
+                      final bool selectedExists =
+                          _selectedCategoryId != null &&
+                          categories.any((c) => c.id == _selectedCategoryId);
+
+                      // ✅ set default only if null OR not exists
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        if (_selectedCategoryId == null || !selectedExists) {
+                          final match = categories
+                              .where(
+                                (c) => c.name == widget.product.categoryName,
+                              )
+                              .toList();
+
+                          setState(() {
+                            _selectedCategoryId = match.isNotEmpty
+                                ? match.first.id
+                                : categories.first.id;
+                          });
+                        }
+                      });
+
+                      return DropdownButton<int>(
+                        isExpanded: true,
+                        value: selectedExists ? _selectedCategoryId : null,
+                        hint: const Text("Select category"),
+                        items: categories.map((c) {
+                          return DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(c.name),
+                          );
+                        }).toList(),
+                        onChanged: (id) {
+                          setState(() => _selectedCategoryId = id);
+                        },
                       );
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => Center(child: Text('Error: $err')),
+                    loading: () => const Text("Loading..."),
+                    error: (e, _) => Text("Error: $e"),
                   ),
 
                   SizedBox(height: 10.h),
 
                   /// Product Name
+                  _Label(
+                    ref.t(BKeys.product_title),
+                    color: const Color(0xFF436AA0),
+                  ),
+                  SizedBox(height: 6.h),
                   TextFormField(
                     controller: nameController,
                     decoration: InputDecoration(
                       fillColor: AllColor.white,
-                      enabledBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.zero,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
-                      focusedBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
                     ),
                   ),
                   SizedBox(height: 10.h),
 
                   /// Description
+                  _Label(
+                    ref.t(BKeys.destination),
+                    color: const Color(0xFF436AA0),
+                  ),
+                  SizedBox(height: 6.h),
                   TextFormField(
                     controller: descriptionController,
                     maxLines: 5,
                     decoration: InputDecoration(
                       fillColor: AllColor.white,
-                      enabledBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.zero,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
-                      focusedBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
                     ),
                   ),
                   SizedBox(height: 15.h),
 
-                  /// Color & Size Dropdown
+                  /// Attributes Dropdown
                   attributeAsync.when(
                     data: (data) {
-                      final colorAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'color',
-                        orElse: () => VendorProductAttribute(
-                          id: 0,
-                          name: '',
-                          vendorId: 0,
-                          attributeValues: [],
-                        ),
-                      );
-                      final List<String> colorNames = colorAttr.attributeValues
-                          .map((v) => v.name ?? "")
-                          .toList();
-
-                      final sizeAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'size',
-                        orElse: () => VendorProductAttribute(
-                          id: 0,
-                          name: '',
-                          vendorId: 0,
-                          attributeValues: [],
-                        ),
-                      );
-                      final List<String> sizeNames = sizeAttr.attributeValues
-                          .map((v) => v.name ?? "")
-                          .toList();
-
-                      return CustomVariantPicker(
-                        colors: colorNames,
-                        sizes: sizeNames,
-                        selectedColors: selectedColors,
-                        selectedSizes: selectedSizes,
-                        onColorsChanged: (list) {
-                          ref.read(selectedColorsProvider.notifier).state = [
-                            ...list,
-                          ];
-                        },
-                        onSizesChanged: (list) {
-                          ref.read(selectedSizesProvider.notifier).state = [
-                            ...list,
-                          ];
-                        },
-                      );
+                      return GenericAttributePicker(attributes: data.data);
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    loading: () => const Center(child: Text('Loading...')),
                     error: (err, _) => Center(child: Text('Error: $err')),
                   ),
 
                   SizedBox(height: 15.h),
 
                   /// Price
+                  _Label('Current price', color: const Color(0xFF2B6CB0)),
+                  SizedBox(height: 6.h),
                   TextFormField(
                     controller: priceController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       fillColor: AllColor.white,
-                      enabledBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.zero,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
-                      focusedBorder: OutlineInputBorder().copyWith(
-                        borderSide: BorderSide.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+
+                  /// Stock
+                  _Label('Stock', color: const Color(0xFF2B6CB0)),
+                  SizedBox(height: 6.h),
+                  TextFormField(
+                    controller: stockController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      fillColor: AllColor.white,
+                      hintText: 'Enter Stock Quantity',
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AllColor.grey,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(5.r),
                       ),
                     ),
                   ),
@@ -284,23 +292,23 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                                   .updateProduct(
                                     id: widget.product.id,
                                     name: nn(nameController.text),
-                                    description: nn(
-                                      descriptionController.text,
-                                    ),
-                                    currentPrice: nn(priceController.text),
-                                    // previousPrice দরকার হলে আলাদা ফিল্ড নিন
-                                    categoryId: _selectedCategoryId,
-                                    colors:
-                                        ref.read(selectedColorsProvider).isEmpty
-                                        ? null
-                                        : ref.read(selectedColorsProvider),
-                                    sizes:
-                                        ref.read(selectedSizesProvider).isEmpty
-                                        ? null
-                                        : ref.read(selectedSizesProvider),
+                                    description: nn(descriptionController.text),
 
+                                    // ✅ map to API keys
+                                    regularPrice: nn(
+                                      widget.product.regularPrice.toString(),
+                                    ), // or controller থাকলে controller.text
+                                    sellPrice: nn(priceController.text),
+
+                                    categoryId: _selectedCategoryId,
+                                    attributes:
+                                        ref
+                                            .read(selectedAttributesProvider)
+                                            .isEmpty
+                                        ? null
+                                        : ref.read(selectedAttributesProvider),
+                                    stock: nn(stockController.text),
                                     image: mainImage,
-                                    // nullable ok
                                     newFiles: _newFiles,
                                   );
 
@@ -352,6 +360,8 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
 
   late TextEditingController priceController;
 
+  late TextEditingController stockController;
+
   final ThemeData dropTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
@@ -366,16 +376,45 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
     priceController = TextEditingController(
       text: widget.product.sellPrice.toString(),
     );
+    stockController = TextEditingController();
     _selectedCategory = widget.product.categoryName;
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(selectedColorsProvider.notifier).state = [
-        ...widget.product.colors,
-      ];
-      ref.read(selectedSizesProvider.notifier).state = [
-        ...widget.product.sizes,
-      ];
+      // Parse attributes from JSON string if available
+      Map<String, List<String>> parsedAttributes = {};
+      if (widget.product.attributes != null &&
+          widget.product.attributes!.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(widget.product.attributes!);
+          if (decoded is Map) {
+            decoded.forEach((key, value) {
+              if (value is List) {
+                parsedAttributes[key.toString()] = value
+                    .map((e) => e.toString())
+                    .toList();
+              }
+            });
+          }
+        } catch (e) {
+          // If parsing fails, fall back to color/size
+          if (widget.product.colors.isNotEmpty) {
+            parsedAttributes['color'] = widget.product.colors;
+          }
+          if (widget.product.sizes.isNotEmpty) {
+            parsedAttributes['size'] = widget.product.sizes;
+          }
+        }
+      } else {
+        // Fallback to color/size if attributes is null
+        if (widget.product.colors.isNotEmpty) {
+          parsedAttributes['color'] = widget.product.colors;
+        }
+        if (widget.product.sizes.isNotEmpty) {
+          parsedAttributes['size'] = widget.product.sizes;
+        }
+      }
+      ref.read(selectedAttributesProvider.notifier).state = parsedAttributes;
     });
   }
 
@@ -429,11 +468,11 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
 
   @override
   void dispose() {
-    ref.invalidate(selectedColorsProvider);
-    ref.invalidate(selectedSizesProvider);
+    ref.invalidate(selectedAttributesProvider);
     nameController.dispose();
     descriptionController.dispose();
     priceController.dispose();
+    stockController.dispose();
 
     // TODO: implement dispose
     super.dispose();
@@ -537,10 +576,9 @@ class _ProductImageCarouselState extends ConsumerState<ProductImageCarousel> {
             return _ImageTile(
               size: 76.w,
               overlay: spinning
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2.2),
+                  ? const Text(
+                      'Loading...',
+                      style: TextStyle(color: Colors.white),
                     )
                   : const Icon(Icons.clear, color: Colors.white),
               onTap: spinning
@@ -568,7 +606,10 @@ class _ProductImageCarouselState extends ConsumerState<ProductImageCarousel> {
                         );
                       }
                     },
-              child: Image.network(imageUrl, fit: BoxFit.cover),
+              child: FirstTimeShimmerImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+              ),
             );
           } else {
             // Local added tile
@@ -677,6 +718,25 @@ class _ImageTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _Label extends StatelessWidget {
+  const _Label(this.text, {required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
     );
   }
 }

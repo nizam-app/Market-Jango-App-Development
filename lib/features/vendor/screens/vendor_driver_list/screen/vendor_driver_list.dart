@@ -7,6 +7,7 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
@@ -34,69 +35,85 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
 
   @override
   Widget build(BuildContext context) {
-    // final filtered = _drivers.where((d) {
-    //   final q = _search.text.trim().toLowerCase();
-    //   if (q.isEmpty) return true;
-    //   return d.name.toLowerCase().contains(q) || d.phone.contains(q);
-    // }).toList();
     final driverAsync = ref.watch(driverNotifierProvider);
     final driverNotifier = ref.read(driverNotifierProvider.notifier);
+    final searchQuery = _search.text.trim().toLowerCase();
+    
     return Scaffold(
       backgroundColor: AllColor.white,
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              CustomBackButton(),
-              SizedBox(height: 20.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.h),
-                child: TextField(
-                  controller: _search,
-                  onChanged: (_) => setState(() {}),
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: ref.t(BKeys.searchYourTransporter),
-                    hintStyle: TextStyle(color: AllColor.textHintColor),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: AllColor.black54,
-                    ),
-                    filled: true,
-                    fillColor: AllColor.grey100,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    enabledBorder: buildOutlineInputBorder(),
-                    focusedBorder: buildOutlineInputBorder(),
+        child: Column(
+          children: [
+            CustomBackButton(),
+            SizedBox(height: 20.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: TextField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: ref.t(BKeys.searchYourTransporter),
+                  hintStyle: TextStyle(color: AllColor.textHintColor),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: AllColor.black54,
                   ),
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  enabledBorder: buildOutlineInputBorder(),
+                  focusedBorder: buildOutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 12.h),
-
-              driverAsync.when(
+            ),
+            SizedBox(height: 12.h),
+            Expanded(
+              child: driverAsync.when(
                 data: (data) {
-                  final drivers = data?.drivers ?? [];
-                  return SizedBox(
-                    height: 1.62.sw,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: drivers.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 12),
-                            itemBuilder: (_, i) => _DriverCard(
-                              data: drivers[i],
+                  final allDrivers = data?.drivers ?? [];
+                  
+                  // Filter drivers based on search query
+                  final filteredDrivers = allDrivers.where((driver) {
+                    if (searchQuery.isEmpty) return true;
+                    final name = driver.user.name.toLowerCase();
+                    final phone = driver.user.phone.toLowerCase();
+                    final location = driver.location.toLowerCase();
+                    return name.contains(searchQuery) || 
+                           phone.contains(searchQuery) ||
+                           location.contains(searchQuery);
+                  }).toList();
+                  
+                  if (filteredDrivers.isEmpty && searchQuery.isNotEmpty) {
+                    return Center(
+                      child: Text(
+                        ref.t(BKeys.no_data),
+                        style: TextStyle(color: AllColor.black54),
+                      ),
+                    );
+                  }
+                  
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: filteredDrivers.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (_, i) {
+                            final driver = filteredDrivers[i];
+                            return _DriverCard(
+                              data: driver,
                               onAssign: () {
                                 context.push(
                                   AssignToOrderDriver.routeName,
-                                  extra: drivers[i].id,
+                                  extra: driver.id,
                                 );
                               },
                               onChat: () async {
@@ -112,39 +129,41 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                                 context.push(
                                   GlobalChatScreen.routeName,
                                   extra: ChatArgs(
-                                    partnerId: drivers[i].user.id,
-                                    partnerName: drivers[i].user.name,
-                                    partnerImage: drivers[i].user.image,
+                                    partnerId: driver.user.id,
+                                    partnerName: driver.user.name,
+                                    partnerImage: driver.user.image,
                                     myUserId: myUserId,
                                   ),
                                 );
                               },
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                        SizedBox(height: 20.h),
-                        if (data != null)
-                          GlobalPagination(
-                            currentPage: data.currentPage ?? 1,
-                            totalPages: data.lastPage ?? 1,
+                      ),
+                      if (data != null && searchQuery.isEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.h),
+                          child: GlobalPagination(
+                            currentPage: data.currentPage,
+                            totalPages: data.lastPage,
                             onPageChanged: (page) {
                               driverNotifier.changePage(page);
                             },
                           ),
-                        SizedBox(height: 20.h),
-                      ],
-                    ),
+                        ),
+                    ],
                   );
                 },
-                loading: () =>  Center(child: Text(
-                   // "Loading..."
-                ref.t(BKeys.loading),
-                )),
+                loading: () => Center(
+                  child: Text(
+                    ref.t(BKeys.loading),
+                  ),
+                ),
                 error: (error, stackTrace) =>
                     Center(child: Text(error.toString())),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -272,7 +291,15 @@ class _DriverCard extends ConsumerWidget {
                     height: 60.h,
                     width: 60.w,
                     color: AllColor.grey100,
-                    child: Image.network("", fit: BoxFit.cover),
+                    child: data.user.image.isNotEmpty
+                        ? FirstTimeShimmerImage(
+                            imageUrl: data.user.image,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: AllColor.grey100,
+                            child: Icon(Icons.person, color: AllColor.grey),
+                          ),
                   ),
                 ),
                 SizedBox(width: 10.h),

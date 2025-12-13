@@ -12,12 +12,53 @@ class TopProductsResponse {
   });
 
   factory TopProductsResponse.fromJson(Map<String, dynamic> json) {
+    // Handle case where 'data' might be a List or Map
+    final dataField = json['data'];
+    Map<String, dynamic> dataMap;
+    
+    if (dataField is List) {
+      // If data is a List, wrap it in a pagination structure
+      dataMap = {
+        'current_page': 1,
+        'data': dataField,
+        'first_page_url': null,
+        'from': 1,
+        'last_page': 1,
+        'last_page_url': null,
+        'links': [],
+        'next_page_url': null,
+        'path': '',
+        'per_page': dataField.length,
+        'prev_page_url': null,
+        'to': dataField.length,
+        'total': dataField.length,
+      };
+    } else if (dataField is Map) {
+      // If data is already a Map, use it directly
+      dataMap = Map<String, dynamic>.from(dataField);
+    } else {
+      // Fallback to empty structure
+      dataMap = {
+        'current_page': 1,
+        'data': [],
+        'first_page_url': null,
+        'from': null,
+        'last_page': 1,
+        'last_page_url': null,
+        'links': [],
+        'next_page_url': null,
+        'path': '',
+        'per_page': 0,
+        'prev_page_url': null,
+        'to': 0,
+        'total': 0,
+      };
+    }
+    
     return TopProductsResponse(
       status: json['status'] ?? '',
       message: json['message'] ?? '',
-      data: TopProductsData.fromJson(
-        Map<String, dynamic>.from(json['data'] as Map),
-      ),
+      data: TopProductsData.fromJson(dataMap),
     );
   }
 
@@ -27,8 +68,18 @@ class TopProductsResponse {
     'data': data.toJson(),
   };
 
-  static TopProductsResponse fromRawJson(String str) =>
-      TopProductsResponse.fromJson(json.decode(str));
+  static TopProductsResponse fromRawJson(String str) {
+    final decoded = json.decode(str);
+    // Handle case where response might be a List or Map
+    final jsonData = decoded is Map<String, dynamic>
+        ? decoded
+        : <String, dynamic>{
+            'status': 'success',
+            'message': '',
+            'data': decoded is List ? decoded : [],
+          };
+    return TopProductsResponse.fromJson(jsonData);
+  }
 
   String toRawJson() => json.encode(toJson());
 }

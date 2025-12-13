@@ -5,23 +5,17 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
-import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/vendor/screens/my_product_color/data/verndor_add_color_data_logic.dart';
-import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
-import 'package:market_jango/features/vendor/screens/product_edit/data/product_attribute_data.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/attribute_values_screen.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
-import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/logic/vendor_details_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
-import 'package:market_jango/features/vendor/screens/vendor_my_product_size/screen/my_product_size.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
-import '../../product_edit/model/product_attribute_response_model.dart';
 import '../logic/vendor_product_delete.dart';
 import '_attribute_menu_sheet.dart';
 
@@ -30,7 +24,8 @@ class VendorMyProductScreen extends ConsumerStatefulWidget {
   static const routeName = "/vendorMyProductScreen";
 
   @override
-  ConsumerState<VendorMyProductScreen> createState() => _VendorMyProductScreenState();
+  ConsumerState<VendorMyProductScreen> createState() =>
+      _VendorMyProductScreenState();
 }
 
 class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
@@ -90,11 +85,14 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
             children: [
               Row(
                 children: [
-                         CustomBackButton() , 
+                  CustomBackButton(),
                   Text(
                     // "My Products",
-                    ref.t(BKeys.my_product),  
-                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+                    ref.t(BKeys.my_product),
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -104,19 +102,18 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
               Row(
                 children: [
                   _AddBox(
-                    title: 
-                    "Add your\nProduct",
+                    title: "Add your\nProduct",
                     onTap: () {
                       context.push(ProductAddPage.routeName);
                     },
                   ),
-                  SizedBox(width: 12.w),
-                  _AddBox(
-                    title: "Add your\nCategory",
-                    onTap: () {
-                      context.push(CategoryAddPage.routeName);
-                    },
-                  ),
+                  // SizedBox(width: 12.w),
+                  // _AddBox(
+                  //   title: "Add your\nCategory",
+                  //   onTap: () {
+                  //     context.push(CategoryAddPage.routeName);
+                  //   },
+                  // ),
                 ],
               ),
               SizedBox(height: 16.h),
@@ -140,9 +137,8 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                         onTap: () {
                           _showAttributeMenu(context);
                         },
-                        child:   Icon(Icons.add),
+                        child: Icon(Icons.add),
                       ),
-                     
                     ],
                   ),
                 ),
@@ -160,10 +156,10 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
               /// Product items
               productAsync.when(
                 data: (paginetion) {
-                if(paginetion == null ) {
-                  return const Center(child: Text("No Data"));
-                }
-                 final products = paginetion.products ;
+                  if (paginetion == null) {
+                    return const Center(child: Text("No Data"));
+                  }
+                  final products = paginetion.products;
                   return Column(
                     children: [
                       ListView.separated(
@@ -174,8 +170,7 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                         itemBuilder: (context, index) {
                           final product = products[index];
                           return _ProductCard(
-                            imageUrl:
-                            product.image, // ✅ placeholder image
+                            imageUrl: product.image, // ✅ placeholder image
                             title: product.name,
                             category: product.categoryName,
                             price: product.sellPrice,
@@ -193,12 +188,12 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                       ),
                     ],
                   );
-                }     ,
+                },
                 error: (error, stackTrace) {
                   return Center(child: Text(error.toString()));
                 },
                 loading: () {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: Text('Loading...'));
                 },
               ),
             ],
@@ -258,7 +253,7 @@ class _ProductCard extends ConsumerWidget {
     required this.category,
     required this.price,
     required this.imageUrl,
-    required this.product,  
+    required this.product,
   });
 
   @override
@@ -277,7 +272,10 @@ class _ProductCard extends ConsumerWidget {
               height: 64.r,
               width: 64.r,
               color: AllColor.grey100,
-              child: Image.network(imageUrl, fit: BoxFit.cover),
+              child: FirstTimeShimmerImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: 15.w),
@@ -316,26 +314,25 @@ class _ProductCard extends ConsumerWidget {
               _showPopupMenu(
                 context,
                 details.globalPosition,
-                ref,           // ← এখান থেকে ref পাঠাবে
+                ref, // ← এখান থেকে ref পাঠাবে
                 product,
               );
             },
             child: Icon(Icons.more_vert),
           ),
-
         ],
       ),
     );
   }
 
   Future<void> _showPopupMenu(
-      BuildContext context,
-      Offset position,
-      WidgetRef ref,
-      VendorProduct product,
-      ) async {
+    BuildContext context,
+    Offset position,
+    WidgetRef ref,
+    VendorProduct product,
+  ) async {
     final RenderBox overlay =
-    Overlay.of(context).context.findRenderObject() as RenderBox;
+        Overlay.of(context).context.findRenderObject() as RenderBox;
 
     final value = await showMenu<String>(
       context: context,
@@ -375,10 +372,7 @@ class _ProductCard extends ConsumerWidget {
 
     // ----------------- EDIT -----------------
     if (value == "edit") {
-      context.push(
-        ProductEditScreen.routeName,
-        extra: product,
-      );
+      context.push(ProductEditScreen.routeName, extra: product);
       return;
     }
 
@@ -396,9 +390,7 @@ class _ProductCard extends ConsumerWidget {
               child: const Text("Cancel"),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text("Delete"),
             ),
@@ -410,11 +402,7 @@ class _ProductCard extends ConsumerWidget {
 
       try {
         // 2) API call
-        await deleteVendorProduct(
-          ref: ref,
-          productId: product.id,
-        );
-
+        await deleteVendorProduct(ref: ref, productId: product.id);
 
         ref.invalidate(productNotifierProvider);
 
@@ -425,12 +413,11 @@ class _ProductCard extends ConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
         }
       }
-    }   
+    }
   }
-
 }

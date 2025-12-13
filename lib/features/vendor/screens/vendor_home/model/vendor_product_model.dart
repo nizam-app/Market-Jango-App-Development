@@ -12,6 +12,8 @@ class VendorProduct {
   final List<String> sizes;
   final List<String> colors;
   final List<ProductImage> images;
+  final int? stock;
+  final String? attributes; // JSON string: {"color":["red"],"size":["m"]}
 
   VendorProduct({
     required this.id,
@@ -26,6 +28,8 @@ class VendorProduct {
     required this.sizes,
     required this.colors,
     required this.images,
+    this.stock,
+    this.attributes,
   });
 
   factory VendorProduct.fromJson(Map<String, dynamic> json) {
@@ -76,6 +80,8 @@ class VendorProduct {
         }
         return <ProductImage>[];
       }(),
+      stock: (json['stock'] as num?)?.toInt(),
+      attributes: json['attributes']?.toString(),
     );
   }
 }

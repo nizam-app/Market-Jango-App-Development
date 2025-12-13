@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/transport/screens/driver/logic/transport_driver_perment_logic.dart';
 import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
@@ -24,7 +25,7 @@ class DriverDetailsScreen extends ConsumerWidget {
 
     return Scaffold(
       body: driverDetails.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
         data: (user) {
           final d = user.driver;
@@ -75,9 +76,13 @@ class DriverDetailsScreen extends ConsumerWidget {
                 const CustomBackButton(),
 
                 /// Profile Image
-                CircleAvatar(
-                  radius: 40.r,
-                  backgroundImage: NetworkImage(avatarUrl),
+                ClipOval(
+                  child: FirstTimeShimmerImage(
+                    imageUrl: avatarUrl,
+                    width: 80.r,
+                    height: 80.r,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 SizedBox(height: 12.h),
 
@@ -205,7 +210,10 @@ class DriverDetailsScreen extends ConsumerWidget {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(8.r),
                         child: Card(
-                          child: Image.network(img, fit: BoxFit.cover),
+                          child: FirstTimeShimmerImage(
+                            imageUrl: img,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       );
                     },

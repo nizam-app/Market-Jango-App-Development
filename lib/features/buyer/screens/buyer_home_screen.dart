@@ -14,6 +14,7 @@ import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/banner_data.dart';
+import 'package:market_jango/features/buyer/data/buyer_categori_data.dart';
 import 'package:market_jango/features/buyer/data/buyer_just_for_you_data.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
@@ -43,7 +44,6 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bannerProvider = ref.watch(bannerNotifierProvider);
-    final asyncData = ref.watch(topProductProvider);
     final justForYou = ref.watch(
       justForYouProvider(BuyerAPIController.just_for_you),
     );
@@ -51,68 +51,110 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
     return Scaffold(
       backgroundColor: AllColor.white70,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              children: [
-                BuyerHomeSearchBar(),
-                bannerProvider.when(
-                  data: (data) {
-                    if (data == null) {
-                      return Center(child: Text(ref.t(BKeys.no_data)));
-                    }
-                    final banners = data.banners ?? [];
-                    return PromoSlider(
-                      imageList: banners.map((e) => e.image).toList(),
-                    );
-                  },
-                  loading: () {
-                    return Center(child: Text(ref.t(BKeys.loading)));
-                  },
-                  error: (error, stackTrace) {
-                    return Center(child: Text(ref.t(BKeys.error)));
-                  },
-                ),
-                SeeMoreButton(
-                  name: ref.t(BKeys.categories),
-                  seeMoreAction: () => goToAllCategoriesPage(context),
-                ),
-                CustomCategories(
-                  categoriCount: 4,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onTapCategory: (cat) =>
-                      goToCategoriesProductPage(context, cat.id, cat.name),
-                ),
-                SeeMoreButton(
-                  name: ref.t(BKeys.topProducts),
-                  seeMoreAction: () {},
-                  isSeeMore: false,
-                ),
-                CustomTopProducts(),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(bannerNotifierProvider);
+            ref.invalidate(topProductProvider);
+            ref.invalidate(justForYouProvider(BuyerAPIController.just_for_you));
+            ref.invalidate(buyerNewItemsProvider);
+            ref.invalidate(categoriesProvider);
+            await Future.wait([
+              ref.read(bannerNotifierProvider.future),
+              ref.read(topProductProvider.future),
+            ]);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                children: [
+                  BuyerHomeSearchBar(),
+                  bannerProvider.when(
+                    data: (data) {
+                      if (data == null || data.banners.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return PromoSlider(
+                        imageList: data.banners.map((e) => e.image).toList(),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                  SeeMoreButton(
+                    name: ref.t(BKeys.categories),
+                    seeMoreAction: () => goToAllCategoriesPage(context),
+                  ),
+                  CustomCategories(
+                    categoriCount: 4,
+                    physics: const NeverScrollableScrollPhysics(),
+                    showOnlyTopCategories: true,
+                    requireProducts: false,
+                    onTapCategory: (cat) =>
+                        goToCategoriesProductPage(context, cat.id, cat.name),
+                  ),
+                  // Top Products Section - only show if products exist
+                  ref.watch(topProductProvider).when(
+                    data: (products) {
+                      if (products.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.topProducts),
+                            seeMoreAction: () {},
+                            isSeeMore: false,
+                          ),
+                          CustomTopProducts(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
 
-                newItems.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.newItems),
-                    seeMoreAction: () => goToNewItemsPage(ref, context, data!),
+                  // New Items Section - only show if products exist
+                  newItems.when(
+                    data: (data) {
+                      if (data == null || data.data.data.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.newItems),
+                            seeMoreAction: () => goToNewItemsPage(ref, context, data),
+                          ),
+                          CustomNewItemsShow(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (err, _) => const SizedBox.shrink(),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Text('Error loading new items: $err'),
-                ),
-                CustomNewItemsShow(),
-                justForYou.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.justForYou),
-                    seeMoreAction: () =>
-                        goToJustForYouPage(ref, context, data!),
+
+                  // Just For You Section - only show if products exist
+                  justForYou.when(
+                    data: (data) {
+                      if (data == null || data.data.data.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.justForYou),
+                            seeMoreAction: () =>
+                                goToJustForYouPage(ref, context, data),
+                          ),
+                          JustForYouProduct(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (err, _) => const SizedBox.shrink(),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Text('Error loading Just For You: $err'),
-                ),
-                JustForYouProduct(),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -167,7 +209,7 @@ class JustForYouProduct extends ConsumerWidget {
     );
 
     return asyncJustForYou.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: Text('Loading...')),
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(16),
         child: Text('Failed to load: $e'),

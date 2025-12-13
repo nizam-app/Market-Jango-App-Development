@@ -50,7 +50,7 @@ class CustomTotalCheckoutSection extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$$totalPrice',
+                '\$${totalPrice.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,

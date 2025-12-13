@@ -173,7 +173,7 @@ class DriverTrakingScreen extends ConsumerWidget {
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: Text('Loading...')),
           error: (e, _) => Center(child: Text(e.toString())),
         ),
       ),

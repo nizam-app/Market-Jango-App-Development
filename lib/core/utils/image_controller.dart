@@ -19,6 +19,8 @@ class AppImageCache {
 /// 2) Helper: logical px -> real px (DPR অনুযায়ী)
 int? _cachePx(BuildContext context, double? logical) {
   if (logical == null) return null;
+  // Check for Infinity or NaN to prevent errors
+  if (!logical.isFinite) return null;
   final dpr = MediaQuery.of(context).devicePixelRatio;
   return (logical * dpr).round();
 }
@@ -98,8 +100,29 @@ class _FirstTimeShimmerImageState extends State<FirstTimeShimmerImage> {
             memCacheWidth: _cachePx(context, widget.width),
             memCacheHeight: _cachePx(context, widget.height),
 
-            errorWidget: (context, url, error) =>
-            const Icon(Icons.broken_image),
+            errorWidget: (context, url, error) => Container(
+              width: widget.width,
+              height: widget.height,
+              color: Colors.grey.shade200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: Colors.grey.shade400,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Failed to load image',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),

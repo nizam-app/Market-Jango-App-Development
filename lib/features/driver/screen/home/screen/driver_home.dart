@@ -25,13 +25,31 @@ class DriverHomeScreen extends ConsumerWidget {
     final statsAsync = ref.watch(driverHomeStatsProvider);
     return Scaffold(
       body: SafeArea(
-        child: statsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Failed to load stats: $e')),
-          data: (stats) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(driverHomeStatsProvider);
+            ref.invalidate(driverNewOrdersProvider);
+            final userID = ref.read(getUserIdProvider.select((value) => value.value));
+            if (userID != null) {
+              ref.invalidate(userProvider(userID));
+            }
+            await Future.wait([
+              ref.read(driverHomeStatsProvider.future),
+              ref.read(driverNewOrdersProvider.future),
+            ]);
+          },
+          child: statsAsync.when(
+            loading: () => const Center(child: Text('Loading...')),
+            error: (e, _) => SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Center(child: Text('Failed to load stats: $e')),
+            ),
+            data: (stats) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 _HeaderSection(
                   name: "John", // later profile theke
                   subtitle: "Keep going! You're doing great today.",
@@ -67,11 +85,14 @@ class DriverHomeScreen extends ConsumerWidget {
                  _SectionTitle(title: ref.t(BKeys.new_order)),
                 const SizedBox(height: 10),
 
-                /// 🔹 শুধু একটাই Expanded – vitore _OrdersList nijer async handle korbe
-                const Expanded(child: _OrdersList()),
-              ],
-            );
-          },
+                /// 🔹 Orders List - Expanded removed for scrollable content
+                _OrdersList(),
+                SizedBox(height: 20.h),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -132,7 +153,7 @@ class _HeaderSection extends ConsumerWidget {
                   ],
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: Text('Loading...')),
               error: (e, _) => Center(child: Text(e.toString())),
             ),
           ),
@@ -245,7 +266,7 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: Text('Loading...')),
       error: (e, _) => Center(child: Text('Failed to load orders: $e')),
       data: (resp) {
         if (resp == null) {
@@ -263,11 +284,12 @@ class _OrdersList extends ConsumerWidget {
         if (lp < 1) lp = 1;
         if (cp > lp) cp = lp;
 
-        if (raw.isEmpty && raw == null) {
+        if (raw.isEmpty) {
           // empty state o scroll + pagination thakbe
           return Column(
             children: [
-              Expanded(
+              Padding(
+                padding: EdgeInsets.all(16.h),
                 child: Center(
                   child: Text(
                     'No new orders found',
@@ -286,14 +308,14 @@ class _OrdersList extends ConsumerWidget {
 
         return Column(
           children: [
-            Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                itemBuilder: (_, i) =>
-                    _OrderCard(order: raw[i], orderId: raw[i].id),
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemCount: raw.length,
-              ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              itemBuilder: (_, i) =>
+                  _OrderCard(order: raw[i], orderId: raw[i].id),
+              separatorBuilder: (_, __) => SizedBox(height: 12.h),
+              itemCount: raw.length,
             ),
             SizedBox(height: 8.h),
             GlobalPagination(

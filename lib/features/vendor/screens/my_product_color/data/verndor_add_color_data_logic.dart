@@ -90,18 +90,22 @@ Future<AttributeValue> updateAttributeValue({
   final url =
   Uri.parse("${VendorAPIController.attribute_value_update}/$valueId");
 
-  final response = await http.post(
+  final response = await http.put(
     url,
-    headers: {"token": token!},
-    body: {"name": name},
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'token': token ?? '',
+    },
+    body: jsonEncode({"name": name}),
   );
 
   final data = jsonDecode(response.body);
 
-  if (response.statusCode == 200) {
+  if (response.statusCode == 200 && data['status'] == 'success') {
     return AttributeValue.fromJson(data["data"]);
   } else {
-    throw Exception(data["message"]);
+    throw Exception(data["message"] ?? 'Failed to update attribute value');
   }
 }
 
@@ -117,14 +121,19 @@ Future<bool> deleteAttributeValue({
   final url =
   Uri.parse("${VendorAPIController.attribute_value_destroy}/$valueId");
 
-  final response = await http.post(
+  final response = await http.delete(
     url,
-    headers: {"token": token!},
+    headers: {
+      'Accept': 'application/json',
+      'token': token ?? '',
+    },
   );
 
   final data = jsonDecode(response.body);
 
-  if (response.statusCode == 200) return true;
+  if (response.statusCode == 200 && data['status'] == 'success') {
+    return true;
+  }
 
-  throw Exception(data["message"]);
+  throw Exception(data["message"] ?? 'Failed to delete attribute value');
 }

@@ -296,24 +296,67 @@ import 'package:market_jango/features/transport/screens/driver/screen/transport_
 import '../../driver/data/transport_driver_data.dart';
 import '../../driver/screen/model/transport_driver_model.dart';
 
-class TransportHomeScreen extends ConsumerWidget {
+class TransportHomeScreen extends ConsumerStatefulWidget {
   const TransportHomeScreen({super.key});
   static const String routeName = '/transport_home';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TransportHomeScreen> createState() => _TransportHomeScreenState();
+}
+
+class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Driver> _filterDrivers(List<Driver> drivers, String query) {
+    if (query.isEmpty) return drivers;
+    
+    final lowerQuery = query.toLowerCase();
+    return drivers.where((driver) {
+      final name = driver.user.name.toLowerCase();
+      final phone = driver.user.phone.toLowerCase();
+      final carName = driver.carName.toLowerCase();
+      final location = driver.location.toLowerCase();
+      final carModel = driver.carModel.toLowerCase();
+      
+      return name.contains(lowerQuery) ||
+          phone.contains(lowerQuery) ||
+          carName.contains(lowerQuery) ||
+          location.contains(lowerQuery) ||
+          carModel.contains(lowerQuery);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(approvedDriversProvider);
     final userID = ref.watch(getUserIdProvider.select((value) => value.value));
     final async = ref.watch(userProvider(userID ?? ''));
     return Scaffold(
       backgroundColor: Color(0xFFF5F4F8),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(approvedDriversProvider);
+            ref.invalidate(userProvider(userID ?? ''));
+            await Future.wait([
+              ref.read(approvedDriversProvider.future),
+              if (userID != null) ref.read(userProvider(userID).future),
+            ]);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 /// Header
                 async.when(
                   data: (data) {
@@ -345,7 +388,7 @@ class TransportHomeScreen extends ConsumerWidget {
                     );
                   },
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
                 //"Find your Driver"
@@ -362,77 +405,16 @@ class TransportHomeScreen extends ConsumerWidget {
                       hint: ref.t(BKeys.search_by_vendor_name),
                       icon: Icons.search,
                       bg: Colors.white, // image-2 এ সার্চটা সাদা
-                    ),
-                    SizedBox(height: 12.h),
-
-                    // Or divider (পাতলা গ্রে)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          child: Text(
-                            //"Or",
-                            ref.t(BKeys.or),
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            thickness: 1,
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-
-                    // Pickup (light grey bg)
-                    _softField(
-                      //"Enter Pickup location"
-                      hint:ref.t(BKeys.pick_up_location),
-                      icon: Icons.location_on_outlined,
-                      bg: AllColor.grey300, // হালকা ধূসর
-                    ),
-                    SizedBox(height: 10.h),
-
-                    // Destination (light grey bg)
-                    _softField(
-                      //"Destination"
-                      hint: ref.t(BKeys.destination),
-                      icon: Icons.flag_outlined,
-                      bg: AllColor.grey300,
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
                     ),
                   ],
                 ),
 
-                SizedBox(height: 20.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    onPressed: () {},
-                    child: Text(
-                     // "Search",
-                      ref.t(BKeys.search),
-                      style: TextStyle(fontSize: 16.sp, color: AllColor.white),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 20.h),
 
                 /// Drivers section header
@@ -459,7 +441,7 @@ class TransportHomeScreen extends ConsumerWidget {
                 /// Driver Cards (ListView → Column with .map)
                 state.when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(
                     child: Padding(
                       padding: EdgeInsets.only(top: 16.h),
@@ -472,17 +454,21 @@ class TransportHomeScreen extends ConsumerWidget {
                   data: (resp) {
                     final page = resp?.data;
                     final items = page?.data ?? <Driver>[];
+                    
+                    // Filter drivers based on search query
+                    final filteredItems = _filterDrivers(items, _searchQuery);
 
-                    if (items.isEmpty) {
+                    if (filteredItems.isEmpty) {
                       return Padding(
                         padding: EdgeInsets.only(top: 20.h),
-                        child:  Text(
-                            // ''No drivers available''
-                            ref.t(BKeys.no_drivers_available)
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? ref.t(BKeys.no_drivers_available)
+                              : ref.t(BKeys.no_drivers_available), // You can add a "No results found" key if needed
                         ),
                       );
                     }
-                    final homeItems = items.take(10).toList();
+                    final homeItems = filteredItems.take(10).toList();
 
                     return Column(
                       children: homeItems
@@ -505,11 +491,20 @@ class TransportHomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    ),
     );
   }
 
-  Widget _softField({required String hint, required IconData icon, Color? bg}) {
+  Widget _softField({
+    required String hint,
+    required IconData icon,
+    Color? bg,
+    TextEditingController? controller,
+    ValueChanged<String>? onChanged,
+  }) {
     return TextField(
+      controller: controller,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(
@@ -548,7 +543,7 @@ class _DriverCard extends ConsumerWidget {
   final List<String> images;
 
   @override
-  Widget build(BuildContext context,ref ) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final user = driver.user;
 
     // Safe fallbacks
@@ -577,12 +572,16 @@ class _DriverCard extends ConsumerWidget {
                     Logger().i(user.id);
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.id,
+                      extra: driver.userId,
                     );
                   },
-                  child: CircleAvatar(
-                    radius: 20.r,
-                    backgroundImage: NetworkImage(avatarUrl),
+                  child: ClipOval(
+                    child: FirstTimeShimmerImage(
+                      imageUrl: avatarUrl,
+                      width: 40.r,
+                      height: 40.r,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 SizedBox(width: 10.w),

@@ -185,38 +185,75 @@ class _AttributeValuesScreenState
         elevation: 0.3,
       ),
       body: attributeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text('Error: ${e.toString()}')),
         data: (attribute) => SingleChildScrollView(
           padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Add new value section
+              // Add new value section - Exact same design
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AllColor.grey.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(8.r),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: AllColor.grey.withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _addController,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w400,
+                          color: AllColor.black,
+                        ),
                         decoration: InputDecoration(
-                          hintText: 'Enter new ${widget.attributeName.toLowerCase()} value',
+                          hintText: 'Add your custom ${widget.attributeName.toLowerCase()} value',
+                          hintStyle: TextStyle(
+                            color: AllColor.grey.shade400,
+                            fontSize: 15.sp,
+                          ),
+                          fillColor: AllColor.white,
+                          filled: true,
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8.w),
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                         ),
                         onSubmitted: (_) => _addValue(),
                       ),
                     ),
-                    SizedBox(width: 8.w),
-                    IconButton(
-                      onPressed: _addValue,
-                      icon: Icon(Icons.add_circle, color: AllColor.blue),
-                      iconSize: 28.r,
+                    Container(
+                      margin: EdgeInsets.only(right: 8.w),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _addValue,
+                          borderRadius: BorderRadius.circular(8.r),
+                          child: Container(
+                            padding: EdgeInsets.all(8.r),
+                            child: Icon(
+                              Icons.add_rounded,
+                              color: AllColor.black,
+                              size: 24.r,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -254,8 +291,19 @@ class _AttributeValuesScreenState
                     margin: EdgeInsets.only(bottom: 12.h),
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AllColor.grey.withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(8.r),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: AllColor.grey.withOpacity(0.3),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -263,10 +311,19 @@ class _AttributeValuesScreenState
                           child: isEditing
                               ? TextField(
                                   controller: _editControllers[value.id],
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: AllColor.black,
+                                  ),
                                   decoration: InputDecoration(
+                                    fillColor: AllColor.white,
+                                    filled: true,
                                     border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
                                     contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 8.w),
+                                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                                   ),
                                   autofocus: true,
                                   onSubmitted: (_) => _updateValue(
@@ -275,7 +332,8 @@ class _AttributeValuesScreenState
                               : Text(
                                   value.name,
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w500,
                                     color: AllColor.black,
                                   ),
                                 ),
@@ -285,16 +343,29 @@ class _AttributeValuesScreenState
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                onPressed: () => _updateValue(value.id, value.name),
-                                icon: const Icon(Icons.check,
-                                    color: Colors.green),
-                                iconSize: 20.r,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _updateValue(value.id, value.name),
+                                  icon: const Icon(Icons.check_rounded,
+                                      color: Colors.green),
+                                  iconSize: 20.r,
+                                ),
                               ),
-                              IconButton(
-                                onPressed: () => _cancelEdit(value.id),
-                                icon: const Icon(Icons.close, color: Colors.red),
-                                iconSize: 20.r,
+                              SizedBox(width: 4.w),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _cancelEdit(value.id),
+                                  icon: const Icon(Icons.close_rounded, color: Colors.red),
+                                  iconSize: 20.r,
+                                ),
                               ),
                             ],
                           )
@@ -302,17 +373,30 @@ class _AttributeValuesScreenState
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                onPressed: () => _startEdit(value.id, value.name),
-                                icon: Icon(Icons.edit,
-                                    color: AllColor.blue),
-                                iconSize: 20.r,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AllColor.grey.shade200,
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _startEdit(value.id, value.name),
+                                  icon: Icon(Icons.edit_outlined,
+                                      color: AllColor.grey.shade700),
+                                  iconSize: 20.r,
+                                ),
                               ),
-                              IconButton(
-                                onPressed: () => _deleteValue(value.id),
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red),
-                                iconSize: 20.r,
+                              SizedBox(width: 4.w),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => _deleteValue(value.id),
+                                  icon: const Icon(Icons.delete_outline_rounded,
+                                      color: Colors.red),
+                                  iconSize: 20.r,
+                                ),
                               ),
                             ],
                           ),

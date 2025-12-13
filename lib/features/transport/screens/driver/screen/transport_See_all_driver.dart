@@ -48,7 +48,7 @@ class TransportDriver extends ConsumerWidget {
               Expanded(
                 child: state.when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -129,7 +129,7 @@ class TransportDriver extends ConsumerWidget {
                     onPageChanged: (int p) => notifier.changePage(p),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

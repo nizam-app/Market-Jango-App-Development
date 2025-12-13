@@ -47,7 +47,7 @@ class SeeJustForYouScreen extends ConsumerWidget {
                 ],
               );
             }   ,
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: Text('Loading...')),
             error: (err, _) => Text('Error loading Just For You: $err'),
           ),
         ),

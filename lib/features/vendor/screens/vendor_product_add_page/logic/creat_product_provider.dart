@@ -43,8 +43,8 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
     required String regularPrice,
     required String sellPrice,
     required int categoryId,
-    required List<String> color,
-    required List<String> size,
+    required Map<String, List<String>> attributes,
+    required String stock,
     required File image,
     required List<File> files,
   }) async {
@@ -74,8 +74,13 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
       request.fields['regular_price'] = regularPrice;
       request.fields['sell_price'] = sellPrice;
       request.fields['category_id'] = categoryId.toString();
-      request.fields['color[]'] = color.join(','); // multiple color
-      request.fields['size[]'] = size.join(',');   // multiple size
+      
+      // Convert attributes map to JSON string
+      // Format: {"color":["red","green"],"size":["m","xl"],"brand":["apple"]}
+      final attributesJson = jsonEncode(attributes);
+      request.fields['attributes'] = attributesJson;
+      
+      request.fields['stock'] = stock; // stock quantity
 
       // 🖼️ Main Image
       request.files.add(await http.MultipartFile.fromPath('image', cover.path, filename: 'cover.jpg'));

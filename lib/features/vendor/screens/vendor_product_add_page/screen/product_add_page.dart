@@ -12,24 +12,42 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
-import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
-import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/logic/creat_product_provider.dart';
 
 import '../../product_edit/data/product_attribute_data.dart';
-import '../widget/custom_variant_picker.dart';
+import '../widget/generic_attribute_picker.dart';
 
-class ProductAddPage extends ConsumerWidget {
+class ProductAddPage extends ConsumerStatefulWidget {
    const ProductAddPage({super.key,});
 
   static final String routeName = "/productAddPage";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductAddPage> createState() => _ProductAddPageState();
+}
+
+class _ProductAddPageState extends ConsumerState<ProductAddPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear attributes when entering the page
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedAttributesProvider.notifier).state = {};
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clear attributes when leaving the page
+    ref.read(selectedAttributesProvider.notifier).state = {};
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final attributeAsync = ref.watch(productAttributesProvider);
 
 
@@ -46,38 +64,11 @@ class ProductAddPage extends ConsumerWidget {
                 SizedBox(height: 16.h),
               attributeAsync.when(
                 data: (data) {
-                  final colorAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'color',
-                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                  );
-                  final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name ?? "").toList();
-
-                  final sizeAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'size',
-                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                  );
-                  final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name ?? "").toList();
-
-
-                  final selectedColors = ref.watch(selectedColorsProvider);
-                  final selectedSizes  = ref.watch(selectedSizesProvider);
-            
-                  return CustomVariantPicker(
-                    colors: colorNames,
-                    sizes: sizeNames,
-
-                    selectedColors: selectedColors,
-                    selectedSizes: selectedSizes,
-
-
-                    onColorsChanged: (list) {
-                      ref.read(selectedColorsProvider.notifier).state = [...list];
-                    },
-                    onSizesChanged: (list) {
-                      ref.read(selectedSizesProvider.notifier).state = [...list];  }
+                  return GenericAttributePicker(
+                    attributes: data.data,
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (err, _) => Center(child: Text('Error: $err')),
               ),
 
@@ -217,7 +208,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: Text('Loading...')),
           error: (err, _) => Center(child: Text('Error: $err')),
         ),
 
@@ -287,8 +278,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
     final createState = ref.watch(createProductProvider);
 
     bool loading = createState.isLoading;
-    final selectedColors = ref.read(selectedColorsProvider);
-    final selectedSizes = ref.read(selectedSizesProvider);
+    final selectedAttributes = ref.read(selectedAttributesProvider);
 
     ref.listen<AsyncValue<String>>(createProductProvider, (prev, next) {
       next.when(
@@ -356,6 +346,22 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
             ],
           ),
           SizedBox(height: 16.h),
+          // Stock field
+          _Labeled(
+            label: 'Stock',
+            labelColor: labelBlue,
+            child: TextField(
+              controller: _stockC,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                fillColor: AllColor.white,
+                hintText: 'Enter Stock Quantity',
+                enabledBorder: border(),
+                focusedBorder: border(),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
 
           // Cover image
           _Labeled(
@@ -414,8 +420,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                     regularPrice: _currentC.text,
                     sellPrice: _previousC.text,
                     categoryId: categoryId ?? 1,
-                    color: selectedColors,
-                    size: selectedSizes,
+                    attributes: selectedAttributes,
+                    stock: _stockC.text,
                     image: File(_cover!.path),
                     files: _gallery.map((x) => File(x.path)).toList(),
                   );
@@ -443,6 +449,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
   }
   final _currentC = TextEditingController();
   final _previousC = TextEditingController();
+  final _stockC = TextEditingController();
 
   final _picker = ImagePicker();
 

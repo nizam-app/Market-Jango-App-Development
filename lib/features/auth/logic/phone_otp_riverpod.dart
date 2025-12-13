@@ -5,10 +5,10 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final verifyOtpProvider =
-StateNotifierProvider<VerifyOtpNotifier, AsyncValue<bool>>(
+StateNotifierProvider<VerifyOtpNotifier, AsyncValue<bool?>>(
         (ref) => VerifyOtpNotifier());
 
-class VerifyOtpNotifier extends StateNotifier<AsyncValue<bool>> {
+class VerifyOtpNotifier extends StateNotifier<AsyncValue<bool?>> {
   VerifyOtpNotifier() : super(const AsyncValue.data(false));
 
   Future<void> verifyOtp({

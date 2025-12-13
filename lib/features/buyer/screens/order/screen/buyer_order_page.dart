@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
@@ -65,7 +66,7 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
                     onTap: () {},
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text(e.toString())),
               ),
               SizedBox(height: 16.h),
@@ -76,7 +77,7 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
                   data: (page) =>
                       CusotomShowOrder(orders: page?.orders ?? const <Order>[]),
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
               ),
@@ -309,7 +310,10 @@ class _ProductImage extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isNotEmpty
-          ? Image.network(url, fit: BoxFit.cover)
+          ? FirstTimeShimmerImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+            )
           : Container(color: AllColor.grey.withOpacity(0.10)),
     );
   }

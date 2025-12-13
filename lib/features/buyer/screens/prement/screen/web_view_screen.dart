@@ -183,7 +183,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
+                    Text('Loading...'),
                     SizedBox(height: 16),
                     Text(
                       'Verifying payment...',

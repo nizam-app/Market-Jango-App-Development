@@ -36,7 +36,7 @@ class OrderDetailsScreen extends ConsumerWidget {
             SizedBox(height: 10.h),
             trackingAsync.when(
               loading: () => const Expanded(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: Text('Loading...')),
               ),
               error: (err, st) => Expanded(
                 child: Center(
@@ -94,7 +94,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Expanded(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: Text('Loading...')),
               ),
               error: (err, st) => Expanded(
                 child: Center(

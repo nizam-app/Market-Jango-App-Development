@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 
@@ -61,20 +62,31 @@ class CustomTopProducts extends ConsumerWidget {
                         child: CircleAvatar(
                           radius: 32.r,
                           backgroundColor: AllColor.white,
-                          child: CircleAvatar(
-                            radius: 28.r,
-                            backgroundImage: (p.image.isNotEmpty)
-                                ? NetworkImage(p.image)
-                                : null,
-                            child: (p.image.isEmpty)
-                                ? Icon(Icons.image_not_supported, size: 18.sp)
-                                : null,
+                          child: ClipOval(
+                            child: (p.image.isNotEmpty)
+                                ? FirstTimeShimmerImage(
+                                    imageUrl: p.image,
+                                    width: 56.r,
+                                    height: 56.r,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    width: 56.r,
+                                    height: 56.r,
+                                    color: AllColor.grey200,
+                                    child: Icon(Icons.image_not_supported, size: 18.sp),
+                                  ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  Text(p.name, style: TextStyle(fontSize: 12.sp)),
+                  Text(
+                    p.name.length > 10 ? '${p.name.substring(0, 10)}...' : p.name,
+                    style: TextStyle(fontSize: 12.sp),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               );
             },
@@ -86,7 +98,7 @@ class CustomTopProducts extends ConsumerWidget {
             style: const TextStyle(color: Colors.red),
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
       ),
     );
   }

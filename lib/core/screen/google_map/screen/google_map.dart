@@ -220,7 +220,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: Text('Loading...'))
           : Stack(
               children: [
                 GoogleMap(

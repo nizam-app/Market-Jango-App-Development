@@ -13,16 +13,53 @@ import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 import '../../../localization/Keys/buyer_kay.dart';
 import 'global_chat_screen.dart';
 
-class GlobalMassageScreen extends ConsumerWidget {
+class GlobalMassageScreen extends ConsumerStatefulWidget {
   const GlobalMassageScreen({super.key});
   static final routeName = "/buyerMassageScreen";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GlobalMassageScreen> createState() => _GlobalMassageScreenState();
+}
+
+class _GlobalMassageScreenState extends ConsumerState<GlobalMassageScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<ChatThread> _filterChatList(List<ChatThread> list) {
+    if (_searchQuery.isEmpty) {
+      return list;
+    }
+    return list.where((chat) {
+      final partnerName = chat.partnerName.toLowerCase();
+      final lastMessage = chat.lastMessage.toLowerCase();
+      return partnerName.contains(_searchQuery) || 
+             lastMessage.contains(_searchQuery);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     final chatState = ref.watch(chatListProvider);
 
@@ -39,14 +76,15 @@ class GlobalMassageScreen extends ConsumerWidget {
               CustomTextFromField(
                 hintText: ref.t(BKeys.search),
                 prefixIcon: Icons.search_rounded,
-                controller: TextEditingController(),
+                controller: _searchController,
               ),
               SizedBox(height: 16.h),
 
               chatState.when(
                 data: (list) {
                   Logger().i(list);
-                  return Expanded(child: ChatListView(chatData: list));
+                  final filteredList = _filterChatList(list);
+                  return Expanded(child: ChatListView(chatData: filteredList));
                 },
                 loading: () =>
                     Expanded(child: Center(child: Text(ref.t(VKeys.loding)))),
@@ -91,9 +129,13 @@ class ChatListView extends ConsumerWidget {
                   ),
                 ),
               SizedBox(width: 6.w),
-              CircleAvatar(
-                radius: 22.r,
-                backgroundImage: NetworkImage(chat.partnerImage),
+              ClipOval(
+                child: FirstTimeShimmerImage(
+                  imageUrl: chat.partnerImage,
+                  width: 44.r,
+                  height: 44.r,
+                  fit: BoxFit.cover,
+                ),
               ),
             ],
           ),

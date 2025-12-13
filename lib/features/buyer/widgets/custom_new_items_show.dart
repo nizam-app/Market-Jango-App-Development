@@ -14,40 +14,73 @@ class CustomNewItemsShow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newItemsAsync = ref.watch(buyerNewItemsProvider);
-    bool loading = newItemsAsync.isLoading;
     return SizedBox(
       height: 210.h,
       child: newItemsAsync.when(
         data: (data) {
           final products = data!.data.data;
+          if (products.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          // Use Row for 1-2 items to ensure left alignment, ListView for more items
+          if (products.length <= 2) {
+            return Padding(
+              padding: EdgeInsets.only(left: 8.w),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int index = 0; index < products.length; index++) ...[
+                    CustomNewProduct(
+                      width: 130,
+                      height: 140,
+                      productPrices: products[index].sellPrice,
+                      productName: products[index].name.toString(),
+                      imageHeight: 130,
+                      image: products[index].image,
+                      onTap: () {
+                        context.push(
+                          BuyerVendorProfileScreen.routeName,
+                          extra: {
+                            'vendorId': products[index].vendor.id,
+                            'userId': products[index].vendor.userId,
+                          },
+                        );
+                      },
+                    ),
+                    if (index < products.length - 1) SizedBox(width: 12.w),
+                  ],
+                ],
+              ),
+            );
+          }
+          
           return ListView.builder(
             shrinkWrap: true,
-            physics: AlwaysScrollableScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(left: 20.w, right: 20.w),
             itemCount: products.length,
-            // Example item count
             itemBuilder: (context, index) {
               final product = products[index];
-              return Builder(
-                builder: (context) {
-                  return CustomNewProduct(
-                    width: 130,
-                    height: 140,
-                    productPrices: product.sellPrice,
-                    productName: product.name.toString(),
-                    imageHeight: 130,
-                    image: product.image,
-                    onTap: () {
-                      context.push(
-                        BuyerVendorProfileScreen.routeName,
-                        extra: {
-                          'vendorId': product.vendor.id,
-                          'userId': product.vendor.userId,
-                        },
-                      );
-                    },
-                  );
-                },
+              return Padding(
+                padding: EdgeInsets.only(right: 12.w),
+                child: CustomNewProduct(
+                  width: 130,
+                  height: 140,
+                  productPrices: product.sellPrice,
+                  productName: product.name.toString(),
+                  imageHeight: 130,
+                  image: product.image,
+                  onTap: () {
+                    context.push(
+                      BuyerVendorProfileScreen.routeName,
+                      extra: {
+                        'vendorId': product.vendor.id,
+                        'userId': product.vendor.userId,
+                      },
+                    );
+                  },
+                ),
               );
             },
           );

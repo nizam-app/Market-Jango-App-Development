@@ -76,7 +76,7 @@ class _MyProductSizeScreenState
       ),
       body: async.when(
         loading: () =>
-        const Center(child: CircularProgressIndicator()),
+        const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (VendorProductAttribute attribute) {
           // API -> local SizeRow list

@@ -133,7 +133,7 @@ class _CustomSearchBarState<R, T> extends ConsumerState<GlobalSearchBar<R, T>> {
                     builder: (context, ref, _) {
                       final asyncRes = ref.watch(widget.provider(_query));
                       return asyncRes.when(
-                        loading: () => const LinearProgressIndicator(minHeight: 2),
+                        loading: () => const Center(child: Text('Loading...')),
                         error: (e, _) => Padding(
                           padding: const EdgeInsets.all(12),
                           child: Text('Error: $e'),

@@ -9,6 +9,7 @@ import 'package:market_jango/core/screen/global_language/screen/global_language_
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/utils/auth_session_utils.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -166,7 +167,7 @@ class GlobalSettingScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: Text('Loading...')),
           error: (error, _) => Center(child: Text('Error: $error')),
         ),
       ),
@@ -214,7 +215,14 @@ class ProfileSection extends ConsumerWidget {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(radius: 26.r, backgroundImage: NetworkImage(imageUrl)),
+            ClipOval(
+              child: FirstTimeShimmerImage(
+                imageUrl: imageUrl,
+                width: 52.r,
+                height: 52.r,
+                fit: BoxFit.cover,
+              ),
+            ),
             Positioned(
               bottom: -2.h,
               right: -2.w,

@@ -28,7 +28,11 @@ FutureProvider.autoDispose.family<GlobalSearchResponse, String>((ref, query) asy
 
   // 4) রেসপন্স
   if (resp.statusCode == 200) {
-    final body = jsonDecode(resp.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(resp.body);
+    // Safely convert to Map<String, dynamic> to avoid type casting errors
+    final body = decoded is Map<String, dynamic> 
+        ? decoded 
+        : Map<String, dynamic>.from(decoded as Map);
     return GlobalSearchResponse.fromJson(body);
   } else {
     throw Exception('Search failed: ${resp.statusCode} ${resp.body}');

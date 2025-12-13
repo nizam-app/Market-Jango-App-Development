@@ -56,7 +56,7 @@ Future<VendorProductAttribute> createAttribute({
   );
 
   final data = jsonDecode(response.body);
-  if (response.statusCode == 200 && data['status'] == 'success') {
+  if ((response.statusCode == 200 || response.statusCode == 201) && data['status'] == 'success') {
     return VendorProductAttribute.fromJson(data['data']);
   } else {
     throw Exception(data['message'] ?? 'Failed to create attribute');
@@ -74,7 +74,7 @@ Future<VendorProductAttribute> updateAttribute({
 
   final url = Uri.parse(VendorAPIController.product_attribute_update(attributeId));
 
-  final response = await http.post(
+  final response = await http.put(
     url,
     headers: {
       'Accept': 'application/json',
@@ -104,7 +104,7 @@ Future<bool> deleteAttribute({
 
   final url = Uri.parse(VendorAPIController.product_attribute_destroy(attributeId));
 
-  final response = await http.post(
+  final response = await http.delete(
     url,
     headers: {
       'Accept': 'application/json',
@@ -113,7 +113,7 @@ Future<bool> deleteAttribute({
   );
 
   final data = jsonDecode(response.body);
-  if (response.statusCode == 200) {
+  if (response.statusCode == 200 && data['status'] == 'success') {
     return true;
   } else {
     throw Exception(data['message'] ?? 'Failed to delete attribute');

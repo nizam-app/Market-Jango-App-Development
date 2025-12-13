@@ -73,7 +73,7 @@ class VendorSalePlatformScreen extends ConsumerWidget {
                 loading: () => const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+                    child: Text('Loading...'),
                   ),
                 ),
                 error: (e, _) => Center(
@@ -257,7 +257,7 @@ class SalesChart extends ConsumerWidget {
       child: asyncWeekly.when(
         loading: () => SizedBox(
           height: 200.h,
-          child: const Center(child: CircularProgressIndicator()),
+          child: const Center(child: Text('Loading...')),
         ),
         error: (e, _) => SizedBox(
           height: 200.h,
@@ -570,7 +570,7 @@ class TopSellingSection extends ConsumerWidget {
         asyncTop.when(
           loading: () => const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: Text('Loading...')),
           ),
           error: (e, _) => Padding(
             padding: const EdgeInsets.all(16),

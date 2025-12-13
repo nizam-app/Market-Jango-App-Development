@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/vendor_product_notifier.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 
 class AllVendorProductScreen extends ConsumerStatefulWidget {
@@ -82,7 +83,7 @@ class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen>
                       // Show loading indicator at bottom
                       return Padding(
                         padding: EdgeInsets.all(16.w),
-                        child: const Center(child: CircularProgressIndicator()),
+                        child: const Center(child: Text('Loading...')),
                       );
                     }
                     
@@ -94,7 +95,7 @@ class _AllVendorProductScreenState extends ConsumerState<AllVendorProductScreen>
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: Text('Loading...')),
               error: (err, _) => Center(child: Text('Error: $err')),
             ),
           ),
@@ -124,12 +125,11 @@ class _ProductCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: ListTile(
         leading: product.image.isNotEmpty
-            ? Image.network(
-                product.image,
+            ? FirstTimeShimmerImage(
+                imageUrl: product.image,
                 width: 60.w,
                 height: 60.h,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.image),
               )
             : const Icon(Icons.image),
         title: Text(product.name),

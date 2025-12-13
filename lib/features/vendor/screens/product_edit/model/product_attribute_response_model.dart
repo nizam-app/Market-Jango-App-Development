@@ -14,8 +14,8 @@ class ProductAttributeResponse {
     return ProductAttributeResponse(
       status: json['status'] ?? '',
       message: json['message'] ?? '',
-      data: (json['data'] as List)
-          .map((item) => VendorProductAttribute.fromJson(item))
+      data: (json['data'] as List<dynamic>? ?? [])
+          .map((item) => VendorProductAttribute.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -39,8 +39,8 @@ class VendorProductAttribute {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       vendorId: json['vendor_id'] ?? 0,
-      attributeValues: (json['attribute_values'] as List)
-          .map((v) => AttributeValue.fromJson(v))
+      attributeValues: (json['attribute_values'] as List<dynamic>? ?? [])
+          .map((v) => AttributeValue.fromJson(v as Map<String, dynamic>))
           .toList(),
     );
   }

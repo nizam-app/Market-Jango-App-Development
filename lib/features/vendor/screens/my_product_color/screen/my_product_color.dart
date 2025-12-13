@@ -37,7 +37,7 @@ class MyProductColorScreen extends ConsumerWidget {
         elevation: 0.3,
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (attribute) => SingleChildScrollView(
           child: Padding(

@@ -20,6 +20,7 @@ import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_pr
 import 'package:shimmer/shimmer.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 
 class GlobalChatScreen extends ConsumerStatefulWidget {
   const GlobalChatScreen({
@@ -58,12 +59,13 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
         ),
         title: Row(
           children: [
-            CircleAvatar(
+            ClipOval(
               child: FirstTimeShimmerImage(
                 imageUrl: widget.partnerImage,
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
             SizedBox(width: 10.w),
@@ -87,7 +89,7 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
         elevation: 1,
       ),
       body: history.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (serverMessages) {
           final incoming = serverMessages.reversed.toList(); // newest first
@@ -194,6 +196,14 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
             final userTypeAsync = ref.watch(getUserTypeProvider);
             final isVendor = userTypeAsync.value?.toLowerCase() == 'vendor';
             
+            // Check if partner is a driver
+            final partnerUserAsync = ref.watch(userProvider(widget.partnerId.toString()));
+            final partnerUserType = partnerUserAsync.valueOrNull?.userType.toLowerCase() ?? '';
+            final isPartnerDriver = partnerUserType == 'driver';
+            
+            // Show product offer only if vendor is chatting with non-driver
+            final shouldShowProductOffer = isVendor && !isPartnerDriver;
+            
             return SafeArea(
               child: Wrap(
                 children: [
@@ -213,7 +223,7 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
                       pickMainImage(ImageSource.gallery);
                     },
                   ),
-                  if (isVendor) ...[
+                  if (shouldShowProductOffer) ...[
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.shopping_bag),
@@ -514,7 +524,7 @@ class _MessageRow extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           ClipRRect(
-            borderRadius: radius,
+            borderRadius: BorderRadius.circular(16.r),
             child: SizedBox(
               width: 220.w, // bubble width for image
               child: localImage != null
@@ -524,7 +534,7 @@ class _MessageRow extends ConsumerWidget {
                       width: 220.w,
                       height: 140.h,
                       fit: BoxFit.cover,
-                      borderRadius: radius,
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
             ),
           ),
@@ -535,7 +545,7 @@ class _MessageRow extends ConsumerWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: radius,
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 height: 140.h,
                 width: 220.w,
@@ -707,26 +717,22 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                         children: [
                           if (widget.offer.productImage != null &&
                               widget.offer.productImage!.isNotEmpty)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.r),
-                              child: Image.network(
-                                widget.offer.productImage!,
+                            ClipOval(
+                              child: FirstTimeShimmerImage(
+                                imageUrl: widget.offer.productImage!,
                                 width: 60.w,
                                 height: 60.h,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 60.w,
-                                  height: 60.h,
-                                  color: AllColor.grey200,
-                                  child: Icon(Icons.image, size: 30.sp),
-                                ),
                               ),
                             )
                           else
                             Container(
                               width: 60.w,
                               height: 60.h,
-                              color: AllColor.grey200,
+                              decoration: BoxDecoration(
+                                color: AllColor.grey200,
+                                shape: BoxShape.circle,
+                              ),
                               child: Icon(Icons.image, size: 30.sp),
                             ),
                           SizedBox(width: 12.w),
@@ -807,14 +813,9 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                               ),
                             ),
                             child: _isAccepting
-                                ? SizedBox(
-                                    height: 18.h,
-                                    width: 18.w,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
+                                ? const Text(
+                                    'Loading...',
+                                    style: TextStyle(color: Colors.white),
                                   )
                                 : Text(
                                     'Accept Offer',

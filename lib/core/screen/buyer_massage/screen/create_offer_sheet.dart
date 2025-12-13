@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/offer_product_repository.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_product_model.dart';
 
@@ -102,6 +103,36 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
       return;
     }
 
+    // Check stock availability
+    final stock = widget.product.stock;
+    if (stock == null || stock <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This product is not available in stock'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Check if requested quantity exceeds available stock
+    final requestedQuantity = int.tryParse(_quantityController.text) ?? 0;
+    if (requestedQuantity > stock) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Only $stock item(s) available in stock. Please adjust your quantity.'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -118,7 +149,7 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
         receiverId: widget.receiverId,
         productId: widget.product.id,
         salePrice: double.parse(_salePriceController.text),
-        quantity: int.parse(_quantityController.text),
+        quantity: requestedQuantity,
         deliveryCharge: double.parse(_deliveryChargeController.text),
         color: colorValue,
         size: sizeValue,
@@ -165,15 +196,23 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
               Row(
                 children: [
                   if (widget.product.image.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8.r),
-                      child: Image.network(
-                        widget.product.image,
+                    ClipOval(
+                      child: FirstTimeShimmerImage(
+                        imageUrl: widget.product.image,
                         width: 60.w,
                         height: 60.h,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.image),
                       ),
+                    ),
+                  if (widget.product.image.isEmpty)
+                    Container(
+                      width: 60.w,
+                      height: 60.h,
+                      decoration: BoxDecoration(
+                        color: AllColor.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.image),
                     )
                   else
                     Container(
@@ -181,7 +220,7 @@ class _CreateOfferSheetState extends ConsumerState<CreateOfferSheet> {
                       height: 60.h,
                       decoration: BoxDecoration(
                         color: AllColor.grey.shade200,
-                        borderRadius: BorderRadius.circular(8.r),
+                        shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.image),
                     ),

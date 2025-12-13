@@ -49,30 +49,17 @@ class CustomNewProduct extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: [
-              InkWell(
-                onTap: onTap,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: FirstTimeShimmerImage(
-                    imageUrl: image,
-                    height: imageHeight.h,
-                    // width: width.sw,
-                    fit: BoxFit.cover,
-                  ),
-
-                  // Image.network(
-                  //   image,
-                  //   height: imageHeight.h,
-                  //   width: double.infinity,
-                  //   fit: BoxFit.cover,
-                  // ),
+          child: InkWell(
+            onTap: onTap,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.r),
+              child: SizedBox.expand(
+                child: FirstTimeShimmerImage(
+                  imageUrl: image,
+                  fit: BoxFit.cover,
                 ),
               ),
-
-              // Discount Tag
-            ],
+            ),
           ),
         ),
         Padding(

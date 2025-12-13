@@ -22,10 +22,18 @@ class CartResponse {
   factory CartResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
     final Map<String, List<CartItem>> parsed = {};
-    int total = 0;
+    double total = 0.0;
 
     if (data is Map<String, dynamic>) {
-      total = int.tryParse('${data['total'] ?? 0}') ?? 0;
+      // Parse total as double to handle decimal values like 16.2
+      final totalValue = data['total'];
+      if (totalValue != null) {
+        if (totalValue is num) {
+          total = totalValue.toDouble();
+        } else if (totalValue is String) {
+          total = double.tryParse(totalValue) ?? 0.0;
+        }
+      }
       data.forEach((k, v) {
         if (k == 'total') return;
         if (v is List) {
@@ -44,7 +52,7 @@ class CartResponse {
       status: json['status']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
       groups: parsed,
-      total: total.toDouble(),
+      total: total,
     );
   }
 }

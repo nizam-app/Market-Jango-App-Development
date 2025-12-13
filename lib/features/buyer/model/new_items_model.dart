@@ -117,7 +117,7 @@ class NewItemsProduct {
         : const <String, dynamic>{};
 
     final List<ProductImage> imageList = ((src['images'] as List?) ?? const [])
-        .where((e) => e is Map)
+        .whereType<Map>()
         .map((e) => ProductImage.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
 
@@ -273,7 +273,7 @@ class Vendor {
       userId: _toInt(json['user_id']),
       user: userMap.isNotEmpty ? User.fromJson(userMap) : User.empty(),
       reviews: reviewsList
-          .where((e) => e is Map)
+          .whereType<Map>()
           .map((e) => Review.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       country: _toStrN(json['country']),

@@ -10,6 +10,7 @@ import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/models/global_search_model.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
@@ -45,67 +46,77 @@ class VendorHomeScreen extends ConsumerWidget {
         ),
         body: Builder(
           builder: (innerContext) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 25.h),
-                  vendorAsync.when(
-                    data: (vendor) => buildProfileSection(innerContext, vendor),
-                    loading: () => const CircularProgressIndicator(),
-                    error: (err, _) => Text('Error: $err'),
-                  ),
-                  SizedBox(height: 30.h),
-                  GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
-                    provider: searchProvider,
-                    itemsSelector: (res) => res.products,
-                    itemBuilder: (context, p) => ProductSuggestionTile(p: p),
-                    onItemSelected: (p) {},
+            return RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(vendorProvider);
+                ref.invalidate(productNotifierProvider);
+                ref.invalidate(vendorCategoryProvider(VendorAPIController.vendor_category));
+                await ref.read(vendorProvider.future);
+                await ref.read(productNotifierProvider.future);
+              },
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 25.h),
+                    vendorAsync.when(
+                      data: (vendor) => buildProfileSection(innerContext, vendor),
+                      loading: () => const Center(child: Text('Loading...')),
+                      error: (err, _) => Text('Error: $err'),
+                    ),
+                    SizedBox(height: 30.h),
+                    GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
+                      provider: searchProvider,
+                      itemsSelector: (res) => res.products,
+                      itemBuilder: (context, p) => ProductSuggestionTile(p: p),
+                      onItemSelected: (p) {},
 
-                    hintText: ref.t(VKeys.searchProducts),
+                      hintText: ref.t(VKeys.searchProducts),
 
-                    debounce: const Duration(seconds: 1),
-                    minChars: 1,
-                    showResults: true,
-                    resultsMaxHeight: 380,
-                    autofocus: false,
-                  ),
-                  SizedBox(height: 15.h),
-                  CategoryBar(
-                    endpoint: VendorAPIController.vendor_category,
-                    onCategorySelected: (categoryId) {
-                      productNotifier.changeCategory(categoryId);
-                    },
-                  ),
-                  SizedBox(height: 20.h),
-                  // Products with pagination
-                  productAsync.when(
-                    data: (paginated) {
-                      if (paginated == null) {
-                        return const Center(child: Text("No products found"));
-                      }
-                      final products = paginated.products;
-                      return Column(
-                        children: [
-                          _buildProductGridViewSection(products),
-                          SizedBox(height: 20.h),
-                          GlobalPagination(
-                            currentPage: paginated.currentPage,
-                            totalPages: paginated.lastPage,
-                            onPageChanged: (page) {
-                              productNotifier.changePage(page);
-                            },
-                          ),
-                          SizedBox(height: 20.h),
-                        ],
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, _) => Center(child: Text('Error: $err')),
-                  ),
-                ],
+                      debounce: const Duration(seconds: 1),
+                      minChars: 1,
+                      showResults: true,
+                      resultsMaxHeight: 380,
+                      autofocus: false,
+                    ),
+                    SizedBox(height: 15.h),
+                    CategoryBar(
+                      endpoint: VendorAPIController.vendor_category,
+                      onCategorySelected: (categoryId) {
+                        productNotifier.changeCategory(categoryId);
+                      },
+                    ),
+                    SizedBox(height: 20.h),
+                    // Products with pagination
+                    productAsync.when(
+                      data: (paginated) {
+                        if (paginated == null) {
+                          return const Center(child: Text("No products found"));
+                        }
+                        final products = paginated.products;
+                        return Column(
+                          children: [
+                            _buildProductGridViewSection(products),
+                            SizedBox(height: 20.h),
+                            GlobalPagination(
+                              currentPage: paginated.currentPage,
+                              totalPages: paginated.lastPage,
+                              onPageChanged: (page) {
+                                productNotifier.changePage(page);
+                              },
+                            ),
+                            SizedBox(height: 20.h),
+                          ],
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: Text('Loading...')),
+                      error: (err, _) => Center(child: Text('Error: $err')),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -114,7 +125,7 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context, ref ) {
+  Widget buildDrawer(BuildContext context, WidgetRef ref ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Column(
@@ -310,8 +321,10 @@ Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
                       width: 1.w,
                       color: AllColor.loginButtomColor,
                     ),
-                    image: DecorationImage(
-                      image: NetworkImage(vendor.image),
+                  ),
+                  child: ClipOval(
+                    child: FirstTimeShimmerImage(
+                      imageUrl: vendor.image,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -377,7 +390,7 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
 
     return categoryAsync.when(
       data: (categories) {
-        final names = ['All', ...categories.map((e) => e.name).toList()];
+        final names = ['All', ...categories.map((e) => e.name)];
 
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -390,7 +403,7 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
                   setState(() => selectedIndex = index);
 
                   int selectedId = 0;
-                  if (index > 0) {
+                  if (index > 0 && index - 1 < categories.length) {
                     selectedId = categories[index - 1].id;
                   }
 
@@ -429,7 +442,7 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
       },
       loading: () => const SizedBox(
         height: 40,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: Text('Loading...')),
       ),
       error: (e, _) => Text('Category load error: $e'),
     );

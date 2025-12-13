@@ -68,7 +68,7 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
 
             Expanded(
               child: async.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text(e.toString())),
                 data: (_) => ListView.separated(
                   padding: EdgeInsets.symmetric(

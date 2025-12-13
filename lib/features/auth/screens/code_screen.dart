@@ -41,10 +41,11 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
 
       final state = ref.read(verifyOtpProvider);
 
-      // ✅ Direct result handle
+      // ✅ Direct result handle with null safety
       state.when(
         data: (ok) {
-          if (ok) {
+          // Handle null case safely
+          if (ok == true) {
             GlobalSnackbar.show(context,
                 title: "Success",
                 message: "OTP verified successfully!",
@@ -63,7 +64,9 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
             title: "Error",
             message: e.toString(),
             type: CustomSnackType.error),
-        loading: () {},
+        loading: () {
+          // Still loading, wait a bit or show message
+        },
       );
     } catch (e) {
       GlobalSnackbar.show(context,

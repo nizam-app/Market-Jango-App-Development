@@ -66,7 +66,7 @@ Future<void> startCheckout(BuildContext context) async {
     log.i('InvoiceCreate ← status=${res.statusCode}');
     log.t(
       'InvoiceCreate body: '
-      '${res.body.length > 400 ? res.body.substring(0, 400) + '…' : res.body}',
+      '${res.body.length > 400 ? '${res.body.substring(0, 400)}…' : res.body}',
     );
 
     if (res.statusCode != 200) {

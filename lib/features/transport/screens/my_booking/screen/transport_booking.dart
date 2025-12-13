@@ -5,6 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
+
+import 'package:market_jango/core/utils/image_controller.dart';
+
+
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
@@ -91,7 +95,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                 Expanded(
                   child: state.when(
                     loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                        const Center(child: Text('Loading...')),
                     error: (e, _) => Center(child: Text('Failed to load: $e')),
                     data: (resp) {
                       final page = resp?.data;
@@ -313,8 +317,8 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
-                child: Image.network(
-                  imageUrl,
+                child: FirstTimeShimmerImage(
+                  imageUrl: imageUrl,
                   height: 80.h,
                   width: 80.w,
                   fit: BoxFit.cover,

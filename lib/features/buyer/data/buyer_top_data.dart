@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final topProductProvider =
     AsyncNotifierProvider<TopProductNotifier, List<TopProduct>>(
@@ -17,8 +17,8 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
 
   Future<List<TopProduct>> fetchTopProducts() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       final res = await http.get(
         Uri.parse(BuyerAPIController.top_products),
@@ -35,8 +35,8 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       Logger().i(res.body);
       final parsed = TopProductsResponse.fromRawJson(res.body);
 
-      // ✔️ প্রতিটি item থেকে শুধুই product নাও
-      final products = parsed.data.data.map((it) => it.product).toList();
+      // ✔️ parsed.data.data already contains TopProduct objects
+      final products = parsed.data.data;
       return products;
     } catch (e) {
       throw Exception('Error: $e');

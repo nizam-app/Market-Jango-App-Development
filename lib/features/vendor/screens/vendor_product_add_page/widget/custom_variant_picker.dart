@@ -59,7 +59,7 @@ class _CustomVariantPickerState extends ConsumerState<CustomVariantPicker> {
                         widget.onColorsChanged?.call(updatedColors);
                       },
                       child:
-                      _ColorDot(color: "0xff$color", selected: isSelected),
+                      _ColorChip(colorName: color, selected: isSelected),
                     );
                   }),
                 ),
@@ -144,37 +144,40 @@ class _CardHeader extends StatelessWidget {
   }
 }
 
-/// Color circle
-class _ColorDot extends StatelessWidget {
-  const _ColorDot({required this.color, this.selected = false});
-  final String color;
+/// Color Chip (shows text like "Black", "Red")
+class _ColorChip extends StatelessWidget {
+  const _ColorChip({required this.colorName, this.selected = false});
+  final String colorName;
   final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedScale(
-      scale: selected ? 1.15 : 1.0,
+      scale: selected ? 0.95 : 1.0,
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
       child: Container(
-        width: 36.w,
-        height: 36.w,
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Color(int.parse(color)),
-          border: Border.all(
-            color: selected ? Colors.black : const Color(0xffE6E6E6),
-            width: selected ? 3.w : 1.w,
-          ),
+          color: selected ? const Color(0xFF4A7CFF) : const Color(0xFFEAF2FF),
+          borderRadius: BorderRadius.circular(14.r),
           boxShadow: selected
               ? [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: const Color(0xFF4A7CFF).withOpacity(0.35),
               blurRadius: 10.r,
               offset: Offset(0, 3.h),
             ),
           ]
               : [],
+        ),
+        child: Text(
+          colorName,
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : const Color(0xFF4A7CFF),
+          ),
         ),
       ),
     );

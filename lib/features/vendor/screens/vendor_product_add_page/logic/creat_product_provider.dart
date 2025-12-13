@@ -7,7 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final createProductProvider =
 StateNotifierProvider<CreateProductNotifier, AsyncValue<String>>(
@@ -43,15 +43,15 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
     required String regularPrice,
     required String sellPrice,
     required int categoryId,
-    required List<String> color,
-    required List<String> size,
+    required Map<String, List<String>> attributes,
+    required String stock,
     required File image,
     required List<File> files,
   }) async {
     try {
       state = const AsyncLoading(); // how loading state
-      SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-      final token = await _sharedPreferences.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       // 🔻 compress (cover + gallery)
       final cover = await _compress(image);
       final gallery = <File>[];
@@ -64,7 +64,7 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
       final request = http.MultipartRequest('POST', uri);
 
       request.headers.addAll({
-        if (token != null) 'token': '$token',
+        if (token != null) 'token': token,
       });
 
       
@@ -74,8 +74,13 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
       request.fields['regular_price'] = regularPrice;
       request.fields['sell_price'] = sellPrice;
       request.fields['category_id'] = categoryId.toString();
-      request.fields['color[]'] = color.join(','); // multiple color
-      request.fields['size[]'] = size.join(',');   // multiple size
+      
+      // Convert attributes map to JSON string
+      // Format: {"color":["red","green"],"size":["m","xl"],"brand":["apple"]}
+      final attributesJson = jsonEncode(attributes);
+      request.fields['attributes'] = attributesJson;
+      
+      request.fields['stock'] = stock; // stock quantity
 
       // 🖼️ Main Image
       request.files.add(await http.MultipartFile.fromPath('image', cover.path, filename: 'cover.jpg'));

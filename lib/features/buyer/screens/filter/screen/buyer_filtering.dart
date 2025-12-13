@@ -108,7 +108,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                       }
 
                       return DropdownButtonFormField<int>(
-                        value: _selectedCategoryId,
+                        initialValue: _selectedCategoryId,
                         decoration: buildInputDecoration(),
                         hint: Text(
                           'Select category',

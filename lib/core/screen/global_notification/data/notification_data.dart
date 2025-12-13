@@ -4,11 +4,11 @@ import 'package:market_jango/core/constants/api_control/notification_api.dart';
 import 'dart:convert';
 
 import 'package:market_jango/core/screen/global_notification/model/all_notification_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final notificationProvider = FutureProvider<List<NotificationModel>>((ref) async {
-  final SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
-  final String? token = _sharedPreferences.getString("auth_token");
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
   if (token == null) throw Exception('Token not found');
 
   final response = await http.get(

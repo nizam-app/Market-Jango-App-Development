@@ -37,7 +37,7 @@ class VendorShipmentsNotifier extends AsyncNotifier<VendorShipmentsState> {
       uri,
       headers: {
         'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'token': token,
+        if (token.isNotEmpty) 'token': token,
       },
     );
 

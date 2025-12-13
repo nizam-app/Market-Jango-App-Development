@@ -22,19 +22,42 @@ void showShippingAddressSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
     ),
     builder: (context) {
-      final addressCtrl = TextEditingController(
-        text: ares?.buyer.shipAddress ?? "",
+      // Get updated buyer from cart if available, otherwise use args
+      final cartAsync = ref.watch(cartProvider);
+      final updatedBuyer = cartAsync.maybeWhen(
+        data: (cart) => cart.items.isNotEmpty ? cart.items.first.buyer : null,
+        orElse: () => null,
       );
-      final cityCtrl = TextEditingController(text: ares?.buyer.shipCity ?? "");
-      final postCtrl = TextEditingController(text: ares?.buyer.postcode ?? "");
+      final buyer = updatedBuyer ?? ares?.buyer;
+      
+      // Initialize controllers with current values (showing previous/old values)
+      final nameCtrl = TextEditingController(
+        text: buyer?.shipName?.trim() ?? "",
+      );
+      final addressCtrl = TextEditingController(
+        text: buyer?.shipAddress?.trim() ?? "",
+      );
+      final cityCtrl = TextEditingController(
+        text: buyer?.shipCity?.trim() ?? "",
+      );
+      final locationCtrl = TextEditingController(
+        text: buyer?.location?.trim() ?? "",
+      );
+      final postCtrl = TextEditingController(
+        text: buyer?.postcode?.trim() ?? "",
+      );
+      final countryCtrl = TextEditingController(
+        text: buyer?.shipCountry?.trim() ?? buyer?.country?.trim() ?? "",
+      );
 
       return Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             // Header
             Container(
               width: double.infinity,
@@ -72,6 +95,14 @@ void showShippingAddressSheet(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Name field
+                    CustomTextFormField(
+                      label: 'Name',
+                      controller: nameCtrl,
+                      hintText: 'Receiver name',
+                    ),
+                    SizedBox(height: 12.h),
+                    // Address field
                     CustomTextFormField(
                       label: 'Address',
                       controller: addressCtrl,
@@ -79,17 +110,33 @@ void showShippingAddressSheet(
                       maxLines: 3,
                     ),
                     SizedBox(height: 12.h),
+                    // City field
                     CustomTextFormField(
                       label: 'Town / City',
                       controller: cityCtrl,
                       hintText: 'Enter your city',
                     ),
                     SizedBox(height: 12.h),
+                    // Location field
+                    CustomTextFormField(
+                      label: 'Location',
+                      controller: locationCtrl,
+                      hintText: 'Enter location',
+                    ),
+                    SizedBox(height: 12.h),
+                    // Postcode field
                     CustomTextFormField(
                       label: 'Postcode',
                       controller: postCtrl,
                       hintText: 'Enter your postcode',
                       keyboardType: TextInputType.number,
+                    ),
+                    SizedBox(height: 12.h),
+                    // Country field
+                    CustomTextFormField(
+                      label: 'Country',
+                      controller: countryCtrl,
+                      hintText: 'Enter your country',
                     ),
                     SizedBox(height: 20.h),
 
@@ -102,14 +149,25 @@ void showShippingAddressSheet(
                               .read(userUpdateServiceProvider)
                               .updateUserFields(
                                 fields: {
-                                  'ship_address': addressCtrl.text,
-                                  'ship_city': cityCtrl.text,
+                                  if (nameCtrl.text.trim().isNotEmpty)
+                                    'ship_name': nameCtrl.text.trim(),
+                                  if (addressCtrl.text.trim().isNotEmpty)
+                                    'ship_address': addressCtrl.text.trim(),
+                                  if (cityCtrl.text.trim().isNotEmpty)
+                                    'ship_city': cityCtrl.text.trim(),
+                                  if (locationCtrl.text.trim().isNotEmpty)
+                                    'location': locationCtrl.text.trim(),
                                   if (postCtrl.text.trim().isNotEmpty)
-                                    'postcode': postCtrl.text,
+                                    'postcode': postCtrl.text.trim(),
+                                  if (countryCtrl.text.trim().isNotEmpty)
+                                    'ship_country': countryCtrl.text.trim(),
                                 },
                               );
                           if (context.mounted) {
+                            // Invalidate cart to refresh payment screen
                             ref.invalidate(cartProvider);
+                            // Wait a bit for the cart to refresh
+                            await Future.delayed(const Duration(milliseconds: 300));
                             context.pop();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -130,7 +188,8 @@ void showShippingAddressSheet(
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       );
     },

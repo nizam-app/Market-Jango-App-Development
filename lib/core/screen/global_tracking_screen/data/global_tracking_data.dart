@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/screen/global_tracking_screen/model/global_tracking_model.dart';
 
-import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 
 final trackingDetailsProvider =
 FutureProvider.family<TrackingInvoice, int>((ref, int invoiceId) async {
-  final prefs = await ref.watch(sharedPreferencesProvider.future);
-  final token = prefs.getString('auth_token');
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
   
   final uri = Uri.parse(
       BuyerAPIController.buyer_tracking_details(invoiceId));

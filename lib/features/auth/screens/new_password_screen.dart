@@ -54,7 +54,7 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
     state.when(
       data: (ok)async {
         SharedPreferences pref =await SharedPreferences.getInstance();
-        String? type = await pref.getString("user_type");
+        String? type = pref.getString("user_type");
         Logger().i(type);
         if (ok) {
           GlobalSnackbar.show(context,

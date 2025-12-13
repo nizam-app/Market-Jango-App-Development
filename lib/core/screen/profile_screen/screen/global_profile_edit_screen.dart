@@ -59,10 +59,10 @@ class _BuyerProfileEditScreenState
   final ImagePicker _picker = ImagePicker();
 
   // --- user type helpers (API থেকে আসা user_type ধরে নাও) ---
-  bool get isBuyer => widget.user.userType?.toLowerCase() == 'buyer';
-  bool get isVendor => widget.user.userType?.toLowerCase() == 'vendor';
-  bool get isTransport => widget.user.userType?.toLowerCase() == 'transport';
-  bool get isDriver => widget.user.userType?.toLowerCase() == 'driver';
+  bool get isBuyer => widget.user.userType.toLowerCase() == 'buyer';
+  bool get isVendor => widget.user.userType.toLowerCase() == 'vendor';
+  bool get isTransport => widget.user.userType.toLowerCase() == 'transport';
+  bool get isDriver => widget.user.userType.toLowerCase() == 'driver';
 
   @override
   void initState() {
@@ -202,7 +202,7 @@ class _BuyerProfileEditScreenState
                             ),
                             SizedBox(height: 8.h),
                             DropdownButtonFormField<String>(
-                              value: _selectedGender,
+                              initialValue: _selectedGender,
                               decoration: InputDecoration(
                                 fillColor: const Color(0xffE6F0F8),
                                 hintText: "Select Gender",

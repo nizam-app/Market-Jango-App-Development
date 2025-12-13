@@ -7,7 +7,6 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../logic/forget_password_reverport.dart';
-import '../logic/phone_otp_riverpod.dart';
 import '../logic/verification_reverpod.dart';
 
 class ForgetOTPVerificationScreen extends ConsumerWidget {

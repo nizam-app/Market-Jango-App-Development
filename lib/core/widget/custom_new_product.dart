@@ -49,30 +49,17 @@ class CustomNewProduct extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.hardEdge,
-          child: Column(
-            children: [
-              InkWell(
-                onTap: onTap,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: FirstTimeShimmerImage(
-                    imageUrl: image,
-                    height: imageHeight.h,
-                    // width: width.sw,
-                    fit: BoxFit.cover,
-                  ),
-
-                  // Image.network(
-                  //   image,
-                  //   height: imageHeight.h,
-                  //   width: double.infinity,
-                  //   fit: BoxFit.cover,
-                  // ),
+          child: InkWell(
+            onTap: onTap,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.r),
+              child: SizedBox.expand(
+                child: FirstTimeShimmerImage(
+                  imageUrl: image,
+                  fit: BoxFit.cover,
                 ),
               ),
-
-              // Discount Tag
-            ],
+            ),
           ),
         ),
         Padding(
@@ -84,7 +71,7 @@ class CustomNewProduct extends StatelessWidget {
               Text(
                 productName.length < 12
                     ? productName
-                    : productName.substring(0, 12) + "...",
+                    : "${productName.substring(0, 12)}...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium!.copyWith(color: AllColor.black),
@@ -95,7 +82,7 @@ class CustomNewProduct extends StatelessWidget {
               Text(
                 productPrices.length < 12
                     ? productPrices
-                    : productPrices.substring(0, 12) + "...",
+                    : "${productPrices.substring(0, 12)}...",
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 18.sp),

@@ -1,7 +1,7 @@
 import 'global_api.dart';
 
 class BuyerAPIController {
-  static String _base_api = "$api/api";
+  static final String _base_api = "$api/api";
   static String buyer_product = "$_base_api/product";
   static String banner = "$_base_api/banner";
   static String cart = "$_base_api/cart";
@@ -13,6 +13,7 @@ class BuyerAPIController {
   static String just_for_you = "$_base_api/admin-selects/just-for-you";
   static String top_products = "$_base_api/admin-selects/top-products";
   static String new_items = "$_base_api/admin-selects/new-items";
+  static String top_categories = "$_base_api/admin-selects/top-categories";
   static String product_detail(int id) => "$_base_api/product/detail/$id";
   static String vendor_list(id) => "$_base_api/vendor/list/$id";
   static String categoryVendorProducts(int vendorId, {int page = 1}) =>

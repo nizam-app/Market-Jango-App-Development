@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
 class TransportCompleted extends ConsumerStatefulWidget {
@@ -134,8 +135,8 @@ class _TransportCompletedState extends ConsumerState<TransportCompleted> {
               /// Product Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
-                child: Image.network(
-                  "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png",
+                child: FirstTimeShimmerImage(
+                  imageUrl: "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png",
                   height: 80.h,
                   width: 80.w,
                   fit: BoxFit.cover,

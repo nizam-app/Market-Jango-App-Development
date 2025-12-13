@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/features/buyer/model/banner_model.dart';
 import '../../../../../core/utils/get_token_sharedpefarens.dart';
-import '../../../../../core/constants/api_control/vendor_api.dart';
 
 final bannerNotifierProvider =
 AsyncNotifierProvider<BannerNotifier, PaginatedBanners?>(BannerNotifier.new);

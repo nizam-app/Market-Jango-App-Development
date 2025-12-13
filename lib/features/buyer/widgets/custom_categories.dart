@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/features/buyer/data/buyer_categori_data.dart';
 import 'package:market_jango/features/buyer/model/buyer_category_model.dart';
 
@@ -10,11 +11,15 @@ class CustomCategories extends ConsumerWidget {
     required this.categoriCount,
     required this.onTapCategory,
     this.physics,
+    this.showOnlyTopCategories = false,
+    this.requireProducts = true,
   });
 
   final int categoriCount;
   final void Function(CategoryItem category) onTapCategory;
   final ScrollPhysics? physics;
+  final bool showOnlyTopCategories;
+  final bool requireProducts;
 
   static const _placeholder =
       'https://via.placeholder.com/300x300.png?text=Category';
@@ -24,16 +29,32 @@ class CustomCategories extends ConsumerWidget {
     final asyncCats = ref.watch(categoriesProvider);
 
     return asyncCats.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      loading: () => const Center(child: Text('Loading...')),
+      error: (e, _) => const SizedBox.shrink(),
       data: (resp) {
         if (resp == null) return const SizedBox.shrink();
 
         final page = resp.data;
-        final all = page.data; // List<CategoryItem>
+        // Filter categories based on requirements
+        var all = page.data;
+        
+        // First filter by status (only Active categories)
+        all = all.where((cat) => cat.status == 'Active').toList();
+        
+        // If showOnlyTopCategories is true, filter by is_top_category == 1
+        if (showOnlyTopCategories) {
+          all = all.where((cat) => cat.isTopCategory == 1).toList();
+        }
+        
+        // Filter by products if required (after top category filter)
+        if (requireProducts) {
+          all = all.where((cat) => cat.products.isNotEmpty).toList();
+        }
 
         // হোমে ৪টা, অল স্ক্রিনে যত আছে সব
         final items = all.take(categoriCount).toList();
+        
+        if (items.isEmpty) return const SizedBox.shrink();
 
         return GridView.builder(
           shrinkWrap: true,
@@ -75,16 +96,10 @@ class CustomCategories extends ConsumerWidget {
                         ),
                         itemBuilder: (context, i) {
                           final url = thumbs[i];
-                          return ClipRRect(
+                          return FirstTimeShimmerImage(
+                            imageUrl: url,
+                            fit: BoxFit.cover,
                             borderRadius: BorderRadius.circular(6.r),
-                            child: Image.network(
-                              url,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: Colors.grey.shade200,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
-                            ),
                           );
                         },
                       ),
@@ -116,9 +131,12 @@ class CustomCategories extends ConsumerWidget {
   /// ক্যাটাগরি থেকে ৪টা থাম্বনেইল বের করি:
   /// 1) প্রোডাক্টের `image`
   /// 2) না থাকলে প্রোডাক্ট.images[0].image_path
-  /// 3) কম হলে placeholder দিয়ে ফিল করি
+  /// 3) প্রোডাক্ট না থাকলে category_images ব্যবহার করি
+  /// 4) কম হলে placeholder দিয়ে ফিল করি
   List<String> _thumbsFor(CategoryItem cat) {
     final List<String> urls = [];
+    
+    // First try to get images from products
     for (final p in cat.products) {
       if (p.image.isNotEmpty) {
         urls.add(p.image);
@@ -127,6 +145,18 @@ class CustomCategories extends ConsumerWidget {
       }
       if (urls.length >= 4) break;
     }
+    
+    // If not enough from products, use category_images
+    if (urls.length < 4) {
+      for (final img in cat.categoryImages) {
+        if (img.imagePath.isNotEmpty) {
+          urls.add(img.imagePath);
+        }
+        if (urls.length >= 4) break;
+      }
+    }
+    
+    // Fill remaining with placeholder
     while (urls.length < 4) {
       urls.add(_placeholder);
     }

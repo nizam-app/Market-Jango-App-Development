@@ -70,7 +70,7 @@ Future<void> startTransportInvoiceCheckout(
 
     log.i('TransportInvoiceCreate ← status=${res.statusCode}');
     log.t(
-      'body: ${res.body.length > 400 ? res.body.substring(0, 400) + '…' : res.body}',
+      'body: ${res.body.length > 400 ? '${res.body.substring(0, 400)}…' : res.body}',
     );
 
     if (res.statusCode != 200) {

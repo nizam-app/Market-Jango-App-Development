@@ -40,7 +40,7 @@ class UserProfileData {
         (json['user'] as Map<String, dynamic>? ?? const {}),
       ),
       images: (json['images'] as List? ?? [])
-          .where((e) => e is Map<String, dynamic>)
+          .whereType<Map<String, dynamic>>()
           .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
           .toList(),
       reviewCount: json['review_count'] is int
@@ -145,7 +145,7 @@ class UserModel {
 
       // ==== user_images list ====
       userImages: (json['user_images'] as List? ?? [])
-          .where((e) => e is Map<String, dynamic>)
+          .whereType<Map<String, dynamic>>()
           .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -210,7 +210,7 @@ class VendorInfo {
 
     // reviews list
     reviews: (json['reviews'] as List? ?? [])
-        .where((e) => e is Map<String, dynamic>)
+        .whereType<Map<String, dynamic>>()
         .map((e) => VendorReviewProfile.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
@@ -414,16 +414,16 @@ class VendorReviewProfile {
   });
 
   factory VendorReviewProfile.fromJson(Map<String, dynamic> json) {
-    double _parseDouble(dynamic v) {
+    double parseDouble(dynamic v) {
       if (v == null) return 0;
       if (v is num) return v.toDouble();
       return double.tryParse(v.toString()) ?? 0;
     }
 
-    DateTime? _parseDate(dynamic v) =>
+    DateTime? parseDate(dynamic v) =>
         v == null ? null : DateTime.tryParse(v.toString());
 
-    int _parseInt(dynamic v) {
+    int parseInt(dynamic v) {
       if (v == null) return 0;
       if (v is int) return v;
       if (v is double) return v.toInt();
@@ -431,14 +431,14 @@ class VendorReviewProfile {
     }
 
     return VendorReviewProfile(
-      id: _parseInt(json['id']),
+      id: parseInt(json['id']),
       review: json['review']?.toString() ?? '',
-      rating: _parseDouble(json['rating']),
-      userId: _parseInt(json['user_id']),
-      vendorId: _parseInt(json['vendor_id']),
-      productId: _parseInt(json['product_id']),
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      rating: parseDouble(json['rating']),
+      userId: parseInt(json['user_id']),
+      vendorId: parseInt(json['vendor_id']),
+      productId: parseInt(json['product_id']),
+      createdAt: parseDate(json['created_at']),
+      updatedAt: parseDate(json['updated_at']),
     );
   }
 }

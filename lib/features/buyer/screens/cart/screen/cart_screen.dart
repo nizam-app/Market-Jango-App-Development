@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 import 'package:market_jango/features/buyer/screens/cart/data/cart_inc_dec_logic.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_update_logic.dart';
@@ -96,7 +97,7 @@ class CartScreen extends ConsumerWidget {
           // ⬇️ তালিকা
           Expanded(
             child: cartAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: Text('Loading...')),
               error: (error, stackTrace) =>
                   Center(child: Text(error.toString())),
               data: (dat) {
@@ -184,26 +185,12 @@ class CartScreen extends ConsumerWidget {
               child: Stack(
                 alignment: Alignment.topLeft,
                 children: [
-                  ClipRRect(
+                  FirstTimeShimmerImage(
+                    imageUrl: item.product.image,
+                    width: 90.w,
+                    height: 100.h,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(8.r),
-                    child: Image.network(
-                      item.product.image,
-                      width: 90.w,
-                      height: 100.h,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 90.w,
-                          height: 100.h,
-                          color: AllColor.grey,
-                          child: Icon(
-                            Icons.broken_image,
-                            color: AllColor.blue,
-                            size: 40.sp,
-                          ),
-                        );
-                      },
-                    ),
                   ),
                   Container(
                     margin: EdgeInsets.all(2.r),
@@ -249,7 +236,7 @@ class CartScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '${item.price}',
+                    item.price,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18.sp,
@@ -277,7 +264,7 @@ class CartScreen extends ConsumerWidget {
     final updatingIds = ref.watch(cartUpdatingIdsProvider);
     final isUpdating = updatingIds.contains(item.productId);
 
-    Future<void> _change(CartAction action) async {
+    Future<void> change(CartAction action) async {
       final updater = ref.read(cartUpdatingIdsProvider.notifier);
 
       // id টা সেটে যোগ করলাম -> UI তে loader দেখাবে
@@ -317,11 +304,7 @@ class CartScreen extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            SizedBox(
-              width: 16.r,
-              height: 16.r,
-              child: const CircularProgressIndicator(strokeWidth: 2),
-            ),
+            const Text('Loading...'),
             SizedBox(width: 8.w),
             // 'Updating...'
             Text(
@@ -336,14 +319,14 @@ class CartScreen extends ConsumerWidget {
     // 👉 নরমাল স্টেট
     return Row(
       children: [
-        _circleButton(Icons.remove, () => _change(CartAction.decrease)),
+        _circleButton(Icons.remove, () => change(CartAction.decrease)),
         SizedBox(width: 8.w),
         Text(
           '${item.quantity}',
           style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
         ),
         SizedBox(width: 8.w),
-        _circleButton(Icons.add, () => _change(CartAction.increase)),
+        _circleButton(Icons.add, () => change(CartAction.increase)),
       ],
     );
   }
@@ -386,13 +369,53 @@ class CartScreen extends ConsumerWidget {
 
   Widget _buildShippingAddress(BuildContext context, Buyer? buyer,WidgetRef ref) {
     final theme = Theme.of(context).textTheme;
-    final addressLine = [
-      buyer?.shipAddress ?? buyer?.address,
-      buyer?.shipCity,
-      // buyer?.shipState ?? buyer?.state,
-      // buyer?.postcode,
-      buyer?.shipCountry ?? buyer?.country,
-    ].where((e) => e != null && e!.trim().isNotEmpty).join(', ');
+    
+    // Build address lines - showing ship_name, location, and address
+    final addressLines = buyer == null
+        ? ['No address available']
+        : () {
+            final lines = <String>[];
+            
+            // Ship Name (first line if available)
+            final shipName = buyer.shipName?.trim();
+            if (shipName != null && shipName.isNotEmpty && shipName != 'null') {
+              lines.add(shipName);
+            }
+            
+            // Location (second line if available)
+            final location = buyer.location?.trim();
+            if (location != null && location.isNotEmpty && location != 'null') {
+              lines.add(location);
+            }
+            
+            // Address parts (third line)
+            final addressParts = <String>[];
+            final shipAddress = buyer.shipAddress?.trim();
+            if (shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null') {
+              addressParts.add(shipAddress);
+            } else {
+              final fallbackAddress = buyer.address.trim();
+              if (fallbackAddress.isNotEmpty && fallbackAddress != 'null') {
+                addressParts.add(fallbackAddress);
+              }
+            }
+            
+            final city = buyer.shipCity?.trim();
+            if (city != null && city.isNotEmpty && city != 'null') {
+              addressParts.add(city);
+            }
+            
+            final country = buyer.shipCountry?.trim() ?? buyer.country?.trim();
+            if (country != null && country.isNotEmpty && country != 'null') {
+              addressParts.add(country);
+            }
+            
+            if (addressParts.isNotEmpty) {
+              lines.add(addressParts.join(', '));
+            }
+            
+            return lines.isEmpty ? ['No address provided'] : lines;
+          }();
 
     return Container(
       padding: EdgeInsets.all(10.r),
@@ -414,6 +437,7 @@ class CartScreen extends ConsumerWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 //'Shipping Address'
                 Text(
@@ -421,23 +445,14 @@ class CartScreen extends ConsumerWidget {
                   style: theme.titleLarge?.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  addressLine.isEmpty ? '—' : addressLine,
-                  style: TextStyle(color: AllColor.black, fontSize: 11.sp),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (buyer?.location != null &&
-                    buyer!.location!.trim().isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.only(top: 4.h),
-                    child: Text(
-                      'Location: ${buyer.location}',
-                      style: TextStyle(color: AllColor.black, fontSize: 11.sp),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                // Display multiple lines (ship_name, location, address)
+                ...addressLines.map((line) => Padding(
+                  padding: EdgeInsets.only(bottom: 2.h),
+                  child: Text(
+                    line,
+                    style: TextStyle(color: AllColor.black, fontSize: 11.sp),
                   ),
+                )),
               ],
             ),
           ),

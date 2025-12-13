@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/buyer_catagori_vendor_list_data.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/data/vendor_first_product_data.dart';
@@ -29,6 +30,7 @@ class CategoryProductScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryProductScreenState extends ConsumerState<CategoryProductScreen> {
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,7 +119,7 @@ class VendorListSection extends ConsumerWidget {
       width: 110.w,
       color: AllColor.grey500,
       child: vendorsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (vendors) {
           if (vendors.isEmpty) {
@@ -136,7 +138,10 @@ class VendorListSection extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: v.id,
+                        extra: {
+                          'vendorId': v.id,
+                          'userId': v.userId,
+                        },
                       );
                     },
                     child: CircleAvatar(
@@ -144,17 +149,29 @@ class VendorListSection extends ConsumerWidget {
                       backgroundColor: isActive
                           ? AllColor.orange
                           : AllColor.white,
-                      child: CircleAvatar(
-                        radius: isActive ? 28.r : 24.r,
-                        backgroundColor: AllColor.grey200,
-                        child: Text(
-                          _initials(v.businessName),
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AllColor.black,
-                          ),
-                        ),
+                      child: ClipOval(
+                        child: (v.userImage != null && v.userImage!.isNotEmpty)
+                            ? FirstTimeShimmerImage(
+                                imageUrl: v.userImage!,
+                                width: (isActive ? 28.r : 24.r) * 2,
+                                height: (isActive ? 28.r : 24.r) * 2,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: (isActive ? 28.r : 24.r) * 2,
+                                height: (isActive ? 28.r : 24.r) * 2,
+                                color: AllColor.grey200,
+                                child: Center(
+                                  child: Text(
+                                    _initials(v.businessName),
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AllColor.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -183,11 +200,21 @@ class VendorListSection extends ConsumerWidget {
   }
 
   String _initials(String s) {
-    final parts = s.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1)
-      return parts.first.isEmpty ? '?' : parts.first[0].toUpperCase();
-    return (parts[0].isEmpty ? '' : parts[0][0]) +
-        (parts[1].isEmpty ? '' : parts[1][0].toUpperCase());
+    final trimmed = s.trim();
+    if (trimmed.isEmpty) return '??';
+    
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      // Single word: show first 2 letters
+      final word = parts.first;
+      if (word.length >= 2) {
+        return word.substring(0, 2).toUpperCase();
+      }
+      return word[0].toUpperCase();
+    }
+    // Multiple words: show first letter of first two words
+    return (parts[0].isEmpty ? '' : parts[0][0].toUpperCase()) +
+        (parts.length > 1 && parts[1].isNotEmpty ? parts[1][0].toUpperCase() : '');
   }
 }
 
@@ -199,7 +226,7 @@ class ProductGridSection extends ConsumerWidget {
     final asyncVendors = ref.watch(vendorFirstProductProvider);
 
     return asyncVendors.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: Text('Loading...')),
       error: (e, _) => Center(child: Text(e.toString())),
       data: (list) {
         final items = list; // already filtered to product != null
@@ -267,8 +294,17 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () =>
-          context.push(BuyerVendorProfileScreen.routeName, extra: vendorId),
+      onTap: () {
+        // Note: VendorFirstProduct only has vendorId, userId not available
+        // Using vendorId for both (will need to be fixed if userId is needed)
+        context.push(
+          BuyerVendorProfileScreen.routeName,
+          extra: {
+            'vendorId': vendorId,
+            'userId': 0, // Will be handled in route builder
+          },
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: AllColor.white,
@@ -287,15 +323,13 @@ class ProductCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                ClipRRect(
+                FirstTimeShimmerImage(
+                  imageUrl: imageUrl,
+                  height: 130.h,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.vertical(
                     top: Radius.circular(4.r),
-                  ),
-                  child: Image.network(
-                    imageUrl,
-                    height: 130.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
                   ),
                 ),
 
@@ -303,7 +337,7 @@ class ProductCard extends StatelessWidget {
                   Positioned(
                     top: 8.h,
                     right: 8.w,
-                    child: CustomDiscountCord(discount: '${discount}'),
+                    child: CustomDiscountCord(discount: '$discount'),
                   ),
               ],
             ),
@@ -328,22 +362,32 @@ class ProductCard extends StatelessWidget {
                   ),
                   SizedBox(height: 20.h),
                   InkWell(
-                    onTap: () => context.push(
-                      BuyerVendorProfileScreen.routeName,
-                      extra: vendorId,
-                    ),
+                    onTap: () {
+                      // Note: VendorFirstProduct only has vendorId, userId not available
+                      context.push(
+                        BuyerVendorProfileScreen.routeName,
+                        extra: {
+                          'vendorId': vendorId,
+                          'userId': 0, // Will be handled in route builder
+                        },
+                      );
+                    },
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 8.r,
-                          backgroundImage: NetworkImage(storeImage),
+                        ClipOval(
+                          child: FirstTimeShimmerImage(
+                            imageUrl: storeImage,
+                            width: 16.r,
+                            height: 16.r,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         SizedBox(width: 8.w),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${storeName.substring(0, math.min(10, storeName.length))}",
+                              storeName.substring(0, math.min(10, storeName.length)),
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
@@ -381,22 +425,36 @@ class VendorSuggestionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          context.push(BuyerVendorProfileScreen.routeName, extra: v.vendorId),
+      onTap: () {
+        context.push(
+          BuyerVendorProfileScreen.routeName,
+          extra: {
+            'vendorId': v.vendorId,
+            'userId': v.userId,
+          },
+        );
+      },
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-        leading: CircleAvatar(
-          radius: 18.r,
-          backgroundColor: AllColor.grey200,
-          backgroundImage: (v.imageUrl != null && v.imageUrl!.isNotEmpty)
-              ? NetworkImage(v.imageUrl!)
-              : null,
-          child: (v.imageUrl == null || v.imageUrl!.isEmpty)
-              ? Text(
-                  _initials(v.businessName),
-                  style: TextStyle(fontSize: 12.sp, color: AllColor.black),
+        leading: ClipOval(
+          child: (v.imageUrl != null && v.imageUrl!.isNotEmpty)
+              ? FirstTimeShimmerImage(
+                  imageUrl: v.imageUrl!,
+                  width: 36.r,
+                  height: 36.r,
+                  fit: BoxFit.cover,
                 )
-              : null,
+              : Container(
+                  width: 36.r,
+                  height: 36.r,
+                  color: AllColor.grey200,
+                  child: Center(
+                    child: Text(
+                      _initials(v.businessName),
+                      style: TextStyle(fontSize: 12.sp, color: AllColor.black),
+                    ),
+                  ),
+                ),
         ),
         title: Text(
           v.businessName,
@@ -415,11 +473,20 @@ class VendorSuggestionTile extends StatelessWidget {
   }
 
   String _initials(String s) {
-    final parts = s.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty) return '?';
-    if (parts.length == 1)
-      return parts.first.isEmpty ? '?' : parts.first[0].toUpperCase();
-    return (parts[0].isEmpty ? '' : parts[0][0]).toUpperCase() +
-        (parts[1].isEmpty ? '' : parts[1][0].toUpperCase());
+    final trimmed = s.trim();
+    if (trimmed.isEmpty) return '??';
+    
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      // Single word: show first 2 letters
+      final word = parts.first;
+      if (word.length >= 2) {
+        return word.substring(0, 2).toUpperCase();
+      }
+      return word[0].toUpperCase();
+    }
+    // Multiple words: show first letter of first two words
+    return (parts[0].isEmpty ? '' : parts[0][0].toUpperCase()) +
+        (parts.length > 1 && parts[1].isNotEmpty ? parts[1][0].toUpperCase() : '');
   }
 }

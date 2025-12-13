@@ -46,3 +46,9 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# React
+React/
+
+# Cursor
+cursor.role

@@ -14,11 +14,16 @@ import 'package:market_jango/core/widget/global_notification_icon.dart';
 import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/data/banner_data.dart';
+import 'package:market_jango/features/buyer/data/buyer_categori_data.dart';
+import 'package:market_jango/features/buyer/data/buyer_just_for_you_data.dart';
 import 'package:market_jango/features/buyer/data/buyer_top_data.dart';
 import 'package:market_jango/features/buyer/data/new_items_data.dart';
 import 'package:market_jango/features/buyer/logic/slider_manage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
+import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/buyer_filtering.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_categories.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
@@ -27,10 +32,6 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../../../data/buyer_just_for_you_data.dart';
-import '../../all_categori/screen/all_categori_screen.dart';
-import '../../all_categori/screen/category_product_screen.dart';
-import '../../filter/screen/buyer_filtering.dart';
 
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
@@ -43,76 +44,117 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final bannerProvider = ref.watch(bannerNotifierProvider);
-    final asyncData = ref.watch(topProductProvider);
     final justForYou = ref.watch(
-      justForYouProvider("${BuyerAPIController.just_for_you}"),
+      justForYouProvider(BuyerAPIController.just_for_you),
     );
     final newItems = ref.watch(buyerNewItemsProvider);
     return Scaffold(
       backgroundColor: AllColor.white70,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              children: [
-                BuyerHomeSearchBar(),
-                bannerProvider.when(
-                  data: (data) {
-                    if (data == null) {
-                      return Center(child: Text(ref.t(BKeys.no_data)));
-                    }
-                    final banners = data.banners ?? [];
-                    return PromoSlider(
-                      imageList: banners.map((e) => e.image).toList(),
-                    );
-                  },
-                  loading: () {
-                    return Center(child: Text(ref.t(BKeys.loading)));
-                  },
-                  error: (error, stackTrace) {
-                    return Center(child: Text(ref.t(BKeys.error)));
-                  },
-                ),
-                SeeMoreButton(
-                  name: ref.t(BKeys.categories),
-                  seeMoreAction: () => goToAllCategoriesPage(context),
-                ),
-                CustomCategories(
-                  categoriCount: 4,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onTapCategory: (cat) =>
-                      goToCategoriesProductPage(context, cat.id, cat.name),
-                ),
-                SeeMoreButton(
-                  name: ref.t(BKeys.topProducts),
-                  seeMoreAction: () {},
-                  isSeeMore: false,
-                ),
-                CustomTopProducts(),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(bannerNotifierProvider);
+            ref.invalidate(topProductProvider);
+            ref.invalidate(justForYouProvider(BuyerAPIController.just_for_you));
+            ref.invalidate(buyerNewItemsProvider);
+            ref.invalidate(categoriesProvider);
+            await Future.wait([
+              ref.read(bannerNotifierProvider.future),
+              ref.read(topProductProvider.future),
+            ]);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                children: [
+                  BuyerHomeSearchBar(),
+                  bannerProvider.when(
+                    data: (data) {
+                      if (data == null || data.banners.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return PromoSlider(
+                        imageList: data.banners.map((e) => e.image).toList(),
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                  SeeMoreButton(
+                    name: ref.t(BKeys.categories),
+                    seeMoreAction: () => goToAllCategoriesPage(context),
+                  ),
+                  CustomCategories(
+                    categoriCount: 4,
+                    physics: const NeverScrollableScrollPhysics(),
+                    showOnlyTopCategories: true,
+                    requireProducts: false,
+                    onTapCategory: (cat) =>
+                        goToCategoriesProductPage(context, cat.id, cat.name),
+                  ),
+                  // Top Products Section - only show if products exist
+                  ref.watch(topProductProvider).when(
+                    data: (products) {
+                      if (products.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.topProducts),
+                            seeMoreAction: () {},
+                            isSeeMore: false,
+                          ),
+                          CustomTopProducts(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  ),
 
-                newItems.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.newItems),
-                    seeMoreAction: () => goToNewItemsPage(ref, context, data!),
+                  // New Items Section - only show if products exist
+                  newItems.when(
+                    data: (data) {
+                      if (data == null || data.data.data.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.newItems),
+                            seeMoreAction: () => goToNewItemsPage(ref, context, data),
+                          ),
+                          CustomNewItemsShow(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (err, _) => const SizedBox.shrink(),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Text('Error loading new items: $err'),
-                ),
-                CustomNewItemsShow(),
-                justForYou.when(
-                  data: (data) => SeeMoreButton(
-                    name: ref.t(BKeys.justForYou),
-                    seeMoreAction: () =>
-                        goToJustForYouPage(ref, context, data!),
+
+                  // Just For You Section - only show if products exist
+                  justForYou.when(
+                    data: (data) {
+                      if (data == null || data.data.data.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          SeeMoreButton(
+                            name: ref.t(BKeys.justForYou),
+                            seeMoreAction: () =>
+                                goToJustForYouPage(ref, context, data),
+                          ),
+                          JustForYouProduct(),
+                        ],
+                      );
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (err, _) => const SizedBox.shrink(),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Text('Error loading Just For You: $err'),
-                ),
-                JustForYouProduct(),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -133,7 +175,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
       SeeJustForYouScreen.routeName,
       extra: {
         'screenName': 'New Items',
-        'url': "${BuyerAPIController.new_items}",
+        'url': BuyerAPIController.new_items,
       },
     );
   }
@@ -147,7 +189,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
       SeeJustForYouScreen.routeName,
       extra: {
         'screenName': 'Just For You',
-        'url': "${BuyerAPIController.just_for_you}",
+        'url': BuyerAPIController.just_for_you,
       },
     );
   }
@@ -163,17 +205,17 @@ class JustForYouProduct extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncJustForYou = ref.watch(
-      justForYouProvider("${BuyerAPIController.just_for_you}"),
+      justForYouProvider(BuyerAPIController.just_for_you),
     );
 
     return asyncJustForYou.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: Text('Loading...')),
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(16),
         child: Text('Failed to load: $e'),
       ),
       data: (products) {
-        final topProducts = products!.data.data.map((e) => e.product).toList();
+        final topProducts = products!.data.data;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -196,7 +238,10 @@ class JustForYouProduct extends ConsumerWidget {
 
                 context.push(
                   BuyerVendorProfileScreen.routeName,
-                  extra: detail.vendor.userId,
+                  extra: {
+                    'vendorId': detail.vendor.id,
+                    'userId': detail.vendor.userId,
+                  },
                 );
               },
               child: CustomNewProduct(
@@ -297,7 +342,7 @@ class DiscountProduct extends StatelessWidget {
 }
 
 class TimerScreen extends StatefulWidget {
-  const TimerScreen({Key? key}) : super(key: key);
+  const TimerScreen({super.key});
 
   @override
   State<TimerScreen> createState() => _TimerScreenState();
@@ -349,7 +394,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
 class PromoSlider extends ConsumerWidget {
   final List<String> imageList;
-  PromoSlider({required this.imageList});
+  PromoSlider({super.key, required this.imageList});
   final CarouselSliderController _controller = CarouselSliderController();
 
   @override
@@ -432,7 +477,10 @@ class BuyerHomeSearchBar extends ConsumerWidget {
                 onItemSelected: (p) {
                   context.push(
                     BuyerVendorProfileScreen.routeName,
-                    extra: p.vendor?.userId,
+                    extra: {
+                      'vendorId': p.vendor?.id ?? 0,
+                      'userId': p.vendor?.userId ?? 0,
+                    },
                   );
                 },
                 hintText: ref.t(BKeys.searchProduct),

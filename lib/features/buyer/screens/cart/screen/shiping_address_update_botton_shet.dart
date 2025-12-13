@@ -31,7 +31,7 @@ Future<void> showShippingAddressBottomSheet(
 }
 
 class _ShippingSheet extends ConsumerStatefulWidget {
-  const _ShippingSheet({super.key, this.buyer});
+  const _ShippingSheet({this.buyer});
   final Buyer? buyer;
 
   @override
@@ -41,16 +41,17 @@ class _ShippingSheet extends ConsumerStatefulWidget {
 class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
   final _formKey = GlobalKey<FormState>();
 
+  late final TextEditingController _name;
   late final TextEditingController _address;
   late final TextEditingController _city;
+  late final TextEditingController _location;
   late final TextEditingController _postcode;
+  late final TextEditingController _country;
 
   // optional extras
-  late final TextEditingController _name;
   late final TextEditingController _email;
   late final TextEditingController _phone;
   late final TextEditingController _state;
-  late final TextEditingController _country;
 
   File? _pickedImage;
   bool _submitting = false;
@@ -60,26 +61,35 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
     super.initState();
     final b = widget.buyer;
 
-    _address = TextEditingController(text: b?.shipAddress ?? b?.address ?? '');
-    _city = TextEditingController(text: b?.shipCity ?? '');
-    _postcode = TextEditingController(text: b?.postcode ?? '');
-    _name = TextEditingController(text: b?.shipName ?? '');
-    _email = TextEditingController(text: b?.shipEmail ?? '');
-    _phone = TextEditingController(text: b?.shipPhone ?? '');
-    _state = TextEditingController(text: b?.shipState ?? b?.state ?? '');
-    _country = TextEditingController(text: b?.shipCountry ?? b?.country ?? '');
+    // Initialize with current values (showing previous/old values)
+    _name = TextEditingController(text: b?.shipName?.trim() ?? '');
+    final shipAddr = b?.shipAddress?.trim();
+    final regAddr = b?.address?.trim() ?? '';
+    _address = TextEditingController(
+      text: shipAddr ?? regAddr,
+    );
+    _city = TextEditingController(text: b?.shipCity?.trim() ?? '');
+    _location = TextEditingController(text: b?.location?.trim() ?? '');
+    _postcode = TextEditingController(text: b?.postcode?.trim() ?? '');
+    _country = TextEditingController(text: b?.shipCountry?.trim() ?? b?.country?.trim() ?? '');
+    
+    // Optional extras
+    _email = TextEditingController(text: b?.shipEmail?.trim() ?? '');
+    _phone = TextEditingController(text: b?.shipPhone?.trim() ?? '');
+    _state = TextEditingController(text: b?.shipState?.trim() ?? b?.state?.trim() ?? '');
   }
 
   @override
   void dispose() {
+    _name.dispose();
     _address.dispose();
     _city.dispose();
+    _location.dispose();
     _postcode.dispose();
-    _name.dispose();
+    _country.dispose();
     _email.dispose();
     _phone.dispose();
     _state.dispose();
-    _country.dispose();
     super.dispose();
   }
 
@@ -97,15 +107,16 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
     try {
       // ✅ কেবল যেগুলো দিয়েছেন সেগুলোই যাবে
       final fields = <String, String>{
-        'ship_address': _address.text,
-        'ship_city': _city.text,
-        if (_postcode.text.trim().isNotEmpty) 'postcode': _postcode.text,
-        if (_country.text.trim().isNotEmpty) 'ship_country': _country.text,
-        // চাইলে এগুলোও অন করতে পারেন:
-        // if (_state.text.trim().isNotEmpty) 'ship_state': _state.text,
-        // if (_name.text.trim().isNotEmpty) 'ship_name': _name.text,
-        // if (_email.text.trim().isNotEmpty) 'ship_email': _email.text,
-        // if (_phone.text.trim().isNotEmpty) 'ship_phone': _phone.text,
+        if (_name.text.trim().isNotEmpty) 'ship_name': _name.text.trim(),
+        if (_address.text.trim().isNotEmpty) 'ship_address': _address.text.trim(),
+        if (_city.text.trim().isNotEmpty) 'ship_city': _city.text.trim(),
+        if (_location.text.trim().isNotEmpty) 'location': _location.text.trim(),
+        if (_postcode.text.trim().isNotEmpty) 'postcode': _postcode.text.trim(),
+        if (_country.text.trim().isNotEmpty) 'ship_country': _country.text.trim(),
+        // Optional fields:
+        // if (_state.text.trim().isNotEmpty) 'ship_state': _state.text.trim(),
+        // if (_email.text.trim().isNotEmpty) 'ship_email': _email.text.trim(),
+        // if (_phone.text.trim().isNotEmpty) 'ship_phone': _phone.text.trim(),
       };
 
       await ref
@@ -182,58 +193,92 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
 
             Form(
               key: _formKey,
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      ref.t(BKeys.address),
-                      style: Theme.of(context).textTheme.titleSmall,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Name field
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Name',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 6.h),
-                  TextFormField(
-                    controller: _address,
-                    minLines: 2,
-                    maxLines: 3,
-                    decoration: _dec('Your shipping address'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Address required'
-                        : null,
-                  ),
-                  SizedBox(height: 14.h),
+                    SizedBox(height: 6.h),
+                    TextFormField(
+                      controller: _name,
+                      decoration: _dec('Receiver name'),
+                    ),
+                    SizedBox(height: 14.h),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      ref.t(BKeys.townCity),
-                      style: Theme.of(context).textTheme.titleSmall,
+                    // Address field
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ref.t(BKeys.address),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 6.h),
-                  TextFormField(
-                    controller: _city,
-                    decoration: _dec('City'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'City required'
-                        : null,
-                  ),
-                  SizedBox(height: 14.h),
+                    SizedBox(height: 6.h),
+                    TextFormField(
+                      controller: _address,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: _dec('Your shipping address'),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Address required'
+                          : null,
+                    ),
+                    SizedBox(height: 14.h),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      ref.t(BKeys.postCode),
-                      style: Theme.of(context).textTheme.titleSmall,
+                    // City field
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ref.t(BKeys.townCity),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 6.h),
-                  TextFormField(
-                    controller: _postcode,
-                    decoration: _dec('Postcode'),
-                    keyboardType: TextInputType.number,
-                  ),
-                  SizedBox(height: 10.h),
+                    SizedBox(height: 6.h),
+                    TextFormField(
+                      controller: _city,
+                      decoration: _dec('City'),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'City required'
+                          : null,
+                    ),
+                    SizedBox(height: 14.h),
+
+                    // Location field
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Location',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    TextFormField(
+                      controller: _location,
+                      decoration: _dec('Enter location'),
+                    ),
+                    SizedBox(height: 14.h),
+
+                    // Postcode field
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ref.t(BKeys.postCode),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    TextFormField(
+                      controller: _postcode,
+                      decoration: _dec('Postcode'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    SizedBox(height: 10.h),
 
                   Align(
                     alignment: Alignment.centerLeft,
@@ -290,7 +335,8 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                     ),
                   ),
                   SizedBox(height: 8.h),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

@@ -14,12 +14,16 @@ class PageLink {
     required this.active,
   });
 
-  factory PageLink.fromJson(Map<String, dynamic> json) => PageLink(
-    url: json['url'],
-    label: json['label']?.toString() ?? '',
-    page: json['page'] is int ? json['page'] as int : int.tryParse('${json['page'] ?? ''}'),
-    active: json['active'] == true,
-  );
+  factory PageLink.fromJson(Map<String, dynamic> json) {
+    // Safely convert to Map<String, dynamic> to handle Map<dynamic, dynamic>
+    final safeJson = Map<String, dynamic>.from(json);
+    return PageLink(
+      url: safeJson['url'],
+      label: safeJson['label']?.toString() ?? '',
+      page: safeJson['page'] is int ? safeJson['page'] as int : int.tryParse('${safeJson['page'] ?? ''}'),
+      active: safeJson['active'] == true,
+    );
+  }
 }
 
 /// ---------- Top-level response (status + message + paginated data) ----------
@@ -63,11 +67,21 @@ class GlobalSearchResponse {
   });
 
   factory GlobalSearchResponse.fromJson(Map<String, dynamic> json) {
-    final data = (json['data'] ?? {}) as Map<String, dynamic>;
+    // Helper function to safely cast Map
+    Map<String, dynamic> _safeMap(dynamic value) {
+      if (value == null) return {};
+      if (value is Map<String, dynamic>) return value;
+      if (value is Map) {
+        return Map<String, dynamic>.from(value);
+      }
+      return {};
+    }
+
+    final data = _safeMap(json['data']);
     final list = (data['data'] is List) ? data['data'] as List : const [];
 
     // per_page কখনো string হতে পারে
-    int _parsePerPage(dynamic v) {
+    int parsePerPage(dynamic v) {
       if (v is int) return v;
       return int.tryParse(v?.toString() ?? '') ?? 0;
     }
@@ -81,16 +95,16 @@ class GlobalSearchResponse {
       lastPage: data['last_page'] ?? 1,
       lastPageUrl: data['last_page_url'],
       links: (data['links'] is List)
-          ? (data['links'] as List).map((e) => PageLink.fromJson(e)).toList()
+          ? (data['links'] as List).map((e) => PageLink.fromJson(_safeMap(e))).toList()
           : const [],
       nextPageUrl: data['next_page_url'],
       path: data['path']?.toString() ?? '',
-      perPage: _parsePerPage(data['per_page']),
+      perPage: parsePerPage(data['per_page']),
       prevPageUrl: data['prev_page_url'],
       to: data['to'],
       total: data['total'] ?? 0,
       products: List<GlobalSearchProduct>.from(
-        list.map((x) => GlobalSearchProduct.fromJson(x as Map<String, dynamic>)),
+        list.map((x) => GlobalSearchProduct.fromJson(_safeMap(x))),
       ),
     );
   }
@@ -149,24 +163,36 @@ class GlobalSearchProduct {
     this.images = const [],
   });
 
-  factory GlobalSearchProduct.fromJson(Map<String, dynamic> json) => GlobalSearchProduct(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-    description: json['description']?.toString() ?? '',
-    image: json['image']?.toString() ?? '',
-    regularPrice: json['regular_price']?.toString() ?? '',
-    // sell_price না থাকলে regular_price fallback
-    sellPrice: (json['sell_price'] ?? json['regular_price'] ?? '').toString(),
-    size: _parseFlexibleStringList(json['size']),
-    color: _parseFlexibleStringList(json['color']),
-    vendorId: json['vendor_id'],
-    categoryId: json['category_id'],
-    category: (json['category'] is Map) ? SearchCategory.fromJson(json['category']) : null,
-    vendor: (json['vendor'] is Map) ? SearchVendor.fromJson(json['vendor']) : null,
-    images: (json['images'] is List)
-        ? (json['images'] as List).map((e) => SearchProductImage.fromJson(e)).toList()
-        : const [],
-  );
+  factory GlobalSearchProduct.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely cast Map
+    Map<String, dynamic> _safeMap(dynamic value) {
+      if (value == null) return {};
+      if (value is Map<String, dynamic>) return value;
+      if (value is Map) {
+        return Map<String, dynamic>.from(value);
+      }
+      return {};
+    }
+
+    return GlobalSearchProduct(
+      id: json['id'] ?? 0,
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
+      regularPrice: json['regular_price']?.toString() ?? '',
+      // sell_price না থাকলে regular_price fallback
+      sellPrice: (json['sell_price'] ?? json['regular_price'] ?? '').toString(),
+      size: _parseFlexibleStringList(json['size']),
+      color: _parseFlexibleStringList(json['color']),
+      vendorId: json['vendor_id'],
+      categoryId: json['category_id'],
+      category: (json['category'] is Map) ? SearchCategory.fromJson(_safeMap(json['category'])) : null,
+      vendor: (json['vendor'] is Map) ? SearchVendor.fromJson(_safeMap(json['vendor'])) : null,
+      images: (json['images'] is List)
+          ? (json['images'] as List).map((e) => SearchProductImage.fromJson(_safeMap(e))).toList()
+          : const [],
+    );
+  }
 }
 
 class SearchCategory {
@@ -175,10 +201,14 @@ class SearchCategory {
 
   const SearchCategory({required this.id, required this.name});
 
-  factory SearchCategory.fromJson(Map<String, dynamic> json) => SearchCategory(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-  );
+  factory SearchCategory.fromJson(Map<String, dynamic> json) {
+    // Safely convert to Map<String, dynamic> to handle Map<dynamic, dynamic>
+    final safeJson = Map<String, dynamic>.from(json);
+    return SearchCategory(
+      id: safeJson['id'] ?? 0,
+      name: safeJson['name']?.toString() ?? '',
+    );
+  }
 }
 
 class SearchProductImage {
@@ -194,12 +224,16 @@ class SearchProductImage {
     this.productId,
   });
 
-  factory SearchProductImage.fromJson(Map<String, dynamic> json) => SearchProductImage(
-    id: json['id'] ?? 0,
-    imagePath: json['image_path']?.toString() ?? '',
-    publicId: json['public_id']?.toString(),
-    productId: json['product_id'],
-  );
+  factory SearchProductImage.fromJson(Map<String, dynamic> json) {
+    // Safely convert to Map<String, dynamic> to handle Map<dynamic, dynamic>
+    final safeJson = Map<String, dynamic>.from(json);
+    return SearchProductImage(
+      id: safeJson['id'] ?? 0,
+      imagePath: safeJson['image_path']?.toString() ?? '',
+      publicId: safeJson['public_id']?.toString(),
+      productId: safeJson['product_id'],
+    );
+  }
 }
 
 class SearchVendor {
@@ -215,14 +249,26 @@ class SearchVendor {
     this.reviews = const [],
   });
 
-  factory SearchVendor.fromJson(Map<String, dynamic> json) => SearchVendor(
-    id: json['id'] ?? 0,
-    userId: json['user_id'],
-    user: (json['user'] is Map) ? SearchVendorUser.fromJson(json['user']) : null,
-    reviews: (json['reviews'] is List)
-        ? (json['reviews'] as List).map((e) => SearchVendorReview.fromJson(e)).toList()
-        : const [],
-  );
+  factory SearchVendor.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely cast Map
+    Map<String, dynamic> _safeMap(dynamic value) {
+      if (value == null) return {};
+      if (value is Map<String, dynamic>) return value;
+      if (value is Map) {
+        return Map<String, dynamic>.from(value);
+      }
+      return {};
+    }
+
+    return SearchVendor(
+      id: json['id'] ?? 0,
+      userId: json['user_id'],
+      user: (json['user'] is Map) ? SearchVendorUser.fromJson(_safeMap(json['user'])) : null,
+      reviews: (json['reviews'] is List)
+          ? (json['reviews'] as List).map((e) => SearchVendorReview.fromJson(_safeMap(e))).toList()
+          : const [],
+    );
+  }
 }
 
 class SearchVendorUser {
@@ -231,10 +277,14 @@ class SearchVendorUser {
 
   const SearchVendorUser({required this.id, required this.name});
 
-  factory SearchVendorUser.fromJson(Map<String, dynamic> json) => SearchVendorUser(
-    id: json['id'] ?? 0,
-    name: json['name']?.toString() ?? '',
-  );
+  factory SearchVendorUser.fromJson(Map<String, dynamic> json) {
+    // Safely convert to Map<String, dynamic> to handle Map<dynamic, dynamic>
+    final safeJson = Map<String, dynamic>.from(json);
+    return SearchVendorUser(
+      id: safeJson['id'] ?? 0,
+      name: safeJson['name']?.toString() ?? '',
+    );
+  }
 }
 
 class SearchVendorReview {
@@ -250,12 +300,16 @@ class SearchVendorReview {
     this.rating,
   });
 
-  factory SearchVendorReview.fromJson(Map<String, dynamic> json) => SearchVendorReview(
-    id: json['id'] ?? 0,
-    vendorId: json['vendor_id'],
-    description: json['description']?.toString(),
-    rating: (json['rating'] is num) ? json['rating'] as num : num.tryParse('${json['rating'] ?? ''}'),
-  );
+  factory SearchVendorReview.fromJson(Map<String, dynamic> json) {
+    // Safely convert to Map<String, dynamic> to handle Map<dynamic, dynamic>
+    final safeJson = Map<String, dynamic>.from(json);
+    return SearchVendorReview(
+      id: safeJson['id'] ?? 0,
+      vendorId: safeJson['vendor_id'],
+      description: safeJson['description']?.toString(),
+      rating: (safeJson['rating'] is num) ? safeJson['rating'] as num : num.tryParse('${safeJson['rating'] ?? ''}'),
+    );
+  }
 }
 
 /// --- helper: ["L,XL"] / "L,XL" / ["L","XL"] / '["L","XL"]' → ["L","XL"]

@@ -16,21 +16,35 @@ class CartService {
 
     final uri = Uri.parse(BuyerAPIController.cart_create);
 
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
+    // ✅ Use form-data format (MultipartRequest)
+    final request = http.MultipartRequest('POST', uri);
+
+    // Set headers
+    request.headers.addAll({
       'Accept': 'application/json',
       if (token != null && token.isNotEmpty) 'token': token,
-    };
-
-    // ✅ Only attributes will be sent
-    final body = jsonEncode({
-      'product_id': productId,
-      'quantity': quantity,
-      'attributes':
-          attributes, // example: {"color":"red","size":"m","brand":"apple"}
     });
 
-    final res = await http.post(uri, headers: headers, body: body);
+    // ✅ Convert attributes to JSON format with arrays
+    // Input: {"color":"red","size":"m"} 
+    // Output: {"color":["red"],"size":["m"]}
+    final Map<String, List<String>> attributesJson = {};
+    attributes.forEach((key, value) {
+      attributesJson[key] = [value];
+    });
+
+    // Convert to JSON string for form-data
+    final attributesJsonString = jsonEncode(attributesJson);
+    // Example: '{"color":["red"],"size":["m"]}'
+
+    // Add form fields
+    request.fields['product_id'] = productId.toString();
+    request.fields['quantity'] = quantity.toString();
+    request.fields['attributes'] = attributesJsonString;
+
+    // Send request
+    final streamedResponse = await request.send();
+    final res = await http.Response.fromStream(streamedResponse);
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('Add to cart failed: ${res.statusCode} ${res.body}');

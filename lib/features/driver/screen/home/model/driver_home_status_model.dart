@@ -28,10 +28,24 @@ class DriverHomeStatsWrapper {
   DriverHomeStatsWrapper({required this.data});
 
   factory DriverHomeStatsWrapper.fromJson(Map<String, dynamic> json) {
+    final dataJson = json['data'];
+    
+    // Handle case where data might be a string (error message) instead of object
+    if (dataJson is String) {
+      throw Exception('Invalid response: data is a string instead of object: $dataJson');
+    }
+    
+    // Handle null or non-map data
+    if (dataJson == null || dataJson is! Map<String, dynamic>) {
+      throw Exception(
+        'Invalid response: driver home stats data is missing or invalid. '
+        'Expected object but got: ${dataJson?.runtimeType ?? 'null'}. '
+        'This might happen if driver profile is not fully initialized.',
+      );
+    }
+    
     return DriverHomeStatsWrapper(
-      data: DriverHomeStats.fromJson(
-        (json['data'] as Map<String, dynamic>? ?? const {}),
-      ),
+      data: DriverHomeStats.fromJson(dataJson),
     );
   }
 }

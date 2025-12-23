@@ -41,7 +41,8 @@ class EmailRegisterNotifier extends StateNotifier<AsyncValue<bool>> {
 
         state = const AsyncValue.data(true);
       } else {
-        throw Exception(json['message'] ?? 'Email registration failed');
+        // Show "Your email is already registered" for validation errors
+        throw Exception('Your email is already registered');
       }
     } catch (e, st) {
       Logger().e("⛔ Email Register Error: $e");

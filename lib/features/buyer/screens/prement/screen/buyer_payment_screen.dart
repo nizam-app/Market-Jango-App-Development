@@ -14,9 +14,9 @@ import 'package:market_jango/features/buyer/screens/prement/model/prement_model.
 import 'package:market_jango/features/buyer/screens/prement/widget/show_shipping_contract_sheet.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/shiping_address_update_botton_shet.dart';
 
 import '../model/prement_page_data_model.dart'; // <-- PaymentPageData
-import '../widget/show_shipping_address_sheet.dart';
 
 class BuyerPaymentScreen extends ConsumerStatefulWidget {
   const BuyerPaymentScreen({super.key});
@@ -49,7 +49,7 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
       error: (_, __) => args?.buyer, // On error, use args
     );
 
-    // Build shipping address lines - showing ship_name, location, and address
+    // Build shipping address lines - showing ship_name, ship_location, address, and state
     final shippingLines = buyer == null
         ? const ['No address available', 'Please add shipping address']
         : () {
@@ -61,31 +61,37 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
               lines.add(shipName);
             }
             
-            // Location (second line if available)
+            // Ship Location (second line if available, fallback to location)
+            final shipLocation = buyer.shipLocation?.trim();
             final location = buyer.location?.trim();
-            if (location != null && location.isNotEmpty && location != 'null') {
-              lines.add(location);
+            final displayLocation = (shipLocation != null && shipLocation.isNotEmpty && shipLocation != 'null')
+                ? shipLocation
+                : (location != null && location.isNotEmpty && location != 'null')
+                    ? location
+                    : null;
+            if (displayLocation != null) {
+              lines.add(displayLocation);
             }
             
             // Address parts (third line)
             final addressParts = <String>[];
             
-            // Shipping address (preferred) or fallback to regular address
+            // Address (preferred) or fallback to ship_address
+            final address = buyer.address.trim();
             final shipAddress = buyer.shipAddress?.trim();
-            if (shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null') {
-              addressParts.add(shipAddress);
-            } else {
-              // Fallback to regular address if shipping address is not available
-              final fallbackAddress = buyer.address.trim();
-              if (fallbackAddress.isNotEmpty && fallbackAddress != 'null') {
-                addressParts.add(fallbackAddress);
-              }
+            final displayAddress = (address.isNotEmpty && address != 'null')
+                ? address
+                : ((shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null')
+                    ? shipAddress
+                    : null);
+            if (displayAddress != null) {
+              addressParts.add(displayAddress);
             }
             
-            // City
-            final city = buyer.shipCity?.trim();
-            if (city != null && city.isNotEmpty && city != 'null') {
-              addressParts.add(city);
+            // State (from state field, not ship_city)
+            final state = buyer.state?.trim();
+            if (state != null && state.isNotEmpty && state != 'null') {
+              addressParts.add(state);
             }
             
             // Country (shipping preferred, fallback to regular)
@@ -168,7 +174,13 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
                   title: ref.t(BKeys.shippingAddress),
                   lines: shippingLines,
                   onEdit: () {
-                    showShippingAddressSheet(context, ref, args);
+                    // Get updated buyer from cart if available, otherwise use args
+                    final updatedBuyer = cartAsync.maybeWhen(
+                      data: (cart) => cart.items.isNotEmpty ? cart.items.first.buyer : null,
+                      orElse: () => null,
+                    );
+                    final buyerToUse = updatedBuyer ?? args?.buyer;
+                    showShippingAddressBottomSheet(context, ref, buyer: buyerToUse);
                   },
                 ),
                 SizedBox(height: 20.h),

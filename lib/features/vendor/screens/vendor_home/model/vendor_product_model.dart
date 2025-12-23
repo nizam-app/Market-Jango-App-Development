@@ -13,6 +13,7 @@ class VendorProduct {
   final List<String> colors;
   final List<ProductImage> images;
   final int? stock;
+  final String? weight; // weight in kg
   final String? attributes; // JSON string: {"color":["red"],"size":["m"]}
 
   VendorProduct({
@@ -29,6 +30,7 @@ class VendorProduct {
     required this.colors,
     required this.images,
     this.stock,
+    this.weight,
     this.attributes,
   });
 
@@ -80,7 +82,14 @@ class VendorProduct {
         }
         return <ProductImage>[];
       }(),
-      stock: (json['stock'] as num?)?.toInt(),
+      stock: json['stock'] == null 
+          ? null 
+          : (json['stock'] is int 
+              ? json['stock'] as int 
+              : (json['stock'] is num 
+                  ? (json['stock'] as num).toInt() 
+                  : int.tryParse(json['stock'].toString()))),
+      weight: json['weight']?.toString(),
       attributes: json['attributes']?.toString(),
     );
   }

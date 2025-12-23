@@ -234,28 +234,35 @@ class _Texts extends StatelessWidget {
       Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w900,
-              color: AllColor.black,
+          Flexible(
+            child: Text(
+              status,
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w900,
+                color: AllColor.black,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           if (paymentLabel.isNotEmpty) SizedBox(width: 8.w),
           if (paymentLabel.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AllColor.grey.withOpacity(0.16),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Text(
-                paymentLabel, // "Payment successful" / "Cash on delivery"
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AllColor.black,
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: AllColor.grey.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  paymentLabel, // "Payment successful" / "Cash on delivery"
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AllColor.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),

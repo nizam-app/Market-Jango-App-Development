@@ -17,7 +17,23 @@ class DriverNewOrdersNotifier
   @override
   Future<DriverNewOrdersResponse?> build() async {
     _page = 1;
-    return _fetch(_page);
+    // Retry once if the first attempt fails (handles first load race conditions)
+    try {
+      return await _fetch(_page);
+    } catch (e) {
+      // If error contains "token", "auth", "null" (common first load issues), retry once
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('token') ||
+          errorStr.contains('auth') ||
+          errorStr.contains('null')) {
+        // Wait a bit before retry to allow token provider to refresh
+        await Future.delayed(const Duration(milliseconds: 500));
+        // Invalidate token provider to force refresh before retry
+        ref.invalidate(authTokenProvider);
+        return await _fetch(_page);
+      }
+      rethrow;
+    }
   }
 
   Future<void> changePage(int page) async {

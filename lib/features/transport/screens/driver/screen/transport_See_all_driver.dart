@@ -194,7 +194,7 @@ class _DriverCard extends StatelessWidget {
 
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     );
                   },
                   child: CircleAvatar(
@@ -206,7 +206,7 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () => context.push(
                     DriverDetailsScreen.routeName,
-                    extra: driver.userId,
+                    extra: user.id,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +285,7 @@ class _DriverCard extends StatelessWidget {
                   InkWell(
                     onTap: () => context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     ),
                     child: Container(
                       padding: EdgeInsets.symmetric(

@@ -96,29 +96,41 @@ class CartScreen extends ConsumerWidget {
 
           // ⬇️ তালিকা
           Expanded(
-            child: cartAsync.when(
-              loading: () => const Center(child: Text('Loading...')),
-              error: (error, stackTrace) =>
-                  Center(child: Text(error.toString())),
-              data: (dat) {
-                final data = dat.items;
-                if (data.isEmpty) {
-                  return Center(
-                    //'Please add the cart product'
-                    child: Text(ref.t(BKeys.please_add_the_cart_product)),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    final allData = data[index];
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15.w),
-                      child: _buildCartItemCard(allData, context, ref),
-                    );
-                  },
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(cartProvider);
+                // Wait for the provider to refresh
+                await ref.read(cartProvider.future);
               },
+              child: cartAsync.when(
+                loading: () => const Center(child: Text('Loading...')),
+                error: (error, stackTrace) =>
+                    Center(child: Text(error.toString())),
+                data: (dat) {
+                  final data = dat.items;
+                  if (data.isEmpty) {
+                    return ListView(
+                      children: [
+                        SizedBox(height: 100.h),
+                        Center(
+                          //'Please add the cart product'
+                          child: Text(ref.t(BKeys.please_add_the_cart_product)),
+                        ),
+                      ],
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final allData = data[index];
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.w),
+                        child: _buildCartItemCard(allData, context, ref),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
 
@@ -382,10 +394,16 @@ class CartScreen extends ConsumerWidget {
               lines.add(shipName);
             }
             
-            // Location (second line if available)
+            // Ship Location (second line if available, fallback to location)
+            final shipLocation = buyer.shipLocation?.trim();
             final location = buyer.location?.trim();
-            if (location != null && location.isNotEmpty && location != 'null') {
-              lines.add(location);
+            final displayLocation = (shipLocation != null && shipLocation.isNotEmpty && shipLocation != 'null')
+                ? shipLocation
+                : (location != null && location.isNotEmpty && location != 'null')
+                    ? location
+                    : null;
+            if (displayLocation != null) {
+              lines.add(displayLocation);
             }
             
             // Address parts (third line)

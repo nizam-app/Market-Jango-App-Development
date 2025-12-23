@@ -49,6 +49,7 @@ class _AttributeMenuSheetState extends ConsumerState<AttributeMenuSheet> {
         vendorId: widget.vendorId,
       );
       _nameController.clear();
+      // Invalidate to ensure UI updates when widgets watch the provider
       ref.invalidate(productAttributesProvider);
       GlobalSnackbar.show(
         context,
@@ -97,6 +98,7 @@ class _AttributeMenuSheetState extends ConsumerState<AttributeMenuSheet> {
         _editControllers[attributeId]?.dispose();
         _editControllers.remove(attributeId);
       });
+      // Invalidate to ensure UI updates when widgets watch the provider
       ref.invalidate(productAttributesProvider);
       GlobalSnackbar.show(
         context,
@@ -137,6 +139,7 @@ class _AttributeMenuSheetState extends ConsumerState<AttributeMenuSheet> {
 
     try {
       await deleteAttribute(attributeId: attributeId);
+      // Invalidate to ensure UI updates when widgets watch the provider
       ref.invalidate(productAttributesProvider);
       GlobalSnackbar.show(
         context,

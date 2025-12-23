@@ -30,6 +30,7 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
     int? categoryId,
     Map<String, List<String>>? attributes, // JSON string in form-data
     String? stock, // if API supports
+    String? weight, // weight in kg
     File? image, // main image
     List<File>? newFiles, // files[]
   }) async {
@@ -61,6 +62,7 @@ class UpdateProductNotifier extends StateNotifier<AsyncValue<void>> {
 
       if (categoryId != null) req.fields['category_id'] = '$categoryId';
       addField('stock', stock);
+      addField('weight', weight);
 
       if (attributes != null && attributes.isNotEmpty) {
         req.fields['attributes'] = jsonEncode(attributes);

@@ -304,6 +304,9 @@ Widget buildAddUrProduct(BuildContext context) {
 }
 
 Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
+  // Check if image is null or empty
+  final bool hasImage = vendor.image.isNotEmpty && vendor.image.trim().isNotEmpty;
+  
   return Row(
     children: [
       Spacer(),
@@ -323,10 +326,19 @@ Widget buildProfileSection(BuildContext context, VendorDetailsModel vendor) {
                     ),
                   ),
                   child: ClipOval(
-                    child: FirstTimeShimmerImage(
-                      imageUrl: vendor.image,
-                      fit: BoxFit.cover,
-                    ),
+                    child: hasImage
+                        ? FirstTimeShimmerImage(
+                            imageUrl: vendor.image,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.person,
+                              size: 40.r,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
                   ),
                 ),
 

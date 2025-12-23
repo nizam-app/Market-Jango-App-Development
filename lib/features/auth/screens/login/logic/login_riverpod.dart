@@ -10,6 +10,8 @@ import 'package:logger/logger.dart';
 
 import '../../../../../core/constants/api_control/auth_api.dart';
 import '../../../../../core/utils/auth_session_utils.dart';
+import '../../../../../core/utils/get_token_sharedpefarens.dart';
+import '../../../../../core/utils/get_user_type.dart';
 import '../../../../../core/widget/global_snackbar.dart';
 
 // Login state provider
@@ -125,6 +127,29 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
   ) async {
     // Save login data using AuthSessionUtils
     await AuthSessionUtils.saveLoginData(json);
+
+    // 🔥 Invalidate token and user providers to refresh them with new data
+    // This ensures that when the home screen loads, it has the latest token
+    ref.invalidate(authTokenProvider);
+    ref.invalidate(getUserTypeProvider);
+    ref.invalidate(getUserIdProvider);
+
+    // ✅ Wait for token provider to actually refresh and have a value
+    // This ensures token is ready before navigation, preventing first-load data issues
+    try {
+      final token = await ref.read(authTokenProvider.future);
+      if (token == null || token.isEmpty) {
+        Logger().w("⚠️ Token not ready after login, waiting...");
+        await Future.delayed(const Duration(milliseconds: 300));
+        final retryToken = await ref.read(authTokenProvider.future);
+        if (retryToken == null || retryToken.isEmpty) {
+          throw Exception('Token not available after login');
+        }
+      }
+    } catch (e) {
+      Logger().e("⛔ Error waiting for token: $e");
+      // Continue anyway, but log the error
+    }
 
     // Get user type for logging and navigation
     final userType = await AuthSessionUtils.getUserType();

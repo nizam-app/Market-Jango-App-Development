@@ -6,15 +6,15 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportCancelledDetails extends ConsumerStatefulWidget {
-  const TransportCancelledDetails({super.key});
+class TransportBookingDetails extends ConsumerStatefulWidget {
+  const TransportBookingDetails({super.key});
   static const String routeName = "/cancelledDetails";
 
   @override
-  ConsumerState<TransportCancelledDetails> createState() => _TransportCancelledDetailsState();
+  ConsumerState<TransportBookingDetails> createState() => _TransportCancelledDetailsState();
 }
 
-class _TransportCancelledDetailsState extends ConsumerState<TransportCancelledDetails> {
+class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDetails> {
   // GoogleMapController? mapController;
   //
   // final LatLng pickupLocation = const LatLng(37.7749, -122.4194);

@@ -16,6 +16,7 @@ import 'package:market_jango/features/vendor/screens/product_edit/data/product_a
 import 'package:market_jango/features/vendor/screens/product_edit/logic/delete_image_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/widget/generic_attribute_picker.dart';
 
@@ -250,30 +251,73 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                   ),
                   SizedBox(height: 10.h),
 
-                  /// Stock
-                  _Label('Stock', color: const Color(0xFF2B6CB0)),
-                  SizedBox(height: 6.h),
-                  TextFormField(
-                    controller: stockController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      fillColor: AllColor.white,
-                      hintText: 'Enter Stock Quantity',
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AllColor.grey,
-                          width: 1.2,
+                  /// Stock and Weight row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _Label('Stock', color: const Color(0xFF2B6CB0)),
+                            SizedBox(height: 6.h),
+                            TextFormField(
+                              controller: stockController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                fillColor: AllColor.white,
+                                hintText: 'Enter Stock Quantity',
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AllColor.grey,
+                                    width: 1.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AllColor.grey,
+                                    width: 1.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(5.r),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AllColor.grey,
-                          width: 1.2,
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _Label('Weight (kg)', color: const Color(0xFF2B6CB0)),
+                            SizedBox(height: 6.h),
+                            TextFormField(
+                              controller: weightController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                fillColor: AllColor.white,
+                                hintText: 'Weight in kg',
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AllColor.grey,
+                                    width: 1.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AllColor.grey,
+                                    width: 1.2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(5.r),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(5.r),
                       ),
-                    ),
+                    ],
                   ),
 
                   SizedBox(height: 20.h),
@@ -308,6 +352,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                                         ? null
                                         : ref.read(selectedAttributesProvider),
                                     stock: nn(stockController.text),
+                                    weight: nn(weightController.text),
                                     image: mainImage,
                                     newFiles: _newFiles,
                                   );
@@ -315,13 +360,15 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                               final res = ref.read(updateProductProvider);
                               res.when(
                                 data: (_) {
+                                  // Invalidate product list to refresh with updated data
+                                  ref.invalidate(productNotifierProvider);
+                                  ref.invalidate(updateProductProvider);
                                   context.pop();
                                   GlobalSnackbar.show(
                                     context,
                                     title: "Success",
                                     message: "Product updated successfully",
                                   );
-                                  ref.invalidate(updateProductProvider);
                                 },
                                 loading: () {},
                                 error: (e, _) {
@@ -362,6 +409,8 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
 
   late TextEditingController stockController;
 
+  late TextEditingController weightController;
+
   final ThemeData dropTheme = ThemeData(
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,
@@ -376,11 +425,20 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
     priceController = TextEditingController(
       text: widget.product.sellPrice.toString(),
     );
-    stockController = TextEditingController();
+    stockController = TextEditingController(
+      text: widget.product.stock?.toString() ?? '',
+    );
+    weightController = TextEditingController(
+      text: widget.product.weight ?? '',
+    );
     _selectedCategory = widget.product.categoryName;
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Refresh providers to ensure fresh data on first load
+      ref.invalidate(productAttributesProvider);
+      ref.invalidate(vendorCategoryProvider(VendorAPIController.vendor_category));
+      
       // Parse attributes from JSON string if available
       Map<String, List<String>> parsedAttributes = {};
       if (widget.product.attributes != null &&
@@ -473,6 +531,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
     descriptionController.dispose();
     priceController.dispose();
     stockController.dispose();
+    weightController.dispose();
 
     // TODO: implement dispose
     super.dispose();

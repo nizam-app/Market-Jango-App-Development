@@ -572,7 +572,7 @@ class _DriverCard extends ConsumerWidget {
                     Logger().i(user.id);
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     );
                   },
                   child: ClipOval(
@@ -590,7 +590,7 @@ class _DriverCard extends ConsumerWidget {
                     Logger().i(user.id);
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.id,
+                      extra: user.id,
                     );
                   },
                   child: Column(
@@ -668,10 +668,10 @@ class _DriverCard extends ConsumerWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      Logger().e(driver.id);
+                      Logger().e(user.id);
                       context.push(
                         DriverDetailsScreen.routeName,
-                        extra: driver.id,
+                        extra: user.id,
                       );
                     },
                     child: Container(

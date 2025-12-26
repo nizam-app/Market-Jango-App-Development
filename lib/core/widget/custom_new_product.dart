@@ -15,6 +15,7 @@ class CustomNewProduct extends StatelessWidget {
     this.onTap,
     this.image =
         "https://t4.ftcdn.net/jpg/05/98/45/79/360_F_598457961_hojY3MEjPaYBgdUkfaWO6mPNuHce6WFv.jpg",
+    this.viewCount,
   });
   final double width;
   final double height;
@@ -22,6 +23,7 @@ class CustomNewProduct extends StatelessWidget {
   final String productPrices;
   final String productName;
   final String image;
+  final int? viewCount; // number of views
 
   final bool checking;
   final VoidCallback? onTap;
@@ -51,14 +53,50 @@ class CustomNewProduct extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: onTap,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.r),
-              child: SizedBox.expand(
-                child: FirstTimeShimmerImage(
-                  imageUrl: image,
-                  fit: BoxFit.cover,
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: SizedBox.expand(
+                    child: FirstTimeShimmerImage(
+                      imageUrl: image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                // View count overlay - always show if viewCount is not null
+                if (viewCount != null)
+                  Positioned(
+                    top: 8.h,
+                    right: 8.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.remove_red_eye,
+                            size: 12.sp,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            viewCount.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

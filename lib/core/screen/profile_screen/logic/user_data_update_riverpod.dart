@@ -21,7 +21,8 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
 
     // common
     String? name,
-    File? image,
+    File? image, // profile image
+    File? coverImage, // cover image
     double? latitude,
     double? longitude,
 
@@ -103,6 +104,14 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
         final coverCompressed = await ImageManager.compressFile(image);
         req.files.add(
           await http.MultipartFile.fromPath('image', coverCompressed.path),
+        );
+      }
+      
+      // ----- cover image -----
+      if (coverImage != null) {
+        final coverCompressed = await ImageManager.compressFile(coverImage);
+        req.files.add(
+          await http.MultipartFile.fromPath('cover_image', coverCompressed.path),
         );
       }
 

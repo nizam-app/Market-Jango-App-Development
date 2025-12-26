@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/screen/profile_screen/model/profile_model.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
@@ -17,6 +18,9 @@ import 'package:market_jango/features/buyer/screens/product/product_details.dart
 import 'package:market_jango/features/buyer/screens/review/data/buyer_review_data.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import 'package:market_jango/features/buyer/widgets/custom_discunt_card.dart';
+import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
+import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 
 import 'buyer_vendor_cetagory_screen.dart';
 
@@ -35,11 +39,31 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Logger().d(vendorId);
     final async = ref.watch(vendorCategoryProductsProvider(vendorId));
+    final userAsync = ref.watch(userProvider(userId.toString()));
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Cover image section
+              userAsync.when(
+                data: (user) {
+                  final coverImageUrl = user.coverImage;
+                  if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
+                    return Container(
+                      height: 200.h,
+                      width: double.infinity,
+                      child: FirstTimeShimmerImage(
+                        imageUrl: coverImageUrl,
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
               CustomVendorUpperSection(
                 userId: userId.toString(),
                 vendorId: vendorId,
@@ -107,6 +131,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
     final async = ref.watch(userProvider(userId));
     final reviewCountAsync = ref.watch(vendorReviewCountProvider(vendorId));
     final theme = Theme.of(context).textTheme;
+    final myUserIdAsync = ref.watch(getUserIdProvider);
 
     return async.when(
       loading: () => Padding(
@@ -229,6 +254,10 @@ class CustomVendorUpperSection extends ConsumerWidget {
                 ],
               ),
               const Spacer(),
+              GestureDetector(
+                onTap: () => goToChatScreen(context, ref, v, myUserIdAsync),
+                child: const Icon(Icons.chat_bubble_outline),
+              ),
             ],
           ),
         );
@@ -238,6 +267,61 @@ class CustomVendorUpperSection extends ConsumerWidget {
 
   void goToReviewScreen(BuildContext context, int vendorId) {
     context.push(ReviewScreen.routeName, extra: vendorId);
+  }
+
+  void goToChatScreen(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel vendor,
+    AsyncValue<String?> myUserIdAsync,
+  ) {
+    final myUserIdStr = myUserIdAsync.value;
+    if (myUserIdStr == null || myUserIdStr.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to get user ID. Please login again.'),
+        ),
+      );
+      return;
+    }
+
+    final myUserIdInt = int.tryParse(myUserIdStr);
+    if (myUserIdInt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid user ID. Please login again.'),
+        ),
+      );
+      return;
+    }
+
+    final vendorName = vendor.name.isNotEmpty
+        ? vendor.name
+        : (vendor.vendor?.businessName.isNotEmpty ?? false)
+            ? vendor.vendor!.businessName
+            : 'Vendor';
+
+    final vendorImage = vendor.image.isNotEmpty
+        ? vendor.image
+        : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvulry9PHytXyLFph-HdGDizB7P5EF38IskQ&s';
+
+    try {
+      context.push(
+        GlobalChatScreen.routeName,
+        extra: ChatArgs(
+          partnerId: vendor.id,
+          partnerName: vendorName,
+          partnerImage: vendorImage,
+          myUserId: myUserIdInt,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open chat: ${e.toString()}'),
+        ),
+      );
+    }
   }
 }
 

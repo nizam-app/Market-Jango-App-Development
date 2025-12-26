@@ -78,6 +78,7 @@ class UserModel {
 
   // ==== images (optional) ====
   final List<UserImage> userImages;
+  final String? coverImage; // cover image for vendor
 
   UserModel({
     // required (keep same)
@@ -102,6 +103,7 @@ class UserModel {
     this.driver,
     this.transport,
     this.userImages = const <UserImage>[],
+    this.coverImage,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -148,6 +150,9 @@ class UserModel {
           .whereType<Map<String, dynamic>>()
           .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
           .toList(),
+      
+      // ==== cover image ====
+      coverImage: json['cover_image']?.toString(),
     );
   }
 }

@@ -15,6 +15,7 @@ class VendorProduct {
   final int? stock;
   final String? weight; // weight in kg
   final String? attributes; // JSON string: {"color":["red"],"size":["m"]}
+  final int? viewCount; // number of views
 
   VendorProduct({
     required this.id,
@@ -32,6 +33,7 @@ class VendorProduct {
     this.stock,
     this.weight,
     this.attributes,
+    this.viewCount,
   });
 
   factory VendorProduct.fromJson(Map<String, dynamic> json) {
@@ -91,6 +93,15 @@ class VendorProduct {
                   : int.tryParse(json['stock'].toString()))),
       weight: json['weight']?.toString(),
       attributes: json['attributes']?.toString(),
+      viewCount: () {
+        // Try multiple field names that API might use
+        final views = json['view_count'] ?? json['views'] ?? json['view'];
+        if (views == null) return null;
+        if (views is int) return views;
+        if (views is num) return views.toInt();
+        final parsed = int.tryParse(views.toString());
+        return parsed != null && parsed > 0 ? parsed : null;
+      }(),
     );
   }
 }

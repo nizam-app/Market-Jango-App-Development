@@ -105,21 +105,31 @@ class _FirstTimeShimmerImageState extends State<FirstTimeShimmerImage> {
               height: widget.height,
               color: Colors.grey.shade200,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.broken_image,
-                    size: 48,
-                    color: Colors.grey.shade400,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Failed to load image',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
+                  Flexible(
+                    child: Icon(
+                      Icons.broken_image,
+                      size: widget.height != null && widget.height! < 100 ? widget.height! * 0.4 : 32,
+                      color: Colors.grey.shade400,
                     ),
                   ),
+                  if (widget.height == null || widget.height! >= 80) ...[
+                    SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        'Failed to load',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

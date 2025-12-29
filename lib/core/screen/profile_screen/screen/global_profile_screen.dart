@@ -146,22 +146,21 @@ class GlobalSettingScreen extends ConsumerWidget {
     UserModel user,
     AsyncValue<String?> userTypeAsync,
   ) {
-    final isDriver = userTypeAsync.value == "driver";
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!isDriver) SizedBox(height: 12.h),
-        if (!isDriver)
-          Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
-        if (!isDriver) SizedBox(height: 16.h),
-        if (!isDriver)
-          ProfileSection(
-            name: user.name,
-            username: user.email,
-            imageUrl: user.image,
-            userType: user,
-          ),
-        if (!isDriver) SizedBox(height: 5.h),
+        // if (!isDriver) SizedBox(height: 12.h),
+        // if (!isDriver)
+        //   Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
+        // if (!isDriver) SizedBox(height: 16.h),
+        // if (!isDriver)
+        //   ProfileSection(
+        //     name: user.name,
+        //     username: user.email,
+        //     imageUrl: user.image,
+        //     userType: user,
+        //   ),
+        // if (!isDriver) SizedBox(height: 5.h),
         _SettingsLine(
           icon: Icons.phone_in_talk_outlined,
           text: user.phone,
@@ -200,7 +199,7 @@ class GlobalSettingScreen extends ConsumerWidget {
             onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
           ),
         _DividerLine(),
-        _SettingsLine(icon: Icons.attach_money, text: 'USD'),
+        _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
         _DividerLine(),
         _SettingsTile(
           leadingIcon: Icons.language_outlined,
@@ -225,8 +224,10 @@ class GlobalSettingScreen extends ConsumerWidget {
     WidgetRef ref,
     UserModel user,
   ) {
+    final String? coverImageUrl = user.driver?.coverImage;
     final bool hasCoverImage =
-        user.coverImage != null && user.coverImage!.isNotEmpty;
+        coverImageUrl != null && coverImageUrl.isNotEmpty;
+    final String coverImage = coverImageUrl ?? '';
 
     return Column(
       children: [
@@ -246,7 +247,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                 ),
                 child: hasCoverImage
                     ? FirstTimeShimmerImage(
-                        imageUrl: user.coverImage!,
+                        imageUrl: coverImage,
                         fit: BoxFit.cover,
                       )
                     : Container(
@@ -325,9 +326,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                           bottom: 0,
                           right: 0,
                           child: InkWell(
-                            onTap: () {
-                              // Profile edit functionality can be added here if needed
-                            },
+                            onTap: () => _handleProfileImageEdit(context, ref, user.id.toString()),
                             child: Container(
                               padding: EdgeInsets.all(4.w),
                               decoration: BoxDecoration(
@@ -351,13 +350,33 @@ class GlobalSettingScreen extends ConsumerWidget {
                   ],
                 ),
                 SizedBox(height: 8.h),
-                Text(
-                  user.name,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    color: AllColor.loginButtomColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      user.name,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AllColor.loginButtomColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    IconButton(
+                      onPressed: () {
+                        ref.invalidate(selectedLatitudeProvider);
+                        ref.invalidate(selectedLongitudeProvider);
+                        context.push(BuyerProfileEditScreen.routeName, extra: user);
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: AllColor.loginButtomColor,
+                        size: 18.sp,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20.h),
               ],
@@ -447,6 +466,101 @@ class GlobalSettingScreen extends ConsumerWidget {
             context,
             title: "Error",
             message: "Failed to update cover image",
+            type: CustomSnackType.error,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: "Error",
+          message: e.toString(),
+          type: CustomSnackType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _handleProfileImageEdit(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final ImagePicker picker = ImagePicker();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateProfileImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateProfileImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateProfileImage(
+    BuildContext context,
+    WidgetRef ref,
+    File imageFile,
+    String userId,
+  ) async {
+    try {
+      final notifier = ref.read(updateUserProvider.notifier);
+      final userTypeAsync = await ref.read(getUserTypeProvider.future);
+      final userType = userTypeAsync ?? 'driver';
+      
+      final success = await notifier.updateUser(
+        userType: userType,
+        image: imageFile,
+      );
+
+      if (success) {
+        if (context.mounted) {
+          ref.invalidate(userProvider(userId));
+          GlobalSnackbar.show(
+            context,
+            title: "Success",
+            message: "Profile image updated successfully",
+          );
+        }
+      } else {
+        if (context.mounted) {
+          GlobalSnackbar.show(
+            context,
+            title: "Error",
+            message: "Failed to update profile image",
             type: CustomSnackType.error,
           );
         }

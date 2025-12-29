@@ -1,4 +1,5 @@
 // lib/features/account/logic/update_user_provider.dart
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,7 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
     File? coverImage, // cover image
     double? latitude,
     double? longitude,
+    String? currency,
 
     // buyer only
     String? gender,
@@ -68,6 +70,7 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
 
       // ----- common -----
       addField('name', name);
+      addField('currency', currency);
 
       // ----- buyer payload (IMAGE-1 er sathe match kore) -----
       if (userType == 'buyer') {
@@ -115,17 +118,55 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
         );
       }
 
+      // Debug: Print request details (for troubleshooting)
+      print('Update User Request - userType: $userType');
+      print('Fields: ${req.fields}');
+      print('Files: ${req.files.map((f) => f.field).toList()}');
+
       final streamed = await req.send();
       final res = await http.Response.fromStream(streamed);
+      
+      // Debug: Print response (for troubleshooting)
+      print('Update User Response - Status: ${res.statusCode}');
+      print('Response Body: ${res.body}');
 
       if (res.statusCode == 200) {
-        state = const AsyncData(null);
-        return true;
+        // Check response body for status field
+        try {
+          final bodyMap = jsonDecode(res.body) as Map<String, dynamic>?;
+          final status = bodyMap?['status']?.toString().toLowerCase();
+          
+          if (status == 'success' || status == null) {
+            state = const AsyncData(null);
+            return true;
+          } else {
+            final message = bodyMap?['message']?.toString() ?? 'Update failed';
+            state = AsyncError(
+              message,
+              StackTrace.current,
+            );
+            return false;
+          }
+        } catch (e) {
+          // If JSON parsing fails, assume success if status code is 200
+          state = const AsyncData(null);
+          return true;
+        }
       } else {
-        state = AsyncError(
-          'Failed: ${res.statusCode} ${res.reasonPhrase}\n${res.body}',
-          StackTrace.current,
-        );
+        try {
+          final bodyMap = jsonDecode(res.body) as Map<String, dynamic>?;
+          final message = bodyMap?['message']?.toString() ?? 
+              'Failed: ${res.statusCode} ${res.reasonPhrase}';
+          state = AsyncError(
+            message,
+            StackTrace.current,
+          );
+        } catch (e) {
+          state = AsyncError(
+            'Failed: ${res.statusCode} ${res.reasonPhrase}\n${res.body}',
+            StackTrace.current,
+          );
+        }
         return false;
       }
     } catch (e, st) {

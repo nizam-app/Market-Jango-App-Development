@@ -100,7 +100,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
 
   );
 
-  String? selectedCategory;
+  String? selectedCategory; // Will be set when categories load
 
   // colors tuned to the mock
   final _lblColor = const Color(0xFF436AA0); // label text
@@ -159,11 +159,16 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
               return const Text('No categories available');
             }
             
-            final categoryNames = categories.map((e) => e.name).toList();
+            // Get unique category names (handle duplicates)
+            final categoryNames = categories.map((e) => e.name).toSet().toList();
             
-            // Ensure selectedCategory is valid - set it immediately if needed
+            // Ensure selectedCategory is valid - must be in the list or null
+            // Reset if invalid to prevent DropdownButton assertion errors
             String? validSelectedCategory;
-            if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
+            if (categoryNames.isEmpty) {
+              validSelectedCategory = null;
+            } else if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
+              // If invalid, set to first category synchronously for this build
               validSelectedCategory = categoryNames.first;
               // Update state asynchronously to avoid build-time state changes
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -171,14 +176,23 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                   setState(() {
                     selectedCategory = validSelectedCategory;
                   });
-                  final selected = categories.firstWhere((e) => e.name == validSelectedCategory);
-                  ref.read(productCategoryProvider.notifier).state = selected.id;
+                  try {
+                    final selected = categories.firstWhere((e) => e.name == validSelectedCategory);
+                    ref.read(productCategoryProvider.notifier).state = selected.id;
+                  } catch (e) {
+                    // If category not found, use first one
+                    if (categories.isNotEmpty) {
+                      ref.read(productCategoryProvider.notifier).state = categories.first.id;
+                    }
+                  }
                 }
               });
             } else {
+              // selectedCategory is valid, use it
               validSelectedCategory = selectedCategory;
             }
             
+            // Only show dropdown if we have a valid value or can use null with hint
             return Theme(
               data: dropTheme,
               child: Container(
@@ -199,7 +213,10 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    value: validSelectedCategory,
+                    value: validSelectedCategory, // This will be null or a valid value from the list
+                    hint: validSelectedCategory == null 
+                        ? Text('Select Category', style: TextStyle(fontSize: 15.sp, color: _hintText))
+                        : null,
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                     dropdownColor: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
@@ -480,8 +497,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                   createAsync.createProduct(
                     name: name,
                     description: desc,
-                    regularPrice: _currentC.text,
-                    sellPrice: _previousC.text,
+                    regularPrice: _previousC.text,
+                    sellPrice: _currentC.text,
                     categoryId: categoryId ?? 1,
                     attributes: selectedAttributes,
                     stock: _stockC.text,

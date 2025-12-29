@@ -24,6 +24,7 @@ import 'package:market_jango/features/vendor/screens/vendor_home/model/vendor_pr
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/widgets/edit_widget.dart';
+import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 
 import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
@@ -75,12 +76,12 @@ class VendorHomeScreen extends ConsumerWidget {
                         child: Text('Error: $err'),
                       ),
                     ),
-                    SizedBox(height: 1.h),
-                    // Document Upload Section
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: DocumentUploadSection(),
-                    ),
+                    // SizedBox(height: 1.h),
+                    // // Document Upload Section
+                    // Padding(
+                    //   padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    //   child: DocumentUploadSection(),
+                    // ),
                     SizedBox(height: 20.h),
                     GlobalSearchBar<GlobalSearchResponse, GlobalSearchProduct>(
                       provider: searchProvider,
@@ -193,7 +194,21 @@ class VendorHomeScreen extends ConsumerWidget {
 
           InkWell(
             onTap: () {
-              context.push("/vendorSalePlatform");
+              final vendorAsync = ref.read(vendorProvider);
+              vendorAsync.maybeWhen(
+                data: (vendor) {
+                  context.push(ReviewScreen.routeName, extra: vendor.id);
+                },
+                orElse: () {
+                  // Handle case when vendor data is not available
+                  GlobalSnackbar.show(
+                    context,
+                    title: "Error",
+                    message: "Vendor information not available",
+                    type: CustomSnackType.error,
+                  );
+                },
+              );
             },
             child: ListTile(
               leading: const Icon(
@@ -744,7 +759,10 @@ Future<void> _updateCoverImage(BuildContext context, WidgetRef ref, File imageFi
     
     if (success) {
       if (context.mounted) {
+        // Invalidate vendorProvider to refetch from user/show API
         ref.invalidate(vendorProvider);
+        // Wait for the provider to refresh
+        await ref.read(vendorProvider.future);
         GlobalSnackbar.show(
           context,
           title: "Success",
@@ -753,20 +771,30 @@ Future<void> _updateCoverImage(BuildContext context, WidgetRef ref, File imageFi
       }
     } else {
       if (context.mounted) {
+        // Wait a bit to ensure error state is set
+        await Future.delayed(const Duration(milliseconds: 100));
+        // Get error message from provider state
+        final errorMsg = ref.read(updateUserProvider).maybeWhen(
+          error: (error, _) => error.toString(),
+          orElse: () => "Failed to update cover image. Please try again.",
+        );
         GlobalSnackbar.show(
           context,
           title: "Error",
-          message: "Failed to update cover image",
+          message: errorMsg,
           type: CustomSnackType.error,
         );
       }
     }
-  } catch (e) {
+  } catch (e, stackTrace) {
     if (context.mounted) {
+      // Log the full error for debugging
+      debugPrint('Cover image update error: $e');
+      debugPrint('Stack trace: $stackTrace');
       GlobalSnackbar.show(
         context,
         title: "Error",
-        message: e.toString(),
+        message: "Failed to update cover image: ${e.toString()}",
         type: CustomSnackType.error,
       );
     }

@@ -45,24 +45,139 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Cover image section
+              // Cover image section with back icon overlay
               userAsync.when(
                 data: (user) {
                   final coverImageUrl = user.coverImage;
-                  if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
-                    return Container(
+                  final hasCoverImage =
+                      coverImageUrl != null && coverImageUrl.isNotEmpty;
+                  final String safeCoverImage = coverImageUrl ?? '';
+                  
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(20.r),
+                          bottomRight: Radius.circular(20.r),
+                        ),
+                        child: Container(
+                          height: 200.h,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          child: hasCoverImage
+                              ? FirstTimeShimmerImage(
+                                  imageUrl: safeCoverImage,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  color: Colors.grey.shade300,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.store,
+                                      size: 50.r,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      // Back icon positioned on top of cover image
+                      Positioned(
+                        top: 10.h,
+                        left: 10.w,
+                        child: GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.arrow_back_ios,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => Stack(
+                  children: [
+                    Container(
                       height: 200.h,
                       width: double.infinity,
-                      child: FirstTimeShimmerImage(
-                        imageUrl: coverImageUrl,
-                        fit: BoxFit.cover,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
                       ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    // Back icon positioned on top of cover image
+                    Positioned(
+                      top: 10.h,
+                      left: 10.w,
+                      child: GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                error: (_, __) => Stack(
+                  children: [
+                    Container(
+                      height: 200.h,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.store,
+                          size: 50.r,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ),
+                    // Back icon positioned on top of cover image
+                    Positioned(
+                      top: 10.h,
+                      left: 10.w,
+                      child: GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               CustomVendorUpperSection(
                 userId: userId.toString(),
@@ -180,10 +295,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () => context.pop(),
-                child: const Icon(Icons.arrow_back_ios),
-              ),
+              // Back icon removed - now on cover image
               const Spacer(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../model/vendor_request_model.dart';
 
@@ -29,8 +29,8 @@ class VendorRegisterNotifier extends StateNotifier<AsyncValue<VendorModel?>> {
     state = const AsyncLoading();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       if (token == null || token.isEmpty) throw 'Missing auth token';
 
       var request = http.MultipartRequest('POST', Uri.parse(url));

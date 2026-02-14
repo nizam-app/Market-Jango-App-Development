@@ -9,6 +9,7 @@ import 'package:market_jango/features/buyer/screens/prement/logic/global_logger.
 import 'package:market_jango/features/buyer/screens/prement/logic/prement_reverpod.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/payment_complete_screen.dart';
 
 Future<void> startCheckout(BuildContext context) async {
   showDialog(
@@ -66,7 +67,7 @@ Future<void> startCheckout(BuildContext context) async {
     log.i('InvoiceCreate ← status=${res.statusCode}');
     log.t(
       'InvoiceCreate body: '
-      '${res.body.length > 400 ? res.body.substring(0, 400) + '…' : res.body}',
+      '${res.body.length > 400 ? '${res.body.substring(0, 400)}…' : res.body}',
     );
 
     if (res.statusCode != 200) {
@@ -91,15 +92,13 @@ Future<void> startCheckout(BuildContext context) async {
     // 🔹 CASE 1: Own Pick Up → OPU → শুধু success, কোনো webview না
     if (paymentMethod == 'OPU') {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            body['message']?.toString() ?? 'Order placed successfully',
-          ),
+      // Replace payment screen with completion screen
+      // When completion screen closes, we'll be back to cart/previous screen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const PaymentCompleteScreen(),
         ),
       );
-      // ইচ্ছে করলে এখানে order details screen এ push করতে পারো
-      Navigator.pop(context); // payment screen থেকে back
       return;
     }
 
@@ -128,10 +127,15 @@ Future<void> startCheckout(BuildContext context) async {
     if (!context.mounted) return;
 
     if (result?.success == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment completed successfully')),
-      );
-      Navigator.pop(context); // success → back
+      // Replace payment screen with completion screen
+      // When completion screen closes, we'll be back to cart/previous screen
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const PaymentCompleteScreen(),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(
         context,

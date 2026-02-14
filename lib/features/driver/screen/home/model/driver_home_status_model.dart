@@ -28,10 +28,24 @@ class DriverHomeStatsWrapper {
   DriverHomeStatsWrapper({required this.data});
 
   factory DriverHomeStatsWrapper.fromJson(Map<String, dynamic> json) {
+    final dataJson = json['data'];
+    
+    // Handle case where data might be a string (error message) instead of object
+    if (dataJson is String) {
+      throw Exception('Invalid response: data is a string instead of object: $dataJson');
+    }
+    
+    // Handle null or non-map data
+    if (dataJson == null || dataJson is! Map<String, dynamic>) {
+      throw Exception(
+        'Invalid response: driver home stats data is missing or invalid. '
+        'Expected object but got: ${dataJson?.runtimeType ?? 'null'}. '
+        'This might happen if driver profile is not fully initialized.',
+      );
+    }
+    
     return DriverHomeStatsWrapper(
-      data: DriverHomeStats.fromJson(
-        (json['data'] as Map<String, dynamic>? ?? const {}),
-      ),
+      data: DriverHomeStats.fromJson(dataJson),
     );
   }
 }
@@ -50,18 +64,18 @@ class DriverHomeStats {
   });
 
   factory DriverHomeStats.fromJson(Map<String, dynamic> json) {
-    int _int(dynamic v) {
+     int _toInt(dynamic v) {
       if (v == null) return 0;
       if (v is int) return v;
       return int.tryParse(v.toString()) ?? 0;
     }
 
     return DriverHomeStats(
-      totalActiveOrders: _int(json['total_active_orders']),
-      picked: _int(json['picked']),
+      totalActiveOrders: _toInt(json['total_active_orders']),
+      picked: _toInt(json['picked']),
       // API key typo: "pendings_deliveries"
-      pendingsDeliveries: _int(json['pendings_deliveries']),
-      deliveredToday: _int(json['delivered_today']),
+      pendingsDeliveries: _toInt(json['pendings_deliveries']),
+      deliveredToday: _toInt(json['delivered_today']),
     );
   }
 }

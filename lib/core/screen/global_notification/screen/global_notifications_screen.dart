@@ -61,7 +61,7 @@ class _GlobalNotificationsState
                     );
                   },
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (error, stackTrace) =>
                       Center(child: Text(error.toString())),
                 ),

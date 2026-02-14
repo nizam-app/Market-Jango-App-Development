@@ -43,7 +43,15 @@ class BuyerNewItemsNotifier extends AsyncNotifier<TopProductsResponse?> {
     );
 
     if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
+      // Handle case where response might be a List or Map
+      final jsonData = decoded is Map<String, dynamic>
+          ? decoded
+          : <String, dynamic>{
+              'status': 'success',
+              'message': '',
+              'data': decoded is List ? decoded : [],
+            };
       return TopProductsResponse.fromJson(jsonData);
     } else {
       throw Exception(

@@ -36,6 +36,7 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -61,6 +62,7 @@ import 'package:market_jango/features/transport/screens/transport_cancelled_deta
 import 'package:market_jango/features/transport/screens/transport_competed_details.dart';
 import 'package:market_jango/features/transport/screens/transport_completed.dart';
 import 'package:market_jango/features/vendor/screens/my_product_color/screen/my_product_color.dart';
+import 'package:market_jango/features/vendor/screens/product_edit/screen/attribute_values_screen.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
@@ -74,6 +76,7 @@ import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
+import 'package:market_jango/features/vendor/screens/vendor_store_document_upload/screen/store_document_upload_screen.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
@@ -445,7 +448,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerBottomNavBar.routeName,
       name: 'bottom_nav_bar',
-      builder: (context, state) => const BuyerBottomNavBar(),
+      builder: (context, state) =>  BuyerBottomNavBar(),
     ),
 
     GoRoute(
@@ -538,12 +541,22 @@ final GoRouter router = GoRouter(
       path: GlobalChatScreen.routeName, // "/chatScreen"
       name: GlobalChatScreen.routeName,
       builder: (context, state) {
-        final args = state.extra as ChatArgs;
+        final extra = state.extra;
+        
+        if (extra is! ChatArgs) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: const Center(
+              child: Text('Invalid chat arguments. Please try again.'),
+            ),
+          );
+        }
+
         return GlobalChatScreen(
-          partnerId: args.partnerId,
-          partnerName: args.partnerName,
-          partnerImage: args.partnerImage,
-          myUserId: args.myUserId,
+          partnerId: extra.partnerId,
+          partnerName: extra.partnerName,
+          partnerImage: extra.partnerImage,
+          myUserId: extra.myUserId,
         );
       },
     ),
@@ -562,8 +575,25 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerVendorProfileScreen.routeName,
       name: BuyerVendorProfileScreen.routeName,
-      builder: (context, state) =>
-          BuyerVendorProfileScreen(vendorId: state.extra as int),
+      builder: (context, state) {
+        final extra = state.extra;
+        int vendorId;
+        int userId = 0;
+        
+        if (extra is Map<String, dynamic>) {
+          vendorId = extra['vendorId'] as int? ?? 0;
+          userId = extra['userId'] as int? ?? 0;
+        } else if (extra is int) {
+          // Backward compatibility: if only int is passed, treat it as vendorId
+          // and try to get userId from AuthLocalStorage
+          vendorId = extra;
+          // userId will remain 0, will be handled in the screen
+        } else {
+          vendorId = 0;
+        }
+        
+        return BuyerVendorProfileScreen(vendorId: vendorId, userId: userId);
+      },
     ),
     GoRoute(
       path: ReviewScreen.routeName,
@@ -612,6 +642,17 @@ final GoRouter router = GoRouter(
           MyProductSizeScreen(attributeId: state.extra as int),
     ),
     GoRoute(
+      path: AttributeValuesScreen.routeName,
+      name: AttributeValuesScreen.routeName,
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>;
+        return AttributeValuesScreen(
+          attributeId: args['attributeId'] as int,
+          attributeName: args['attributeName'] as String,
+        );
+      },
+    ),
+    GoRoute(
       path: ProductAddPage.routeName,
       name: ProductAddPage.routeName,
       builder: (context, state) => ProductAddPage(),
@@ -620,6 +661,11 @@ final GoRouter router = GoRouter(
       path: CategoryAddPage.routeName,
       name: CategoryAddPage.routeName,
       builder: (context, state) => CategoryAddPage(),
+    ),
+    GoRoute(
+      path: StoreDocumentUploadScreen.routeName,
+      name: StoreDocumentUploadScreen.routeName,
+      builder: (context, state) => const StoreDocumentUploadScreen(),
     ),
     GoRoute(
       path: GoogleMapScreen.routeName,

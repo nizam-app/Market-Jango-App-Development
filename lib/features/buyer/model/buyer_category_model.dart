@@ -104,8 +104,9 @@ class CategoryItem {
   final String name;
   final String status;
   final int vendorId;
+  final int isTopCategory;
   final List<Product> products;
-  final List<dynamic> categoryImages;
+  final List<CategoryImage> categoryImages;
   final VendorSummary vendor; // only { "id": 1 } in list payload
 
   CategoryItem({
@@ -113,6 +114,7 @@ class CategoryItem {
     required this.name,
     required this.status,
     required this.vendorId,
+    required this.isTopCategory,
     required this.products,
     required this.categoryImages,
     required this.vendor,
@@ -123,10 +125,13 @@ class CategoryItem {
     name: json['name'] ?? '',
     status: json['status'] ?? '',
     vendorId: json['vendor_id'] ?? 0,
+    isTopCategory: _toInt(json['is_top_category']),
     products: (json['products'] as List<dynamic>? ?? [])
         .map((e) => Product.fromJson(e))
         .toList(),
-    categoryImages: (json['category_images'] as List<dynamic>? ?? []),
+    categoryImages: (json['category_images'] as List<dynamic>? ?? [])
+        .map((e) => CategoryImage.fromJson(e as Map<String, dynamic>))
+        .toList(),
     vendor: VendorSummary.fromJson(json['vendor'] ?? {}),
   );
 
@@ -135,9 +140,38 @@ class CategoryItem {
     'name': name,
     'status': status,
     'vendor_id': vendorId,
+    'is_top_category': isTopCategory,
     'products': products.map((e) => e.toJson()).toList(),
-    'category_images': categoryImages,
+    'category_images': categoryImages.map((e) => e.toJson()).toList(),
     'vendor': vendor.toJson(),
+  };
+}
+
+class CategoryImage {
+  final int id;
+  final String imagePath;
+  final String publicId;
+  final int categoryId;
+
+  CategoryImage({
+    required this.id,
+    required this.imagePath,
+    required this.publicId,
+    required this.categoryId,
+  });
+
+  factory CategoryImage.fromJson(Map<String, dynamic> json) => CategoryImage(
+    id: json['id'] ?? 0,
+    imagePath: json['image_path'] ?? '',
+    publicId: json['public_id'] ?? '',
+    categoryId: json['category_id'] ?? 0,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'image_path': imagePath,
+    'public_id': publicId,
+    'category_id': categoryId,
   };
 }
 

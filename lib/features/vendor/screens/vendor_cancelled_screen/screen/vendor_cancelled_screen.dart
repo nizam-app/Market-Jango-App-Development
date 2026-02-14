@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 class VendorCancelledScreen extends ConsumerStatefulWidget {
   const VendorCancelledScreen({super.key});
@@ -311,7 +312,10 @@ class _ShipmentCard extends ConsumerWidget {
                   height: 56,
                   width: 56,
                   color: AllColor.grey100,
-                  child: Image.network(data.imageUrl, fit: BoxFit.cover),
+                  child: FirstTimeShimmerImage(
+                    imageUrl: data.imageUrl,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

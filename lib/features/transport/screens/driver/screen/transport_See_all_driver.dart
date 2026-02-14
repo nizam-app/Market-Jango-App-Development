@@ -48,7 +48,7 @@ class TransportDriver extends ConsumerWidget {
               Expanded(
                 child: state.when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -96,7 +96,7 @@ class TransportDriver extends ConsumerWidget {
                             (d) => _DriverCard(
                               driver: d,
                               carImage: (d.images is List)
-                                  ? (d.images as List)
+                                  ? (d.images)
                                         .whereType<String>()
                                         .toList()
                                   : const <String>[],
@@ -129,7 +129,7 @@ class TransportDriver extends ConsumerWidget {
                     onPageChanged: (int p) => notifier.changePage(p),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -194,7 +194,7 @@ class _DriverCard extends StatelessWidget {
 
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     );
                   },
                   child: CircleAvatar(
@@ -206,7 +206,7 @@ class _DriverCard extends StatelessWidget {
                 InkWell(
                   onTap: () => context.push(
                     DriverDetailsScreen.routeName,
-                    extra: driver.userId,
+                    extra: user.id,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +219,7 @@ class _DriverCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "${user.phone}",
+                        user.phone,
                         style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                       ),
                     ],
@@ -285,7 +285,7 @@ class _DriverCard extends StatelessWidget {
                   InkWell(
                     onTap: () => context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     ),
                     child: Container(
                       padding: EdgeInsets.symmetric(

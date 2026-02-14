@@ -9,7 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/data/global_tracking_data.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/model/global_tracking_model.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 import '../../../../features/buyer/screens/order/screen/buyer_order_page.dart';
 import '../../../../features/vendor/widgets/custom_back_button.dart';
@@ -33,13 +34,13 @@ class GlobalTrackingScreen1 extends ConsumerStatefulWidget {
 }
 
 class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
-  bool _advanced = false; // false = basic info, true = logs
+  final bool _advanced = false; // false = basic info, true = logs
 
   String? userId;
 
   Future<void> _loadUserId() async {
-    final pref = await SharedPreferences.getInstance();
-    final stored = pref.getString("user_id");
+    final authStorage = AuthLocalStorage();
+    final stored = await authStorage.getUserId();
     setState(() {
       userId = stored;
     });
@@ -81,12 +82,19 @@ class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
     return userAsync.when(
       data: (data) {
         final image = data.image;
-        return CircleAvatar(radius: 20.r, backgroundImage: NetworkImage(image));
+        return ClipOval(
+          child: FirstTimeShimmerImage(
+            imageUrl: image,
+            width: 40.r,
+            height: 40.r,
+            fit: BoxFit.cover,
+          ),
+        );
       },
       loading: () => SizedBox(
         width: 24.r,
         height: 24.r,
-        child: const CircularProgressIndicator(),
+        child: const Text('Loading...'),
       ),
       error: (_, __) =>
           CircleAvatar(radius: 20.r, child: const Icon(Icons.error)),
@@ -99,7 +107,7 @@ class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
 
     return Scaffold(
       body: trackingAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (invoice) {
           final stepIndex = _mapDeliveryStatusToStep(invoice.deliveryStatus);
@@ -279,10 +287,12 @@ class _GlobalTrackingScreen1State extends ConsumerState<GlobalTrackingScreen1> {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 20.r,
-                      backgroundImage: const NetworkImage(
-                        "https://randomuser.me/api/portraits/men/43.jpg",
+                    ClipOval(
+                      child: FirstTimeShimmerImage(
+                        imageUrl: "https://randomuser.me/api/portraits/men/43.jpg",
+                        width: 40.r,
+                        height: 40.r,
+                        fit: BoxFit.cover,
                       ),
                     ),
                     SizedBox(width: 12.w),

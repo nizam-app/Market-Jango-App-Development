@@ -8,12 +8,14 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
 
 import '../data/driver_home_status_data.dart';
+import '../model/driver_home_status_model.dart';
 import '../model/new_oder_driver_model.dart';
 
 class DriverHomeScreen extends ConsumerWidget {
@@ -22,16 +24,117 @@ class DriverHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(driverHomeStatsProvider);
+    // ✅ Ensure token is ready before loading data (fixes first-load issue)
+    final tokenAsync = ref.watch(authTokenProvider);
+    
+    // If token is not ready yet, show loading
+    // This ensures data providers don't try to fetch before token is available
+    return tokenAsync.when(
+      loading: () => const Scaffold(
+        body: Center(child: Text('Loading...')),
+      ),
+      error: (e, _) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Authentication error: $e'),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(authTokenProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      data: (token) {
+        // Token is ready, now load the stats
+        if (token == null || token.isEmpty) {
+          return const Scaffold(
+            body: Center(child: Text('No authentication token available')),
+          );
+        }
+        
+        final statsAsync = ref.watch(driverHomeStatsProvider);
+        return _buildHomeContent(context, ref, statsAsync);
+      },
+    );
+  }
+  
+  Widget _buildHomeContent(BuildContext context, WidgetRef ref, AsyncValue<DriverHomeStats> statsAsync) {
     return Scaffold(
       body: SafeArea(
-        child: statsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Failed to load stats: $e')),
-          data: (stats) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(driverHomeStatsProvider);
+            ref.invalidate(driverNewOrdersProvider);
+            final userID = ref.read(getUserIdProvider.select((value) => value.value));
+            if (userID != null) {
+              ref.invalidate(userProvider(userID));
+            }
+            await Future.wait([
+              ref.read(driverHomeStatsProvider.future),
+              ref.read(driverNewOrdersProvider.future),
+            ]);
+          },
+          child: statsAsync.when(
+            loading: () => const Center(child: Text('Loading...')),
+            error: (e, _) => SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48.sp,
+                      color: AllColor.black54,
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Failed to load stats',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColor.black,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      e.toString().replaceAll('Exception: ', ''),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AllColor.black54,
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ref.invalidate(driverHomeStatsProvider);
+                      },
+                      icon: Icon(Icons.refresh, size: 18.sp),
+                      label: Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AllColor.blue500,
+                        foregroundColor: AllColor.white,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            data: (stats) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 _HeaderSection(
                   name: "John", // later profile theke
                   subtitle: "Keep going! You're doing great today.",
@@ -67,11 +170,14 @@ class DriverHomeScreen extends ConsumerWidget {
                  _SectionTitle(title: ref.t(BKeys.new_order)),
                 const SizedBox(height: 10),
 
-                /// 🔹 শুধু একটাই Expanded – vitore _OrdersList nijer async handle korbe
-                const Expanded(child: _OrdersList()),
-              ],
-            );
-          },
+                /// 🔹 Orders List - Expanded removed for scrollable content
+                _OrdersList(),
+                SizedBox(height: 20.h),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -132,7 +238,7 @@ class _HeaderSection extends ConsumerWidget {
                   ],
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: Text('Loading...')),
               error: (e, _) => Center(child: Text(e.toString())),
             ),
           ),
@@ -237,7 +343,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _OrdersList extends ConsumerWidget {
-  const _OrdersList({super.key});
+  const _OrdersList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -245,14 +351,14 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: Text('Loading...')),
       error: (e, _) => Center(child: Text('Failed to load orders: $e')),
       data: (resp) {
         if (resp == null) {
           return const Center(child: Text("No found data"));
         }
 
-        final page = resp?.data;
+        final page = resp.data;
         final raw = page?.data ?? const <DriverOrder>[];
         // final orders = raw.map((e) => _OrderModel.fromEntity(e)).toList();
 
@@ -263,11 +369,12 @@ class _OrdersList extends ConsumerWidget {
         if (lp < 1) lp = 1;
         if (cp > lp) cp = lp;
 
-        if (raw.isEmpty && raw == null) {
+        if (raw.isEmpty) {
           // empty state o scroll + pagination thakbe
           return Column(
             children: [
-              Expanded(
+              Padding(
+                padding: EdgeInsets.all(16.h),
                 child: Center(
                   child: Text(
                     'No new orders found',
@@ -286,14 +393,14 @@ class _OrdersList extends ConsumerWidget {
 
         return Column(
           children: [
-            Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                itemBuilder: (_, i) =>
-                    _OrderCard(order: raw[i], orderId: raw[i].id),
-                separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                itemCount: raw.length,
-              ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              itemBuilder: (_, i) =>
+                  _OrderCard(order: raw[i], orderId: raw[i].id),
+              separatorBuilder: (_, __) => SizedBox(height: 12.h),
+              itemCount: raw.length,
             ),
             SizedBox(height: 8.h),
             GlobalPagination(

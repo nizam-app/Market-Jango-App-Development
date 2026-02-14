@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class ProductRepo {
   Future<void> deleteImage(int id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final authStorage = AuthLocalStorage();
+    final token = await authStorage.getToken();
 
     final uri = Uri.parse(
         VendorAPIController.productImageDelete(id));

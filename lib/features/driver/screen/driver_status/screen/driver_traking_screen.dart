@@ -250,7 +250,7 @@ class DriverTrakingScreen extends ConsumerWidget {
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: Text('Loading...')),
           error: (e, _) => Center(child: Text(e.toString())),
         ),
       ),
@@ -653,7 +653,6 @@ class _StatusTile extends StatefulWidget {
     this.onBadgeTap,
     this.badgeColor,
     this.onChanged,
-    super.key,
   });
 
   @override
@@ -1202,7 +1201,7 @@ class _NotDeliverSheet extends ConsumerStatefulWidget {
   final String? initialNote;
   final String? initialAddress;
 
-  const _NotDeliverSheet({super.key, this.initialNote, this.initialAddress});
+  const _NotDeliverSheet({this.initialNote, this.initialAddress});
 
   @override
   ConsumerState<_NotDeliverSheet> createState() => _NotDeliverSheetState();

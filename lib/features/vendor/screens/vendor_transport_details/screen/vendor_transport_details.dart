@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 import '../../../../../core/localization/tr.dart';
 
@@ -39,7 +40,10 @@ class VendorTransportDetails extends ConsumerWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 3 / 2,
-                  child: Image.network(imageUrl, fit: BoxFit.cover),
+                  child: FirstTimeShimmerImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 Positioned(
                   left: 12,

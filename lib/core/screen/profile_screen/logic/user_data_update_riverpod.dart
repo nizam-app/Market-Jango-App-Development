@@ -1,11 +1,12 @@
 // lib/features/account/logic/update_user_provider.dart
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/image_check_before_post.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final updateUserProvider =
     StateNotifierProvider<UpdateUserNotifier, AsyncValue<void>>(
@@ -21,9 +22,11 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
 
     // common
     String? name,
-    File? image,
+    File? image, // profile image
+    File? coverImage, // cover image
     double? latitude,
     double? longitude,
+    String? currency,
 
     // buyer only
     String? gender,
@@ -45,8 +48,8 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       state = const AsyncLoading();
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       final uri = Uri.parse(VendorAPIController.user_update);
       final req = http.MultipartRequest('POST', uri);
@@ -67,6 +70,7 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
 
       // ----- common -----
       addField('name', name);
+      addField('currency', currency);
 
       // ----- buyer payload (IMAGE-1 er sathe match kore) -----
       if (userType == 'buyer') {
@@ -105,18 +109,64 @@ class UpdateUserNotifier extends StateNotifier<AsyncValue<void>> {
           await http.MultipartFile.fromPath('image', coverCompressed.path),
         );
       }
+      
+      // ----- cover image -----
+      if (coverImage != null) {
+        final coverCompressed = await ImageManager.compressFile(coverImage);
+        req.files.add(
+          await http.MultipartFile.fromPath('cover_image', coverCompressed.path),
+        );
+      }
+
+      // Debug: Print request details (for troubleshooting)
+      print('Update User Request - userType: $userType');
+      print('Fields: ${req.fields}');
+      print('Files: ${req.files.map((f) => f.field).toList()}');
 
       final streamed = await req.send();
       final res = await http.Response.fromStream(streamed);
+      
+      // Debug: Print response (for troubleshooting)
+      print('Update User Response - Status: ${res.statusCode}');
+      print('Response Body: ${res.body}');
 
       if (res.statusCode == 200) {
-        state = const AsyncData(null);
-        return true;
+        // Check response body for status field
+        try {
+          final bodyMap = jsonDecode(res.body) as Map<String, dynamic>?;
+          final status = bodyMap?['status']?.toString().toLowerCase();
+          
+          if (status == 'success' || status == null) {
+            state = const AsyncData(null);
+            return true;
+          } else {
+            final message = bodyMap?['message']?.toString() ?? 'Update failed';
+            state = AsyncError(
+              message,
+              StackTrace.current,
+            );
+            return false;
+          }
+        } catch (e) {
+          // If JSON parsing fails, assume success if status code is 200
+          state = const AsyncData(null);
+          return true;
+        }
       } else {
-        state = AsyncError(
-          'Failed: ${res.statusCode} ${res.reasonPhrase}\n${res.body}',
-          StackTrace.current,
-        );
+        try {
+          final bodyMap = jsonDecode(res.body) as Map<String, dynamic>?;
+          final message = bodyMap?['message']?.toString() ?? 
+              'Failed: ${res.statusCode} ${res.reasonPhrase}';
+          state = AsyncError(
+            message,
+            StackTrace.current,
+          );
+        } catch (e) {
+          state = AsyncError(
+            'Failed: ${res.statusCode} ${res.reasonPhrase}\n${res.body}',
+            StackTrace.current,
+          );
+        }
         return false;
       }
     } catch (e, st) {

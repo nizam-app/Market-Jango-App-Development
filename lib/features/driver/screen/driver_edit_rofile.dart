@@ -253,7 +253,7 @@ class _OnlineStatusRow extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AllColor.white,
+          activeThumbColor: AllColor.white,
           activeTrackColor: AllColor.blue500,
           inactiveThumbColor: AllColor.white,
           inactiveTrackColor: AllColor.grey300,

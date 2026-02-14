@@ -16,32 +16,38 @@ class SubscriptionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ScreenBackground(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Tuppertextandbackbutton(screenName: 'Subscription'),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _CurrentPlanSection(),
-                    SizedBox(height: 24.h),
-                    const _PlansSection(),
-                  ],
+    return Scaffold(
+      body: ScreenBackground(
+        child: Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Tuppertextandbackbutton(screenName: 'Subscription'),
+                SizedBox(height: 16.h),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _CurrentPlanSection(),
+                        SizedBox(height: 24.h),
+                        const _PlansSection(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
+
 
 class _CurrentPlanSection extends ConsumerWidget {
   const _CurrentPlanSection();

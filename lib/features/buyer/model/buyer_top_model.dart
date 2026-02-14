@@ -12,64 +12,53 @@ class TopProductsResponse {
   });
 
   factory TopProductsResponse.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'];
-
-    // ---- data ke always TopProductsData banabo, type check kore ----
-    TopProductsData parsedData;
-
-    if (rawData is Map<String, dynamic>) {
-      // normal Laravel paginator case
-      parsedData = TopProductsData.fromJson(rawData);
-    } else if (rawData is Map) {
-      parsedData = TopProductsData.fromJson(Map<String, dynamic>.from(rawData));
-    } else if (rawData is List) {
-      // ekhane tomar no-data response: data: []
-      // ba konodin direct list of items asle o handle korbe
-      final items = rawData
-          .where((e) => e is Map)
-          .map(
-            (e) => TopProductItem.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
-          .toList();
-
-      parsedData = TopProductsData(
-        currentPage: 1,
-        data: items,
-        firstPageUrl: '',
-        from: items.isEmpty ? 0 : 1,
-        lastPage: 1,
-        lastPageUrl: '',
-        links: <PageLink>[],
-        nextPageUrl: null,
-        path: '',
-        perPage: items.length,
-        prevPageUrl: null,
-        to: items.length,
-        total: items.length,
-      );
+    // Handle case where 'data' might be a List or Map
+    final dataField = json['data'];
+    Map<String, dynamic> dataMap;
+    
+    if (dataField is List) {
+      // If data is a List, wrap it in a pagination structure
+      dataMap = {
+        'current_page': 1,
+        'data': dataField,
+        'first_page_url': null,
+        'from': 1,
+        'last_page': 1,
+        'last_page_url': null,
+        'links': [],
+        'next_page_url': null,
+        'path': '',
+        'per_page': dataField.length,
+        'prev_page_url': null,
+        'to': dataField.length,
+        'total': dataField.length,
+      };
+    } else if (dataField is Map) {
+      // If data is already a Map, use it directly
+      dataMap = Map<String, dynamic>.from(dataField);
     } else {
-      // completely unexpected (null / wrong type) -> empty data
-      parsedData = TopProductsData(
-        currentPage: 1,
-        data: const [],
-        firstPageUrl: '',
-        from: 0,
-        lastPage: 1,
-        lastPageUrl: '',
-        links: <PageLink>[],
-        nextPageUrl: null,
-        path: '',
-        perPage: 0,
-        prevPageUrl: null,
-        to: 0,
-        total: 0,
-      );
+      // Fallback to empty structure
+      dataMap = {
+        'current_page': 1,
+        'data': [],
+        'first_page_url': null,
+        'from': null,
+        'last_page': 1,
+        'last_page_url': null,
+        'links': [],
+        'next_page_url': null,
+        'path': '',
+        'per_page': 0,
+        'prev_page_url': null,
+        'to': 0,
+        'total': 0,
+      };
     }
-
+    
     return TopProductsResponse(
-      status: json['status']?.toString() ?? '',
-      message: json['message']?.toString() ?? '',
-      data: parsedData,
+      status: json['status'] ?? '',
+      message: json['message'] ?? '',
+      data: TopProductsData.fromJson(dataMap),
     );
   }
 
@@ -79,15 +68,25 @@ class TopProductsResponse {
     'data': data.toJson(),
   };
 
-  static TopProductsResponse fromRawJson(String str) =>
-      TopProductsResponse.fromJson(json.decode(str));
+  static TopProductsResponse fromRawJson(String str) {
+    final decoded = json.decode(str);
+    // Handle case where response might be a List or Map
+    final jsonData = decoded is Map<String, dynamic>
+        ? decoded
+        : <String, dynamic>{
+            'status': 'success',
+            'message': '',
+            'data': decoded is List ? decoded : [],
+          };
+    return TopProductsResponse.fromJson(jsonData);
+  }
 
   String toRawJson() => json.encode(toJson());
 }
 
 class TopProductsData {
   final int currentPage;
-  final List<TopProductItem> data;
+  final List<TopProduct> data;
   final String firstPageUrl;
   final int? from;
   final int lastPage;
@@ -120,18 +119,18 @@ class TopProductsData {
     return TopProductsData(
       currentPage: json['current_page'] ?? 0,
       data: (json['data'] as List<dynamic>? ?? [])
-          .where((e) => e is Map)
-          .map(
-            (e) => TopProductItem.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
+          .whereType<Map>()
+          .map((e) => TopProduct.fromJson(
+        Map<String, dynamic>.from(e),
+      ))
           .toList(),
       firstPageUrl: json['first_page_url'] ?? '',
       from: json['from'],
       lastPage: json['last_page'] ?? 0,
       lastPageUrl: json['last_page_url'] ?? '',
       links: (json['links'] as List<dynamic>? ?? [])
-          .where((e) => e is Map)
-          .map((e) => PageLink.fromJson(Map<String, dynamic>.from(e as Map)))
+          .whereType<Map>()
+          .map((e) => PageLink.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
       nextPageUrl: json['next_page_url'],
       path: json['path'] ?? '',
@@ -159,48 +158,6 @@ class TopProductsData {
   };
 }
 
-class TopProductItem {
-  final int id;
-  final String key;
-  final int productId;
-  final TopProduct product;
-
-  TopProductItem({
-    required this.id,
-    required this.key,
-    required this.productId,
-    required this.product,
-  });
-
-  factory TopProductItem.fromJson(Map<String, dynamic> json) {
-    // case A: wrapper + nested "product"
-    if (json['product'] is Map) {
-      final productJson = Map<String, dynamic>.from(json['product'] as Map);
-      return TopProductItem(
-        id: _toInt(json['id']),
-        key: _toStr(json['key']),
-        productId: _toInt(json['product_id'] ?? productJson['id']),
-        product: TopProduct.fromJson(productJson),
-      );
-    }
-
-    // case B: direct product object (just-for-you, new-items, ইত্যাদি)
-    return TopProductItem(
-      id: _toInt(json['id']),
-      key: _toStr(json['key']), // না থাকলে '' হয়ে যাবে
-      productId: _toInt(json['product_id'] ?? json['id']),
-      product: TopProduct.fromJson(json),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'key': key,
-    'product_id': productId,
-    'product': product.toJson(),
-  };
-}
-
 class TopProduct {
   final int id;
   final String name;
@@ -219,6 +176,9 @@ class TopProduct {
   final int? star;
   final String? remark;
   final int? isActive;
+  final int? newItem;
+  final int? justForYou;
+  final int? topProduct;
   final String? publicId;
   final String? createdAt; // raw string from API
   final String? updatedAt; // raw string from API
@@ -245,6 +205,9 @@ class TopProduct {
     this.star,
     this.remark,
     this.isActive,
+    this.newItem,
+    this.justForYou,
+    this.topProduct,
     this.publicId,
     this.createdAt,
     this.updatedAt,
@@ -252,7 +215,7 @@ class TopProduct {
 
   factory TopProduct.fromJson(Map<String, dynamic> json) {
     List<String> parsedColors = _normalizeStringOrList(json['color']);
-    List<String> parsedSizes = _normalizeStringOrList(json['size']);
+    List<String> parsedSizes  = _normalizeStringOrList(json['size']);
 
     return TopProduct(
       id: json['id'] ?? 0,
@@ -266,23 +229,20 @@ class TopProduct {
       size: parsedSizes,
       vendorId: json['vendor_id'] ?? 0,
       images: (json['images'] as List<dynamic>? ?? [])
-          .where((e) => e is Map)
-          .map(
-            (e) => ProductImage.fromJson(Map<String, dynamic>.from(e as Map)),
-          )
+          .whereType<Map>()
+          .map((e) => ProductImage.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
-      vendor: Vendor.fromJson(
-        Map<String, dynamic>.from(json['vendor'] as Map? ?? const {}),
-      ),
-      category: Category.fromJson(
-        Map<String, dynamic>.from(json['category'] as Map? ?? const {}),
-      ),
+      vendor: Vendor.fromJson(Map<String, dynamic>.from(json['vendor'] as Map? ?? const {})),
+      category: Category.fromJson(Map<String, dynamic>.from(json['category'] as Map? ?? const {})),
 
       // NEW: copy straight from API
       discount: json['discount'],
       star: json['star'],
       remark: json['remark'],
       isActive: json['is_active'],
+      newItem: json['new_item'],
+      justForYou: json['just_for_you'],
+      topProduct: json['top_product'],
       publicId: json['public_id'],
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
@@ -305,11 +265,15 @@ class TopProduct {
     'star': star,
     'remark': remark,
     'is_active': isActive,
+    'new_item': newItem,
+    'just_for_you': justForYou,
+    'top_product': topProduct,
     'public_id': publicId,
     'created_at': createdAt,
     'updated_at': updatedAt,
   };
 }
+
 
 class ProductImage {
   final int id;
@@ -368,9 +332,7 @@ class Vendor {
   });
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
-    final userJson = Map<String, dynamic>.from(
-      json['user'] as Map? ?? const {},
-    );
+    final userJson = Map<String, dynamic>.from(json['user'] as Map? ?? const {});
     final reviewsJson = (json['reviews'] as List?) ?? const [];
 
     return Vendor(
@@ -384,8 +346,8 @@ class Vendor {
       updatedAt: _toStrN(json['updated_at']),
       user: User.fromJson(userJson),
       reviews: reviewsJson
-          .where((e) => e is Map)
-          .map((e) => Review.fromJson(Map<String, dynamic>.from(e as Map)))
+          .whereType<Map>()
+          .map((e) => Review.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
   }
@@ -483,13 +445,13 @@ class User {
 class Review {
   final int id;
   final int vendorId;
-  final String description;
+  final String review;
   final int rating;
 
   Review({
     required this.id,
     required this.vendorId,
-    required this.description,
+    required this.review,
     required this.rating,
   });
 
@@ -497,7 +459,7 @@ class Review {
     return Review(
       id: _toInt(json['id']),
       vendorId: _toInt(json['vendor_id']),
-      description: _toStr(json['review']), // এখানে review
+      review: _toStr(json['review'] ?? json['description'] ?? ''),
       rating: _toInt(json['rating']),
     );
   }
@@ -505,7 +467,7 @@ class Review {
   Map<String, dynamic> toJson() => {
     'id': id,
     'vendor_id': vendorId,
-    'description': description,
+    'review': review,
     'rating': rating,
   };
 }
@@ -517,7 +479,10 @@ class Category {
   Category({required this.id, required this.name});
 
   factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(id: _toInt(json['id']), name: _toStr(json['name']));
+    return Category(
+      id: _toInt(json['id']),
+      name: _toStr(json['name']),
+    );
   }
 
   Map<String, dynamic> toJson() => {'id': id, 'name': name};

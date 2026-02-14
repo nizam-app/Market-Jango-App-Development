@@ -22,8 +22,8 @@ class SeeJustForYouScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prod = ref.watch(justForYouProvider("${url}"));
-    final notifier = ref.read(justForYouProvider("${url}").notifier);
+    final prod = ref.watch(justForYouProvider(url));
+    final notifier = ref.read(justForYouProvider(url).notifier);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -33,9 +33,9 @@ class SeeJustForYouScreen extends ConsumerWidget {
                                final pagination = products!.data;
               return Column(
                 children: [
-                  Tuppertextandbackbutton(screenName: "$screenName"),
+                  Tuppertextandbackbutton(screenName: screenName),
                   CustomSeeAllProduct(
-                    product: products?.data.data.map((e) => e.product).toList(),
+                    product: products.data.data,
                   ),
                   GlobalPagination(
                     currentPage: pagination.currentPage,
@@ -47,7 +47,7 @@ class SeeJustForYouScreen extends ConsumerWidget {
                 ],
               );
             }   ,
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: Text('Loading...')),
             error: (err, _) => Text('Error loading Just For You: $err'),
           ),
         ),

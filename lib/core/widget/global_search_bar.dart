@@ -64,7 +64,7 @@ class _CustomSearchBarState<R, T> extends ConsumerState<GlobalSearchBar<R, T>> {
     if (_entry != null) return;
     // NOTE: rootOverlay:false রাখছি যাতে ProviderScope-এর ভেতরে থাকে
     _entry = OverlayEntry(builder: _overlayBuilder);
-    Overlay.of(context)!.insert(_entry!);
+    Overlay.of(context).insert(_entry!);
   }
 
   void _closeOverlay() {
@@ -133,7 +133,7 @@ class _CustomSearchBarState<R, T> extends ConsumerState<GlobalSearchBar<R, T>> {
                     builder: (context, ref, _) {
                       final asyncRes = ref.watch(widget.provider(_query));
                       return asyncRes.when(
-                        loading: () => const LinearProgressIndicator(minHeight: 2),
+                        loading: () => const Center(child: Text('Loading...')),
                         error: (e, _) => Padding(
                           padding: const EdgeInsets.all(12),
                           child: Text('Error: $e'),

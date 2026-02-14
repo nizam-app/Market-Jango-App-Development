@@ -1,7 +1,7 @@
 import 'global_api.dart';
 
 class VendorAPIController {
-  static String _base_api = "$api/api";
+  static final String _base_api = "$api/api";
   static String vendor_product = "$_base_api/vendor/product";
   static String product_update(int id) => "$_base_api/product/update/$id";
   static String product_attribute_vendor =
@@ -26,6 +26,9 @@ class VendorAPIController {
   static String attribute_value_create = '$_base_api/attribute-value/create';
   static String attribute_value_update = '$_base_api/attribute-value/update';
   static String attribute_value_destroy = '$_base_api/attribute-value/destroy';
+  static String product_attribute_create = '$_base_api/product-attribute/create';
+  static String product_attribute_update(int id) => '$_base_api/product-attribute/update/$id';
+  static String product_attribute_destroy(int id) => '$_base_api/product-attribute/destroy/$id';
   static String product_destroy = '$_base_api/product/destroy';
   // static String vendor_order_driver = '$_base_api/vendor/pending/order';
   static String vendor_order_driver = '$_base_api/vendor/all/order';

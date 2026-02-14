@@ -14,7 +14,7 @@ import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/driver/screen/driver_order/data/driver_order_details_data.dart';
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
 import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class OrderDetailsScreen extends ConsumerWidget {
   const OrderDetailsScreen({super.key, required this.trackingId});
@@ -36,7 +36,7 @@ class OrderDetailsScreen extends ConsumerWidget {
             SizedBox(height: 10.h),
             trackingAsync.when(
               loading: () => const Expanded(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: Text('Loading...')),
               ),
               error: (err, st) => Expanded(
                 child: Center(
@@ -64,10 +64,15 @@ class OrderDetailsScreen extends ConsumerWidget {
               data: (DriverTrackingData data) {
                 return _BottomActions(
                   onMessage: () async {
-                    SharedPreferences pefa =
-                        await SharedPreferences.getInstance();
-                    String id = pefa.getString('user_id') ?? '';
-                    final intId = int.parse(id);
+                    final authStorage = AuthLocalStorage();
+                    final idStr = await authStorage.getUserId();
+                    if (idStr == null || idStr.isEmpty) {
+                      throw Exception("User ID not found");
+                    }
+                    final intId = int.tryParse(idStr);
+                    if (intId == null) {
+                      throw Exception("Invalid user ID");
+                    }
                     context.push(
                       GlobalChatScreen.routeName,
                       extra: ChatArgs(
@@ -89,7 +94,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Expanded(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: Text('Loading...')),
               ),
               error: (err, st) => Expanded(
                 child: Center(
@@ -245,7 +250,7 @@ class _InstructionBox extends StatelessWidget {
 }
 
 class _MapImage extends StatelessWidget {
-  const _MapImage({super.key, required this.latitude, required this.longitude});
+  const _MapImage({required this.latitude, required this.longitude});
 
   final double latitude;
   final double longitude;

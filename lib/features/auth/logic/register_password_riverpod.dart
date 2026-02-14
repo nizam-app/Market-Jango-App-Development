@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final registerPasswordProvider =
 StateNotifierProvider<RegisterPasswordNotifier, AsyncValue<bool>>(
@@ -19,8 +19,8 @@ class RegisterPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
     state = const AsyncValue.loading();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       var request = http.MultipartRequest('POST', Uri.parse(url));
       request.headers.addAll({

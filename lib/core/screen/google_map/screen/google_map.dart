@@ -220,7 +220,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: Text('Loading...'))
           : Stack(
               children: [
                 GoogleMap(
@@ -274,8 +274,8 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         children: [
           FloatingActionButton(
             onPressed: _getCurrentLocation,
-            child: const Icon(Icons.my_location),
             tooltip: "Current Location",
+            child: const Icon(Icons.my_location),
           ),
           const SizedBox(height: 10),
           if (_pickedLocation != null)
@@ -283,9 +283,9 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
               onPressed: () {
                 _openSheet(_pickedLocation!);
               },
-              child: const Icon(Icons.check),
               backgroundColor: Colors.green,
               tooltip: "Confirm Location",
+              child: const Icon(Icons.check),
             ),
         ],
       ),

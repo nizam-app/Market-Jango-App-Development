@@ -38,7 +38,7 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
 
     return async.when(
       loading: () => const Scaffold(
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+        body: SafeArea(child: Center(child: Text('Loading...'))),
       ),
       error: (e, _) => Scaffold(
         body: SafeArea(child: Center(child: Text(e.toString()))),

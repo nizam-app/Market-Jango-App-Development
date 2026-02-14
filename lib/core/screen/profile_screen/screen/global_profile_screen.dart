@@ -1,15 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
+import 'package:market_jango/core/screen/profile_screen/logic/user_data_update_riverpod.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
+import 'package:market_jango/core/utils/auth_session_utils.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -25,107 +32,560 @@ class GlobalSettingScreen extends ConsumerWidget {
   const GlobalSettingScreen({super.key});
   static const String routeName = '/settingsScreen';
 
+  /// Show logout confirmation dialog
+  static void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Logout',
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: AllColor.black87,
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: AllColor.black87,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await AuthSessionUtils.logoutAndGoToLogin(context);
+              },
+              child: Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: AllColor.orange,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(
       userProvider(ref.watch(getUserIdProvider).value ?? ""),
     );
     final userTypeAsync = ref.watch(getUserTypeProvider);
+    final isDriver = userTypeAsync.value == "driver";
 
     return ScreenBackground(
-      child: Padding(
-        padding: EdgeInsets.all(20.r),
-        child: userAsync.when(
-          data: (user) {
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 12.h),
-                  //"My Settings"
-                  Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
-                  SizedBox(height: 16.h),
-                  ProfileSection(
-                    name: user.name,
-                    username: user.email,
-                    imageUrl: user.image,
-                    userType: user,
+      child: userAsync.when(
+        data: (user) {
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Cover image section for driver (similar to vendor home)
+                if (isDriver)
+                  buildCoverAndProfileSection(context, ref, user)
+                else
+                  Padding(
+                    padding: EdgeInsets.all(20.r),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 12.h),
+                        Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
+                        SizedBox(height: 16.h),
+                        ProfileSection(
+                          name: user.name,
+                          username: user.email,
+                          imageUrl: user.image,
+                          userType: user,
+                        ),
+                        SizedBox(height: 20.h),
+                        _buildSettingsContent(context, ref, user, userTypeAsync),
+                      ],
+                    ),
                   ),
-
-                  SizedBox(height: 20.h),
-                  _SettingsLine(
-                    icon: Icons.phone_in_talk_outlined,
-                    text: user.phone,
+                // Settings content
+                if (isDriver)
+                  Padding(
+                    padding: EdgeInsets.all(20.r),
+                    child: _buildSettingsContent(context, ref, user, userTypeAsync),
                   ),
-                  _DividerLine(),
-                  _SettingsLine(icon: Icons.email_outlined, text: user.email),
-
-                  SizedBox(height: 12.h),
-                  _DividerLine(),
-
-                  if (userTypeAsync.value == "buyer")
-                    _SettingsTile(
-                      leadingIcon: Icons.shopping_bag_outlined,
-                      // "My Order"
-                      title: ref.t(BKeys.myOrders),
-                      onTap: () => context.push(BuyerOrderPage.routeName),
-                    ),
-                  if (userTypeAsync.value == "driver")
-                    _SettingsLine(
-                      icon: Icons.price_change,
-                      text: user.driver?.price ?? "Not set now",
-                    ),
-                  if (userTypeAsync.value == "vendor")
-                    _SettingsTile(
-                      leadingIcon: Icons.shopping_bag_outlined,
-                      //"My Product"
-                      title: ref.t(BKeys.my_product),
-                      onTap: () =>
-                          context.push(VendorMyProductScreen.routeName),
-                    ),
-                  _DividerLine(),
-                  if (userTypeAsync.value == "buyer")
-                    _SettingsTile(
-                      leadingIcon: Icons.event_note_outlined,
-                      // "Order history"
-                      title: ref.t(BKeys.orderHistory),
-                      onTap: () =>
-                          context.push(BuyerOrderHistoryScreen.routeName),
-                    ),
-                  _DividerLine(),
-                  if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
-                    _SettingsTile(
-                      leadingIcon: Icons.card_membership_outlined,
-                      title: 'Subscription',
-                      onTap: () => context.push(SubscriptionScreen.routeName),
-                    ),
-                  if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
-                    _DividerLine(),
-                  _SettingsTile(
-                    leadingIcon: Icons.language_outlined,
-                    title: ref.t(BKeys.language),
-                    onTap: () => context.push(GlobalLanguageScreen.routeName),
-                  ),
-                  _DividerLine(),
-                  _SettingsTile(
-                    leadingIcon: Icons.logout_outlined,
-                    title: ref.t(BKeys.logOut),
-                    titleColor: AllColor.orange,
-                    iconColor: AllColor.orange,
-                    arrowColor: AllColor.orange,
-                    onTap: () {
-                      showLogoutDialog(context);
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
-        ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(child: Text('Loading...')),
+        error: (error, _) => Center(child: Text('Error: $error')),
       ),
     );
+  }
+
+  Widget _buildSettingsContent(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel user,
+    AsyncValue<String?> userTypeAsync,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // if (!isDriver) SizedBox(height: 12.h),
+        // if (!isDriver)
+        //   Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
+        // if (!isDriver) SizedBox(height: 16.h),
+        // if (!isDriver)
+        //   ProfileSection(
+        //     name: user.name,
+        //     username: user.email,
+        //     imageUrl: user.image,
+        //     userType: user,
+        //   ),
+        // if (!isDriver) SizedBox(height: 5.h),
+        _SettingsLine(
+          icon: Icons.phone_in_talk_outlined,
+          text: user.phone,
+        ),
+        _DividerLine(),
+        _SettingsLine(icon: Icons.email_outlined, text: user.email),
+
+        SizedBox(height: 12.h),
+        _DividerLine(),
+
+        if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.shopping_bag_outlined,
+            // "My Order"
+            title: ref.t(BKeys.myOrders),
+            onTap: () => context.push(BuyerOrderPage.routeName),
+          ),
+        if (userTypeAsync.value == "driver")
+          _SettingsLine(
+            icon: Icons.price_change,
+            text: user.driver?.price ?? "Not set now",
+          ),
+        if (userTypeAsync.value == "vendor")
+          _SettingsTile(
+            leadingIcon: Icons.shopping_bag_outlined,
+            //"My Product"
+            title: ref.t(BKeys.my_product),
+            onTap: () => context.push(VendorMyProductScreen.routeName),
+          ),
+        _DividerLine(),
+        if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.event_note_outlined,
+            // "Order history"
+            title: ref.t(BKeys.orderHistory),
+            onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
+          ),
+        _DividerLine(),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _SettingsTile(
+            leadingIcon: Icons.card_membership_outlined,
+            title: 'Subscription',
+            onTap: () => context.push(SubscriptionScreen.routeName),
+          ),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _DividerLine(),
+        _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
+        _DividerLine(),
+        _SettingsTile(
+          leadingIcon: Icons.language_outlined,
+          title: ref.t(BKeys.language),
+          onTap: () => context.push(GlobalLanguageScreen.routeName),
+        ),
+        _DividerLine(),
+        _SettingsTile(
+          leadingIcon: Icons.logout_outlined,
+          title: ref.t(BKeys.logOut),
+          titleColor: AllColor.orange,
+          iconColor: AllColor.orange,
+          arrowColor: AllColor.orange,
+          onTap: () => GlobalSettingScreen._showLogoutConfirmation(context),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCoverAndProfileSection(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel user,
+  ) {
+    final String? coverImageUrl = user.driver?.coverImage;
+    final bool hasCoverImage =
+        coverImageUrl != null && coverImageUrl.isNotEmpty;
+    final String coverImage = coverImageUrl ?? '';
+
+    return Column(
+      children: [
+        // Cover image section (Facebook style - at the top, no padding)
+        Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20.r),
+                bottomRight: Radius.circular(20.r),
+              ),
+              child: Container(
+                height: 200.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                ),
+                child: hasCoverImage
+                    ? FirstTimeShimmerImage(
+                        imageUrl: coverImage,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        color: Colors.grey.shade300,
+                        child: Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 50.r,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            Positioned(
+              bottom: 10.h,
+              right: 10.w,
+              child: InkWell(
+                onTap: () => _handleCoverImageEdit(context, ref, user.id.toString()),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: AllColor.white,
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.camera_alt,
+                          size: 16.r, color: AllColor.loginButtomColor),
+                      SizedBox(width: 6.w),
+                      Text(
+                        hasCoverImage ? 'Edit Cover' : 'Add Cover',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AllColor.loginButtomColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Profile section positioned below cover image (overlapping like Facebook)
+        Transform.translate(
+          offset: Offset(0, -41.w), // Move profile image up to overlap cover
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        ClipOval(
+                          child: FirstTimeShimmerImage(
+                            imageUrl: user.image,
+                            width: 82.w,
+                            height: 82.w,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: InkWell(
+                            onTap: () => _handleProfileImageEdit(context, ref, user.id.toString()),
+                            child: Container(
+                              padding: EdgeInsets.all(4.w),
+                              decoration: BoxDecoration(
+                                color: AllColor.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AllColor.loginButtomColor,
+                                  width: 1.w,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.camera_alt,
+                                size: 14.r,
+                                color: AllColor.loginButtomColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      user.name,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: AllColor.loginButtomColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    IconButton(
+                      onPressed: () {
+                        ref.invalidate(selectedLatitudeProvider);
+                        ref.invalidate(selectedLongitudeProvider);
+                        context.push(BuyerProfileEditScreen.routeName, extra: user);
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: AllColor.loginButtomColor,
+                        size: 18.sp,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleCoverImageEdit(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final ImagePicker picker = ImagePicker();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateCoverImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateCoverImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateCoverImage(
+    BuildContext context,
+    WidgetRef ref,
+    File imageFile,
+    String userId,
+  ) async {
+    try {
+      final notifier = ref.read(updateUserProvider.notifier);
+      final userTypeAsync = await ref.read(getUserTypeProvider.future);
+      final userType = userTypeAsync ?? 'driver';
+      
+      final success = await notifier.updateUser(
+        userType: userType,
+        coverImage: imageFile,
+      );
+
+      if (success) {
+        if (context.mounted) {
+          ref.invalidate(userProvider(userId));
+          GlobalSnackbar.show(
+            context,
+            title: "Success",
+            message: "Cover image updated successfully",
+          );
+        }
+      } else {
+        if (context.mounted) {
+          GlobalSnackbar.show(
+            context,
+            title: "Error",
+            message: "Failed to update cover image",
+            type: CustomSnackType.error,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: "Error",
+          message: e.toString(),
+          type: CustomSnackType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _handleProfileImageEdit(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final ImagePicker picker = ImagePicker();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateProfileImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 85,
+                  );
+                  if (image != null) {
+                    await _updateProfileImage(context, ref, File(image.path), userId);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateProfileImage(
+    BuildContext context,
+    WidgetRef ref,
+    File imageFile,
+    String userId,
+  ) async {
+    try {
+      final notifier = ref.read(updateUserProvider.notifier);
+      final userTypeAsync = await ref.read(getUserTypeProvider.future);
+      final userType = userTypeAsync ?? 'driver';
+      
+      final success = await notifier.updateUser(
+        userType: userType,
+        image: imageFile,
+      );
+
+      if (success) {
+        if (context.mounted) {
+          ref.invalidate(userProvider(userId));
+          GlobalSnackbar.show(
+            context,
+            title: "Success",
+            message: "Profile image updated successfully",
+          );
+        }
+      } else {
+        if (context.mounted) {
+          GlobalSnackbar.show(
+            context,
+            title: "Error",
+            message: "Failed to update profile image",
+            type: CustomSnackType.error,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: "Error",
+          message: e.toString(),
+          type: CustomSnackType.error,
+        );
+      }
+    }
   }
 }
 
@@ -169,7 +629,14 @@ class ProfileSection extends ConsumerWidget {
         Stack(
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(radius: 26.r, backgroundImage: NetworkImage(imageUrl)),
+            ClipOval(
+              child: FirstTimeShimmerImage(
+                imageUrl: imageUrl,
+                width: 52.r,
+                height: 52.r,
+                fit: BoxFit.cover,
+              ),
+            ),
             Positioned(
               bottom: -2.h,
               right: -2.w,

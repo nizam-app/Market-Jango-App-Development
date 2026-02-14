@@ -6,12 +6,10 @@ import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
 import 'package:market_jango/features/auth/screens/login/logic/password_validator.dart';
 
 import '../logic/reset_password_riverpod.dart';
-import 'account_request.dart';
 import 'login/screen/login_screen.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {

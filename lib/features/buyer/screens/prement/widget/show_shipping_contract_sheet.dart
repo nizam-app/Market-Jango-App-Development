@@ -112,7 +112,10 @@ void showShippingContractSheet(
                                 },
                               );
                           if (context.mounted) {
+                            // Invalidate cart to refresh payment screen
                             ref.invalidate(cartProvider);
+                            // Wait a bit for the cart to refresh
+                            await Future.delayed(const Duration(milliseconds: 300));
                             context.pop();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

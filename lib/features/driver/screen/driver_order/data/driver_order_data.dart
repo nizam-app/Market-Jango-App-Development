@@ -99,7 +99,7 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
     }
 
     // simple order: All + je je status paichi
-    _statusTabs = ['All', ...map.values.toList()];
+    _statusTabs = ['All', ...map.values];
   }
 
   // Entity -> UI
@@ -113,7 +113,7 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
 
     final pickup = e.pickupAddress.isNotEmpty == true ? e.pickupAddress : '-';
 
-    final dest = e?.shipAddress.isNotEmpty == true ? e!.shipAddress : '-';
+    final dest = e.shipAddress.isNotEmpty == true ? e.shipAddress : '-';
 
     final price = e.salePrice != 0 ? e.salePrice : _safeDouble(inv?.payable);
 

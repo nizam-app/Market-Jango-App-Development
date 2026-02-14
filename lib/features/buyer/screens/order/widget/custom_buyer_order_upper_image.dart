@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 class CustomBuyerOrderUpperImage extends StatelessWidget {
   const CustomBuyerOrderUpperImage({
@@ -25,9 +26,13 @@ class CustomBuyerOrderUpperImage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Avatar
-          CircleAvatar(
-            radius: 25.r, // small like the mock
-            backgroundImage: NetworkImage(imageUrl),
+          ClipOval(
+            child: FirstTimeShimmerImage(
+              imageUrl: imageUrl,
+              width: 50.r,
+              height: 50.r,
+              fit: BoxFit.cover,
+            ),
           ),
           SizedBox(width: 10.w),
 

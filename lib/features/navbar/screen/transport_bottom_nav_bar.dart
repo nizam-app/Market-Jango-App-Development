@@ -73,7 +73,7 @@ class TransportBottomNavBar extends ConsumerWidget {
 // Helper to use SVG in const BottomNavigationBarItem
 class _SvgIcon extends StatelessWidget {
   final String asset;
-  const _SvgIcon(this.asset, {super.key});
+  const _SvgIcon(this.asset);
 
   @override
   Widget build(BuildContext context) =>

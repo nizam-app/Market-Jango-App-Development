@@ -70,7 +70,7 @@ class TrackingInvoice {
   });
 
   factory TrackingInvoice.fromJson(Map<String, dynamic> json) {
-    DateTime? _parse(String? s) =>
+    DateTime? parse(String? s) =>
         s == null ? null : DateTime.tryParse(s);
 
     return TrackingInvoice(
@@ -93,8 +93,8 @@ class TrackingInvoice {
       taxRef: json['tax_ref'] ?? '',
       currency: json['currency'] ?? '',
       userId: json['user_id'] ?? 0,
-      createdAt: _parse(json['created_at']),
-      updatedAt: _parse(json['updated_at']),
+      createdAt: parse(json['created_at']),
+      updatedAt: parse(json['updated_at']),
       statusLogs: (json['status_logs'] as List<dynamic>? ?? [])
           .map((e) => TrackingStatusLog.fromJson(e))
           .toList(),
@@ -124,7 +124,7 @@ class TrackingStatusLog {
   });
 
   factory TrackingStatusLog.fromJson(Map<String, dynamic> json) {
-    DateTime? _parse(String? s) =>
+    DateTime? parse(String? s) =>
         s == null ? null : DateTime.tryParse(s);
 
     return TrackingStatusLog(
@@ -134,8 +134,8 @@ class TrackingStatusLog {
       isActive: json['is_active'] ?? 0,
       invoiceId: json['invoice_id'] ?? 0,
       invoiceItemId: json['invoice_item_id'] ?? 0,
-      createdAt: _parse(json['created_at']),
-      updatedAt: _parse(json['updated_at']),
+      createdAt: parse(json['created_at']),
+      updatedAt: parse(json['updated_at']),
     );
   }
 }

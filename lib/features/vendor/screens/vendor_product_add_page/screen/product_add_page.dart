@@ -12,24 +12,45 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/vendor/screens/product_edit/logic/update_product_riverpod.dart';
-import 'package:market_jango/features/vendor/screens/product_edit/model/product_attribute_response_model.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_category_riverpod.dart';
-import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/vendor_product_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/data/selecd_color_size_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_product_add_page/logic/creat_product_provider.dart';
 
 import '../../product_edit/data/product_attribute_data.dart';
-import '../widget/custom_variant_picker.dart';
+import '../widget/generic_attribute_picker.dart';
 
-class ProductAddPage extends ConsumerWidget {
-   ProductAddPage({super.key,});
+class ProductAddPage extends ConsumerStatefulWidget {
+   const ProductAddPage({super.key,});
 
   static final String routeName = "/productAddPage";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductAddPage> createState() => _ProductAddPageState();
+}
+
+class _ProductAddPageState extends ConsumerState<ProductAddPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear attributes when entering the page and refresh attributes list
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedAttributesProvider.notifier).state = {};
+      // Refresh attributes to ensure we have the latest data
+      ref.invalidate(productAttributesProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clear attributes when leaving the page
+    ref.read(selectedAttributesProvider.notifier).state = {};
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final attributeAsync = ref.watch(productAttributesProvider);
 
 
@@ -46,38 +67,11 @@ class ProductAddPage extends ConsumerWidget {
                 SizedBox(height: 16.h),
               attributeAsync.when(
                 data: (data) {
-                  final colorAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'color',
-                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                  );
-                  final List<String> colorNames = colorAttr.attributeValues.map((v) => v.name ?? "").toList();
-
-                  final sizeAttr = data.data.firstWhere(
-                        (attr) => attr.name.toLowerCase() == 'size',
-                    orElse: () => VendorProductAttribute(id: 0, name: '', vendorId: 0, attributeValues: []),
-                  );
-                  final List<String> sizeNames = sizeAttr.attributeValues.map((v) => v.name ?? "").toList();
-
-
-                  final selectedColors = ref.watch(selectedColorsProvider);
-                  final selectedSizes  = ref.watch(selectedSizesProvider);
-            
-                  return CustomVariantPicker(
-                    colors: colorNames,
-                    sizes: sizeNames,
-
-                    selectedColors: selectedColors,
-                    selectedSizes: selectedSizes,
-
-
-                    onColorsChanged: (list) {
-                      ref.read(selectedColorsProvider.notifier).state = [...list];
-                    },
-                    onSizesChanged: (list) {
-                      ref.read(selectedSizesProvider.notifier).state = [...list];  }
+                  return GenericAttributePicker(
+                    attributes: data.data,
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (err, _) => Center(child: Text('Error: $err')),
               ),
 
@@ -106,7 +100,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
 
   );
 
-  String? selectedCategory;
+  String? selectedCategory; // Will be set when categories load
 
   // colors tuned to the mock
   final _lblColor = const Color(0xFF436AA0); // label text
@@ -122,7 +116,7 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
   @override
   Widget build(BuildContext context) {
    
-    final ThemeData _dropTheme = ThemeData(
+    final ThemeData dropTheme = ThemeData(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
     );
@@ -161,15 +155,46 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
         /// Category Dropdown
         categoryAsync.when(
           data: (categories) {
-            final categoryNames = categories.map((e) => e.name).toList();
-            if (selectedCategory == null ||
-                !categoryNames.contains(selectedCategory)) {
-              selectedCategory =
-              categoryNames.isNotEmpty ? categoryNames.first : null;
+            if (categories.isEmpty) {
+              return const Text('No categories available');
             }
             
+            // Get unique category names (handle duplicates)
+            final categoryNames = categories.map((e) => e.name).toSet().toList();
+            
+            // Ensure selectedCategory is valid - must be in the list or null
+            // Reset if invalid to prevent DropdownButton assertion errors
+            String? validSelectedCategory;
+            if (categoryNames.isEmpty) {
+              validSelectedCategory = null;
+            } else if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
+              // If invalid, set to first category synchronously for this build
+              validSelectedCategory = categoryNames.first;
+              // Update state asynchronously to avoid build-time state changes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && selectedCategory != validSelectedCategory) {
+                  setState(() {
+                    selectedCategory = validSelectedCategory;
+                  });
+                  try {
+                    final selected = categories.firstWhere((e) => e.name == validSelectedCategory);
+                    ref.read(productCategoryProvider.notifier).state = selected.id;
+                  } catch (e) {
+                    // If category not found, use first one
+                    if (categories.isNotEmpty) {
+                      ref.read(productCategoryProvider.notifier).state = categories.first.id;
+                    }
+                  }
+                }
+              });
+            } else {
+              // selectedCategory is valid, use it
+              validSelectedCategory = selectedCategory;
+            }
+            
+            // Only show dropdown if we have a valid value or can use null with hint
             return Theme(
-              data: _dropTheme,
+              data: dropTheme,
               child: Container(
                 height: 56.h,
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -188,15 +213,16 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    value: selectedCategory,
+                    value: validSelectedCategory, // This will be null or a valid value from the list
+                    hint: validSelectedCategory == null 
+                        ? Text('Select Category', style: TextStyle(fontSize: 15.sp, color: _hintText))
+                        : null,
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                     dropdownColor: Colors.white,
                     borderRadius: BorderRadius.circular(16.r),
-
                     style: TextStyle(fontSize: 15.sp, color: Colors.black87),
                     items: categoryNames.map((e) {
                       return DropdownMenuItem(
-
                         value: e,
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -207,17 +233,15 @@ class _ProductBasicInfoSectionState extends ConsumerState<ProductBasicInfoSectio
                     onChanged: (v) {
                       if (v == null) return;
                       setState(() => selectedCategory = v);
-                      final selected =
-                      categories.firstWhere((e) => e.name == v);
-                      ref.read(productCategoryProvider.notifier).state =
-                          selected.id;
+                      final selected = categories.firstWhere((e) => e.name == v);
+                      ref.read(productCategoryProvider.notifier).state = selected.id;
                     },
                   ),
                 ),
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: Text('Loading...')),
           error: (err, _) => Center(child: Text('Error: $err')),
         ),
 
@@ -287,17 +311,18 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
     final createState = ref.watch(createProductProvider);
 
     bool loading = createState.isLoading;
-    final selectedColors = ref.read(selectedColorsProvider);
-    final selectedSizes = ref.read(selectedSizesProvider);
+    final selectedAttributes = ref.read(selectedAttributesProvider);
 
     ref.listen<AsyncValue<String>>(createProductProvider, (prev, next) {
       next.when(
         data: (msg) {
           if (msg.contains('success')) {
+            // Invalidate product list provider to refresh the list
+            ref.invalidate(productNotifierProvider);
+            ref.invalidate(updateProductProvider);
             // success হলেই নেভিগেট + টোস্ট
             context.pop();
             GlobalSnackbar.show(context, title: "Success", message: "Product Created Successfully");
-            ref.invalidate(updateProductProvider);
           }
         },
         error: (err, _) {
@@ -308,7 +333,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
     });
 
 
-    OutlineInputBorder _border([Color c = borderBlue]) => OutlineInputBorder(
+    OutlineInputBorder border([Color c = borderBlue]) => OutlineInputBorder(
       borderSide: BorderSide(color: c, width: 1.2),
       borderRadius: BorderRadius.circular(8.r),
     );
@@ -330,8 +355,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                     decoration: InputDecoration(
                       fillColor: AllColor.white,
                       hintText: 'Current Price',
-                      enabledBorder: _border(),
-                      focusedBorder: _border(),
+                      enabledBorder: border(),
+                      focusedBorder: border(),
                     ),
                   ),
                 ),
@@ -347,8 +372,47 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                     decoration: InputDecoration(
                       fillColor: AllColor.white,
                       hintText: 'Previous Price',
-                      enabledBorder: _border(),
-                      focusedBorder: _border(),
+                      enabledBorder: border(),
+                      focusedBorder: border(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          // Stock and Weight row
+          Row(
+            children: [
+              Expanded(
+                child: _Labeled(
+                  label: 'Stock',
+                  labelColor: labelBlue,
+                  child: TextField(
+                    controller: _stockC,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      fillColor: AllColor.white,
+                      hintText: 'Enter Stock Quantity',
+                      enabledBorder: border(),
+                      focusedBorder: border(),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: _Labeled(
+                  label: 'Weight (kg)',
+                  labelColor: labelBlue,
+                  child: TextField(
+                    controller: _weightC,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      fillColor: AllColor.white,
+                      hintText: 'Weight in kg',
+                      enabledBorder: border(),
+                      focusedBorder: border(),
                     ),
                   ),
                 ),
@@ -404,6 +468,28 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
           GlobalSaveBotton(
                 bottonName:loading? "Creating....": "Create a Product",
                 onPressed: () {
+                  // Validate prices
+                  if (_currentC.text.trim().isEmpty || _previousC.text.trim().isEmpty) {
+                    GlobalSnackbar.show(
+                      context,
+                      title: "Validation Error",
+                      message: "Please enter the prices",
+                      type: CustomSnackType.error,
+                    );
+                    return;
+                  }
+                  
+                  // Validate cover image
+                  if (_cover == null) {
+                    GlobalSnackbar.show(
+                      context,
+                      title: "Validation Error",
+                      message: "Please upload a cover image",
+                      type: CustomSnackType.error,
+                    );
+                    return;
+                  }
+                  
                   final createAsync = ref.read(createProductProvider.notifier);
                   final name = ref.watch(productNameProvider);
                   final desc = ref.watch(productDescProvider);
@@ -411,11 +497,12 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                   createAsync.createProduct(
                     name: name,
                     description: desc,
-                    regularPrice: _currentC.text,
-                    sellPrice: _previousC.text,
+                    regularPrice: _previousC.text,
+                    sellPrice: _currentC.text,
                     categoryId: categoryId ?? 1,
-                    color: selectedColors,
-                    size: selectedSizes,
+                    attributes: selectedAttributes,
+                    stock: _stockC.text,
+                    weight: _weightC.text,
                     image: File(_cover!.path),
                     files: _gallery.map((x) => File(x.path)).toList(),
                   );
@@ -443,6 +530,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
   }
   final _currentC = TextEditingController();
   final _previousC = TextEditingController();
+  final _stockC = TextEditingController();
+  final _weightC = TextEditingController();
 
   final _picker = ImagePicker();
 
@@ -459,12 +548,13 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
 
   Future<void> _pickGallery() async {
     final xs = await _picker.pickMultiImage(imageQuality: 85);
-    if (xs.isNotEmpty)
+    if (xs.isNotEmpty) {
       setState(
             () => _gallery
           ..clear()
           ..addAll(xs.take(8)),
       ); // cap to 8 for neat grid
+    }
   }
   void _askImageSource() {
     showModalBottomSheet(

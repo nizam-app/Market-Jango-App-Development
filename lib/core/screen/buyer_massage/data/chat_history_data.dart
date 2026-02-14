@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/chat_api.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 /// Fetcher
 Future<List<ChatMessage>> _fetchChatHistory(int partnerId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('auth_token');
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
 
   final uri = Uri.parse(ChatAPIController.chat_history(partnerId));
   final res = await http.get(uri, headers: {if (token != null) 'token': token});

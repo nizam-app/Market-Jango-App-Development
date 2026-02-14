@@ -4,11 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../../../../../core/localization/tr.dart';
 
@@ -30,8 +31,8 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
   }
 
   Future<void> _loadUserId() async {
-    final pref = await SharedPreferences.getInstance();
-    final stored = pref.getString("user_id");
+    final authStorage = AuthLocalStorage();
+    final stored = await authStorage.getUserId();
     if (!mounted) return;
     setState(() {
       _userId = stored;
@@ -65,7 +66,7 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
                     onTap: () {},
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text(e.toString())),
               ),
               SizedBox(height: 16.h),
@@ -76,7 +77,7 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
                   data: (page) =>
                       CusotomShowOrder(orders: page?.orders ?? const <Order>[]),
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(child: Text(e.toString())),
                 ),
               ),
@@ -233,28 +234,35 @@ class _Texts extends StatelessWidget {
       Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w900,
-              color: AllColor.black,
+          Flexible(
+            child: Text(
+              status,
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w900,
+                color: AllColor.black,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           if (paymentLabel.isNotEmpty) SizedBox(width: 8.w),
           if (paymentLabel.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AllColor.grey.withOpacity(0.16),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Text(
-                paymentLabel, // "Payment successful" / "Cash on delivery"
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AllColor.black,
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: AllColor.grey.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  paymentLabel, // "Payment successful" / "Cash on delivery"
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AllColor.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
@@ -309,7 +317,10 @@ class _ProductImage extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isNotEmpty
-          ? Image.network(url, fit: BoxFit.cover)
+          ? FirstTimeShimmerImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+            )
           : Container(color: AllColor.grey.withOpacity(0.10)),
     );
   }

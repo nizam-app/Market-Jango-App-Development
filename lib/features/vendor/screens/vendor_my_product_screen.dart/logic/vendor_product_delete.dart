@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
-import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 /// product delete API
 /// POST {{baseurl}}api/product/destroy/{id}
@@ -13,8 +13,8 @@ Future<bool> deleteVendorProduct({
   required WidgetRef ref,
   required int productId,
 }) async {
-  final prefs = await ref.read(sharedPreferencesProvider.future);
-  final token = prefs.getString('auth_token');
+  final authStorage = AuthLocalStorage();
+  final token = await authStorage.getToken();
   if (token == null) {
     throw Exception('Token not found');
   }

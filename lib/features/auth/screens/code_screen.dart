@@ -43,16 +43,14 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
 
       final state = ref.read(verifyOtpProvider);
 
-      // ✅ Direct result handle
+      // ✅ Direct result handle with null safety
       state.when(
         data: (ok) {
-          if (ok) {
-            GlobalSnackbar.show(
-              context,
-              title: "Success",
-              message: "OTP verified successfully!",
-              type: CustomSnackType.success,
-            );
+          if (ok == true) {
+            GlobalSnackbar.show(context,
+                title: "Success",
+                message: "OTP verified successfully!",
+                type: CustomSnackType.success);
 
             // ✅ Navigate instantly
             context.pushReplacement(EmailScreen.routeName);
@@ -65,12 +63,10 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
             );
           }
         },
-        error: (e, _) => GlobalSnackbar.show(
-          context,
-          title: "Error",
-          message: e.toString(),
-          type: CustomSnackType.error,
-        ),
+        error: (e, _) => GlobalSnackbar.show(context,
+            title: "Error",
+            message: e.toString(),
+            type: CustomSnackType.error),
         loading: () {},
       );
     } catch (e) {

@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/review/model/buyer_review_model.dart';
 
@@ -58,7 +59,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   future: _future,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(child: Text('Loading...'));
                     }
 
                     if (snapshot.hasError) {
@@ -179,7 +180,14 @@ class CustomReview extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 👉 user profile image
-          CircleAvatar(radius: 24.r, backgroundImage: NetworkImage(avatarUrl)),
+          ClipOval(
+            child: FirstTimeShimmerImage(
+              imageUrl: avatarUrl,
+              width: 48.r,
+              height: 48.r,
+              fit: BoxFit.cover,
+            ),
+          ),
           SizedBox(width: 12.w),
 
           // content

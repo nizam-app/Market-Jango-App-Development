@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/features/buyer/screens/prement/logic/global_logger.dart';
 
 Future<bool> verifyPaymentFromServer(
     BuildContext context, {
@@ -27,6 +28,9 @@ Future<bool> verifyPaymentFromServer(
 
     final uri = BuyerPaymentAPIController.paymentResponse.replace(queryParameters: qp);
 
+    log.i('PaymentVerify → GET $uri (token: ${maskToken(token)})');
+    log.d('PaymentVerify → Query params: $qp');
+
     final res = await http.get(
       uri,
       headers: {
@@ -35,13 +39,26 @@ Future<bool> verifyPaymentFromServer(
       },
     );
 
-    if (res.statusCode != 200) return false;
+    log.i('PaymentVerify ← status=${res.statusCode}');
+    log.t('PaymentVerify ← body: ${res.body.length > 500 ? res.body.substring(0, 500) + '…' : res.body}');
+
+    if (res.statusCode != 200) {
+      log.w('PaymentVerify ← Failed with status ${res.statusCode}');
+      return false;
+    }
 
     final map = jsonDecode(res.body) as Map<String, dynamic>;
     final st  = (map['status'] ?? '').toString().toLowerCase();
     final dst = (map['data']?['status'] ?? '').toString().toLowerCase();
-    return st == 'success' || dst == 'successful';
-  } catch (_) {
+    
+    log.d('PaymentVerify ← status=$st, data.status=$dst');
+    
+    final isSuccess = st == 'success' || dst == 'successful';
+    log.i('PaymentVerify ← Result: ${isSuccess ? "SUCCESS" : "FAILED"}');
+    
+    return isSuccess;
+  } catch (e, st) {
+    log.e('PaymentVerify ← Exception: $e\n$st');
     return false;
   }
 }

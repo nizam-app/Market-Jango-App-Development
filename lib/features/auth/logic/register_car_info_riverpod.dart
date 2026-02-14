@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import '../model/car_info_model.dart';
 final driverRegisterProvider =
 StateNotifierProvider<DriverRegisterNotifier, AsyncValue<DriverRegisterModel?>>(
@@ -21,8 +21,8 @@ class DriverRegisterNotifier extends StateNotifier<AsyncValue<DriverRegisterMode
   }) async {
     state = const AsyncValue.loading();
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       if (token == null || token.isEmpty) throw 'Missing auth token';
       var request = http.MultipartRequest('POST', Uri.parse(url));
       request.headers.addAll({

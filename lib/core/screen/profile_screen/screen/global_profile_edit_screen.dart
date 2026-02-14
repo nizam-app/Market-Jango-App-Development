@@ -37,6 +37,7 @@ class _BuyerProfileEditScreenState
   late TextEditingController nameC;
   late TextEditingController emailC;
   late TextEditingController phoneC;
+  String? _selectedCurrency;
 
   // ---------- buyer ----------
   late TextEditingController ageC;
@@ -59,10 +60,10 @@ class _BuyerProfileEditScreenState
   final ImagePicker _picker = ImagePicker();
 
   // --- user type helpers (API থেকে আসা user_type ধরে নাও) ---
-  bool get isBuyer => widget.user.userType?.toLowerCase() == 'buyer';
-  bool get isVendor => widget.user.userType?.toLowerCase() == 'vendor';
-  bool get isTransport => widget.user.userType?.toLowerCase() == 'transport';
-  bool get isDriver => widget.user.userType?.toLowerCase() == 'driver';
+  bool get isBuyer => widget.user.userType.toLowerCase() == 'buyer';
+  bool get isVendor => widget.user.userType.toLowerCase() == 'vendor';
+  bool get isTransport => widget.user.userType.toLowerCase() == 'transport';
+  bool get isDriver => widget.user.userType.toLowerCase() == 'driver';
 
   @override
   void initState() {
@@ -72,6 +73,7 @@ class _BuyerProfileEditScreenState
     nameC = TextEditingController(text: widget.user.name ?? '');
     emailC = TextEditingController(text: widget.user.email ?? '');
     phoneC = TextEditingController(text: widget.user.phone ?? '');
+    _selectedCurrency = widget.user.currency ?? 'USD';
 
     // --------- buyer ----------
     ageC = TextEditingController(text: widget.user.buyer?.age ?? '');
@@ -182,6 +184,65 @@ class _BuyerProfileEditScreenState
                   controller: phoneC,
                   enabled: false,
                 ),
+                SizedBox(height: 12.h),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Currency",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCurrency,
+                      decoration: InputDecoration(
+                        fillColor: const Color(0xffE6F0F8),
+                        hintText: "Select Currency",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xff0168B8),
+                            width: 0.2,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xff0168B8),
+                            width: 0.2,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(
+                            color: Color(0xff0168B8),
+                            width: 0.2,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                      items: <String>['USD', 'EUR', 'GBP', 'BDT', 'INR', 'JPY', 'CNY', 'AUD', 'CAD']
+                          .map(
+                            (value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCurrency = newValue;
+                        });
+                      },
+                    ),
+                  ],
+                ),
 
                 // ------------ Buyer only fields ------------
                 if (isBuyer) ...[
@@ -202,7 +263,7 @@ class _BuyerProfileEditScreenState
                             ),
                             SizedBox(height: 8.h),
                             DropdownButtonFormField<String>(
-                              value: _selectedGender,
+                              initialValue: _selectedGender,
                               decoration: InputDecoration(
                                 fillColor: const Color(0xffE6F0F8),
                                 hintText: "Select Gender",
@@ -437,6 +498,7 @@ class _BuyerProfileEditScreenState
                         latitude: lat,
                         longitude: lng,
                         image: _mainImage,
+                        currency: _selectedCurrency,
                       );
                     } else if (isVendor) {
                       ok = await notifier.updateUser(
@@ -450,6 +512,7 @@ class _BuyerProfileEditScreenState
                         latitude: lat,
                         longitude: lng,
                         image: _mainImage,
+                        currency: _selectedCurrency,
                       );
                     } else if (isTransport) {
                       ok = await notifier.updateUser(
@@ -459,6 +522,7 @@ class _BuyerProfileEditScreenState
                         latitude: lat,
                         longitude: lng,
                         image: _mainImage,
+                        currency: _selectedCurrency,
                       );
                     } else if (isDriver) {
                       ok = await notifier.updateUser(
@@ -469,6 +533,7 @@ class _BuyerProfileEditScreenState
                         // longitude: lng,
                         image: _mainImage,
                         driverPrice: double.tryParse(priceC.text.trim()),
+                        currency: _selectedCurrency,
                       );
                     }
 

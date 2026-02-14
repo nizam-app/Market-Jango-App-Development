@@ -16,7 +16,7 @@ final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
 class VendorBottomNav extends ConsumerWidget {
   // Changed to ConsumerWidget
-  VendorBottomNav({super.key});
+  const VendorBottomNav({super.key});
 
   static const String routeName = '/vendor_bottom_nav_bar';
 

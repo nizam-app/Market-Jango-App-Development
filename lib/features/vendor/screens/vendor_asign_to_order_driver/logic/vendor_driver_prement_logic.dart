@@ -64,7 +64,7 @@ Future<void> startVendorAssignCheckout(
     log.i('VendorInvoiceCreate ← status=${res.statusCode}');
     log.t(
       'VendorInvoiceCreate body: '
-      '${res.body.length > 400 ? res.body.substring(0, 400) + '…' : res.body}',
+      '${res.body.length > 400 ? '${res.body.substring(0, 400)}…' : res.body}',
     );
 
     if (res.statusCode != 200) {

@@ -3,18 +3,12 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:http_parser/http_parser.dart';          // 👈 add
-import 'package:path/path.dart' as p;                   // 👈 add
+// 👈 add
+// 👈 add
 
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 
-import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
-import 'package:market_jango/core/constants/api_control/vendor_api.dart';
-import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 
 class VendorCategory {
   final int id;

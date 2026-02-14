@@ -52,7 +52,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
     if (result != null) {
       setState(() {
         _pickedFiles = result.paths
-            .where((e) => e != null && File(e!).existsSync())
+            .where((e) => e != null && File(e).existsSync())
             .map((e) => File(e!))
             .toList();
       });
@@ -190,7 +190,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                       ),
                     );
                   },
-                  loading: () => const CircularProgressIndicator(),
+                  loading: () => const Center(child: Text('Loading...')),
                   error: (e, _) => Text("Failed to load routes: $e"),
                 ),
 

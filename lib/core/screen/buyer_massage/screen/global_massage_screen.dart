@@ -12,17 +12,54 @@ import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/widget/custom_textfromfield.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 
 import '../../../localization/Keys/buyer_kay.dart';
 import 'global_chat_screen.dart';
 
-class GlobalMassageScreen extends ConsumerWidget {
+class GlobalMassageScreen extends ConsumerStatefulWidget {
   const GlobalMassageScreen({super.key});
   static final routeName = "/buyerMassageScreen";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GlobalMassageScreen> createState() => _GlobalMassageScreenState();
+}
+
+class _GlobalMassageScreenState extends ConsumerState<GlobalMassageScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<ChatThread> _filterChatList(List<ChatThread> list) {
+    if (_searchQuery.isEmpty) {
+      return list;
+    }
+    return list.where((chat) {
+      final partnerName = chat.partnerName.toLowerCase();
+      final lastMessage = chat.lastMessage.toLowerCase();
+      return partnerName.contains(_searchQuery) || 
+             lastMessage.contains(_searchQuery);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     final chatState = ref.watch(chatListProvider);
 
@@ -39,14 +76,15 @@ class GlobalMassageScreen extends ConsumerWidget {
               CustomTextFromField(
                 hintText: ref.t(BKeys.search),
                 prefixIcon: Icons.search_rounded,
-                controller: TextEditingController(),
+                controller: _searchController,
               ),
               SizedBox(height: 16.h),
 
               chatState.when(
                 data: (list) {
                   Logger().i(list);
-                  return Expanded(child: ChatListView(chatData: list));
+                  final filteredList = _filterChatList(list);
+                  return Expanded(child: ChatListView(chatData: filteredList));
                 },
                 loading: () =>
                     Expanded(child: Center(child: Text(ref.t(VKeys.loding)))),
@@ -91,9 +129,13 @@ class ChatListView extends ConsumerWidget {
                   ),
                 ),
               SizedBox(width: 6.w),
-              CircleAvatar(
-                radius: 22.r,
-                backgroundImage: NetworkImage(chat.partnerImage),
+              ClipOval(
+                child: FirstTimeShimmerImage(
+                  imageUrl: chat.partnerImage,
+                  width: 44.r,
+                  height: 44.r,
+                  fit: BoxFit.cover,
+                ),
               ),
             ],
           ),
@@ -131,21 +173,57 @@ class ChatListView extends ConsumerWidget {
             style: TextStyle(color: isUnread ? AllColor.grey : AllColor.black),
           ),
           onTap: () async {
-            SharedPreferences _pefa = await SharedPreferences.getInstance();
-            String? myUserId = _pefa.getString('user_id');
-            int myUserIdInt = int.parse(myUserId!);
-            ref.read(chatListProvider.notifier).markAsRead(chat.chatId);
+            try {
+              // Use centralized AuthLocalStorage to get user ID
+              final authStorage = AuthLocalStorage();
+              final myUserId = await authStorage.getUserId();
+              
+              if (myUserId == null || myUserId.isEmpty) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('User ID not found. Please login again.'),
+                    ),
+                  );
+                }
+                return;
+              }
 
-            context.push(
-              GlobalChatScreen.routeName,
-              extra: ChatArgs(
-                partnerId: chat.partnerId,
-                partnerName: chat.partnerName,
-                partnerImage: chat.partnerImage,
-                myUserId: myUserIdInt,
-              ),
-            );
-            ;
+              final myUserIdInt = int.tryParse(myUserId);
+              if (myUserIdInt == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Invalid user ID. Please login again.'),
+                    ),
+                  );
+                }
+                return;
+              }
+
+              ref.read(chatListProvider.notifier).markAsRead(chat.chatId);
+
+              if (context.mounted) {
+                context.push(
+                  GlobalChatScreen.routeName,
+                  extra: ChatArgs(
+                    partnerId: chat.partnerId,
+                    partnerName: chat.partnerName,
+                    partnerImage: chat.partnerImage,
+                    myUserId: myUserIdInt,
+                  ),
+                );
+              }
+            } catch (e) {
+              Logger().e('Error navigating to chat: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to open chat: ${e.toString()}'),
+                  ),
+                );
+              }
+            }
           },
         );
       },

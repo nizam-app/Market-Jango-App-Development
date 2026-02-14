@@ -36,20 +36,20 @@ class VendorPendingOrderPage {
   });
 
   factory VendorPendingOrderPage.fromJson(Map<String, dynamic> json) {
-    int _toInt(dynamic v) {
+    int toInt(dynamic v) {
       if (v == null) return 0;
       if (v is int) return v;
       return int.tryParse(v.toString()) ?? 0;
     }
 
     return VendorPendingOrderPage(
-      currentPage: _toInt(json['current_page']),
+      currentPage: toInt(json['current_page']),
       data: (json['data'] as List? ?? [])
           .map((e) => VendorPendingOrder.fromJson(e as Map<String, dynamic>))
           .toList(),
-      lastPage: _toInt(json['last_page']),
-      perPage: _toInt(json['per_page']),
-      total: _toInt(json['total']),
+      lastPage: toInt(json['last_page']),
+      perPage: toInt(json['per_page']),
+      total: toInt(json['total']),
     );
   }
 }
@@ -97,13 +97,13 @@ class VendorPendingOrder {
   });
 
   factory VendorPendingOrder.fromJson(Map<String, dynamic> json) {
-    double _toDouble(dynamic v) {
+    double toDouble(dynamic v) {
       if (v == null) return 0;
       if (v is num) return v.toDouble();
       return double.tryParse(v.toString()) ?? 0;
     }
 
-    DateTime? _parseDate(dynamic v) {
+    DateTime? parseDate(dynamic v) {
       if (v == null) return null;
       return DateTime.tryParse(v.toString());
     }
@@ -113,13 +113,13 @@ class VendorPendingOrder {
       quantity: json['quantity'] ?? 0,
       tranId: json['tran_id']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      salePrice: _toDouble(json['sale_price']),
+      salePrice: toDouble(json['sale_price']),
       invoiceId: json['invoice_id'] ?? 0,
       productId: json['product_id'] ?? 0,
       vendorId: json['vendor_id'] ?? 0,
       driverId: json['driver_id'],
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      createdAt: parseDate(json['created_at']),
+      updatedAt: parseDate(json['updated_at']),
 
       pickupAddress: json['pickup_address']?.toString(),
       currentAddress: json['current_address']?.toString(),

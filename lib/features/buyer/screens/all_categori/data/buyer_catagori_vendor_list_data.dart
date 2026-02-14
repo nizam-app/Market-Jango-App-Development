@@ -10,7 +10,7 @@ class VendorService {
   static Future<List<VendorMini>> list({required int limit, required String token}) async {
     // if you already have a helper, expose a method like:
     // final uri = BuyerAPIController.vendorList(limit);
-    final uri = Uri.parse('${BuyerAPIController.vendor_list(limit)}');
+    final uri = Uri.parse(BuyerAPIController.vendor_list(limit));
 
     final res = await http.get(
       uri,

@@ -34,7 +34,7 @@ class CategoriesScreen extends ConsumerWidget {
               Expanded(
                 child: asyncCats.when(
                   loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                      const Center(child: Text('Loading...')),
                   error: (e, _) => Center(child: Text('Error: $e')),
                   data: (resp) {
                     if (resp == null) return const SizedBox.shrink();
@@ -46,6 +46,8 @@ class CategoriesScreen extends ConsumerWidget {
                           child: CustomCategories(
                             categoriCount: page.data.length,
                             physics: const AlwaysScrollableScrollPhysics(),
+                            showOnlyTopCategories: false,
+                            requireProducts: false,
                             onTapCategory: (cat) => goToCategoriesProductPage(
                               context,
                               cat.id,

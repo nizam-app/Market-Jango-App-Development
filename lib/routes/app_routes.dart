@@ -74,6 +74,7 @@ import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
+import 'package:market_jango/features/vendor/screens/vendor_store_document_upload/screen/store_document_upload_screen.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
@@ -391,9 +392,9 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: TransportCancelledDetails.routeName,
+      path: TransportBookingDetails.routeName,
       name: 'cancelledDetails',
-      builder: (context, state) => TransportCancelledDetails(),
+      builder: (context, state) => TransportBookingDetails(),
     ),
 
     GoRoute(
@@ -653,6 +654,11 @@ final GoRouter router = GoRouter(
       path: CategoryAddPage.routeName,
       name: CategoryAddPage.routeName,
       builder: (context, state) => CategoryAddPage(),
+    ),
+    GoRoute(
+      path: StoreDocumentUploadScreen.routeName,
+      name: StoreDocumentUploadScreen.routeName,
+      builder: (context, state) => const StoreDocumentUploadScreen(),
     ),
     GoRoute(
       path: GoogleMapScreen.routeName,

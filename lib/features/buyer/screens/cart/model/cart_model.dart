@@ -270,6 +270,7 @@ class Buyer {
   final String? shipState;
   final String? shipCountry;
   final String? shipPhone;
+  final String? shipLocation;
 
   // misc
   final String? description;
@@ -293,6 +294,7 @@ class Buyer {
     required this.shipState,
     required this.shipCountry,
     required this.shipPhone,
+    required this.shipLocation,
     required this.description,
     required this.location,
     required this.userId,
@@ -320,6 +322,7 @@ class Buyer {
       shipState: s(json['ship_state']),
       shipCountry: s(json['ship_country']),
       shipPhone: s(json['ship_phone']),
+      shipLocation: s(json['ship_location']),
 
       description: s(json['description']),
       location: s(json['location']),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
@@ -128,12 +129,13 @@ class VerifiUpperText extends StatelessWidget {
 }
 
 class CustomVerificationResendText extends ConsumerWidget {
-   CustomVerificationResendText({super.key, required this.onEnter,this.loading});
+   CustomVerificationResendText({super.key, required this.onEnter, this.loading});
   final VoidCallback onEnter;
-   var loading;
+   final bool? loading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading = loading ?? false;
 
     return Column(
       children: [
@@ -144,8 +146,9 @@ class CustomVerificationResendText extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleSmall!.copyWith(color: AllColor.grey),
             children: [
               TextSpan(
-                text: loading? "Resending": "Resend",
-                onEnter: (_) =>  loading ? () {} : onEnter,
+                text: isLoading ? "Resending": "Resend",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = isLoading ? () {} : onEnter,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AllColor.black,
                   fontWeight: FontWeight.w700,

@@ -412,8 +412,51 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                         });
                       },
                     ),
+                     SizedBox(height: 12.h),
+
+                    // Or divider (পাতলা গ্রে)
+                    Row(
+                      children: [
+                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          child: Text("Or", style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
+                        ),
+                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // Pickup (light grey bg)
+                    _softField(
+                      hint: "Enter Pickup location",
+                      icon: Icons.location_on_outlined,
+                      bg:  AllColor.grey300, // হালকা ধূসর
+                    ),
+                    SizedBox(height: 10.h),
+
+            
                   ],
                 ),
+
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    onPressed: () {},
+                    child: Text("Search", style: TextStyle(fontSize: 16.sp, color: AllColor.white)),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                    
+                
 
                 SizedBox(height: 20.h),
 
@@ -572,7 +615,7 @@ class _DriverCard extends ConsumerWidget {
                     Logger().i(user.id);
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.userId,
+                      extra: user.id,
                     );
                   },
                   child: ClipOval(
@@ -590,7 +633,7 @@ class _DriverCard extends ConsumerWidget {
                     Logger().i(user.id);
                     context.push(
                       DriverDetailsScreen.routeName,
-                      extra: driver.id,
+                      extra: user.id,
                     );
                   },
                   child: Column(
@@ -668,10 +711,10 @@ class _DriverCard extends ConsumerWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      Logger().e(driver.id);
+                      Logger().e(user.id);
                       context.push(
                         DriverDetailsScreen.routeName,
-                        extra: driver.id,
+                        extra: user.id,
                       );
                     },
                     child: Container(

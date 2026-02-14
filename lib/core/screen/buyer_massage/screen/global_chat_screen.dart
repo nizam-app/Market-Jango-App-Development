@@ -465,6 +465,74 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
   }
 }
 
+/* ---------- Full-screen image viewer helper ---------- */
+
+void _showImagePreview({
+  required BuildContext context,
+  String? imageUrl,
+  File? localImage,
+}) {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black87,
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: localImage != null
+                    ? Image.file(
+                        localImage,
+                        fit: BoxFit.contain,
+                      )
+                    : (imageUrl != null && imageUrl!.isNotEmpty)
+                        ? FirstTimeShimmerImage(
+                            imageUrl: imageUrl!,
+                            fit: BoxFit.contain,
+                          )
+                        : Container(
+                            color: Colors.grey.shade200,
+                            child: Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 64.sp,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                          ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 24.sp,
+                  ),
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 /* ---------- Simple message bubble row (keeps your style) ---------- */
 
 class _MessageRow extends ConsumerWidget {
@@ -520,38 +588,54 @@ class _MessageRow extends ConsumerWidget {
 
     Widget body;
     if (hasImage) {
-      body = Stack(
-        alignment: Alignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.r),
-            child: SizedBox(
-              width: 220.w, // bubble width for image
-              child: localImage != null
-                  ? Image.file(localImage!, fit: BoxFit.cover)
-                  : FirstTimeShimmerImage(
-                      imageUrl: imageUrl!,
-                      width: 220.w,
-                      height: 140.h,
-                      fit: BoxFit.cover,
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-            ),
-          ),
-          if (uploading)
-            Shimmer.fromColors(
-              baseColor: Colors.grey.shade300,
-              highlightColor: Colors.grey.shade100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                height: 140.h,
+      body = GestureDetector(
+        onTap: () {
+          // Open full-screen image viewer
+          _showImagePreview(
+            context: context,
+            imageUrl: imageUrl,
+            localImage: localImage,
+          );
+        },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16.r),
+              child: SizedBox(
                 width: 220.w,
+                height: 200.h, // Fixed height for proper aspect ratio
+                child: localImage != null
+                    ? Image.file(
+                        localImage!,
+                        fit: BoxFit.cover,
+                        width: 220.w,
+                        height: 200.h,
+                      )
+                    : FirstTimeShimmerImage(
+                        imageUrl: imageUrl!,
+                        width: 220.w,
+                        height: 200.h,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
               ),
             ),
-        ],
+            if (uploading)
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  height: 200.h,
+                  width: 220.w,
+                ),
+              ),
+          ],
+        ),
       );
     } else {
       body = Text(

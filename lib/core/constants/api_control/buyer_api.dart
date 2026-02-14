@@ -38,11 +38,10 @@ class BuyerAPIController {
 
 // lib/core/constants/api_control/buyer_api.dart
 class BuyerPaymentAPIController {
-  static const String invoice_createate =
-      'http://103.208.183.253:8000/api/invoice/create';
+  static final String _base_api = "$api/api";
+  
+  static String get invoice_createate => "$_base_api/invoice/create";
 
-  // ✅ নতুন: payment verify/callback endpoint (GET)
-  static final Uri paymentResponse = Uri.parse(
-    'http://103.208.183.253:8000/api/payment/response',
-  );
+  // ✅ payment verify/callback endpoint (GET) - using base URL
+  static Uri get paymentResponse => Uri.parse("$_base_api/payment/response");
 }

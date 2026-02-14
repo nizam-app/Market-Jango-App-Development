@@ -69,6 +69,7 @@ class UserModel {
   final String? expiresAt;
   final String? createdAt;
   final String? updatedAt;
+  final String? currency;
 
   // ==== role specific (optional) ====
   final VendorInfo? vendor;
@@ -78,6 +79,7 @@ class UserModel {
 
   // ==== images (optional) ====
   final List<UserImage> userImages;
+  final String? coverImage; // cover image for vendor
 
   UserModel({
     // required (keep same)
@@ -97,11 +99,13 @@ class UserModel {
     this.expiresAt,
     this.createdAt,
     this.updatedAt,
+    this.currency,
     this.vendor,
     this.buyer,
     this.driver,
     this.transport,
     this.userImages = const <UserImage>[],
+    this.coverImage,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -130,6 +134,7 @@ class UserModel {
       expiresAt: json['expires_at']?.toString(),
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
+      currency: json['currency']?.toString() ?? 'USD',
 
       // ==== nested roles (nullable) ====
       vendor: (json['vendor'] != null)
@@ -148,6 +153,9 @@ class UserModel {
           .whereType<Map<String, dynamic>>()
           .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
           .toList(),
+      
+      // ==== cover image ====
+      coverImage: json['cover_image']?.toString(),
     );
   }
 }
@@ -170,6 +178,7 @@ class VendorInfo {
   final String? latitude;
   final String? longitude;
   final double? avgRating;
+  final String? coverImage;
 
   // 🔹 vendor.reviews[]
   final List<VendorReviewProfile> reviews;
@@ -188,6 +197,7 @@ class VendorInfo {
     this.latitude,
     this.longitude,
     this.avgRating,
+    this.coverImage,
     this.reviews = const <VendorReviewProfile>[],
   });
 
@@ -207,6 +217,7 @@ class VendorInfo {
     latitude: json['latitude']?.toString(),
     longitude: json['longitude']?.toString(),
     avgRating: json['avg_rating']?.toDouble(),
+    coverImage: json['cover_image']?.toString(),
 
     // reviews list
     reviews: (json['reviews'] as List? ?? [])
@@ -303,9 +314,10 @@ class DriverInfo {
   final num rating;
   final String description;
   final int userId;
-  final int routeId;
+  final int? routeId;
   final String createdAt;
   final String updatedAt;
+  final String? coverImage;
 
   DriverInfo({
     required this.id,
@@ -315,10 +327,11 @@ class DriverInfo {
     required this.price,
     required this.rating,
     required this.userId,
-    required this.routeId,
+    this.routeId,
     required this.createdAt,
     required this.updatedAt,
     required this.description,
+    this.coverImage,
   });
 
   factory DriverInfo.fromJson(Map<String, dynamic> json) => DriverInfo(
@@ -329,10 +342,11 @@ class DriverInfo {
     price: '${json['price'] ?? ''}',
     rating: json['rating'] ?? 0,
     userId: json['user_id'] ?? 0,
-    routeId: json['route_id'] ?? 0,
+    routeId: json['route_id'] is int ? json['route_id'] as int : (json['route_id'] != null ? int.tryParse(json['route_id'].toString()) : null),
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
     description: json['description'] ?? '',
+    coverImage: json['cover_image']?.toString(),
   );
 }
 

@@ -62,6 +62,7 @@
 // });
 
 import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../core/constants/api_control/vendor_api.dart';
@@ -69,7 +70,9 @@ import '../../../../../core/utils/get_token_sharedpefarens.dart';
 import '../model/vendor_product_model.dart';
 
 final productNotifierProvider =
-AsyncNotifierProvider<ProductNotifier, PaginatedProducts?>(ProductNotifier.new);
+    AsyncNotifierProvider<ProductNotifier, PaginatedProducts?>(
+      ProductNotifier.new,
+    );
 
 class ProductNotifier extends AsyncNotifier<PaginatedProducts?> {
   int _categoryId = 0;
@@ -110,43 +113,34 @@ class ProductNotifier extends AsyncNotifier<PaginatedProducts?> {
     final response = await http.get(uri, headers: {'token': token});
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
-      
-      // Ensure body is a Map
       if (body is! Map<String, dynamic>) {
         return PaginatedProducts(
           currentPage: 1,
           lastPage: 1,
           products: [],
-          total: 0
+          total: 0,
         );
       }
-      
       final data = body['data'];
-      
       if (data == null || data is! Map<String, dynamic>) {
         return PaginatedProducts(
           currentPage: 1,
           lastPage: 1,
           products: [],
-          total: 0
+          total: 0,
         );
       }
-      
-      // ✅ Only use products block now
       final productBlock = data['products'];
-
       if (productBlock == null || productBlock is! Map<String, dynamic>) {
         return PaginatedProducts(
           currentPage: 1,
           lastPage: 1,
           products: [],
-          total: 0
+          total: 0,
         );
       }
-      
       return PaginatedProducts.fromJson(productBlock);
-    } else {
-      throw Exception('Failed to fetch products: ${response.statusCode}');
     }
+    throw Exception('Failed to fetch products: ${response.statusCode}');
   }
 }

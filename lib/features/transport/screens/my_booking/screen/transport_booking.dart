@@ -158,8 +158,6 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                           /// //"Completed"
                           final showTrack = status == ref.t(BKeys.completed);
 
-
-
                           return _bookingCard(
                             status: status,
                             statusColor: statusColor,
@@ -170,6 +168,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             fromText: fromText,
                             toText: toText,
                             image: driverImage,
+                            orderId: o.id,
                           );
                         },
                       );
@@ -269,6 +268,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     String? fromText,
     String? toText,
     String? image,
+    int? orderId,
   }) {
     final imageUrl = (image != null && image.isNotEmpty)
         ? image
@@ -406,7 +406,9 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                     /// TODO: এখানে তোমার details route change korte paro
 
                     context.push(
-                      TransportBookingDetails.routeName,);
+                      TransportCancelledDetails.routeName,
+                      extra: orderId,
+                    );
                   },
                   child: Text(
                     //"See details",

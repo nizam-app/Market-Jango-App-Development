@@ -4,6 +4,7 @@ import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
+import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
@@ -25,6 +26,7 @@ import 'package:market_jango/features/auth/screens/user_type_screen.dart';
 import 'package:market_jango/features/auth/screens/vendor/screen/vendor_request_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/screen/category_product_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_cetagory_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
@@ -83,7 +85,6 @@ import '../features/vendor/screens/vendor_my_product_size/screen/my_product_size
 import '../features/vendor/screens/vendor_product_add_page/screen/product_add_page.dart';
 
 final GoRouter router = GoRouter(
-
   initialLocation: SplashScreen.routeName,
 
   errorBuilder: (context, state) =>
@@ -392,15 +393,21 @@ final GoRouter router = GoRouter(
     ),
 
     GoRoute(
-      path: TransportBookingDetails.routeName,
+      path: TransportCancelledDetails.routeName,
       name: 'cancelledDetails',
-      builder: (context, state) => TransportBookingDetails(),
+      builder: (context, state) =>
+          TransportCancelledDetails(oderId: state.extra as int),
     ),
 
     GoRoute(
       path: GlobalLanguageScreen.routeName,
       name: 'language',
       builder: (context, state) => GlobalLanguageScreen(),
+    ),
+    GoRoute(
+      path: SubscriptionScreen.routeName,
+      name: 'subscription',
+      builder: (context, state) => const SubscriptionScreen(),
     ),
 
     GoRoute(

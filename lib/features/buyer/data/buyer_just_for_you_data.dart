@@ -1,14 +1,17 @@
 import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 
 /// family: এখন স্ক্রিন থেকে url পাঠানো যাবে
-final justForYouProvider = AsyncNotifierProvider.family<
-    JustForYouNotifier, TopProductsResponse?, String>(
-  JustForYouNotifier.new,
-);
+final justForYouProvider =
+    AsyncNotifierProvider.family<
+      JustForYouNotifier,
+      TopProductsResponse?,
+      String
+    >(JustForYouNotifier.new);
 
 class JustForYouNotifier
     extends FamilyAsyncNotifier<TopProductsResponse?, String> {
@@ -19,7 +22,7 @@ class JustForYouNotifier
 
   @override
   Future<TopProductsResponse?> build(String baseUrl) async {
-    _baseUrl = baseUrl;             // স্ক্রিন থেকে আসা URL ধরে রাখছি
+    _baseUrl = baseUrl; // স্ক্রিন থেকে আসা URL ধরে রাখছি
     return _fetch();
   }
 
@@ -59,9 +62,7 @@ class JustForYouNotifier
             };
       return TopProductsResponse.fromJson(jsonData);
     } else {
-      throw Exception(
-        'Failed: ${res.statusCode} ${res.reasonPhrase}',
-      );
+      throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
     }
   }
 }

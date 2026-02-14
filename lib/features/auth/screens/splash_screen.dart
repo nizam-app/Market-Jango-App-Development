@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/utils/auth_session_utils.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/auth/screens/user_type_screen.dart';
+import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
+import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -91,8 +97,32 @@ class SplashScreenText extends ConsumerWidget {
     );
   }
 
-  void loginDone(BuildContext context) {
-    context.push('/loginScreen');
+  Future<dynamic> loginDone(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final type = prefs.getString('user_type');
+
+    Logger().e("token $token type $type");
+
+    // ✅ token & type thakle matro home e pathabo
+    if (token != null && token.isNotEmpty && type != null) {
+      switch (type) {
+        case 'buyer':
+          return context.push(BuyerBottomNavBar.routeName);
+        case 'vendor':
+          return context.push(VendorBottomNav.routeName);
+        case 'transport':
+          return context.push(TransportBottomNavBar.routeName);
+        case 'driver':
+          return context.push(DriverBottomNavBar.routeName);
+        default:
+          // unknown type -> login e niye jao
+          return context.push(LoginScreen.routeName);
+      }
+    }
+
+    // ❌ token nai / empty / type null -> always login
+    return context.push(LoginScreen.routeName);
   }
 
   void gotoLoginScreen(BuildContext content) {

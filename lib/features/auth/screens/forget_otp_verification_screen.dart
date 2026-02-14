@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
@@ -11,7 +11,7 @@ import '../logic/forget_password_reverport.dart';
 import '../logic/verification_reverpod.dart';
 
 class ForgetOTPVerificationScreen extends ConsumerWidget {
-  const ForgetOTPVerificationScreen({super.key,});
+  const ForgetOTPVerificationScreen({super.key});
   static const String routeName = '/verification_screen';
   // final String? email;
 
@@ -44,12 +44,17 @@ class ForgetOTPVerificationScreen extends ConsumerWidget {
                         verifyOtpFunction(context: context, otp: otp);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Please enter 6-digit OTP")),
+                          const SnackBar(
+                            content: Text("Please enter 6-digit OTP"),
+                          ),
                         );
                       }
                     },
                   ),
-                  CustomVerificationResendText(onEnter: onEnterWork, loading: loading,),
+                  CustomVerificationResendText(
+                    onEnter: onEnterWork,
+                    loading: loading,
+                  ),
                 ],
               ),
             ),
@@ -58,7 +63,8 @@ class ForgetOTPVerificationScreen extends ConsumerWidget {
       ),
     );
   }
-  void onEnterWork ({ref, context, isLoading}){
+
+  void onEnterWork({ref, context, isLoading}) {
     // final notifier = ref.read(forgetPasswordProvider.notifier);
     // isLoading
     //     ? (){}
@@ -66,7 +72,6 @@ class ForgetOTPVerificationScreen extends ConsumerWidget {
     //   context: context,
     //   email: emailController.text.trim(),
     // );
-
   }
 }
 
@@ -129,30 +134,30 @@ class VerifiUpperText extends StatelessWidget {
 }
 
 class CustomVerificationResendText extends ConsumerWidget {
-   CustomVerificationResendText({super.key, required this.onEnter, this.loading});
+  CustomVerificationResendText({super.key, required this.onEnter, this.loading});
   final VoidCallback onEnter;
-   final bool? loading;
+  final bool? loading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoading = loading ?? false;
-
     return Column(
       children: [
         SizedBox(height: 32.h),
         Text.rich(
           TextSpan(
             text: "Didn't receive a code? ",
-            style: Theme.of(context).textTheme.titleSmall!.copyWith(color: AllColor.grey),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall!.copyWith(color: AllColor.grey),
             children: [
               TextSpan(
-                text: isLoading ? "Resending": "Resend",
+                text: isLoading ? "Resending" : "Resend",
                 recognizer: TapGestureRecognizer()
                   ..onTap = isLoading ? () {} : onEnter,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: AllColor.black,
                   fontWeight: FontWeight.w700,
-
                 ),
               ),
             ],

@@ -6,15 +6,18 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 
-class TransportBookingDetails extends ConsumerStatefulWidget {
-  const TransportBookingDetails({super.key});
+class TransportCancelledDetails extends ConsumerStatefulWidget {
+  const TransportCancelledDetails({super.key, required this.oderId});
   static const String routeName = "/cancelledDetails";
+  final int oderId;
 
   @override
-  ConsumerState<TransportBookingDetails> createState() => _TransportCancelledDetailsState();
+  ConsumerState<TransportCancelledDetails> createState() =>
+      _TransportCancelledDetailsState();
 }
 
-class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDetails> {
+class _TransportCancelledDetailsState
+    extends ConsumerState<TransportCancelledDetails> {
   // GoogleMapController? mapController;
   //
   // final LatLng pickupLocation = const LatLng(37.7749, -122.4194);
@@ -24,54 +27,64 @@ class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDeta
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20.h,), 
-            CustomBackButton(), 
-            SizedBox(height: 10.h,), 
+            SizedBox(height: 20.h),
+            CustomBackButton(),
+            SizedBox(height: 10.h),
+
             /// Order ID
-            Text("Order #1234",
-                style: TextStyle(
-                    fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            Text(
+              "Order #1234",
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+            ),
             SizedBox(height: 16.h),
 
             /// Pickup Address
-            _infoSection(ref.t(BKeys.pickup_address),
-                "4517 Washington Ave. Manchester, Kentucky 39495"),
+            _infoSection(
+              ref.t(BKeys.pickup_address),
+              "4517 Washington Ave. Manchester, Kentucky 39495",
+            ),
             Divider(height: 24.h),
 
             /// Drop-off Address
-            _infoSection(ref.t(BKeys.drop_off_address),
-                "6391 Elgin St. Celina, Delaware 10299"),
+            _infoSection(
+              ref.t(BKeys.drop_off_address),
+              "6391 Elgin St. Celina, Delaware 10299",
+            ),
             Divider(height: 24.h),
 
             /// Customer Note
-            _infoSection(ref.t(BKeys.customer_note), "John appaeell\n(239) 555-0108"),
+            _infoSection(
+              ref.t(BKeys.customer_note),
+              "John appaeell\n(239) 555-0108",
+            ),
             Divider(height: 24.h),
 
             /// Special Instruction
-            Text(ref.t(BKeys.special_instruction),
-                style: TextStyle(
-                    fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            Text(
+              ref.t(BKeys.special_instruction),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+            ),
             SizedBox(height: 6.h),
             Container(
               width: double.infinity,
-              padding:
-                  EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Text("Don’t ring the bell",
-                  style: TextStyle(fontSize: 13.sp, color: Colors.black)),
+              child: Text(
+                "Don’t ring the bell",
+                style: TextStyle(fontSize: 13.sp, color: Colors.black),
+              ),
             ),
             SizedBox(height: 20.h),
 
-            ///Google map Integarion 
+            ///Google map Integarion
             // ClipRRect(
             //   borderRadius: BorderRadius.circular(12.r),
             //   child: SizedBox(
@@ -113,13 +126,13 @@ class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDeta
             //     ),
             //   ),
             // ),
-
             SizedBox(height: 20.h),
 
             /// "Driver Information"
-            Text(ref.t(BKeys.driver_information),
-                style: TextStyle(
-                    fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            Text(
+              ref.t(BKeys.driver_information),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+            ),
             SizedBox(height: 10.h),
             Container(
               padding: EdgeInsets.all(12.w),
@@ -133,20 +146,28 @@ class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDeta
                   CircleAvatar(
                     radius: 20.r,
                     backgroundImage: const NetworkImage(
-                        "https://randomuser.me/api/portraits/men/43.jpg"),
+                      "https://randomuser.me/api/portraits/men/43.jpg",
+                    ),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Mr John Doe",
-                            style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600)),
-                        Text("01780053624",
-                            style: TextStyle(
-                                fontSize: 12.sp, color: Colors.grey[600])),
+                        Text(
+                          "Mr John Doe",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          "01780053624",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -175,12 +196,13 @@ class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDeta
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                 ),
                 onPressed: () {
-                  context.pop(); 
+                  context.pop();
                 },
-                  //"Cancelled"
-                child: Text(ref.t(BKeys.cancelled),
-                    style:
-                        TextStyle(fontSize: 15.sp, color: Colors.white)),
+                //"Cancelled"
+                child: Text(
+                  ref.t(BKeys.cancelled),
+                  style: TextStyle(fontSize: 15.sp, color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -194,12 +216,15 @@ class _TransportCancelledDetailsState extends ConsumerState<TransportBookingDeta
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style:
-                TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        ),
         SizedBox(height: 6.h),
-        Text(value,
-            style: TextStyle(fontSize: 13.sp, color: Colors.black)),
+        Text(
+          value,
+          style: TextStyle(fontSize: 13.sp, color: Colors.black),
+        ),
       ],
     );
   }

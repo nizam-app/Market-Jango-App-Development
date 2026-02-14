@@ -9,6 +9,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
+import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/logic/user_data_update_riverpod.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
@@ -17,8 +18,10 @@ import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../utils/get_user_type.dart';
@@ -199,6 +202,14 @@ class GlobalSettingScreen extends ConsumerWidget {
             onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
           ),
         _DividerLine(),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _SettingsTile(
+            leadingIcon: Icons.card_membership_outlined,
+            title: 'Subscription',
+            onTap: () => context.push(SubscriptionScreen.routeName),
+          ),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _DividerLine(),
         _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
         _DividerLine(),
         _SettingsTile(
@@ -582,9 +593,9 @@ class SettingTitle extends ConsumerWidget {
   const SettingTitle({super.key});
 
   @override
-  Widget build(BuildContext context,ref ) {
+  Widget build(BuildContext context, ref) {
     return Text(
-     // "My Settings",
+      // "My Settings",
       ref.t(BKeys.my_settings),
       style: TextStyle(
         fontSize: 24.sp,
@@ -816,5 +827,64 @@ class _DividerLine extends StatelessWidget {
       thickness: 1,
       color: AllColor.grey.withOpacity(0.25),
     );
+  }
+}
+
+Future<void> _performLogout(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.remove('auth_token');
+  await prefs.remove('user_type');
+
+  // jodi sob clear korte chau:
+  // await prefs.clear();
+}
+
+Future<void> showLogoutDialog(BuildContext context) async {
+  final shouldLogout = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Log out',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'Are you sure you want to log out from this account?',
+          style: TextStyle(fontSize: 14, height: 1.4),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: const Text(
+              'Log out',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (shouldLogout == true) {
+    await _performLogout(context);
+
+    // 🔥 navigate to login & clear back stack
+    context.go(LoginScreen.routeName);
   }
 }

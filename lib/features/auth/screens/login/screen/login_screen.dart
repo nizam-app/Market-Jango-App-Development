@@ -12,8 +12,9 @@ import 'package:market_jango/features/auth/screens/login/logic/obscureText_contr
 import 'package:market_jango/features/auth/screens/user_type_screen.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import '../../forgot_password_screen.dart';
+
 class LoginScreen extends StatelessWidget {
-   const LoginScreen({super.key});
+  const LoginScreen({super.key});
   static const String routeName = '/loginScreen';
 
   @override
@@ -27,28 +28,27 @@ class LoginScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               children: [
-                 SizedBox(height: 30.h,),
-                 CustomBackButton(),
+                SizedBox(height: 30.h),
+                CustomBackButton(),
                 LoginHereText(),
                 LoginTextFormField(
                   controllerEmail: controllerEmail,
                   controllerPassword: controllerPassword,
                 ),
-               
               ],
             ),
           ),
         ),
       ),
     );
-
   }
 }
 
-
 class LoginTextFormField extends ConsumerWidget {
-   LoginTextFormField({
-    super.key, required this.controllerEmail, required this.controllerPassword,
+  LoginTextFormField({
+    super.key,
+    required this.controllerEmail,
+    required this.controllerPassword,
   });
   final TextEditingController controllerEmail;
   final TextEditingController controllerPassword;
@@ -61,20 +61,20 @@ class LoginTextFormField extends ConsumerWidget {
       key: _formKey,
       child: Column(
         children: [
-      SizedBox(height: 28.h,),
-      TextFormField(
-        autovalidateMode: AutovalidateMode.disabled,
-        textInputAction: TextInputAction.next,
-        controller: controllerEmail,
-        validator: emailValidator,
-        decoration: InputDecoration(
-          hintText: "Email or Phone number",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
+          SizedBox(height: 28.h),
+          TextFormField(
+            autovalidateMode: AutovalidateMode.disabled,
+            textInputAction: TextInputAction.next,
+            controller: controllerEmail,
+            validator: emailValidator,
+            decoration: InputDecoration(
+              hintText: "Email or Phone number",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+            ),
           ),
-        ),
-      ),
-      SizedBox(height: 29.h,),
+          SizedBox(height: 29.h),
           TextFormField(
             controller: controllerPassword,
             textInputAction: TextInputAction.done,
@@ -85,36 +85,40 @@ class LoginTextFormField extends ConsumerWidget {
             // passwordValidator,
             // তোমার existing function
             obscureText: isObscure,
-           
+
             decoration: InputDecoration(
               hintText: "Password",
               isDense: true,
               suffixIcon: IconButton(
                 icon: Icon(
-                  isObscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  isObscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                 ),
                 onPressed: () {
-                  ref.read(passwordVisibilityProvider.notifier).state = !isObscure;
+                  ref.read(passwordVisibilityProvider.notifier).state =
+                      !isObscure;
                 },
               ),
             ),
           ),
           Column(
             children: [
-              SizedBox(height: 30.h,),
+              SizedBox(height: 30.h),
               InkWell(
-                  onTap: () {
-                    goToForgotPasswordScreen(context);
-                  },
-                  child: Text("Forgot your Password?",style: Theme.of(context).textTheme.titleSmall,),
-                
+                onTap: () {
+                  goToForgotPasswordScreen(context);
+                },
+                child: Text(
+                  "Forgot your Password?",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
-              SizedBox(height: 30.h,),
+              SizedBox(height: 30.h),
               Consumer(
                 builder: (context, ref, child) {
                   final loginState = ref.watch(loginStateProvider);
                   final isLoading = loginState.isLoading;
-                  
                   return CustomAuthButton(
                     buttonText: isLoading ? "Logging in..." : "Login",
                     onTap: () {
@@ -129,7 +133,7 @@ class LoginTextFormField extends ConsumerWidget {
                   );
                 },
               ),
-              SizedBox(height: 50.h,),
+              SizedBox(height: 50.h),
               Text.rich(
                 TextSpan(
                   text: "Don't have an account? ",
@@ -149,22 +153,21 @@ class LoginTextFormField extends ConsumerWidget {
                   ],
                 ),
               ),
-      
             ],
-          )
-      
+          ),
         ],
       ),
     );
   }
-  // Removed loginDone - now handled by Riverpod provider
+  // Login handled by Riverpod loginStateProvider
 
-  void gotoHomeScreen(BuildContext content){
+  void gotoHomeScreen(BuildContext content) {
     content.push(BuyerHomeScreen.routeName);
   }
 
   void goToForgotPasswordScreen(BuildContext context) {
-    context.push(ForgotPasswordScreen.routeName);}
+    context.push(ForgotPasswordScreen.routeName);
+  }
 
   void goToSignUpScreen(BuildContext context) {
     context.push(UserScreen.routeName);
@@ -172,21 +175,23 @@ class LoginTextFormField extends ConsumerWidget {
 }
 
 class LoginHereText extends StatelessWidget {
-  const LoginHereText({
-    super.key,
-  });
+  const LoginHereText({super.key});
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
-    
-    
-    SizedBox(height: 50.h,),
-    Center(child: Text("Login Here",style:textTheme.titleLarge,)),
-    SizedBox(height: 12.h,),
-    Center(child: Text("Welcome back you've \n been missed!",style:textTheme.titleMedium,textAlign: TextAlign.center,))
+        SizedBox(height: 50.h),
+        Center(child: Text("Login Here", style: textTheme.titleLarge)),
+        SizedBox(height: 12.h),
+        Center(
+          child: Text(
+            "Welcome back you've \n been missed!",
+            style: textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+        ),
       ],
     );
   }

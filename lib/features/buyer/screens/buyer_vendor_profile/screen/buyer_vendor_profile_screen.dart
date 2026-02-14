@@ -260,6 +260,12 @@ class CustomVendorUpperSection extends ConsumerWidget {
         final vendor = v.vendor; // may be null
         bool hasText(String? s) => s != null && s.trim().isNotEmpty;
 
+        String truncateWithEllipsis(int cutoff, String myString) {
+          return (myString.length <= cutoff)
+              ? myString
+              : '${myString.substring(0, cutoff)}...';
+        }
+
         final name = hasText(v.name)
             ? v.name
             : (vendor != null && hasText(vendor.businessName))
@@ -315,7 +321,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          name,
+                          name ?? '',
                           style: theme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),

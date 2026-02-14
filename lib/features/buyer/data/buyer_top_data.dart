@@ -1,4 +1,6 @@
 // buyer_top_data.dart
+import 'dart:convert'; // <-- add this
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
@@ -29,17 +31,31 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       );
 
       if (res.statusCode != 200) {
-        throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
+        Logger().e('Top products failed: ${res.statusCode} ${res.body}');
+        return []; // ❗ error holeo empty list
       }
-      
-      Logger().i(res.body);
-      final parsed = TopProductsResponse.fromRawJson(res.body);
 
-      // ✔️ parsed.data.data already contains TopProduct objects
+      final body = res.body.trim();
+      if (body.isEmpty || body == 'null' || body == '[]') {
+        return [];
+      }
+      final decoded = jsonDecode(body);
+      if (decoded is List) {
+        if (decoded.isEmpty) return [];
+        return decoded
+            .whereType<Map<String, dynamic>>()
+            .map((e) => TopProduct.fromJson(e))
+            .toList();
+      }
+      final parsed = TopProductsResponse.fromJson(
+        decoded as Map<String, dynamic>,
+      );
       final products = parsed.data.data;
       return products;
-    } catch (e) {
-      throw Exception('Error: $e');
+    } catch (e, st) {
+      Logger().e('Top products error', error: e, stackTrace: st);
+      // ❗ kono exception holeo empty list
+      return [];
     }
   }
 }

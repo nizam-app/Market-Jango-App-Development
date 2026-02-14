@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
@@ -9,6 +9,7 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/email_screen.dart';
 import 'package:market_jango/features/auth/screens/forget_otp_verification_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+
 import '../logic/phone_otp_riverpod.dart';
 
 class CodeScreen extends ConsumerStatefulWidget {
@@ -19,16 +20,17 @@ class CodeScreen extends ConsumerStatefulWidget {
   ConsumerState<CodeScreen> createState() => _CodeScreenState();
 }
 
-
 class _CodeScreenState extends ConsumerState<CodeScreen> {
   String _otp = '';
 
   Future<void> _submit() async {
     if (_otp.length != 6) {
-      GlobalSnackbar.show(context,
-          title: "Error",
-          message: "Enter a valid 6-digit OTP",
-          type: CustomSnackType.error);
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: "Enter a valid 6-digit OTP",
+        type: CustomSnackType.error,
+      );
       return;
     }
 
@@ -44,7 +46,6 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
       // ✅ Direct result handle with null safety
       state.when(
         data: (ok) {
-          // Handle null case safely
           if (ok == true) {
             GlobalSnackbar.show(context,
                 title: "Success",
@@ -54,23 +55,27 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
             // ✅ Navigate instantly
             context.pushReplacement(EmailScreen.routeName);
           } else {
-            GlobalSnackbar.show(context,
-                title: "Error",
-                message: "Verification failed. Try again.",
-                type: CustomSnackType.error);
+            GlobalSnackbar.show(
+              context,
+              title: "Error",
+              message: "Verification failed. Try again.",
+              type: CustomSnackType.error,
+            );
           }
         },
         error: (e, _) => GlobalSnackbar.show(context,
             title: "Error",
             message: e.toString(),
             type: CustomSnackType.error),
-        loading: () {
-          // Still loading, wait a bit or show message
-        },
+        loading: () {},
       );
     } catch (e) {
-      GlobalSnackbar.show(context,
-          title: "Error", message: e.toString(), type: CustomSnackType.error);
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: e.toString(),
+        type: CustomSnackType.error,
+      );
     }
   }
 
@@ -117,7 +122,7 @@ class _CodeScreenState extends ConsumerState<CodeScreen> {
                 buttonText: loading ? "Verifying..." : "Next",
                 onTap: loading ? () {} : _submit,
               ),
-              CustomVerificationResendText(onEnter: () {  },)
+              CustomVerificationResendText(onEnter: () {}),
             ],
           ),
         ),

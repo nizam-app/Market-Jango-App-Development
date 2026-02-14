@@ -6,6 +6,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
+import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
@@ -92,6 +93,14 @@ class GlobalSettingScreen extends ConsumerWidget {
                           context.push(BuyerOrderHistoryScreen.routeName),
                     ),
                   _DividerLine(),
+                  if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+                    _SettingsTile(
+                      leadingIcon: Icons.card_membership_outlined,
+                      title: 'Subscription',
+                      onTap: () => context.push(SubscriptionScreen.routeName),
+                    ),
+                  if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+                    _DividerLine(),
                   _SettingsTile(
                     leadingIcon: Icons.language_outlined,
                     title: ref.t(BKeys.language),

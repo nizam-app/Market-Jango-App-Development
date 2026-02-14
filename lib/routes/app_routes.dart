@@ -4,6 +4,7 @@ import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
+import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
 import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
@@ -399,6 +400,11 @@ final GoRouter router = GoRouter(
       path: GlobalLanguageScreen.routeName,
       name: 'language',
       builder: (context, state) => GlobalLanguageScreen(),
+    ),
+    GoRoute(
+      path: SubscriptionScreen.routeName,
+      name: 'subscription',
+      builder: (context, state) => const SubscriptionScreen(),
     ),
 
     GoRoute(

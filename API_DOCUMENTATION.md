@@ -12,7 +12,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
 |-----|-----------|------------|-------------|--------|
 | **Subscription - Get Plans** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Subscription - Get Current** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
-| **Subscription - Subscribe** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
+| **Subscription - Subscribe** | Vendor, Driver | ✅ | ❌ | ✅ Ready | 
 
 
 | **Visibility - Set** | Vendor | ✅ | ❌ | ✅ Ready |
@@ -20,6 +20,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
 | **Visibility - List** | Vendor | ✅ | ❌ | ✅ Ready |
 | **Visibility - Update** | Vendor | ✅ | ❌ | ✅ Ready |
 | **Visibility - Delete** | Vendor | ✅ | ❌ | ✅ Ready |
+
 | **Affiliate - Generate** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Get Links** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Get Details** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
@@ -28,6 +29,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
 | **Affiliate - Statistics** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Update** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Delete** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
+
 | **Ranking - Vendors** | Buyer, Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Ranking - Drivers** | Buyer, Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Ranking - My Rank** | Vendor, Driver | ✅ | ❌ | ✅ Ready |

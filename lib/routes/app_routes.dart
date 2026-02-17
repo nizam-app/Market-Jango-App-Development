@@ -36,7 +36,6 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
-import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/see_just_for_you_screen.dart';
 import 'package:market_jango/features/driver/screen/driver_delivered.dart';
 import 'package:market_jango/features/driver/screen/driver_edit_rofile.dart';
@@ -74,6 +73,11 @@ import 'package:market_jango/features/vendor/screens/vendor_product_other_screen
 import 'package:market_jango/features/vendor/screens/vendor_profile_edit/screen/vendor_edit_profile.dart';
 import 'package:market_jango/features/vendor/screens/vendor_sale_platform/screen/vendor_sale_platform.dart';
 import 'package:market_jango/features/vendor/screens/vendor_track_shipment/screen/vendor_track_shipment.dart';
+import 'package:market_jango/features/vendor/screens/visibility/model/visibility_model.dart';
+import 'package:market_jango/features/vendor/screens/visibility/screen/visibility_form_screen.dart';
+import 'package:market_jango/features/vendor/screens/visibility/screen/visibility_management_screen.dart';
+import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
+import 'package:market_jango/features/ranking/screen/ranking_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
 import 'package:market_jango/features/vendor/screens/vendor_store_document_upload/screen/store_document_upload_screen.dart';
@@ -246,6 +250,32 @@ final GoRouter router = GoRouter(
       path: VendorShipmentsScreen.routeName,
       name: 'vendortrack_shipments',
       builder: (context, state) => const VendorShipmentsScreen(),
+    ),
+
+    GoRoute(
+      path: VisibilityManagementScreen.routeName,
+      name: 'vendor_visibility_management',
+      builder: (context, state) => const VisibilityManagementScreen(),
+    ),
+    GoRoute(
+      path: VisibilityFormScreen.routeName,
+      name: 'vendor_visibility_form',
+      builder: (context, state) {
+        final extra = state.extra;
+        return VisibilityFormScreen(
+          visibility: extra is VisibilityModel ? extra : null,
+        );
+      },
+    ),
+    GoRoute(
+      path: AffiliateScreen.routeName,
+      name: 'affiliate',
+      builder: (context, state) => const AffiliateScreen(),
+    ),
+    GoRoute(
+      path: RankingScreen.routeName,
+      name: 'ranking',
+      builder: (context, state) => const RankingScreen(),
     ),
 
     // GoRoute(

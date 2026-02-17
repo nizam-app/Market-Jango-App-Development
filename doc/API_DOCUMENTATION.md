@@ -12,7 +12,8 @@ This document contains all the new API endpoints for Milestone 2 features with P
 |-----|-----------|------------|-------------|--------|
 | **Subscription - Get Plans** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Subscription - Get Current** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
-| **Subscription - Subscribe** | Vendor, Driver | ✅ | ❌ | ✅ Ready | 
+| **Subscription - Subscribe** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
+
 
 
 | **Visibility - Set** | Vendor | ✅ | ❌ | ✅ Ready |
@@ -20,6 +21,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
 | **Visibility - List** | Vendor | ✅ | ❌ | ✅ Ready |
 | **Visibility - Update** | Vendor | ✅ | ❌ | ✅ Ready |
 | **Visibility - Delete** | Vendor | ✅ | ❌ | ✅ Ready |
+
 
 | **Affiliate - Generate** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Get Links** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
@@ -29,6 +31,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
 | **Affiliate - Statistics** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Update** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Affiliate - Delete** | Vendor, Driver | ✅ | ❌ | ✅ Ready |
+
 
 | **Ranking - Vendors** | Buyer, Vendor, Driver | ✅ | ❌ | ✅ Ready |
 | **Ranking - Drivers** | Buyer, Vendor, Driver | ✅ | ❌ | ✅ Ready |
@@ -52,6 +55,7 @@ This document contains all the new API endpoints for Milestone 2 features with P
   - [Get Subscription Plans](#1-get-subscription-plans)
   - [Get Current Subscription](#2-get-current-subscription)
   - [Subscribe to Plan](#3-subscribe-to-plan)
+  - [Initiate Flutterwave Payment](#4-initiate-flutterwave-payment)
 - [Product Visibility Management](#product-visibility-management)
   - [Set Product Visibility](#1-set-product-visibility)
   - [Get Product Visibility](#2-get-product-visibility)
@@ -355,6 +359,67 @@ token: Bearer {your_jwt_token}
 - The system will automatically fetch your userType from the database if it's not in the token (backward compatibility)
 
 ---
+
+### 4. Initiate Flutterwave Payment
+
+**Who Can Use:** Vendors & Drivers  
+**Where:** Mobile App (Subscription/Premium Screen – when user taps Pay with Flutterwave)  
+**Authentication:** Required (JWT Token)
+
+Get a Flutterwave payment link for the selected plan. The app opens this URL in a browser or webview; after the user pays, Flutterwave redirects to the backend, which activates the subscription and redirects the user to your success URL (e.g. app deep link).
+
+**Endpoint:** `POST /api/subscription/initiate-payment`
+
+**Headers:**
+```
+token: Bearer {your_jwt_token}
+Content-Type: application/json
+```
+
+**Request Body (JSON):**
+```json
+{
+  "subscription_plan_id": 2
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `subscription_plan_id` | Yes | ID of the subscription plan (from Get Subscription Plans). |
+
+**Response (Success - 200):**
+```json
+{
+  "status": "success",
+  "message": "Payment link created",
+  "data": {
+    "payment_url": "https://checkout.flutterwave.com/...",
+    "tx_ref": "sub_5_2_20260216120000_abc123",
+    "pending_id": 1,
+    "amount": "99.99",
+    "currency": "USD"
+  }
+}
+```
+
+**Response (Error - 400):** Same as Subscribe (e.g. "You already have an active subscription").  
+**Response (Error - 403):** "This plan is not available for your user type."  
+**Response (Error - 502):** Flutterwave not configured or Flutterwave API error (see `message`).
+
+**Postman Setup:**
+1. Method: `POST`
+2. URL: `http://127.0.0.1:8000/api/subscription/initiate-payment`
+3. Headers: `token`, `Content-Type: application/json`
+4. Body: raw JSON `{ "subscription_plan_id": 2 }`
+
+**Backend .env (for Flutterwave):**
+- `FLW_SECRET_KEY` – Flutterwave secret key
+- `FLW_PAYMENT_INIT_URL` – `https://api.flutterwave.com/v3/payments`
+- `SUBSCRIPTION_PAYMENT_CALLBACK_URL` – Full callback URL (e.g. `https://your-api.com/api/subscription/payment/callback`)
+- `SUBSCRIPTION_SUCCESS_REDIRECT_URL` – Where to redirect after success (e.g. `marketjango://subscription/success`)
+- `SUBSCRIPTION_FAIL_REDIRECT_URL` – Where to redirect after fail/cancel (e.g. `marketjango://subscription/failed`)
+
+**Callback (no auth):** Flutterwave redirects the user to `GET /api/subscription/payment/callback?tx_ref=...&transaction_id=...&status=successful`. The backend then activates the subscription and redirects to the success/fail URL. The app does not call this URL directly.
 
 ---
 

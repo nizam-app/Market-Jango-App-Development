@@ -7,6 +7,22 @@ import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/features/subscription/model/current_subscription_model.dart';
 import 'package:market_jango/features/subscription/model/subscription_plan_model.dart';
 
+/// Response from POST /api/subscription/initiate-payment (Flutterwave flow).
+class InitiatePaymentResult {
+  final String paymentUrl;
+  final String? txRef;
+  final int? pendingId;
+  final String? amount;
+  final String? currency;
+  const InitiatePaymentResult({
+    required this.paymentUrl,
+    this.txRef,
+    this.pendingId,
+    this.amount,
+    this.currency,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Get subscription plans (GET /api/subscription/plans)
 // ---------------------------------------------------------------------------
@@ -96,6 +112,95 @@ class CurrentSubscriptionNotifier
     }
     return CurrentSubscriptionState(subscription: sub, usage: usage);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Initiate Flutterwave payment (POST /api/subscription/initiate-payment)
+// ---------------------------------------------------------------------------
+
+/// Gets a Flutterwave payment link for the given plan. Open [result.paymentUrl]
+/// in browser or webview; after user pays, backend activates subscription.
+Future<InitiatePaymentResult> initiateSubscriptionPayment(
+  String? token, {
+  required int subscriptionPlanId,
+}) async {
+  if (token == null || token.isEmpty) {
+    throw Exception('Not logged in');
+  }
+  final uri = Uri.parse(CommonAPIController.subscriptionInitiatePayment);
+  final body = <String, dynamic>{
+    'subscription_plan_id': subscriptionPlanId,
+  };
+  final res = await http.post(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'token': token,
+    },
+    body: jsonEncode(body),
+  );
+  final map = jsonDecode(res.body) as Map<String, dynamic>;
+  if (res.statusCode != 200) {
+    final message =
+        map['message']?.toString() ?? 'Failed to create payment link';
+    throw Exception(message);
+  }
+  final data = map['data'] as Map<String, dynamic>?;
+  if (data == null) {
+    throw Exception('No payment URL in response');
+  }
+  final paymentUrl = data['payment_url']?.toString();
+  if (paymentUrl == null || paymentUrl.isEmpty) {
+    throw Exception('Missing payment_url');
+  }
+  return InitiatePaymentResult(
+    paymentUrl: paymentUrl,
+    txRef: data['tx_ref']?.toString(),
+    pendingId: (data['pending_id'] as num?)?.toInt(),
+    amount: data['amount']?.toString(),
+    currency: data['currency']?.toString(),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Confirm payment (POST /api/subscription/confirm-payment) – fallback when
+// Flutterwave redirect doesn't update the database; call when user returns.
+// ---------------------------------------------------------------------------
+
+/// Call when user returns from Flutterwave payment page. Backend verifies
+/// with Flutterwave and activates subscription. Use [txRef] from
+/// [InitiatePaymentResult.txRef].
+Future<void> confirmSubscriptionPayment(
+  String? token, {
+  required String txRef,
+  void Function()? invalidateCurrentSubscription,
+}) async {
+  if (token == null || token.isEmpty) {
+    throw Exception('Not logged in');
+  }
+  if (txRef.isEmpty) {
+    throw Exception('tx_ref is required');
+  }
+  final uri = Uri.parse(CommonAPIController.subscriptionConfirmPayment);
+  final body = <String, dynamic>{'tx_ref': txRef};
+  final res = await http.post(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'token': token,
+    },
+    body: jsonEncode(body),
+  );
+  final map = jsonDecode(res.body) as Map<String, dynamic>;
+  if (res.statusCode == 200) {
+    invalidateCurrentSubscription?.call();
+    return;
+  }
+  final message =
+      map['message']?.toString() ?? 'Payment could not be confirmed';
+  throw Exception(message);
 }
 
 // ---------------------------------------------------------------------------

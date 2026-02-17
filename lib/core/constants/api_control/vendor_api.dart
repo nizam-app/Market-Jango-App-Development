@@ -39,4 +39,16 @@ class VendorAPIController {
       '$_base_api/vendor/income/update?days=$day';
   static String weekly_sell = '$_base_api/vendor/weekly-sell';
   static String sell_top_product = '$_base_api/vendor/sell-top-product';
+
+  /// Product Visibility (Vendor)
+  static String productVisibilitySet = '$_base_api/product-visibility/set';
+  static String productVisibilityProduct(int productId) =>
+      '$_base_api/product-visibility/product/$productId';
+  static String productVisibilityVendor = '$_base_api/product-visibility/vendor';
+  static String productVisibilityUpdate(int id) =>
+      '$_base_api/product-visibility/$id';
+  static String productVisibilityDelete(int id) =>
+      '$_base_api/product-visibility/$id';
+  static String vendorDashboardVisibility =
+      '$_base_api/vendor-dashboard/visibility';
 }

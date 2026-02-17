@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
@@ -9,6 +8,7 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/subscription/data/subscription_data.dart';
 import 'package:market_jango/features/subscription/model/current_subscription_model.dart';
 import 'package:market_jango/features/subscription/model/subscription_plan_model.dart';
+import 'package:market_jango/features/subscription/screen/subscription_payment_webview_screen.dart';
 
 class SubscriptionScreen extends ConsumerWidget {
   const SubscriptionScreen({super.key});
@@ -28,15 +28,28 @@ class SubscriptionScreen extends ConsumerWidget {
                 Tuppertextandbackbutton(screenName: 'Subscription'),
                 SizedBox(height: 16.h),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _CurrentPlanSection(),
-                        SizedBox(height: 24.h),
-                        const _PlansSection(),
-                      ],
-                    ),
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(currentSubscriptionProvider);
+                          ref.invalidate(subscriptionPlansProvider);
+                          await ref.read(currentSubscriptionProvider.future);
+                          await ref.read(subscriptionPlansProvider.future);
+                        },
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const _CurrentPlanSection(),
+                              SizedBox(height: 24.h),
+                              const _PlansSection(),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -255,7 +268,7 @@ class _PlansSection extends ConsumerWidget {
               itemBuilder: (context, index) {
                 return _PlanCard(
                   plan: plans[index],
-                  onSubscribe: () => _onSubscribe(context, ref, plans[index]),
+                  onPay: () => _onPayWithFlutterwave(context, ref, plans[index]),
                 );
               },
             );
@@ -265,51 +278,107 @@ class _PlansSection extends ConsumerWidget {
     );
   }
 
-  Future<void> _onSubscribe(
+  /// Flutterwave flow: get payment link → open in-app WebView → user pays →
+  /// on success/fail redirect, pop and refresh (doc: SUBSCRIPTION_PURCHASE_FLOW 2A).
+  Future<void> _onPayWithFlutterwave(
     BuildContext context,
     WidgetRef ref,
     SubscriptionPlanModel plan,
   ) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Subscribe'),
-        content: Text(
-          'Subscribe to "${plan.name}" (${plan.priceLabel})? '
-          'In a real app you would complete payment here.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Subscribe'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !context.mounted) return;
     final token = await ref.read(authTokenProvider.future);
-    try {
-      await subscribeToPlan(
-        token,
-        subscriptionPlanId: plan.id,
-        paymentMethod: 'stripe',
-        transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
-        invalidateCurrentSubscription: () =>
-            ref.invalidate(currentSubscriptionProvider),
-      );
+    if (token == null || token.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Subscription activated')),
+          const SnackBar(content: Text('Please log in to pay')),
+        );
+      }
+      return;
+    }
+
+    // Show loading
+    if (!context.mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                SizedBox(height: 16.h),
+                Text(
+                  'Preparing payment…',
+                  style: TextStyle(fontSize: 14.sp, color: AllColor.black87),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final result = await initiateSubscriptionPayment(token,
+          subscriptionPlanId: plan.id);
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // close loading
+
+      // Store tx_ref for confirm-payment fallback (doc: when user returns)
+      final txRef = result.txRef;
+
+      // Open payment in-app WebView (no external browser)
+      if (!context.mounted) return;
+      final success = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => SubscriptionPaymentWebViewScreen(
+            paymentUrl: result.paymentUrl,
+            planName: plan.name,
+          ),
+        ),
+      );
+
+      if (!context.mounted) return;
+
+      // When user returns: confirm payment with backend so subscription is
+      // activated even if Flutterwave redirect did not hit our server (doc §5).
+      if (success == true &&
+          txRef != null &&
+          txRef.isNotEmpty) {
+        try {
+          await confirmSubscriptionPayment(
+            token,
+            txRef: txRef,
+            invalidateCurrentSubscription: () =>
+                ref.invalidate(currentSubscriptionProvider),
+          );
+        } catch (_) {
+          // Already confirmed or server updated via redirect – still refresh
+          ref.invalidate(currentSubscriptionProvider);
+        }
+      } else {
+        ref.invalidate(currentSubscriptionProvider);
+      }
+
+      if (success == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Subscription activated. Thank you!')),
+        );
+      } else if (success == false) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Payment was cancelled or failed.')),
         );
       }
     } catch (e) {
       if (context.mounted) {
+        Navigator.of(context).pop(); // close loading if still open
+        final message = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(message)),
         );
       }
     }
@@ -319,10 +388,10 @@ class _PlansSection extends ConsumerWidget {
 class _PlanCard extends StatelessWidget {
   const _PlanCard({
     required this.plan,
-    required this.onSubscribe,
+    required this.onPay,
   });
   final SubscriptionPlanModel plan;
-  final VoidCallback onSubscribe;
+  final VoidCallback onPay;
 
   @override
   Widget build(BuildContext context) {
@@ -365,12 +434,12 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
               FilledButton(
-                onPressed: onSubscribe,
+                onPressed: onPay,
                 style: FilledButton.styleFrom(
                   backgroundColor: AllColor.orange,
                   foregroundColor: AllColor.white,
                 ),
-                child: const Text('Subscribe'),
+                child: const Text('Pay'),
               ),
             ],
           ),

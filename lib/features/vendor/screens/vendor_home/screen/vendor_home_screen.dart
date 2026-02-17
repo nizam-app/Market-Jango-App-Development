@@ -25,6 +25,8 @@ import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 
 import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
+import '../../visibility/screen/visibility_management_screen.dart';
+import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
 import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
 import '../logic/vendor_details_riverpod.dart';
@@ -231,6 +233,48 @@ class VendorHomeScreen extends ConsumerWidget {
 
 
 
+          Divider(color: Colors.grey.shade300),
+          InkWell(
+            onTap: () {
+              context.push(VisibilityManagementScreen.routeName);
+            },
+            child: ListTile(
+              leading: Icon(
+                Icons.visibility_outlined,
+                size: 20.r,
+                color: Colors.black,
+              ),
+              title: Text(
+                'Visibility',
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Divider(color: Colors.grey.shade300),
+          InkWell(
+            onTap: () {
+              context.push(AffiliateScreen.routeName);
+            },
+            child: ListTile(
+              leading: Icon(
+                Icons.link,
+                size: 20.r,
+                color: Colors.black,
+              ),
+              title: Text(
+                'Affiliate Links',
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
+            ),
+          ),
           Divider(color: Colors.grey.shade300),
           InkWell(
             onTap: () {

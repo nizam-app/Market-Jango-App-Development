@@ -383,7 +383,7 @@ class BusinessTypeDropdown extends ConsumerWidget {
             },
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: Text('Loading...')),
         error: (err, stack) =>
             const Center(child: Text("Data is not available")),
       ),

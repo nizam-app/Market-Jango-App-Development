@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/chat_api.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart'; // ChatMessage
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/image_check_before_post.dart';
 import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
 
 final chatSendProvider =
     StateNotifierProvider<ChatSendNotifier, AsyncValue<ChatMessage?>>(
@@ -34,8 +34,8 @@ class ChatSendNotifier extends StateNotifier<AsyncValue<ChatMessage?>> {
     try {
       state = const AsyncLoading();
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       final uri = Uri.parse(ChatAPIController.send(partnerId));
       final req = http.MultipartRequest('POST', uri);

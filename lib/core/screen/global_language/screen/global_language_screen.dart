@@ -6,6 +6,7 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/data/language_data.dart';
 import 'package:market_jango/core/screen/global_language/data/language_update.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
+import 'package:market_jango/core/localization/translation_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalLanguageScreen extends ConsumerStatefulWidget {
@@ -34,29 +35,58 @@ const Map<String, String> _codeToLabel = {
 
 class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
   String? selectedLang; // label: English / Français ...
+  String? _savedLanguageCode;
+  bool _hasLoadedSavedLanguage = false;
+  bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedLanguage();
+    _loadSavedLanguageCode();
   }
 
-  Future<void> _loadSavedLanguage() async {
+  Future<void> _loadSavedLanguageCode() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('app_language'); // code or label
 
-    if (saved == null) return;
+    if (mounted) {
+      setState(() {
+        _savedLanguageCode = saved;
+        _hasLoadedSavedLanguage = true;
+      });
+    }
+  }
 
-    // jodi code save thake (en/fr/ru/vi)
-    String? label = _codeToLabel[saved];
+  void _initializeSelectedLanguage(List<String> availableLanguages) {
+    if (_hasInitialized || selectedLang != null) return; // Already initialized
 
-    // na hole dhore nibo label save chhilo
-    label ??= _labelToCode.keys.contains(saved) ? saved : null;
+    String? initialLang;
 
-    if (label == null) return;
-    if (!mounted) return;
+    if (_savedLanguageCode != null) {
+      // Try to convert saved code to label
+      String? label = _codeToLabel[_savedLanguageCode];
+      // Or check if it's already a label
+      label ??= _labelToCode.keys.contains(_savedLanguageCode)
+          ? _savedLanguageCode
+          : null;
 
-    setState(() => selectedLang = label);
+      // Verify the saved language exists in available languages
+      if (label != null && availableLanguages.contains(label)) {
+        initialLang = label;
+      }
+    }
+
+    // If no valid saved language, use first available
+    initialLang ??= availableLanguages.first;
+
+    if (mounted) {
+      _hasInitialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => selectedLang = initialLang);
+        }
+      });
+    }
   }
 
   Future<void> _saveLanguage() async {
@@ -71,6 +101,10 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
       final prefs = await SharedPreferences.getInstance();
       // eke bare code save korbo, future e easy
       await prefs.setString('app_language', code);
+
+      // Invalidate and refresh translations provider to load new language immediately
+      ref.invalidate(appTranslationsProvider);
+      await ref.read(appTranslationsProvider.notifier).refresh();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,15 +151,17 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
 
             Expanded(
               child: asyncLangs.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (languages) {
                   if (languages.isEmpty) {
                     return const Center(child: Text('No languages found'));
                   }
 
-                  // jodi kono saved value na thake, first ke default dhorbo
-                  selectedLang ??= languages.first;
+                  // Initialize selected language once when languages are available
+                  if (_hasLoadedSavedLanguage) {
+                    _initializeSelectedLanguage(languages);
+                  }
 
                   return ListView.separated(
                     itemCount: languages.length,

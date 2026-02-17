@@ -76,7 +76,7 @@ class _MyProductSizeScreenState
       ),
       body: async.when(
         loading: () =>
-        const Center(child: CircularProgressIndicator()),
+        const Center(child: Text('Loading...')),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (VendorProductAttribute attribute) {
           // API -> local SizeRow list
@@ -131,7 +131,7 @@ class SizeAttributeTable extends ConsumerStatefulWidget {
 
 class _SizeAttributeTableState
     extends ConsumerState<SizeAttributeTable> {
-  late List<SizeRow> _items = List<SizeRow>.from(widget.items);
+  late final List<SizeRow> _items = List<SizeRow>.from(widget.items);
 
   void _notify() => widget.onChanged?.call(_items);
 

@@ -51,7 +51,7 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
   final _picker = ImagePicker();
 
   final List<XFile> _images = [];
-  bool _active = true;
+  final bool _active = true;
   bool _isSaving = false;
 
   Future<void> _pickImages() async {
@@ -60,7 +60,7 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
       maxWidth: 1280,
       maxHeight: 1280,
     );
-    if (xs == null || xs.isEmpty) return;
+    if (xs.isEmpty) return;
 
     setState(() {
       _images
@@ -124,7 +124,7 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
     const labelBlue = Color(0xFF2B6CB0);
     const borderBlue = Color(0xFFBFD5F1);
 
-    OutlineInputBorder _border([Color c = borderBlue]) => OutlineInputBorder(
+    OutlineInputBorder border([Color c = borderBlue]) => OutlineInputBorder(
       borderSide: BorderSide(color: c, width: 1.2),
       borderRadius: BorderRadius.circular(8.r),
     );
@@ -144,9 +144,9 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
               isDense: true,
               contentPadding:
               EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-              border: _border(),
-              enabledBorder: _border(),
-              focusedBorder: _border(labelBlue),
+              border: border(),
+              enabledBorder: border(),
+              focusedBorder: border(labelBlue),
             ),
           ),
           SizedBox(height: 14.h),
@@ -164,9 +164,9 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
               hintText:'Enter your description here',
               alignLabelWithHint: true,
               contentPadding: EdgeInsets.all(12.w),
-              border: _border(),
-              enabledBorder: _border(),
-              focusedBorder: _border(labelBlue),
+              border: border(),
+              enabledBorder: border(),
+              focusedBorder: border(labelBlue),
             ),
           ),
           SizedBox(height: 14.h),
@@ -305,7 +305,7 @@ class _CategoryFormSectionState extends ConsumerState<CategoryFormSection> {
 }
 
 class _Label extends StatelessWidget {
-  const _Label(this.text, this.color, {super.key});
+  const _Label(this.text, this.color);
   final String text;
   final Color color;
 

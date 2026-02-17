@@ -22,10 +22,18 @@ class CartResponse {
   factory CartResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
     final Map<String, List<CartItem>> parsed = {};
-    int total = 0;
+    double total = 0.0;
 
     if (data is Map<String, dynamic>) {
-      total = int.tryParse('${data['total'] ?? 0}') ?? 0;
+      // Parse total as double to handle decimal values like 16.2
+      final totalValue = data['total'];
+      if (totalValue != null) {
+        if (totalValue is num) {
+          total = totalValue.toDouble();
+        } else if (totalValue is String) {
+          total = double.tryParse(totalValue) ?? 0.0;
+        }
+      }
       data.forEach((k, v) {
         if (k == 'total') return;
         if (v is List) {
@@ -44,7 +52,7 @@ class CartResponse {
       status: json['status']?.toString() ?? '',
       message: json['message']?.toString() ?? '',
       groups: parsed,
-      total: total.toDouble(),
+      total: total,
     );
   }
 }
@@ -87,30 +95,30 @@ class CartItem {
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
-    int _i(dynamic v) {
+    int i(dynamic v) {
       if (v is int) return v;
       if (v is String) return int.tryParse(v) ?? 0;
       return 0;
     }
 
-    String _s(dynamic v) => v?.toString() ?? '';
+    String s(dynamic v) => v?.toString() ?? '';
 
     return CartItem(
-      id: json['id'] == null ? null : _i(json['id']),
-      quantity: _i(json['quantity']),
-      deliveryCharge: _s(json['delivery_charge']),
-      color: _s(json['color']),
-      size: _s(json['size']),
-      price: _s(json['price']),
-      productId: _i(json['product_id']),
-      buyerId: _i(json['buyer_id']),
-      vendorId: _i(json['vendor_id']),
-      status: _s(json['status']),
+      id: json['id'] == null ? null : i(json['id']),
+      quantity: i(json['quantity']),
+      deliveryCharge: s(json['delivery_charge']),
+      color: s(json['color']),
+      size: s(json['size']),
+      price: s(json['price']),
+      productId: i(json['product_id']),
+      buyerId: i(json['buyer_id']),
+      vendorId: i(json['vendor_id']),
+      status: s(json['status']),
       product: CardProduct.fromJson(json['product'] ?? {}),
       vendor: Vendor.fromJson(json['vendor'] ?? {}),
       buyer: Buyer.fromJson(json['buyer'] ?? {}),
-      createdAt: _s(json['created_at']),
-      updatedAt: _s(json['updated_at']),
+      createdAt: s(json['created_at']),
+      updatedAt: s(json['updated_at']),
     );
   }
 }
@@ -155,7 +163,7 @@ class CardProduct {
   });
 
   factory CardProduct.fromJson(Map<String, dynamic> json) {
-    List<String> _list(dynamic data) {
+    List<String> list(dynamic data) {
       if (data == null) return [];
       if (data is List) {
         return data
@@ -175,32 +183,32 @@ class CardProduct {
       return [];
     }
 
-    int _i(dynamic v) {
+    int i(dynamic v) {
       if (v is int) return v;
       if (v is String) return int.tryParse(v) ?? 0;
       return 0;
     }
 
-    String _s(dynamic v) => v?.toString() ?? '';
+    String s(dynamic v) => v?.toString() ?? '';
 
     return CardProduct(
-      id: _i(json['id']),
-      name: _s(json['name']),
-      description: _s(json['description']),
-      regularPrice: _s(json['regular_price']),
-      sellPrice: _s(json['sell_price']),
-      discount: _i(json['discount']),
+      id: i(json['id']),
+      name: s(json['name']),
+      description: s(json['description']),
+      regularPrice: s(json['regular_price']),
+      sellPrice: s(json['sell_price']),
+      discount: i(json['discount']),
       publicId: json['public_id']?.toString(),
-      star: _i(json['star']),
-      image: _s(json['image']),
-      color: _list(json['color']),
-      size: _list(json['size']),
-      remark: _s(json['remark']),
-      isActive: _i(json['is_active']),
-      vendorId: _i(json['vendor_id']),
-      categoryId: _i(json['category_id']),
-      createdAt: _s(json['created_at']),
-      updatedAt: _s(json['updated_at']),
+      star: i(json['star']),
+      image: s(json['image']),
+      color: list(json['color']),
+      size: list(json['size']),
+      remark: s(json['remark']),
+      isActive: i(json['is_active']),
+      vendorId: i(json['vendor_id']),
+      categoryId: i(json['category_id']),
+      createdAt: s(json['created_at']),
+      updatedAt: s(json['updated_at']),
     );
   }
 }
@@ -227,18 +235,18 @@ class Vendor {
   });
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => v?.toString() ?? '';
-    int _i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
+    String s(dynamic v) => v?.toString() ?? '';
+    int i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
 
     return Vendor(
-      id: _i(json['id']),
-      country: _s(json['country']),
-      address: _s(json['address']),
-      businessName: _s(json['business_name']),
-      businessType: _s(json['business_type']),
-      userId: _i(json['user_id']),
-      createdAt: _s(json['created_at']),
-      updatedAt: _s(json['updated_at']),
+      id: i(json['id']),
+      country: s(json['country']),
+      address: s(json['address']),
+      businessName: s(json['business_name']),
+      businessType: s(json['business_type']),
+      userId: i(json['user_id']),
+      createdAt: s(json['created_at']),
+      updatedAt: s(json['updated_at']),
     );
   }
 }
@@ -262,6 +270,7 @@ class Buyer {
   final String? shipState;
   final String? shipCountry;
   final String? shipPhone;
+  final String? shipLocation;
 
   // misc
   final String? description;
@@ -285,6 +294,7 @@ class Buyer {
     required this.shipState,
     required this.shipCountry,
     required this.shipPhone,
+    required this.shipLocation,
     required this.description,
     required this.location,
     required this.userId,
@@ -293,31 +303,32 @@ class Buyer {
   });
 
   factory Buyer.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => v?.toString() ?? '';
-    int _i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
+    String s(dynamic v) => v?.toString() ?? '';
+    int i(dynamic v) => v is int ? v : (int.tryParse('$v') ?? 0);
 
     return Buyer(
-      id: _i(json['id']),
-      gender: _s(json['gender']) ?? '',
-      age: _s(json['age']),
-      address: _s(json['address']) ?? '',
-      state: _s(json['state']),
-      postcode: _s(json['postcode']),
-      country: _s(json['country']),
+      id: i(json['id']),
+      gender: s(json['gender']) ?? '',
+      age: s(json['age']),
+      address: s(json['address']) ?? '',
+      state: s(json['state']),
+      postcode: s(json['postcode']),
+      country: s(json['country']),
 
-      shipName: _s(json['ship_name']),
-      shipEmail: _s(json['ship_email']),
-      shipAddress: _s(json['ship_address']),
-      shipCity: _s(json['ship_city']),
-      shipState: _s(json['ship_state']),
-      shipCountry: _s(json['ship_country']),
-      shipPhone: _s(json['ship_phone']),
+      shipName: s(json['ship_name']),
+      shipEmail: s(json['ship_email']),
+      shipAddress: s(json['ship_address']),
+      shipCity: s(json['ship_city']),
+      shipState: s(json['ship_state']),
+      shipCountry: s(json['ship_country']),
+      shipPhone: s(json['ship_phone']),
+      shipLocation: s(json['ship_location']),
 
-      description: _s(json['description']),
-      location: _s(json['location']),
-      userId: _i(json['user_id']),
-      createdAt: _s(json['created_at']) ?? '',
-      updatedAt: _s(json['updated_at']) ?? '',
+      description: s(json['description']),
+      location: s(json['location']),
+      userId: i(json['user_id']),
+      createdAt: s(json['created_at']) ?? '',
+      updatedAt: s(json['updated_at']) ?? '',
     );
   }
 }

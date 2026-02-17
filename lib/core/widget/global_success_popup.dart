@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
-import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 
-import '../../features/navbar/screen/transport_bottom_nav_bar.dart';
 
 class BookingSuccessPopup {
   static void show(BuildContext context,String massage) {

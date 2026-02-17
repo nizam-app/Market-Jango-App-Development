@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final emailRegisterProvider =
 StateNotifierProvider<EmailRegisterNotifier, AsyncValue<bool>>(
@@ -18,8 +18,8 @@ class EmailRegisterNotifier extends StateNotifier<AsyncValue<bool>> {
     state = const AsyncValue.loading();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       final request = http.MultipartRequest('POST', Uri.parse(url));
       request.headers.addAll({
@@ -36,16 +36,13 @@ class EmailRegisterNotifier extends StateNotifier<AsyncValue<bool>> {
 
       if ((response.statusCode == 200 || response.statusCode == 201) &&
           json['status'] == 'success') {
-        // ✅ user_type save in SharedPreferences
-        final userType = json['data']?['user_type'];
-        if (userType != null) {
-          await prefs.setString('user_type', userType);
-          Logger().i("💾 User Type saved: $userType");
-        }
+        // ✅ user_type is saved via AuthLocalStorage when login data is saved
+        // No need to save separately here
 
         state = const AsyncValue.data(true);
       } else {
-        throw Exception(json['message'] ?? 'Email registration failed');
+        // Show "Your email is already registered" for validation errors
+        throw Exception('Your email is already registered');
       }
     } catch (e, st) {
       Logger().e("⛔ Email Register Error: $e");

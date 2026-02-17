@@ -73,7 +73,7 @@ class VendorSalePlatformScreen extends ConsumerWidget {
                 loading: () => const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+                    child: Text('Loading...'),
                   ),
                 ),
                 error: (e, _) => Center(
@@ -257,7 +257,7 @@ class SalesChart extends ConsumerWidget {
       child: asyncWeekly.when(
         loading: () => SizedBox(
           height: 200.h,
-          child: const Center(child: CircularProgressIndicator()),
+          child: const Center(child: Text('Loading...')),
         ),
         error: (e, _) => SizedBox(
           height: 200.h,
@@ -455,7 +455,7 @@ class _TopRow {
 
 class _TopSellingTable extends ConsumerWidget {
   final List<_TopRow> rows;
-  const _TopSellingTable({super.key, required this.rows});
+  const _TopSellingTable({required this.rows});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -570,7 +570,7 @@ class TopSellingSection extends ConsumerWidget {
         asyncTop.when(
           loading: () => const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: Text('Loading...')),
           ),
           error: (e, _) => Padding(
             padding: const EdgeInsets.all(16),
@@ -617,10 +617,10 @@ class _DaysFilterDropdown extends StatelessWidget {
   final ValueChanged<int> onDaysChanged;
 
   const _DaysFilterDropdown({
-    Key? key,
+    super.key,
     required this.selectedDays,
     required this.onDaysChanged,
-  }) : super(key: key);
+  });
 
   String _labelForDays(int days) {
     if (days == 7) return 'Last 7 days';

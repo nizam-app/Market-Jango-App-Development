@@ -6,13 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/driver_api.dart';
 import 'package:market_jango/features/driver/screen/driver_order/model/driver_order_details_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 /// GET {{baseurl}}/api/driver/invoice/tracking/{id}
 final driverTrackingStatusProvider =
     FutureProvider.family<DriverTrackingData, int>((ref, int trackingId) async {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       if (token == null) {
         throw Exception('auth token not found');

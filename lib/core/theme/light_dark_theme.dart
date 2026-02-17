@@ -95,7 +95,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'input_decoration_theme.dart';
 
 final ThemeData appTheme = ThemeData(
   brightness: Brightness.light,

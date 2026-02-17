@@ -113,12 +113,14 @@ class VendorBrief {
 /// SearchBar suggestion item (UI-তে এটা ব্যবহার করবে)
 class VendorSuggestion {
   final int vendorId;
+  final int userId; // user.id for user details
   final String businessName;
   final String ownerName; // user.name
   final String? imageUrl; // user.image
 
   VendorSuggestion({
     required this.vendorId,
+    required this.userId,
     required this.businessName,
     required this.ownerName,
     required this.imageUrl,
@@ -126,6 +128,7 @@ class VendorSuggestion {
 
   factory VendorSuggestion.fromUser(VendorUser u) => VendorSuggestion(
     vendorId: u.vendor.id,
+    userId: u.id, // user ID for user details
     businessName: u.vendor.businessName,
     ownerName: u.name,
     imageUrl: u.image,

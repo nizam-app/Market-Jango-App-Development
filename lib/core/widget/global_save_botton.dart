@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
-import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
-import 'package:market_jango/core/localization/tr.dart';
 
 class GlobalSaveBotton extends ConsumerWidget {
   const GlobalSaveBotton({

@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 final verifyOtpProvider =
-StateNotifierProvider<VerifyOtpNotifier, AsyncValue<bool>>(
+StateNotifierProvider<VerifyOtpNotifier, AsyncValue<bool?>>(
         (ref) => VerifyOtpNotifier());
 
-class VerifyOtpNotifier extends StateNotifier<AsyncValue<bool>> {
+class VerifyOtpNotifier extends StateNotifier<AsyncValue<bool?>> {
   VerifyOtpNotifier() : super(const AsyncValue.data(false));
 
   Future<void> verifyOtp({
@@ -17,8 +17,8 @@ class VerifyOtpNotifier extends StateNotifier<AsyncValue<bool>> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final sp = await SharedPreferences.getInstance();
-      final token = sp.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
       if (token == null || token.isEmpty) throw 'Missing auth token';
 
       final req = http.MultipartRequest('POST', Uri.parse(url));

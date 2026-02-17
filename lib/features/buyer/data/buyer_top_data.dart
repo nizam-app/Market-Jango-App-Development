@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final topProductProvider =
     AsyncNotifierProvider<TopProductNotifier, List<TopProduct>>(
@@ -19,8 +19,8 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
 
   Future<List<TopProduct>> fetchTopProducts() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final authStorage = AuthLocalStorage();
+      final token = await authStorage.getToken();
 
       final res = await http.get(
         Uri.parse(BuyerAPIController.top_products),
@@ -36,18 +36,10 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       }
 
       final body = res.body.trim();
-      Logger().i(body);
-
-      // ✅ null / empty / [] hole empty list return
       if (body.isEmpty || body == 'null' || body == '[]') {
         return [];
       }
-
-      // ekhane ashle body ekta Map expected
-      // (jodi ekhaneo List ashe, shekhetreo handle korchi)
       final decoded = jsonDecode(body);
-
-      // jodi backend sudhu list of products dei
       if (decoded is List) {
         if (decoded.isEmpty) return [];
         return decoded
@@ -55,15 +47,10 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
             .map((e) => TopProduct.fromJson(e))
             .toList();
       }
-
-      // normal case: object => model
       final parsed = TopProductsResponse.fromJson(
         decoded as Map<String, dynamic>,
       );
-
-      final products = parsed.data.data
-          .map((it) => it.product)
-          .toList(); // tomar ager line
+      final products = parsed.data.data;
       return products;
     } catch (e, st) {
       Logger().e('Top products error', error: e, stackTrace: st);

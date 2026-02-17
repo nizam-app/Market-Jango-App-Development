@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
+import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
@@ -32,36 +33,79 @@ class BuyerVendorCetagoryScreen extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              Tuppertextandbackbutton(screenName: screenName), // ← API name
-              SizedBox(height: 12.h),
-              Expanded(
-                child: async.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text(e.toString())),
-                  data: (res) {
-                    final cats = res?.data.categories.data ?? [];
-                    final match = cats.where(
-                      (c) => c.name.toLowerCase() == screenName.toLowerCase(),
-                    );
-                    final products =
-                        (match.isNotEmpty ? match.first.products : []).toList();
-                    Logger().e(products);
-                    return CustomSeeAllProduct(product: products);
-                  },
+        child: Container(
+          decoration: vendorId > 0
+              ? BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AllColor.orange50.withOpacity(0.3),
+                      AllColor.white.withOpacity(0.1),
+                      AllColor.white,
+                    ],
+                    stops: const [0.0, 0.3, 1.0],
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: AllColor.orange200.withOpacity(0.2),
+                      width: 1.0,
+                    ),
+                  ),
+                )
+              : null,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                Container(
+                  decoration: vendorId > 0
+                      ? BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AllColor.orange50.withOpacity(0.4),
+                              AllColor.orange200.withOpacity(0.2),
+                              AllColor.white.withOpacity(0.1),
+                            ],
+                          ),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: AllColor.orange200.withOpacity(0.15),
+                              width: 1.0,
+                            ),
+                          ),
+                        )
+                      : null,
+                  child: Tuppertextandbackbutton(screenName: screenName),
                 ),
-              ),
-              GlobalPagination(
-                currentPage: notifier.currentPage,
-                totalPages: notifier.lastPage,
-                onPageChanged: notifier.changePage,
-              ),
-              SizedBox(height: 10.h),
-            ],
+                SizedBox(height: 12.h),
+                Expanded(
+                  child: async.when(
+                    loading: () =>
+                        const Center(child: Text('Loading...')),
+                    error: (e, _) => Center(child: Text(e.toString())),
+                    data: (res) {
+                      final cats = res?.data.categories.data ?? [];
+                      final match = cats.where(
+                        (c) => c.name.toLowerCase() == screenName.toLowerCase(),
+                      );
+                      final products =
+                          (match.isNotEmpty ? match.first.products : []).toList();
+                      Logger().e(products);
+                      return CustomSeeAllProduct(product: products);
+                    },
+                  ),
+                ),
+                GlobalPagination(
+                  currentPage: notifier.currentPage,
+                  totalPages: notifier.lastPage,
+                  onPageChanged: notifier.changePage,
+                ),
+                SizedBox(height: 10.h),
+              ],
+            ),
           ),
         ),
       ),

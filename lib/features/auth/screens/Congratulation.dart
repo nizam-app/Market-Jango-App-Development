@@ -4,7 +4,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
-import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 
 class CongratulationScreen extends StatelessWidget {

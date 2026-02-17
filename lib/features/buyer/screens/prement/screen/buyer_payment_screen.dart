@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/custom_total_checkout_section.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/prement_done_logic.dart';
@@ -12,38 +13,112 @@ import 'package:market_jango/features/buyer/screens/prement/logic/prement_reverp
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/show_shipping_contract_sheet.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
+import 'package:market_jango/features/buyer/screens/cart/screen/shiping_address_update_botton_shet.dart';
 
 import '../model/prement_page_data_model.dart'; // <-- PaymentPageData
-import '../widget/show_shipping_address_sheet.dart';
 
-class BuyerPaymentScreen extends ConsumerWidget {
-  BuyerPaymentScreen({super.key});
+class BuyerPaymentScreen extends ConsumerStatefulWidget {
+  const BuyerPaymentScreen({super.key});
   static const routeName = "/buyerPaymentScreen";
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context).textTheme;
+  ConsumerState<BuyerPaymentScreen> createState() => _BuyerPaymentScreenState();
+}
 
+class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
+  @override
+  Widget build(BuildContext context) {
     final args = GoRouterState.of(context).extra as PaymentPageData?;
+    
+    // Watch cart provider to get updated buyer data after address update
+    final cartAsync = ref.watch(cartProvider);
+    
+    // Get updated buyer from cart if available, otherwise use args
+    // Priority: cart data (updated) > args (initial)
+    final buyer = cartAsync.when(
+      data: (cart) {
+        // If cart has items, use buyer from cart (most up-to-date)
+        if (cart.items.isNotEmpty) {
+          return cart.items.first.buyer;
+        }
+        // If cart is empty, fall back to args
+        return args?.buyer;
+      },
+      loading: () => args?.buyer, // While loading, use args
+      error: (_, __) => args?.buyer, // On error, use args
+    );
 
-    final shippingLines = args == null
-        ? const ['____, ____,', '_____']
-        : [
-            [
-              args.buyer.shipAddress ?? args.buyer.address,
-              args.buyer.shipCity,
-              // args.buyer.shipState ?? args.buyer.state,
-              // args.buyer.postcode,
-              args.buyer.shipCountry ?? args.buyer.country,
-            ].where((e) => e != null && e!.trim().isNotEmpty).join(', '),
-          ];
+    // Build shipping address lines - showing ship_name, ship_location, address, and state
+    final shippingLines = buyer == null
+        ? const ['No address available', 'Please add shipping address']
+        : () {
+            final lines = <String>[];
+            
+            // Ship Name (first line if available)
+            final shipName = buyer.shipName?.trim();
+            if (shipName != null && shipName.isNotEmpty && shipName != 'null') {
+              lines.add(shipName);
+            }
+            
+            // Ship Location (second line if available, fallback to location)
+            final shipLocation = buyer.shipLocation?.trim();
+            final location = buyer.location?.trim();
+            final displayLocation = (shipLocation != null && shipLocation.isNotEmpty && shipLocation != 'null')
+                ? shipLocation
+                : (location != null && location.isNotEmpty && location != 'null')
+                    ? location
+                    : null;
+            if (displayLocation != null) {
+              lines.add(displayLocation);
+            }
+            
+            // Address parts (third line)
+            final addressParts = <String>[];
+            
+            // Address (preferred) or fallback to ship_address
+            final address = buyer.address.trim();
+            final shipAddress = buyer.shipAddress?.trim();
+            final displayAddress = (address.isNotEmpty && address != 'null')
+                ? address
+                : ((shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null')
+                    ? shipAddress
+                    : null);
+            if (displayAddress != null) {
+              addressParts.add(displayAddress);
+            }
+            
+            // State (from state field, not ship_city)
+            final state = buyer.state?.trim();
+            if (state != null && state.isNotEmpty && state != 'null') {
+              addressParts.add(state);
+            }
+            
+            // Country (shipping preferred, fallback to regular)
+            final country = buyer.shipCountry?.trim() ?? buyer.country?.trim();
+            if (country != null && country.isNotEmpty && country != 'null') {
+              addressParts.add(country);
+            }
+            
+            // Add address line if we have address parts
+            if (addressParts.isNotEmpty) {
+              lines.add(addressParts.join(', '));
+            }
+            
+            // If nothing found, show message to add address
+            if (lines.isEmpty) {
+              return const ['No shipping address provided', 'Tap edit to add address'];
+            }
+            
+            return lines;
+          }();
 
-    final contactLines = args == null
+    final contactLines = buyer == null
         ? const ['___,', '+____,', '_____']
         : [
-            (args.buyer.shipName ?? '—'),
-            (args.buyer.shipPhone ?? '—'),
-            (args.buyer.shipEmail ?? '—'),
+            (buyer.shipName ?? '—'),
+            (buyer.shipPhone ?? '—'),
+            (buyer.shipEmail ?? '—'),
           ];
 
     // UI items map (ডিজাইন একই, কেবল ডেটা ম্যাপ করা)
@@ -83,8 +158,6 @@ class BuyerPaymentScreen extends ConsumerWidget {
             ShippingOption(title: 'Own Pick up', cost: 0.0),
           ];
 
-    final totalForBottom = args?.grandTotal ?? 40;
-
     // ⬇️ currently selected shipping index (0 or 1)
     final selectedShippingIndex = ref.watch(shippingMethodIndexProvider);
 
@@ -101,7 +174,13 @@ class BuyerPaymentScreen extends ConsumerWidget {
                   title: ref.t(BKeys.shippingAddress),
                   lines: shippingLines,
                   onEdit: () {
-                    showShippingAddressSheet(context, ref, args);
+                    // Get updated buyer from cart if available, otherwise use args
+                    final updatedBuyer = cartAsync.maybeWhen(
+                      data: (cart) => cart.items.isNotEmpty ? cart.items.first.buyer : null,
+                      orElse: () => null,
+                    );
+                    final buyerToUse = updatedBuyer ?? args?.buyer;
+                    showShippingAddressBottomSheet(context, ref, buyer: buyerToUse);
                   },
                 ),
                 SizedBox(height: 20.h),
@@ -424,10 +503,13 @@ class _CustomItemShowState extends State<CustomItemShow> {
               CircleAvatar(
                 radius: 30.r,
                 backgroundColor: AllColor.white,
-                child: CircleAvatar(
-                  radius: 26.r,
-                  backgroundColor: AllColor.grey200,
-                  backgroundImage: NetworkImage(item.imageUrl),
+                child: ClipOval(
+                  child: FirstTimeShimmerImage(
+                    imageUrl: item.imageUrl,
+                    width: 52.r,
+                    height: 52.r,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               Positioned(
@@ -474,7 +556,7 @@ class _CustomItemShowState extends State<CustomItemShow> {
           SizedBox(width: 8.w),
 
           Text(
-            '${item.price.toStringAsFixed(2)}',
+            item.price.toStringAsFixed(2),
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,

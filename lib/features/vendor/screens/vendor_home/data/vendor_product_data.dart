@@ -65,7 +65,6 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-
 import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../../../../core/utils/get_token_sharedpefarens.dart';
 import '../model/vendor_product_model.dart';
@@ -112,43 +111,36 @@ class ProductNotifier extends AsyncNotifier<PaginatedProducts?> {
         : Uri.parse('$categoryUrl/$_categoryId?page=$_page');
 
     final response = await http.get(uri, headers: {'token': token});
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch products: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      if (body is! Map<String, dynamic>) {
+        return PaginatedProducts(
+          currentPage: 1,
+          lastPage: 1,
+          products: [],
+          total: 0,
+        );
+      }
+      final data = body['data'];
+      if (data == null || data is! Map<String, dynamic>) {
+        return PaginatedProducts(
+          currentPage: 1,
+          lastPage: 1,
+          products: [],
+          total: 0,
+        );
+      }
+      final productBlock = data['products'];
+      if (productBlock == null || productBlock is! Map<String, dynamic>) {
+        return PaginatedProducts(
+          currentPage: 1,
+          lastPage: 1,
+          products: [],
+          total: 0,
+        );
+      }
+      return PaginatedProducts.fromJson(productBlock);
     }
-
-    final body = jsonDecode(response.body);
-    final rawData = body['data']; // eta kokhono Map, kokhono List hocche
-
-    if (rawData == null) {
-      return PaginatedProducts(
-        currentPage: 1,
-        lastPage: 1,
-        total: 0,
-        products: [],
-      );
-    }
-
-    // ✅ CASE 1: paginated object -> {current_page, last_page, total, data:[...]}
-    if (rawData is Map<String, dynamic>) {
-      return PaginatedProducts.fromJson(rawData);
-    }
-
-    // ✅ CASE 2: sudhu list -> [ {product}, {product}, ... ]
-    if (rawData is List) {
-      final products = rawData
-          .map((e) => VendorProduct.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      return PaginatedProducts(
-        currentPage: 1,
-        lastPage: 1,
-        total: products.length,
-        products: products,
-      );
-    }
-
-    // onno kono unexpected type hole
-    throw Exception('Unexpected data format: ${rawData.runtimeType}');
+    throw Exception('Failed to fetch products: ${response.statusCode}');
   }
 }

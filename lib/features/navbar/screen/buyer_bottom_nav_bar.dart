@@ -12,13 +12,12 @@ import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
 class BuyerBottomNavBar extends ConsumerWidget {
-  // Changed to ConsumerWidget
   const BuyerBottomNavBar({super.key});
 
   static const String routeName = '/bottom_nav_bar';
 
   // Define your pages/screens here
-  final List<Widget> _pages = const [
+  static const List<Widget> _pages = [
     // Replace with your actual screen widgets
     BuyerHomeScreen(),
     // Example: HomeScreen(),

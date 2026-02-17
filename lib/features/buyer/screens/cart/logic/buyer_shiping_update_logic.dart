@@ -45,7 +45,7 @@ class UserUpdateService {
   /// ✅ সাধারণ-উদ্দেশ্য ফাংশন: যেসব ফিল্ড দেবেন, কেবল সেগুলোই যাবে (multipart, image optional)
   static const Set<String> _allowedKeys = {
     'ship_address', 'ship_city', 'postcode', 'ship_state', 'ship_country',
-    'ship_name', 'ship_email', 'ship_phone',
+    'ship_name', 'ship_email', 'ship_phone', 'ship_location',
     // চাইলে প্রোফাইলের জেনেরিক ফিল্ডও
     'address', 'state', 'country', 'location', 'name', 'email', 'phone',
   };
@@ -53,6 +53,8 @@ class UserUpdateService {
   Future<void> updateUserFields({
     required Map<String, String> fields,
     File? imageFile,
+    double? latitude,
+    double? longitude,
   }) async {
     final token = await ref.read(authTokenProvider.future);
     if (token == null || token.isEmpty) {
@@ -69,7 +71,7 @@ class UserUpdateService {
       }
     });
 
-    if (clean.isEmpty && imageFile == null) {
+    if (clean.isEmpty && imageFile == null && latitude == null && longitude == null) {
       throw Exception('No valid fields to update');
     }
 
@@ -78,6 +80,14 @@ class UserUpdateService {
       ..headers['Accept'] = 'application/json'
       ..headers['token'] = token
       ..fields.addAll(clean);
+
+    // Add latitude and longitude if provided
+    if (latitude != null) {
+      req.fields['ship_latitude'] = latitude.toString();
+    }
+    if (longitude != null) {
+      req.fields['ship_longitude'] = longitude.toString();
+    }
 
     if (imageFile != null) {
       req.files.add(await http.MultipartFile.fromPath('image', imageFile.path));

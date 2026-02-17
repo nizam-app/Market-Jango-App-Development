@@ -7,16 +7,14 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
-import 'package:market_jango/features/auth/screens/login/logic/login_check.dart';
+import 'package:market_jango/features/auth/screens/login/logic/login_riverpod.dart';
 import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
-import 'package:market_jango/features/auth/screens/user_type_screen.dart'
-    show UserScreen;
+import 'package:market_jango/features/auth/screens/user_type_screen.dart' show UserScreen;
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
-
 import '../../forgot_password_screen.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+  const LoginScreen({super.key});
   static const String routeName = '/loginScreen';
 
   @override
@@ -81,7 +79,9 @@ class LoginTextFormField extends ConsumerWidget {
             controller: controllerPassword,
             textInputAction: TextInputAction.done,
             autovalidateMode: AutovalidateMode.disabled,
-            validator: (_) {},
+            validator: (_) {
+              return null;
+            },
             // passwordValidator,
             // তোমার existing function
             obscureText: isObscure,
@@ -115,16 +115,22 @@ class LoginTextFormField extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: 30.h),
-              CustomAuthButton(
-                buttonText: "Login",
-                onTap: () {
-                  if (_formKey.currentState!.validate()) {
-                    loginDone(
-                      context: context,
-                      email: controllerEmail.text,
-                      password: controllerPassword.text,
-                    );
-                  }
+              Consumer(
+                builder: (context, ref, child) {
+                  final loginState = ref.watch(loginStateProvider);
+                  final isLoading = loginState.isLoading;
+                  return CustomAuthButton(
+                    buttonText: isLoading ? "Logging in..." : "Login",
+                    onTap: () {
+                      if (!isLoading && _formKey.currentState!.validate()) {
+                        ref.read(loginStateProvider.notifier).login(
+                              context: context,
+                              email: controllerEmail.text,
+                              password: controllerPassword.text,
+                            );
+                      }
+                    },
+                  );
                 },
               ),
               SizedBox(height: 50.h),
@@ -153,20 +159,7 @@ class LoginTextFormField extends ConsumerWidget {
       ),
     );
   }
-
-  void loginDone({
-    required BuildContext context,
-    required String email,
-    required String password,
-  }) async {
-    await loginAndGoSingleRole(context: context, id: email, password: password);
-    // GlobalSnackbar.show(
-    //   context,
-    //   title: 'Logged in',
-    //   message: 'Welcome back!',
-    //   type: CustomSnackType.success,
-    // );
-  }
+  // Login handled by Riverpod loginStateProvider
 
   void gotoHomeScreen(BuildContext content) {
     content.push(BuyerHomeScreen.routeName);

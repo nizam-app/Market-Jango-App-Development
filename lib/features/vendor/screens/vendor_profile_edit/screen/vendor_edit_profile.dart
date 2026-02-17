@@ -348,7 +348,7 @@ class _RoundedDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items,
       onChanged: onChanged,
       icon: Icon(Icons.keyboard_arrow_down_rounded, color: AllColor.black87),

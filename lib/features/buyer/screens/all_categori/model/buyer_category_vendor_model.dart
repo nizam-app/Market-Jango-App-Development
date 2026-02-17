@@ -5,6 +5,7 @@ class VendorMini {
   final String address;
   final String businessType;
   final int userId;
+  final String? userImage;
 
   VendorMini({
     required this.id,
@@ -13,6 +14,7 @@ class VendorMini {
     required this.address,
     required this.businessType,
     required this.userId,
+    this.userImage,
   });
 
   factory VendorMini.fromJson(Map<String, dynamic> j) => VendorMini(
@@ -22,5 +24,8 @@ class VendorMini {
     address: (j['address'] ?? '').toString(),
     businessType: (j['business_type'] ?? '').toString(),
     userId: j['user_id'] as int,
+    userImage: (j['user'] != null && j['user'] is Map)
+        ? (j['user'] as Map<String, dynamic>)['image']?.toString()
+        : null,
   );
 }

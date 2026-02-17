@@ -147,7 +147,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
   Widget _buildTab({String? method, IconData? icon, String? asset}) {
     bool isActive = selectedMethod == method;
     return GestureDetector(
-      onTap: () => setState(() => selectedMethod = method!),
+      onTap: () => setState(() => selectedMethod = method),
       child: _PaymentMethodTab(
         icon: icon,
         asset: asset,

@@ -12,11 +12,20 @@ class VendorCategoryModel {
   });
 
   factory VendorCategoryModel.fromJson(Map<String, dynamic> json) {
+    // Helper to safely convert to int
+    int _toInt(dynamic value, {int defaultValue = 0}) {
+      if (value == null) return defaultValue;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? defaultValue;
+      if (value is num) return value.toInt();
+      return defaultValue;
+    }
+
     return VendorCategoryModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      status: json['status'] ?? '',
-      vendorId: json['vendor_id'] ?? 0,
+      id: _toInt(json['id']),
+      name: json['name']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      vendorId: _toInt(json['vendor_id']),
     );
   }
 }

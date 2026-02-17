@@ -1,4 +1,27 @@
-// product_all_details_model.dart
+import 'dart:convert';
+
+// Optional wrapper (আপনার ফাইলে যদি already থাকে, না লাগলে remove করতে পারেন)
+class ProductAllDetailsModel {
+  final String status;
+  final String message;
+  final DetailItem data;
+
+  ProductAllDetailsModel({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory ProductAllDetailsModel.fromJson(Map<String, dynamic> json) {
+    return ProductAllDetailsModel(
+      status: json['status']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      data: DetailItem.fromJson(
+        (json['data'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+    );
+  }
+}
 
 class DetailItem {
   final int id;
@@ -21,6 +44,11 @@ class DetailItem {
   final Vendor vendor;
   final Category category;
   final List<DetailImage> images;
+  final int? stock;
+
+  /// ✅ API string JSON like:
+  /// "{\"color\":[\"red\",\"green\"],\"size\":[\"m\",\"xl\"],\"brand\":[\"apple\"]}"
+  final String? attributes;
 
   DetailItem({
     required this.id,
@@ -43,10 +71,28 @@ class DetailItem {
     required this.vendor,
     required this.category,
     required this.images,
+    this.stock,
+    this.attributes, // ✅ optional (clean)
   });
 
   factory DetailItem.fromJson(Map<String, dynamic> json) {
     final data = json;
+
+    // ✅ attributes handle: string / map / null
+    final rawAttr = data['attributes'];
+    String? attrString;
+    if (rawAttr == null) {
+      attrString = null;
+    } else if (rawAttr is String) {
+      attrString = rawAttr;
+    } else {
+      // if backend someday sends Map instead of String
+      try {
+        attrString = jsonEncode(rawAttr);
+      } catch (_) {
+        attrString = rawAttr.toString();
+      }
+    }
 
     return DetailItem(
       id: (data['id'] as num?)?.toInt() ?? 0,
@@ -68,13 +114,52 @@ class DetailItem {
       categoryId: (data['category_id'] as num?)?.toInt() ?? 0,
       createdAt: _parseDate(data['created_at']),
       updatedAt: _parseDate(data['updated_at']),
-      vendor: Vendor.fromJson((data['vendor'] as Map?)?.cast<String, dynamic>() ?? const {}),
-      category: Category.fromJson((data['category'] as Map?)?.cast<String, dynamic>() ?? const {}),
+      vendor: Vendor.fromJson(
+        (data['vendor'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      category: Category.fromJson(
+        (data['category'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       images: ((data['images'] as List?) ?? const [])
           .whereType<Map>()
           .map((m) => DetailImage.fromJson(m.cast<String, dynamic>()))
           .toList(),
+      stock: (data['stock'] as num?)?.toInt(),
+      attributes: attrString,
     );
+  }
+
+  /// ✅ attributes string -> Map<String, List<String>>
+  Map<String, List<String>> get attributesMap {
+    final raw = attributes;
+    if (raw == null || raw.trim().isEmpty) return {};
+
+    try {
+      final decoded = jsonDecode(raw);
+
+      if (decoded is! Map) return {};
+
+      final Map<String, List<String>> out = {};
+      decoded.forEach((k, v) {
+        final key = k.toString().trim();
+        if (key.isEmpty) return;
+
+        if (v is List) {
+          out[key] = v
+              .map((e) => e.toString())
+              .where((s) => s.isNotEmpty)
+              .toList();
+        } else if (v != null) {
+          out[key] = [v.toString()];
+        }
+      });
+
+      // empty keys remove
+      out.removeWhere((k, v) => v.isEmpty);
+      return out;
+    } catch (_) {
+      return {};
+    }
   }
 
   // -------- helpers ----------
@@ -94,18 +179,30 @@ class DetailItem {
     if (raw is List) {
       return raw
           .where((e) => e != null)
-          .map((e) => e.toString().trim())
+          .expand<String>((e) {
+            final str = e.toString().trim();
+            if (str.contains(',')) {
+              return str
+                  .split(',')
+                  .map((s) => s.trim())
+                  .where((s) => s.isNotEmpty);
+            }
+            return [str];
+          })
           .where((e) => e.isNotEmpty)
           .toList();
     }
     if (raw is String) {
-      return raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      return raw
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
     return <String>[];
   }
 
   static List<String> _parseColors(dynamic raw) {
-    // Accept: ["d926cd,3B82F6,..."] OR ["d926cd","3B82F6"] OR "d926cd,3B82F6"
     if (raw == null) return <String>[];
     if (raw is List) {
       return raw
@@ -116,14 +213,17 @@ class DetailItem {
           .toList();
     }
     if (raw is String) {
-      return raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      return raw
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
     return <String>[];
   }
 }
 
 // ---------------- Vendor ----------------
-
 class Vendor {
   final int id;
   final String country;
@@ -131,6 +231,7 @@ class Vendor {
   final String businessName;
   final String businessType;
   final int userId;
+  final double avgRating;
   final DateTime createdAt;
   final DateTime updatedAt;
   final User user;
@@ -143,6 +244,7 @@ class Vendor {
     required this.businessName,
     required this.businessType,
     required this.userId,
+    this.avgRating = 0.0,
     required this.createdAt,
     required this.updatedAt,
     required this.user,
@@ -158,16 +260,18 @@ class Vendor {
       businessName: j['business_name']?.toString() ?? '',
       businessType: j['business_type']?.toString() ?? '',
       userId: (j['user_id'] as num?)?.toInt() ?? 0,
+      avgRating: DetailItem._toDouble(j['avg_rating'] ?? 0),
       createdAt: DetailItem._parseDate(j['created_at']),
       updatedAt: DetailItem._parseDate(j['updated_at']),
-      user: User.fromJson((j['user'] as Map?)?.cast<String, dynamic>() ?? const {}),
+      user: User.fromJson(
+        (j['user'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       reviews: (j['reviews'] as List?)?.toList() ?? const [],
     );
   }
 }
 
 // ---------------- User ----------------
-
 class User {
   final int id;
   final String userType;
@@ -181,6 +285,8 @@ class User {
   final String publicId;
   final String status;
   final bool isActive;
+  final bool isOnline;
+  final DateTime? lastActiveAt;
   final DateTime? expiresAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -198,6 +304,8 @@ class User {
     required this.publicId,
     required this.status,
     required this.isActive,
+    this.isOnline = false,
+    this.lastActiveAt,
     this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
@@ -212,14 +320,23 @@ class User {
       email: j['email']?.toString() ?? '',
       phone: j['phone']?.toString() ?? '',
       otp: j['otp']?.toString(),
-      phoneVerifiedAt:
-      j['phone_verified_at'] != null ? DateTime.tryParse(j['phone_verified_at'].toString()) : null,
+      phoneVerifiedAt: j['phone_verified_at'] != null
+          ? DateTime.tryParse(j['phone_verified_at'].toString())
+          : null,
       language: j['language']?.toString() ?? '',
       image: j['image']?.toString() ?? '',
       publicId: j['public_id']?.toString() ?? '',
       status: j['status']?.toString() ?? '',
-      isActive: j['is_active'] is bool ? j['is_active'] as bool : ((j['is_active'] as num?)?.toInt() == 1),
-      expiresAt: j['expires_at'] != null ? DateTime.tryParse(j['expires_at'].toString()) : null,
+      isActive: j['is_active'] is bool
+          ? j['is_active'] as bool
+          : ((j['is_active'] as num?)?.toInt() == 1),
+      isOnline: j['is_online'] is bool ? j['is_online'] as bool : false,
+      lastActiveAt: j['last_active_at'] != null
+          ? DateTime.tryParse(j['last_active_at'].toString())
+          : null,
+      expiresAt: j['expires_at'] != null
+          ? DateTime.tryParse(j['expires_at'].toString())
+          : null,
       createdAt: DetailItem._parseDate(j['created_at']),
       updatedAt: DetailItem._parseDate(j['updated_at']),
     );
@@ -227,7 +344,6 @@ class User {
 }
 
 // --------------- Category ---------------
-
 class Category {
   final int id;
   final String name;
@@ -262,7 +378,6 @@ class Category {
 }
 
 // --------------- DetailImage ---------------
-
 class DetailImage {
   final int id;
   final String imagePath;

@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/screens/all_categori/model/vendor_first_product_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final vendorFirstProductProvider =
     AsyncNotifierProvider<VendorFirstProductNotifier, List<VendorFirstProduct>>(
@@ -18,8 +18,8 @@ class VendorFirstProductNotifier
   Future<List<VendorFirstProduct>> build() async => _fetch();
 
   Future<List<VendorFirstProduct>> _fetch() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final authStorage = AuthLocalStorage();
+    final token = await authStorage.getToken();
 
     final uri = Uri.parse(BuyerAPIController.vendor_first_product);
 

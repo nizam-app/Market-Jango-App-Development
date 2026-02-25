@@ -5,6 +5,7 @@ class BuyerAPIController {
   static String buyer_product = "$_base_api/product";
   static String banner = "$_base_api/banner";
   static String cart = "$_base_api/cart";
+  static String cartDelete(int id) => "$_base_api/cart/$id";
   static String cart_create = "$_base_api/cart/create";
   static String category = "$_base_api/category";
   static String language = "$_base_api/language";

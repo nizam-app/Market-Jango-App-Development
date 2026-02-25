@@ -25,6 +25,7 @@ class VendorFirstProductResponse {
 
 class VendorFirstProduct {
   final int vendorId;
+  final int? userId;
   final String businessName;
   final String vendorName;
   final String? vendorImage;
@@ -33,6 +34,7 @@ class VendorFirstProduct {
 
   VendorFirstProduct({
     required this.vendorId,
+    this.userId,
     required this.businessName,
     required this.vendorName,
     required this.vendorImage,
@@ -43,6 +45,7 @@ class VendorFirstProduct {
   factory VendorFirstProduct.fromJson(Map<String, dynamic> json) {
     return VendorFirstProduct(
       vendorId: _toInt(json['vendor_id']),
+      userId: _toIntNullable(json['user_id']),
       businessName: json['business_name']?.toString() ?? '',
       vendorName: json['vendor_name']?.toString() ?? '',
       vendorImage: json['vendor_image']?.toString(),
@@ -103,4 +106,12 @@ double _toDouble(dynamic v) {
   if (v == null) return 0.0;
   if (v is num) return v.toDouble();
   return double.tryParse(v.toString()) ?? 0.0;
+}
+
+int? _toIntNullable(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  final n = int.tryParse(v.toString());
+  return n != null && n > 0 ? n : null;
 }

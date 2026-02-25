@@ -13,6 +13,7 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_propuler_product_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/user_id_by_vendor_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/data/buyer_review_data.dart';
@@ -39,7 +40,15 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Logger().d(vendorId);
     final async = ref.watch(vendorCategoryProductsProvider(vendorId));
-    final userAsync = ref.watch(userProvider(userId.toString()));
+    final int? effectiveUserId;
+    if (userId > 0) {
+      effectiveUserId = userId;
+    } else {
+      effectiveUserId = ref.watch(userIdByVendorIdProvider(vendorId)).valueOrNull;
+    }
+    final userAsync = effectiveUserId != null && effectiveUserId > 0
+        ? ref.watch(userProvider(effectiveUserId.toString()))
+        : const AsyncValue<UserModel>.loading();
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -49,10 +58,12 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
               userAsync.when(
                 data: (user) {
                   final coverImageUrl = user.coverImage;
-                  final hasCoverImage =
-                      coverImageUrl != null && coverImageUrl.isNotEmpty;
-                  final String safeCoverImage = coverImageUrl ?? '';
-                  
+                  final hasCoverImage = coverImageUrl != null &&
+                      coverImageUrl.trim().isNotEmpty &&
+                      (coverImageUrl.startsWith('http://') ||
+                          coverImageUrl.startsWith('https://'));
+                  final String safeCoverImage = coverImageUrl?.trim() ?? '';
+
                   return Stack(
                     children: [
                       ClipRRect(
@@ -180,7 +191,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                 ),
               ),
               CustomVendorUpperSection(
-                userId: userId.toString(),
+                userId: effectiveUserId?.toString(),
                 vendorId: vendorId,
               ),
               Padding(
@@ -238,12 +249,18 @@ class CustomVendorUpperSection extends ConsumerWidget {
     required this.vendorId,
   });
 
-  final String userId;
+  final String? userId;
   final int vendorId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(userProvider(userId));
+    if (userId == null || userId!.isEmpty || userId == '0') {
+      return Padding(
+        padding: EdgeInsets.all(20.w),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    final async = ref.watch(userProvider(userId!));
     final reviewCountAsync = ref.watch(vendorReviewCountProvider(vendorId));
     final theme = Theme.of(context).textTheme;
     final myUserIdAsync = ref.watch(getUserIdProvider);
@@ -259,12 +276,6 @@ class CustomVendorUpperSection extends ConsumerWidget {
         // ---- SAFE READS (no ! anywhere) ----
         final vendor = v.vendor; // may be null
         bool hasText(String? s) => s != null && s.trim().isNotEmpty;
-
-        String truncateWithEllipsis(int cutoff, String myString) {
-          return (myString.length <= cutoff)
-              ? myString
-              : '${myString.substring(0, cutoff)}...';
-        }
 
         final name = hasText(v.name)
             ? v.name
@@ -321,7 +332,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          name ?? '',
+                          name,
                           style: theme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),

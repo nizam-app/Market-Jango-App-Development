@@ -15,6 +15,9 @@ class GlobalPagination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (totalPages < 1) {
+      return const SizedBox.shrink();
+    }
     int startPage = ((currentPage - 1) ~/ 5) * 5 + 1;
     int endPage = (startPage + 4).clamp(1, totalPages);
 

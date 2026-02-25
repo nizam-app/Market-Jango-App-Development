@@ -184,7 +184,6 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
                               }
 
                               final item = items[index];
-                              final selected = index == _selectedIndex;
 
                               return InkWell(
                                 onTap: () =>
@@ -295,7 +294,7 @@ class _BottomAssignBar extends ConsumerWidget {
   const _BottomAssignBar({required this.enabled, this.onPressed});
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       top: false,
       minimum: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),

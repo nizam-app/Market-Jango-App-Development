@@ -261,6 +261,7 @@ class ProductGridSection extends ConsumerWidget {
               discount: p.discount,
               productId: p.id,
               vendorId: v.vendorId,
+              userId: v.userId,
             );
           },
         );
@@ -279,6 +280,7 @@ class ProductCard extends StatelessWidget {
   final int? discount;
   final int productId;
   final int vendorId;
+  final int? userId;
 
   const ProductCard({
     super.key,
@@ -291,19 +293,18 @@ class ProductCard extends StatelessWidget {
     this.discount,
     required this.productId,
     required this.vendorId,
+    this.userId,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Note: VendorFirstProduct only has vendorId, userId not available
-        // Using vendorId for both (will need to be fixed if userId is needed)
         context.push(
           BuyerVendorProfileScreen.routeName,
           extra: {
             'vendorId': vendorId,
-            'userId': 0, // Will be handled in route builder
+            'userId': userId ?? 0,
           },
         );
       },
@@ -365,12 +366,11 @@ class ProductCard extends StatelessWidget {
                   SizedBox(height: 20.h),
                   InkWell(
                     onTap: () {
-                      // Note: VendorFirstProduct only has vendorId, userId not available
                       context.push(
                         BuyerVendorProfileScreen.routeName,
                         extra: {
                           'vendorId': vendorId,
-                          'userId': 0, // Will be handled in route builder
+                          'userId': userId ?? 0,
                         },
                       );
                     },

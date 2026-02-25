@@ -10,6 +10,8 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
+import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
+import 'package:market_jango/features/ranking/screen/ranking_screen.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/profile_screen/logic/user_data_update_riverpod.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_edit_screen.dart';
@@ -208,9 +210,22 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: 'Subscription',
             onTap: () => context.push(SubscriptionScreen.routeName),
           ),
+            _DividerLine(),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _SettingsTile(
+            leadingIcon: Icons.link,
+            title: 'Affiliate Links',
+            onTap: () => context.push(AffiliateScreen.routeName),
+          ),
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _DividerLine(),
         _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
+        _DividerLine(),
+        _SettingsTile(
+          leadingIcon: Icons.leaderboard_outlined,
+          title: 'Rankings',
+          onTap: () => context.push(RankingScreen.routeName),
+        ),
         _DividerLine(),
         _SettingsTile(
           leadingIcon: Icons.language_outlined,

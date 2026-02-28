@@ -33,6 +33,19 @@ class BuyerAPIController {
 
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
+  /// GET api/product/search?visibility_country=&category_id=&visibility_state=
+  static String productSearch({
+    required String visibilityCountry,
+    required int categoryId,
+    String? visibilityState,
+  }) {
+    final country = Uri.encodeComponent(visibilityCountry.trim());
+    var url = '$_base_api/product/search?visibility_country=$country&category_id=$categoryId';
+    if (visibilityState != null && visibilityState.trim().isNotEmpty) {
+      url += '&visibility_state=${Uri.encodeComponent(visibilityState.trim())}';
+    }
+    return url;
+  }
   static String review_buyer(id) => "$_base_api/review/create/buyer/$id";
   static String review_vendor(id) => "$_base_api/review/vendor/$id";
 }

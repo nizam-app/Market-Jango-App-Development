@@ -18,7 +18,7 @@ class CustomNewItemsShow extends ConsumerWidget {
       height: 210.h,
       child: newItemsAsync.when(
         data: (data) {
-          final products = data!.data.data;
+          final products = data?.data.data ?? [];
           if (products.isEmpty) {
             return const SizedBox.shrink();
           }
@@ -33,7 +33,9 @@ class CustomNewItemsShow extends ConsumerWidget {
                     CustomNewProduct(
                       width: 130,
                       height: 140,
-                      productPrices: products[index].sellPrice,
+                      productPrices: products[index].sellPrice.isNotEmpty
+                          ? products[index].sellPrice
+                          : products[index].regularPrice,
                       productName: products[index].name.toString(),
                       imageHeight: 130,
                       image: products[index].image,
@@ -67,7 +69,9 @@ class CustomNewItemsShow extends ConsumerWidget {
                 child: CustomNewProduct(
                   width: 130,
                   height: 140,
-                  productPrices: product.sellPrice,
+                  productPrices: product.sellPrice.isNotEmpty
+                      ? product.sellPrice
+                      : product.regularPrice,
                   productName: product.name.toString(),
                   imageHeight: 130,
                   image: product.image,

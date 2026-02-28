@@ -24,6 +24,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/get_user_type.dart';
 
 import 'buyer_vendor_cetagory_screen.dart';
+import 'vendor_promotion_screen.dart';
 
 class BuyerVendorProfileScreen extends ConsumerWidget {
   const BuyerVendorProfileScreen({
@@ -295,8 +296,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
         final double rating = vendor?.avgRating ?? 0;
         // Use total review count from API instead of nested reviews length
         final reviewCount = reviewCountAsync.value ?? 0;
-        final reviewText =
-            '${rating.toStringAsFixed(2)} ( $reviewCount reviews )';
+        final reviewText = '$reviewCount';
 
         final openingTime = (vendor != null && hasText(vendor.openTime))
             ? vendor.openTime!
@@ -312,7 +312,25 @@ class CustomVendorUpperSection extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back icon removed - now on cover image
+              TextButton(
+                onPressed: () {
+                  context.pushNamed(
+                    VendorPromotionScreen.routeName,
+                    extra: vendorId,
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: Colors.orange.shade700,
+                  backgroundColor: Colors.orange.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                ),
+                child: Text('Promotion', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              ),
               const Spacer(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

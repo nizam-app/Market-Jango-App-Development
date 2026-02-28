@@ -782,13 +782,22 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _destinationController = TextEditingController();
+  final _customRateController = TextEditingController();
+  final _cookieDurationController = TextEditingController();
+  final _expiresAtController = TextEditingController();
   bool _loading = false;
+  String _attributionModel = 'first_click';
+
+  static const List<String> _attributionOptions = ['first_click', 'last_click'];
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
     _destinationController.dispose();
+    _customRateController.dispose();
+    _cookieDurationController.dispose();
+    _expiresAtController.dispose();
     super.dispose();
   }
 
@@ -796,11 +805,31 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
     setState(() => _loading = true);
     try {
       final token = await ref.read(authTokenProvider.future);
+
+      double? customRate;
+      final customRateStr = _customRateController.text.trim();
+      if (customRateStr.isNotEmpty) {
+        customRate = double.tryParse(customRateStr);
+      }
+
+      int? cookieDurationDays;
+      final cookieStr = _cookieDurationController.text.trim();
+      if (cookieStr.isNotEmpty) {
+        cookieDurationDays = int.tryParse(cookieStr);
+      }
+
+      final expiresAtStr = _expiresAtController.text.trim();
+      final expiresAt = expiresAtStr.isEmpty ? null : expiresAtStr;
+
       final result = await affiliateGenerate(
         token,
         name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
         destinationUrl: _destinationController.text.trim().isEmpty ? null : _destinationController.text.trim(),
+        customRate: customRate,
+        cookieDurationDays: cookieDurationDays,
+        attributionModel: _attributionModel,
+        expiresAt: expiresAt,
       );
       if (mounted) {
         widget.onSaved();
@@ -860,33 +889,35 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(height: 12.h),
-            Center(
-              child: Container(
-                width: 36.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AllColor.grey200,
-                  borderRadius: BorderRadius.circular(2.r),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 36.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AllColor.grey200,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 24.h),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AllColor.loginButtomColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Icon(
-                    Icons.add_link_rounded,
+              SizedBox(height: 24.h),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: AllColor.loginButtomColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Icon(
+                      Icons.add_link_rounded,
                     size: 28.r,
                     color: AllColor.loginButtomColor,
                   ),
@@ -922,7 +953,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
             Text(
               'Link details',
               style: TextStyle(
-                fontSize: 13.sp,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
                 color: AllColor.grey500,
               ),
@@ -933,7 +964,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               style: TextStyle(fontSize: 15.sp),
               decoration: InputDecoration(
                 hintText: 'e.g. Summer campaign',
-                labelText: 'Name (optional)',
+                labelText: 'Name',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 prefixIcon: Icon(Icons.label_outline_rounded, size: 22.r, color: AllColor.grey500),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
@@ -959,7 +991,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               style: TextStyle(fontSize: 15.sp),
               decoration: InputDecoration(
                 hintText: 'Where or how you’ll use this link',
-                labelText: 'Description (optional)',
+                labelText: 'Description',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 alignLabelWithHint: true,
                 prefixIcon: Icon(Icons.description_outlined, size: 22.r, color: AllColor.grey500),
                 filled: true,
@@ -986,7 +1019,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               keyboardType: TextInputType.url,
               decoration: InputDecoration(
                 hintText: 'https://example.com/page',
-                labelText: 'Destination URL (optional)',
+                labelText: 'Destination URL',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 prefixIcon: Icon(Icons.link_rounded, size: 22.r, color: AllColor.grey500),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
@@ -1003,6 +1037,151 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
                   borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 28.h),
+            Text(
+              'Tracking & settings',
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.grey500,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            TextField(
+              controller: _customRateController,
+              style: TextStyle(fontSize: 15.sp),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                hintText: 'e.g. 10',
+                labelText: 'Custom rate %',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.percent_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            TextField(
+              controller: _cookieDurationController,
+              style: TextStyle(fontSize: 15.sp),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'e.g. 30',
+                labelText: 'Cookie duration (days)',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.cookie_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            DropdownButtonFormField<String>(
+              value: _attributionModel,
+              decoration: InputDecoration(
+                labelText: 'Attribution model',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.touch_app_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+              items: _attributionOptions
+                  .map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value == 'first_click' ? 'First click' : 'Last click',
+                          style: TextStyle(fontSize: 15.sp),
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (String? value) {
+                if (value != null) setState(() => _attributionModel = value);
+              },
+            ),
+            SizedBox(height: 14.h),
+            InkWell(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now().add(const Duration(days: 365)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2030),
+                );
+                if (picked != null && mounted) {
+                  final y = picked.year;
+                  final m = picked.month.toString().padLeft(2, '0');
+                  final d = picked.day.toString().padLeft(2, '0');
+                  _expiresAtController.text = '$y-$m-$d';
+                }
+              },
+              borderRadius: BorderRadius.circular(14.r),
+              child: IgnorePointer(
+                child: TextField(
+                  controller: _expiresAtController,
+                  readOnly: true,
+                  style: TextStyle(fontSize: 15.sp),
+                  decoration: InputDecoration(
+                    hintText: 'Tap to pick date',
+                    labelText: 'Expires at',
+                    labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                    prefixIcon: Icon(Icons.calendar_today_rounded, size: 22.r, color: AllColor.grey500),
+                    filled: true,
+                    fillColor: AllColor.grey100.withOpacity(0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 28.h),
@@ -1036,6 +1215,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
           ],
         ),
       ),
+    ),
     );
   }
 }

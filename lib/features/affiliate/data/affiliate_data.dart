@@ -12,8 +12,8 @@ import 'package:market_jango/features/affiliate/model/affiliate_model.dart';
 
 final affiliateLinksProvider =
     AsyncNotifierProvider<AffiliateLinksNotifier, List<AffiliateLinkModel>>(
-  AffiliateLinksNotifier.new,
-);
+      AffiliateLinksNotifier.new,
+    );
 
 class AffiliateLinksNotifier extends AsyncNotifier<List<AffiliateLinkModel>> {
   @override
@@ -56,9 +56,10 @@ class AffiliateLinksNotifier extends AsyncNotifier<List<AffiliateLinkModel>> {
 // ---------------------------------------------------------------------------
 
 final affiliateStatisticsProvider =
-    AsyncNotifierProvider<AffiliateStatisticsNotifier, AffiliateStatisticsModel?>(
-  AffiliateStatisticsNotifier.new,
-);
+    AsyncNotifierProvider<
+      AffiliateStatisticsNotifier,
+      AffiliateStatisticsModel?
+    >(AffiliateStatisticsNotifier.new);
 
 class AffiliateStatisticsNotifier
     extends AsyncNotifier<AffiliateStatisticsModel?> {
@@ -98,31 +99,29 @@ class AffiliateStatisticsNotifier
 // Get link details: GET /api/affiliate/link/{id}
 // ---------------------------------------------------------------------------
 
-final affiliateLinkDetailProvider =
-    FutureProvider.autoDispose.family<AffiliateLinkDetailModel?, int>(
-  (ref, id) async {
-    final token = await ref.watch(authTokenProvider.future);
-    if (token == null || token.isEmpty) throw Exception('Not logged in');
+final affiliateLinkDetailProvider = FutureProvider.autoDispose
+    .family<AffiliateLinkDetailModel?, int>((ref, id) async {
+      final token = await ref.watch(authTokenProvider.future);
+      if (token == null || token.isEmpty) throw Exception('Not logged in');
 
-    final uri = Uri.parse(CommonAPIController.affiliateLink(id));
-    final res = await http.get(
-      uri,
-      headers: {'Accept': 'application/json', 'token': token},
-    );
+      final uri = Uri.parse(CommonAPIController.affiliateLink(id));
+      final res = await http.get(
+        uri,
+        headers: {'Accept': 'application/json', 'token': token},
+      );
 
-    if (res.statusCode != 200) {
-      final map = jsonDecode(res.body) as Map<String, dynamic>?;
-      final msg = map?['message']?.toString() ?? 'Failed to load link';
-      throw Exception(msg);
-    }
+      if (res.statusCode != 200) {
+        final map = jsonDecode(res.body) as Map<String, dynamic>?;
+        final msg = map?['message']?.toString() ?? 'Failed to load link';
+        throw Exception(msg);
+      }
 
-    final map = jsonDecode(res.body) as Map<String, dynamic>;
-    final data = map['data'] as Map<String, dynamic>?;
-    if (data == null) return null;
+      final map = jsonDecode(res.body) as Map<String, dynamic>;
+      final data = map['data'] as Map<String, dynamic>?;
+      if (data == null) return null;
 
-    return AffiliateLinkDetailModel.fromJson(data);
-  },
-);
+      return AffiliateLinkDetailModel.fromJson(data);
+    });
 
 // ---------------------------------------------------------------------------
 // Generate: POST /api/affiliate/generate
@@ -141,6 +140,9 @@ Future<AffiliateGenerateResult> affiliateGenerate(
   String? name,
   String? description,
   String? destinationUrl,
+  double? customRate,
+  int? cookieDurationDays,
+  String? attributionModel,
   String? expiresAt,
 }) async {
   if (token == null || token.isEmpty) throw Exception('Not logged in');
@@ -148,8 +150,14 @@ Future<AffiliateGenerateResult> affiliateGenerate(
   final uri = Uri.parse(CommonAPIController.affiliateGenerate);
   final body = <String, dynamic>{};
   if (name != null && name.isNotEmpty) body['name'] = name;
-  if (description != null && description.isNotEmpty) body['description'] = description;
-  if (destinationUrl != null && destinationUrl.isNotEmpty) body['destination_url'] = destinationUrl;
+  if (description != null && description.isNotEmpty)
+    body['description'] = description;
+  if (destinationUrl != null && destinationUrl.isNotEmpty)
+    body['destination_url'] = destinationUrl;
+  if (customRate != null) body['custom_rate'] = customRate;
+  if (cookieDurationDays != null) body['cookie_duration_days'] = cookieDurationDays;
+  if (attributionModel != null && attributionModel.isNotEmpty)
+    body['attribution_model'] = attributionModel;
   if (expiresAt != null && expiresAt.isNotEmpty) body['expires_at'] = expiresAt;
 
   final res = await http.post(
@@ -220,10 +228,7 @@ Future<void> affiliateUpdate(
 // Delete: DELETE /api/affiliate/link/{id}
 // ---------------------------------------------------------------------------
 
-Future<void> affiliateDelete(
-  String? token, {
-  required int id,
-}) async {
+Future<void> affiliateDelete(String? token, {required int id}) async {
   if (token == null || token.isEmpty) throw Exception('Not logged in');
 
   final uri = Uri.parse(CommonAPIController.affiliateLink(id));

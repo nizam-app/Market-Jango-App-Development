@@ -15,6 +15,49 @@ class VendorPromotionScreen extends ConsumerWidget {
   static const String routeName = '/vendorPromotion';
   final int vendorId;
 
+  /// Opens the first promotion link (if it has a URL) and shows only the link-create popup.
+  /// Call this from vendor profile instead of navigating to the full promotion screen.
+  static Future<void> showLinkCreatePopup(
+    BuildContext context,
+    WidgetRef ref,
+    int vendorId,
+  ) async {
+    try {
+      final links = await ref.read(vendorAffiliateLinksProvider(vendorId).future);
+      if (links.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No promotions yet')),
+          );
+        }
+        return;
+      }
+      final firstLink = links.first;
+      if (!context.mounted) return;
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => _ReferralFormSheet(
+          vendorId: vendorId,
+          link: firstLink,
+          onSuccess: (response) {
+            Navigator.pop(ctx);
+            _showReferralGeneratedDialog(context, response);
+          },
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final linksAsync = ref.watch(vendorAffiliateLinksProvider(vendorId));
@@ -128,7 +171,7 @@ class VendorPromotionScreen extends ConsumerWidget {
     );
   }
 
-  void _showReferralGeneratedDialog(
+  static void _showReferralGeneratedDialog(
     BuildContext context,
     Map<String, dynamic> response,
   ) {
@@ -433,6 +476,7 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
   final _affiliateCodeController = TextEditingController();
   final _destinationController = TextEditingController();
   bool _loading = false;
+  bool _agreedToTerms = false;
 
   @override
   void dispose() {
@@ -480,6 +524,36 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
     }
   }
 
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 6.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120.w,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.grey500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 12.sp, color: AllColor.black),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom + 24.h;
@@ -515,7 +589,7 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
               ),
             ),
             SizedBox(height: 20.h),
-            // Link details (upper)
+            // Link details (upper) – all fields from response
             Container(
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
@@ -535,24 +609,20 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  Text(
-                    link.displayName,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AllColor.black,
-                    ),
-                  ),
-                  if (link.description != null && link.description!.isNotEmpty) ...[
-                    SizedBox(height: 4.h),
-                    Text(
-                      link.description!,
-                      style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  SizedBox(height: 4.h),
+                  _detailRow('Name', link.displayName),
+                  if (link.description != null && link.description!.trim().isNotEmpty)
+                    _detailRow('Description', link.description!),
+                  if (link.destinationUrl != null && link.destinationUrl!.trim().isNotEmpty)
+                    _detailRow('Destination URL', link.destinationUrl!),
+                  if (link.customRate != null)
+                    _detailRow('Custom rate', '${link.customRate}%'),
+                  if (link.cookieDurationDays != null)
+                    _detailRow('Cookie duration', '${link.cookieDurationDays} days'),
+                  if (link.attributionModel != null && link.attributionModel!.trim().isNotEmpty)
+                    _detailRow('Attribution model', link.attributionModel!),
+                  if (link.expiresAt != null && link.expiresAt!.trim().isNotEmpty)
+                    _detailRow('Expires at', link.expiresAt!),
+                  SizedBox(height: 6.h),
                   Row(
                     children: [
                       Container(
@@ -572,13 +642,6 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
                           ),
                         ),
                       ),
-                      if (link.createdAt != null) ...[
-                        SizedBox(width: 12.w),
-                        Text(
-                          link.createdAt!,
-                          style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                        ),
-                      ],
                     ],
                   ),
                 ],
@@ -644,11 +707,53 @@ class _ReferralFormSheetState extends ConsumerState<_ReferralFormSheet> {
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               ),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 20.h),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                borderRadius: BorderRadius.circular(10.r),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 24.w,
+                        height: 24.h,
+                        child: Checkbox(
+                          value: _agreedToTerms,
+                          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                          activeColor: AllColor.loginButtomColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 2.h),
+                          child: Text(
+                            'By using this referral link, you agree to follow our promotion rules and avoid any fake clicks, spam, or misleading claims.',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AllColor.grey500,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
             SizedBox(
               height: 52.h,
               child: ElevatedButton(
-                onPressed: _loading ? null : _submit,
+                onPressed: (_loading || !_agreedToTerms) ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AllColor.loginButtomColor,
                   foregroundColor: Colors.white,

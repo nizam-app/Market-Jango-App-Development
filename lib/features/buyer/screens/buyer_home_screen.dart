@@ -94,23 +94,26 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                     onTapCategory: (cat) =>
                         goToCategoriesProductPage(context, cat.id, cat.name),
                   ),
-                  ref.watch(topProductProvider).when(
-                    data: (products) {
-                      if (products.isEmpty) return const SizedBox.shrink();
-                      return Column(
-                        children: [
-                          SeeMoreButton(
-                            name: ref.t(BKeys.topProducts),
-                            seeMoreAction: () {},
-                            isSeeMore: false,
-                          ),
-                          CustomTopProducts(),
-                        ],
-                      );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (err, _) => _buildErrorSection(ref, 'Top Products', err),
-                  ),
+                  ref
+                      .watch(topProductProvider)
+                      .when(
+                        data: (products) {
+                          if (products.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            children: [
+                              SeeMoreButton(
+                                name: ref.t(BKeys.topProducts),
+                                seeMoreAction: () {},
+                                isSeeMore: false,
+                              ),
+                              CustomTopProducts(),
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (err, _) =>
+                            _buildErrorSection(ref, 'Top Products', err),
+                      ),
                   newItems.when(
                     data: (data) {
                       if (data == null || data.data.data.isEmpty) {
@@ -120,14 +123,16 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                         children: [
                           SeeMoreButton(
                             name: ref.t(BKeys.newItems),
-                            seeMoreAction: () => goToNewItemsPage(ref, context, data),
+                            seeMoreAction: () =>
+                                goToNewItemsPage(ref, context, data),
                           ),
                           CustomNewItemsShow(),
                         ],
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (err, _) => _buildErrorSection(ref, 'New Items', err),
+                    error: (err, _) =>
+                        _buildErrorSection(ref, 'New Items', err),
                   ),
                   justForYou.when(
                     data: (data) {
@@ -146,7 +151,8 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (err, _) => _buildErrorSection(ref, 'Just For You', err),
+                    error: (err, _) =>
+                        _buildErrorSection(ref, 'Just For You', err),
                   ),
                 ],
               ),
@@ -168,10 +174,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   ) {
     context.pushNamed(
       SeeJustForYouScreen.routeName,
-      extra: {
-        'screenName': 'New Items',
-        'url': BuyerAPIController.new_items,
-      },
+      extra: {'screenName': 'New Items', 'url': BuyerAPIController.new_items},
     );
   }
 

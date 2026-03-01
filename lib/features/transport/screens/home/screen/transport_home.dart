@@ -282,7 +282,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -290,6 +289,7 @@ import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_notification_icon.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/transport_booking_confirm_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 
@@ -304,33 +304,114 @@ class TransportHomeScreen extends ConsumerStatefulWidget {
   ConsumerState<TransportHomeScreen> createState() => _TransportHomeScreenState();
 }
 
+/// Transport type options for shipping (motorcycle / car / air / water)
+enum TransportType {
+  motorcycle,
+  car,
+  air,
+  water,
+}
+
 class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _pickupController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
+
   String _searchQuery = '';
+  TransportType? _selectedTransportType;
+  bool _hasSearched = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _pickupController.dispose();
+    _destinationController.dispose();
     super.dispose();
   }
 
-  List<Driver> _filterDrivers(List<Driver> drivers, String query) {
-    if (query.isEmpty) return drivers;
-    
-    final lowerQuery = query.toLowerCase();
-    return drivers.where((driver) {
-      final name = driver.user.name.toLowerCase();
-      final phone = driver.user.phone.toLowerCase();
-      final carName = driver.carName.toLowerCase();
-      final location = driver.location.toLowerCase();
-      final carModel = driver.carModel.toLowerCase();
-      
-      return name.contains(lowerQuery) ||
-          phone.contains(lowerQuery) ||
-          carName.contains(lowerQuery) ||
-          location.contains(lowerQuery) ||
-          carModel.contains(lowerQuery);
-    }).toList();
+  bool _driverMatchesTransportType(Driver driver, TransportType type) {
+    final carName = driver.carName.toLowerCase();
+    final carModel = driver.carModel.toLowerCase();
+    final combined = '$carName $carModel';
+    switch (type) {
+      case TransportType.motorcycle:
+        return combined.contains('motorcycle') ||
+            combined.contains('bike') ||
+            combined.contains('moto');
+      case TransportType.car:
+        return combined.contains('car') ||
+            combined.contains('vehicle') ||
+            combined.contains('sedan') ||
+            combined.contains('suv') ||
+            combined.contains('truck');
+      case TransportType.air:
+        return combined.contains('air') ||
+            combined.contains('plane') ||
+            combined.contains('flight') ||
+            combined.contains('cargo');
+      case TransportType.water:
+        return combined.contains('water') ||
+            combined.contains('ship') ||
+            combined.contains('boat') ||
+            combined.contains('sea');
+    }
+  }
+
+  String _transportTypeLabel(WidgetRef ref, TransportType type) {
+    switch (type) {
+      case TransportType.motorcycle:
+        return ref.t(BKeys.transport_type_motorcycle);
+      case TransportType.car:
+        return ref.t(BKeys.transport_type_car);
+      case TransportType.air:
+        return ref.t(BKeys.transport_type_air);
+      case TransportType.water:
+        return ref.t(BKeys.transport_type_water);
+    }
+  }
+
+  List<Driver> _filterDrivers(
+    List<Driver> drivers,
+    String query, {
+    String? pickup,
+    String? destination,
+    TransportType? transportType,
+    bool applySearchFilters = false,
+  }) {
+    var result = drivers;
+
+    if (applySearchFilters) {
+      if (transportType != null) {
+        result = result.where((d) => _driverMatchesTransportType(d, transportType)).toList();
+      }
+      final pickupTrim = pickup?.trim() ?? '';
+      if (pickupTrim.isNotEmpty) {
+        result = result.where((d) =>
+            d.location.toLowerCase().contains(pickupTrim.toLowerCase())).toList();
+      }
+      final destTrim = destination?.trim() ?? '';
+      if (destTrim.isNotEmpty) {
+        result = result.where((d) =>
+            d.location.toLowerCase().contains(destTrim.toLowerCase())).toList();
+      }
+    }
+
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      result = result.where((driver) {
+        final name = driver.user.name.toLowerCase();
+        final phone = driver.user.phone.toLowerCase();
+        final carName = driver.carName.toLowerCase();
+        final location = driver.location.toLowerCase();
+        final carModel = driver.carModel.toLowerCase();
+        return name.contains(lowerQuery) ||
+            phone.contains(lowerQuery) ||
+            carName.contains(lowerQuery) ||
+            location.contains(lowerQuery) ||
+            carModel.contains(lowerQuery);
+      }).toList();
+    }
+    return result;
   }
 
   @override
@@ -364,7 +445,7 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          data.name,
+                          '${ref.t(BKeys.hello)}, ${data.name}',
                           style: TextStyle(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w600,
@@ -396,49 +477,98 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                   ref.t(BKeys.find_your_driver),
                   style: TextStyle(fontSize: 10.sp),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 12.h),
 
-                /// Search Fields
+                /// Search by vendor name (upore / above)
+                _softField(
+                  hint: ref.t(BKeys.search_by_vendor_name),
+                  icon: Icons.search,
+                  bg: Colors.white,
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 16.h),
+
+                /// Transport / Shipping type select (nica / below)
+                Text(
+                  ref.t(BKeys.transport_type),
+                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF6B7280)),
+                ),
+                SizedBox(height: 8.h),
+                DropdownButtonFormField<TransportType?>(
+                  value: _selectedTransportType,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    filled: true,
+                    fillColor: AllColor.grey300,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.r),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18.r),
+                      borderSide: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
+                    ),
+                  ),
+                  hint: Text(
+                    ref.t(BKeys.transport_type),
+                    style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9BA0A6)),
+                  ),
+                  items: TransportType.values.map((type) {
+                    final label = _transportTypeLabel(ref, type);
+                    return DropdownMenuItem<TransportType?>(
+                      value: type,
+                      child: Text(label, style: TextStyle(fontSize: 14.sp)),
+                    );
+                  }).toList(),
+                  onChanged: (TransportType? value) {
+                    setState(() {
+                      _selectedTransportType = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 16.h),
+
+                /// Pickup, Destination
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Search (white bg)
-                    _softField(
-                      //"Search by vendor name"
-                      hint: ref.t(BKeys.search_by_vendor_name),
-                      icon: Icons.search,
-                      bg: Colors.white, // image-2 এ সার্চটা সাদা
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                    ),
-                     SizedBox(height: 12.h),
-
-                    // Or divider (পাতলা গ্রে)
+                    // Or divider
                     Row(
                       children: [
                         Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          child: Text("Or", style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
+                          child: Text(ref.t(BKeys.or), style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
                         ),
                         Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
                       ],
                     ),
                     SizedBox(height: 12.h),
 
-                    // Pickup (light grey bg)
+                    // Shipping From (Pickup)
                     _softField(
                       hint: ref.t(BKeys.pick_up_location),
                       icon: Icons.location_on_outlined,
-                      bg:  AllColor.grey300, // হালকা ধূসর
+                      bg: AllColor.grey300,
+                      controller: _pickupController,
+                      onChanged: (_) => setState(() {}),
                     ),
                     SizedBox(height: 10.h),
 
-            
+                    // Shipping To (Destination)
+                    _softField(
+                      hint: ref.t(BKeys.destination),
+                      icon: Icons.flag_outlined,
+                      bg: AllColor.grey300,
+                      controller: _destinationController,
+                      onChanged: (_) => setState(() {}),
+                    ),
                   ],
                 ),
 
@@ -453,7 +583,11 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _hasSearched = true;
+                      });
+                    },
                     child: Text(
                       ref.t(BKeys.search),
                       style: TextStyle(fontSize: 16.sp, color: AllColor.white),
@@ -503,9 +637,16 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                   data: (resp) {
                     final page = resp?.data;
                     final items = page?.data ?? <Driver>[];
-                    
-                    // Filter drivers based on search query
-                    final filteredItems = _filterDrivers(items, _searchQuery);
+                    final pickup = _pickupController.text.trim();
+                    final destination = _destinationController.text.trim();
+                    final filteredItems = _filterDrivers(
+                      items,
+                      _searchQuery,
+                      pickup: pickup.isEmpty ? null : pickup,
+                      destination: destination.isEmpty ? null : destination,
+                      transportType: _selectedTransportType,
+                      applySearchFilters: _hasSearched,
+                    );
 
                     if (filteredItems.isEmpty) {
                       return Padding(
@@ -521,12 +662,23 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                       children: homeItems
                           .map(
                             (d) => _DriverCard(
+                              key: ValueKey(d.id),
                               driver: d,
-                              images: (d.images is List)
-                                  ? (d.images)
-                                        .whereType<String>()
-                                        .toList()
-                                  : <String>[],
+                              images: d.images.whereType<String>().toList(),
+                              onSelect: () {
+                                context.push(
+                                  TransportBookingConfirmScreen.routeName,
+                                  extra: TransportBookingConfirmArgs(
+                                    driver: d,
+                                    pickup: _pickupController.text.trim().isEmpty
+                                        ? null
+                                        : _pickupController.text.trim(),
+                                    destination: _destinationController.text.trim().isEmpty
+                                        ? null
+                                        : _destinationController.text.trim(),
+                                  ),
+                                );
+                              },
                             ),
                           )
                           .toList(),
@@ -582,18 +734,23 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
   }
 }
 
-/// Driver Card
+/// Driver Card — redesigned for clear hierarchy and primary "Select" action
 class _DriverCard extends ConsumerWidget {
-  const _DriverCard({required this.driver, required this.images});
+  const _DriverCard({
+    super.key,
+    required this.driver,
+    required this.images,
+    required this.onSelect,
+  });
 
   final Driver driver;
   final List<String> images;
+  final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = driver.user;
 
-    // Safe fallbacks
     final avatarUrl = (user.image?.isNotEmpty == true)
         ? user.image!
         : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxfenNzfIFlwE5dd7aduVOvGR05Qqz7EDi-Q&s";
@@ -602,100 +759,116 @@ class _DriverCard extends ConsumerWidget {
         ? images.first
         : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxfenNzfIFlwE5dd7aduVOvGR05Qqz7EDi-Q&s";
 
-    return Card(
-      margin: EdgeInsets.only(bottom: 16.h),
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      child: Padding(
-        padding: EdgeInsets.all(12.w),
+    return Container(
+      margin: EdgeInsets.only(bottom: 20.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Driver Info
-            Row(
-              children: [
-                InkWell(
-                  onTap: () {
-                    Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: user.id);
-                  },
-                  child: ClipOval(
-                    child: FirstTimeShimmerImage(
-                      imageUrl: avatarUrl,
-                      width: 40.r,
-                      height: 40.r,
-                      fit: BoxFit.cover,
+            /// Top: Driver info + price
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      context.push(DriverDetailsScreen.routeName, extra: user.id);
+                    },
+                    borderRadius: BorderRadius.circular(28.r),
+                    child: ClipOval(
+                      child: FirstTimeShimmerImage(
+                        imageUrl: avatarUrl,
+                        width: 48.r,
+                        height: 48.r,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 10.w),
-                InkWell(
-                  onTap: () {
-                    Logger().i(user.id);
-                    context.push(DriverDetailsScreen.routeName, extra: user.id);
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
-                        ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        context.push(DriverDetailsScreen.routeName, extra: user.id);
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16.sp,
+                              color: const Color(0xFF1F2937),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            user.phone,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        user.phone,
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 6.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    "\$${driver.price}/km",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12.sp,
                     ),
                   ),
-                ),
-              ],
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: AllColor.blue500.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Text(
+                      "\$${driver.price}/km",
+                      style: TextStyle(
+                        color: AllColor.blue500,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 10.h),
 
-            /// Car Image (safe)
-            Center(
+            /// Vehicle image
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                child: FirstTimeShimmerImage(
-                  imageUrl: carUrl,
-                  height: 120.h,
-                  fit: BoxFit.cover,
+                child: SizedBox(
+                  height: 110.h,
+                  width: double.infinity,
+                  child: FirstTimeShimmerImage(
+                    imageUrl: carUrl,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
 
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(30.r),
-              ),
+            /// Vehicle & location
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Icon(Icons.directions_car_outlined, size: 18.sp, color: const Color(0xFF6B7280)),
+                  SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
                       "${driver.carName} • ${driver.location}",
@@ -703,34 +876,61 @@ class _DriverCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: const Color(0xFF374151),
                       ),
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      Logger().e(user.id);
-                      context.push(
-                        DriverDetailsScreen.routeName,
-                        extra: user.id,
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(30.r),
+                ],
+              ),
+            ),
+            SizedBox(height: 16.h),
+
+            /// Actions: See Details (secondary) | Select (primary)
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        context.push(DriverDetailsScreen.routeName, extra: user.id);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        side: BorderSide(color: const Color(0xFFE5E7EB)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        foregroundColor: const Color(0xFF374151),
                       ),
                       child: Text(
-                        // "See Details",
                         ref.t(BKeys.see_details),
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.sp,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: onSelect,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        backgroundColor: AllColor.blue500,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text(
+                        ref.t(BKeys.select_driver),
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),

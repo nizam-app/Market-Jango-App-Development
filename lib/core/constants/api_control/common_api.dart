@@ -27,6 +27,9 @@ class CommonAPIController {
       '$_base_api/affiliate/vendor-links/$vendorId';
   static String affiliateGenerateReferralLink =
       '$_base_api/affiliate/generate-referral-link';
+  /// GET influencer referral links (vendor dashboard)
+  static String get influencerReferralLinks =>
+      '$_base_api/vendor-dashboard/influencer-referral-links';
 
   /// Ranking (Buyer, Vendor, Driver)
   static String rankingVendors = '$_base_api/ranking/vendors';

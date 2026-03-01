@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -139,10 +138,7 @@ class VendorListSection extends ConsumerWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: {
-                          'vendorId': v.id,
-                          'userId': v.userId,
-                        },
+                        extra: {'vendorId': v.id, 'userId': v.userId},
                       );
                     },
                     child: CircleAvatar(
@@ -203,7 +199,7 @@ class VendorListSection extends ConsumerWidget {
   String _initials(String s) {
     final trimmed = s.trim();
     if (trimmed.isEmpty) return '??';
-    
+
     final parts = trimmed.split(RegExp(r'\s+'));
     if (parts.length == 1) {
       // Single word: show first 2 letters
@@ -215,7 +211,9 @@ class VendorListSection extends ConsumerWidget {
     }
     // Multiple words: show first letter of first two words
     return (parts[0].isEmpty ? '' : parts[0][0].toUpperCase()) +
-        (parts.length > 1 && parts[1].isNotEmpty ? parts[1][0].toUpperCase() : '');
+        (parts.length > 1 && parts[1].isNotEmpty
+            ? parts[1][0].toUpperCase()
+            : '');
   }
 }
 
@@ -243,7 +241,6 @@ class ProductGridSection extends ConsumerWidget {
           itemBuilder: (context, index) {
             final v = items[index];
             final p = v.product!;
-            Logger().e(v.vendorId);
 
             return ProductCard(
               title: p.name, // product name
@@ -302,10 +299,7 @@ class ProductCard extends StatelessWidget {
       onTap: () {
         context.push(
           BuyerVendorProfileScreen.routeName,
-          extra: {
-            'vendorId': vendorId,
-            'userId': userId ?? 0,
-          },
+          extra: {'vendorId': vendorId, 'userId': userId ?? 0},
         );
       },
       child: Container(
@@ -368,10 +362,7 @@ class ProductCard extends StatelessWidget {
                     onTap: () {
                       context.push(
                         BuyerVendorProfileScreen.routeName,
-                        extra: {
-                          'vendorId': vendorId,
-                          'userId': userId ?? 0,
-                        },
+                        extra: {'vendorId': vendorId, 'userId': userId ?? 0},
                       );
                     },
                     child: Row(
@@ -389,7 +380,10 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              storeName.substring(0, math.min(10, storeName.length)),
+                              storeName.substring(
+                                0,
+                                math.min(10, storeName.length),
+                              ),
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
@@ -430,10 +424,7 @@ class VendorSuggestionTile extends StatelessWidget {
       onTap: () {
         context.push(
           BuyerVendorProfileScreen.routeName,
-          extra: {
-            'vendorId': v.vendorId,
-            'userId': v.userId,
-          },
+          extra: {'vendorId': v.vendorId, 'userId': v.userId},
         );
       },
       child: ListTile(
@@ -477,7 +468,7 @@ class VendorSuggestionTile extends StatelessWidget {
   String _initials(String s) {
     final trimmed = s.trim();
     if (trimmed.isEmpty) return '??';
-    
+
     final parts = trimmed.split(RegExp(r'\s+'));
     if (parts.length == 1) {
       // Single word: show first 2 letters
@@ -489,6 +480,8 @@ class VendorSuggestionTile extends StatelessWidget {
     }
     // Multiple words: show first letter of first two words
     return (parts[0].isEmpty ? '' : parts[0][0].toUpperCase()) +
-        (parts.length > 1 && parts[1].isNotEmpty ? parts[1][0].toUpperCase() : '');
+        (parts.length > 1 && parts[1].isNotEmpty
+            ? parts[1][0].toUpperCase()
+            : '');
   }
 }

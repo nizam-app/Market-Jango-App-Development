@@ -21,8 +21,7 @@ class VendorShipmentsScreen extends ConsumerWidget {
     final notifier = ref.read(vendorShipmentsProvider.notifier);
 
     return async.when(
-      loading: () =>
-          const Scaffold(body: Center(child: Text('Loading...'))),
+      loading: () => const Scaffold(body: Center(child: Text('Loading...'))),
       error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
       data: (state) {
         final items = state.filtered;
@@ -206,8 +205,7 @@ class _ShipmentCard extends StatelessWidget {
     Widget pill;
     switch (data.status) {
       case TrackingOrderStatus.pending:
-        pill = _StatusPill(
-            'Pending', AllColor.loginButtomColor, solid: false);
+        pill = _StatusPill('Pending', AllColor.loginButtomColor, solid: false);
         break;
       case TrackingOrderStatus.assigned:
         pill = const _StatusPill('Assigned', Colors.orange, solid: false);

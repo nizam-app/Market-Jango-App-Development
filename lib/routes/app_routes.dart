@@ -50,6 +50,7 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/transport_booking_confirm_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
@@ -455,6 +456,14 @@ final GoRouter router = GoRouter(
       name: 'driverDetails',
       builder: (context, state) {
         return DriverDetailsScreen(driverId: state.extra as int);
+      },
+    ),
+    GoRoute(
+      path: TransportBookingConfirmScreen.routeName,
+      name: 'transportBookingConfirm',
+      builder: (context, state) {
+        final args = state.extra as TransportBookingConfirmArgs;
+        return TransportBookingConfirmScreen(args: args);
       },
     ),
 

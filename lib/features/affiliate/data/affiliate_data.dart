@@ -96,6 +96,60 @@ class AffiliateStatisticsNotifier
 }
 
 // ---------------------------------------------------------------------------
+// GET influencer referral links: /api/vendor-dashboard/influencer-referral-links
+// ---------------------------------------------------------------------------
+
+final influencerReferralLinksProvider =
+    AsyncNotifierProvider<InfluencerReferralLinksNotifier, List<InfluencerReferralLinkModel>>(
+      InfluencerReferralLinksNotifier.new,
+    );
+
+class InfluencerReferralLinksNotifier extends AsyncNotifier<List<InfluencerReferralLinkModel>> {
+  @override
+  Future<List<InfluencerReferralLinkModel>> build() async => _fetch();
+
+  Future<List<InfluencerReferralLinkModel>> _fetch() async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.influencerReferralLinks);
+    final res = await http.get(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg = map?['message']?.toString() ?? 'Failed to load influencer links';
+      throw Exception(msg);
+    }
+
+    final body = jsonDecode(res.body);
+    List<dynamic> list = [];
+    if (body is List) {
+      list = body;
+    } else if (body is Map<String, dynamic>) {
+      final data = body['data'];
+      if (data is List) {
+        list = data;
+      } else if (data is Map<String, dynamic> && data['items'] is List) {
+        list = data['items'] as List;
+      }
+    }
+
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(InfluencerReferralLinkModel.fromJson)
+        .toList();
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _fetch());
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Get link details: GET /api/affiliate/link/{id}
 // ---------------------------------------------------------------------------
 

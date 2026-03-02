@@ -11,7 +11,6 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
@@ -220,15 +219,33 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   },
                 ),
 
+                // Just For You – no extra gap, title tight to grid
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.w),
+                  padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 0.h),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      SeeMoreButton(
-                        name: ref.t(BKeys.justForYou),
-                        seeMoreAction: null,
-                        isSeeMore: false,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 18.r,
+                            color: AllColor.orange500,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            ref.t(BKeys.justForYou),
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AllColor.black,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ],
                       ),
+                    
                       JustForYouProduct(),
                     ],
                   ),
@@ -643,35 +660,34 @@ class ProductTitleAndDescription extends StatelessWidget {
                 return discount > 0 ? discount : 0;
               }
 
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+              return Wrap(
+                spacing: 10.w,
+                runSpacing: 8.h,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
                     '\$${formatPrice(sellPrice)}',
                     style: TextStyle(
-                      fontSize: 32.sp,
+                      fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
                       color: AllColor.orange,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.3,
                       height: 1.2,
                     ),
                   ),
-                  SizedBox(width: 12.w),
                   if (hasDiscount) ...[
                     Text(
                       '\$${formatPrice(regularPrice)}',
                       style: TextStyle(
-                        fontSize: 18.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
                         color: AllColor.grey500,
                         decoration: TextDecoration.lineThrough,
                         decorationThickness: 2,
                         decorationColor: AllColor.grey500,
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    SizedBox(width: 8.w),
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 8.w,
@@ -688,7 +704,7 @@ class ProductTitleAndDescription extends StatelessWidget {
                       child: Text(
                         '-${calculateDiscount()}%',
                         style: TextStyle(
-                          fontSize: 13.sp,
+                          fontSize: 12.sp,
                           color: AllColor.green,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1034,133 +1050,205 @@ class ProductMaterialAndStoreInfo extends ConsumerWidget {
                 .map((m) => _MaterialPill(text: m.text))
                 .toList(),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 10.h),
 
-          Row(
-            children: [
-              Stack(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      context.push(
-                        BuyerVendorProfileScreen.routeName,
-                        extra: {'vendorId': vendorId, 'userId': userId},
-                      );
-                    },
-                    child: ClipOval(
-                      child: FirstTimeShimmerImage(
-                        imageUrl: image,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
+          // Vendor card
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            elevation: 0,
+            child: InkWell(
+              onTap: () {
+                context.push(
+                  BuyerVendorProfileScreen.routeName,
+                  extra: {'vendorId': vendorId, 'userId': userId},
+                );
+              },
+              borderRadius: BorderRadius.circular(16.r),
+              child: Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: Colors.grey.shade200, width: 1),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    child: Container(
-                      width: 16.w,
-                      height: 16.h,
-                      decoration: BoxDecoration(
-                        color: isOnline ? Colors.green : Colors.grey,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AllColor.white, width: 2.w),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(width: 20.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      context.push(
-                        BuyerVendorProfileScreen.routeName,
-                        extra: {'vendorId': vendorId, 'userId': userId},
-                      );
-                    },
-                    child: Text(
-                      storeName,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AllColor.black,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Row(
-                    children: [
-                      Icon(Icons.star, size: 14.r, color: AllColor.orange),
-                      SizedBox(width: 4.w),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AllColor.black,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Profile image with ring and online indicator
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(3.w),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isOnline
+                                ? Colors.green.shade400
+                                : Colors.grey.shade400,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                            padding: EdgeInsets.all(2.w),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: ClipOval(
+                              child: FirstTimeShimmerImage(
+                                imageUrl: image,
+                                width: 52.r,
+                                height: 52.r,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                         ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 14.w,
+                            height: 14.h,
+                            decoration: BoxDecoration(
+                              color: isOnline
+                                  ? Colors.green.shade500
+                                  : Colors.grey.shade500,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2.w,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: 14.w),
+                    // Name, rating, reviews
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            storeName,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AllColor.black,
+                              letterSpacing: -0.2,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          SizedBox(height: 6.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                size: 16.r,
+                                color: Colors.amber.shade600,
+                              ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                rating.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: AllColor.black,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              InkWell(
+                                onTap: () {
+                                  context.push(
+                                    ReviewScreen.routeName,
+                                    extra: vendorId,
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(10.r),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w,
+                                    vertical: 4.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                  child: Text(
+                                    '$reviewCount reviews',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 6.w),
-                      InkWell(
-                        onTap: () {
-                          context.push(ReviewScreen.routeName, extra: vendorId);
-                        },
+                    ),
+                    // Chat Now button
+                    Material(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: InkWell(
+                        onTap: onChatTap,
+                        borderRadius: BorderRadius.circular(12.r),
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 6.w,
-                            vertical: 2.h,
+                            horizontal: 14.w,
+                            vertical: 10.h,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6.r),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: AllColor.black,
-                              width: 0.8,
+                              color: Colors.blue.shade200,
+                              width: 1,
                             ),
                           ),
-                          child: Text(
-                            '$reviewCount reviews',
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              color: AllColor.black,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                size: 18.r,
+                                color: Colors.blue.shade700,
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                ref.t(BKeys.chatNow),
+                                style: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              const Spacer(),
-              InkWell(
-                onTap: onChatTap,
-                borderRadius: BorderRadius.circular(6.r),
-                child: Padding(
-                  padding: EdgeInsets.all(4.r),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.chat_bubble_outline,
-                        size: 16.r,
-                        color: AllColor.blue,
-                      ),
-                      SizedBox(width: 5.w),
-                      Text(
-                        ref.t(BKeys.chatNow),
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),

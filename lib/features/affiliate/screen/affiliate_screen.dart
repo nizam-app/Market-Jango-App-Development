@@ -17,14 +17,14 @@ class AffiliateScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final linksAsync = ref.watch(affiliateLinksProvider);
     final statsAsync = ref.watch(affiliateStatisticsProvider);
-    final linksNotifier = ref.read(affiliateLinksProvider.notifier);
+    final influencerLinksAsync = ref.watch(influencerReferralLinksProvider);
     final statsNotifier = ref.read(affiliateStatisticsProvider.notifier);
+    final influencerNotifier = ref.read(influencerReferralLinksProvider.notifier);
 
     Future<void> onRefresh() async {
-      await linksNotifier.refresh();
       await statsNotifier.refresh();
+      await influencerNotifier.refresh();
     }
 
     return Scaffold(
@@ -40,7 +40,7 @@ class AffiliateScreen extends ConsumerWidget {
           ),
         ),
         title: Text(
-          'Affiliate Links',
+          'Influencer links',
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
@@ -51,94 +51,68 @@ class AffiliateScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh,
-        child: linksAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => _ErrorSection(
-            message: e.toString().replaceFirst('Exception: ', ''),
-            onRetry: () {
-              linksNotifier.refresh();
-              statsNotifier.refresh();
-            },
-          ),
-          data: (links) {
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  statsAsync.when(
-                    data: (stats) {
-                      if (stats == null) return const SizedBox.shrink();
-                      return _StatsCards(statistics: stats);
-                    },
-                    loading: () => SizedBox(height: 20.h),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
-                  SizedBox(height: 24.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Your links',
-                        style: TextStyle(
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AllColor.black,
-                        ),
-                      ),
-                      Text(
-                        '${links.length} link${links.length == 1 ? '' : 's'}',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: AllColor.grey500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12.h),
-                  if (links.isEmpty)
-                    _EmptyState(onAdd: () => _openAddSheet(context, ref)),
-                  if (links.isNotEmpty)
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: links.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                      itemBuilder: (context, index) {
-                        final link = links[index];
-                        return _LinkCard(
-                          link: link,
-                          baseUrl: _baseUrl(),
-                          onCopy: () => _copyLink(context, link),
-                          onEdit: () => _openEditSheet(context, ref, link, linksNotifier),
-                          onDelete: () => _confirmDelete(
-                            context,
-                            ref,
-                            link,
-                            linksNotifier,
-                            statsNotifier,
-                          ),
-                        );
-                      },
-                    ),
-                  SizedBox(height: 100.h),
-                ],
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              statsAsync.when(
+                data: (stats) {
+                  if (stats == null) return const SizedBox.shrink();
+                  return _StatsCards(statistics: stats);
+                },
+                loading: () => SizedBox(height: 20.h),
+                error: (_, __) => const SizedBox.shrink(),
               ),
-            );
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddSheet(context, ref),
-        backgroundColor: AllColor.loginButtomColor,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'New link',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 14.sp,
+              SizedBox(height: 24.h),
+              Text(
+                'Influencer links',
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AllColor.black,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              influencerLinksAsync.when(
+                loading: () => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, _) => _ErrorSection(
+                  message: e.toString().replaceFirst('Exception: ', ''),
+                  onRetry: () {
+                    influencerNotifier.refresh();
+                    statsNotifier.refresh();
+                  },
+                ),
+                data: (influencerList) {
+                  if (influencerList.isEmpty) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.h),
+                      child: Center(
+                        child: Text(
+                          'No influencer links yet.',
+                          style: TextStyle(fontSize: 14.sp, color: AllColor.grey500),
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: influencerList.length,
+                    separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                    itemBuilder: (context, index) {
+                      final item = influencerList[index];
+                      return _InfluencerLinkCard(item: item);
+                    },
+                  );
+                },
+              ),
+              SizedBox(height: 100.h),
+            ],
           ),
         ),
       ),
@@ -179,7 +153,16 @@ class AffiliateScreen extends ConsumerWidget {
     }
   }
 
-  void _openAddSheet(BuildContext context, WidgetRef ref) {
+  void _openAddSheet(BuildContext context, WidgetRef ref, List<AffiliateLinkModel> links) {
+    if (links.isNotEmpty) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Limit reached',
+        message: 'You can only create one link.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -623,6 +606,158 @@ class _LinkCard extends StatelessWidget {
   }
 }
 
+/// Card for one item from influencer-referral-links API (image + name + link + stats).
+class _InfluencerLinkCard extends StatelessWidget {
+  const _InfluencerLinkCard({required this.item});
+
+  final InfluencerReferralLinkModel item;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = item.image?.trim().isNotEmpty == true
+        ? item.image!
+        : null;
+
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AllColor.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: imageUrl != null
+                    ? Image.network(
+                        imageUrl,
+                        width: 52.r,
+                        height: 52.r,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholderAvatar(),
+                      )
+                    : _placeholderAvatar(),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.influencerName.isNotEmpty
+                          ? item.influencerName
+                          : 'Influencer',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AllColor.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (item.influencerEmail.isNotEmpty) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        item.influencerEmail,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AllColor.grey500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    SizedBox(height: 6.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: item.vendorApproved
+                            ? AllColor.green.withOpacity(0.15)
+                            : AllColor.grey200,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        item.vendorApproved ? 'Approved' : 'Pending',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          SelectableText(
+            item.referralLink,
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: AllColor.grey500,
+              fontFamily: 'monospace',
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              _MiniChip(icon: Icons.touch_app, label: '${item.clicks}'),
+              SizedBox(width: 12.w),
+              _MiniChip(icon: Icons.trending_up, label: '${item.conversions}'),
+              SizedBox(width: 12.w),
+              _MiniChip(
+                icon: Icons.attach_money,
+                label: item.totalEarnings.toStringAsFixed(0),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          TextButton.icon(
+            onPressed: () {
+              if (item.referralLink.isEmpty) return;
+              Clipboard.setData(ClipboardData(text: item.referralLink));
+              if (context.mounted) {
+                GlobalSnackbar.show(
+                  context,
+                  title: 'Copied',
+                  message: 'Influencer link copied',
+                  type: CustomSnackType.success,
+                );
+              }
+            },
+            icon: Icon(Icons.copy, size: 18.r),
+            label: const Text('Copy link'),
+            style: TextButton.styleFrom(
+              foregroundColor: AllColor.loginButtomColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholderAvatar() {
+    return Container(
+      width: 52.r,
+      height: 52.r,
+      color: AllColor.grey200,
+      child: Icon(Icons.person, size: 28.r, color: AllColor.grey500),
+    );
+  }
+}
+
 class _MiniChip extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -782,13 +917,22 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _destinationController = TextEditingController();
+  final _customRateController = TextEditingController();
+  final _cookieDurationController = TextEditingController();
+  final _expiresAtController = TextEditingController();
   bool _loading = false;
+  String _attributionModel = 'first_click';
+
+  static const List<String> _attributionOptions = ['first_click', 'last_click'];
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
     _destinationController.dispose();
+    _customRateController.dispose();
+    _cookieDurationController.dispose();
+    _expiresAtController.dispose();
     super.dispose();
   }
 
@@ -796,11 +940,31 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
     setState(() => _loading = true);
     try {
       final token = await ref.read(authTokenProvider.future);
+
+      double? customRate;
+      final customRateStr = _customRateController.text.trim();
+      if (customRateStr.isNotEmpty) {
+        customRate = double.tryParse(customRateStr);
+      }
+
+      int? cookieDurationDays;
+      final cookieStr = _cookieDurationController.text.trim();
+      if (cookieStr.isNotEmpty) {
+        cookieDurationDays = int.tryParse(cookieStr);
+      }
+
+      final expiresAtStr = _expiresAtController.text.trim();
+      final expiresAt = expiresAtStr.isEmpty ? null : expiresAtStr;
+
       final result = await affiliateGenerate(
         token,
         name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
         destinationUrl: _destinationController.text.trim().isEmpty ? null : _destinationController.text.trim(),
+        customRate: customRate,
+        cookieDurationDays: cookieDurationDays,
+        attributionModel: _attributionModel,
+        expiresAt: expiresAt,
       );
       if (mounted) {
         widget.onSaved();
@@ -860,33 +1024,35 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(height: 12.h),
-            Center(
-              child: Container(
-                width: 36.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AllColor.grey200,
-                  borderRadius: BorderRadius.circular(2.r),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 36.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AllColor.grey200,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 24.h),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: AllColor.loginButtomColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Icon(
-                    Icons.add_link_rounded,
+              SizedBox(height: 24.h),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: AllColor.loginButtomColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Icon(
+                      Icons.add_link_rounded,
                     size: 28.r,
                     color: AllColor.loginButtomColor,
                   ),
@@ -922,7 +1088,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
             Text(
               'Link details',
               style: TextStyle(
-                fontSize: 13.sp,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
                 color: AllColor.grey500,
               ),
@@ -933,7 +1099,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               style: TextStyle(fontSize: 15.sp),
               decoration: InputDecoration(
                 hintText: 'e.g. Summer campaign',
-                labelText: 'Name (optional)',
+                labelText: 'Name',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 prefixIcon: Icon(Icons.label_outline_rounded, size: 22.r, color: AllColor.grey500),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
@@ -959,7 +1126,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               style: TextStyle(fontSize: 15.sp),
               decoration: InputDecoration(
                 hintText: 'Where or how you’ll use this link',
-                labelText: 'Description (optional)',
+                labelText: 'Description',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 alignLabelWithHint: true,
                 prefixIcon: Icon(Icons.description_outlined, size: 22.r, color: AllColor.grey500),
                 filled: true,
@@ -986,7 +1154,8 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               keyboardType: TextInputType.url,
               decoration: InputDecoration(
                 hintText: 'https://example.com/page',
-                labelText: 'Destination URL (optional)',
+                labelText: 'Destination URL',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
                 prefixIcon: Icon(Icons.link_rounded, size: 22.r, color: AllColor.grey500),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
@@ -1003,6 +1172,151 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
                   borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 28.h),
+            Text(
+              'Tracking & settings',
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.grey500,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            TextField(
+              controller: _customRateController,
+              style: TextStyle(fontSize: 15.sp),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                hintText: 'e.g. 10',
+                labelText: 'Custom rate %',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.percent_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            TextField(
+              controller: _cookieDurationController,
+              style: TextStyle(fontSize: 15.sp),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'e.g. 30',
+                labelText: 'Cookie duration (days)',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.cookie_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            DropdownButtonFormField<String>(
+              value: _attributionModel,
+              decoration: InputDecoration(
+                labelText: 'Attribution model',
+                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                prefixIcon: Icon(Icons.touch_app_rounded, size: 22.r, color: AllColor.grey500),
+                filled: true,
+                fillColor: AllColor.grey100.withOpacity(0.6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              ),
+              items: _attributionOptions
+                  .map((String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value == 'first_click' ? 'First click' : 'Last click',
+                          style: TextStyle(fontSize: 15.sp),
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (String? value) {
+                if (value != null) setState(() => _attributionModel = value);
+              },
+            ),
+            SizedBox(height: 14.h),
+            InkWell(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now().add(const Duration(days: 365)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2030),
+                );
+                if (picked != null && mounted) {
+                  final y = picked.year;
+                  final m = picked.month.toString().padLeft(2, '0');
+                  final d = picked.day.toString().padLeft(2, '0');
+                  _expiresAtController.text = '$y-$m-$d';
+                }
+              },
+              borderRadius: BorderRadius.circular(14.r),
+              child: IgnorePointer(
+                child: TextField(
+                  controller: _expiresAtController,
+                  readOnly: true,
+                  style: TextStyle(fontSize: 15.sp),
+                  decoration: InputDecoration(
+                    hintText: 'Tap to pick date',
+                    labelText: 'Expires at',
+                    labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+                    prefixIcon: Icon(Icons.calendar_today_rounded, size: 22.r, color: AllColor.grey500),
+                    filled: true,
+                    fillColor: AllColor.grey100.withOpacity(0.6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 28.h),
@@ -1036,6 +1350,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
           ],
         ),
       ),
+    ),
     );
   }
 }

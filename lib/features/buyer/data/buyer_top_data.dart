@@ -21,40 +21,47 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
     try {
       final authStorage = AuthLocalStorage();
       final token = await authStorage.getToken();
+      final url = BuyerAPIController.top_products;
+      Logger().d('Top products: GET $url (token: ${token != null ? "yes" : "no"})');
 
       final res = await http.get(
-        Uri.parse(BuyerAPIController.top_products),
+        Uri.parse(url),
         headers: {
           if (token != null) 'token': token,
           'Accept': 'application/json',
         },
       );
 
+      Logger().d('Top products: status=${res.statusCode} bodyLen=${res.body.length}');
+
       if (res.statusCode != 200) {
-        Logger().e('Top products failed: ${res.statusCode} ${res.body}');
-        return []; // ❗ error holeo empty list
+        Logger().e('Top products failed: ${res.statusCode} body=${res.body.length > 200 ? res.body.substring(0, 200) + "..." : res.body}');
+        return [];
       }
 
       final body = res.body.trim();
       if (body.isEmpty || body == 'null' || body == '[]') {
+        Logger().w('Top products: empty body');
         return [];
       }
       final decoded = jsonDecode(body);
+      List<TopProduct> products;
       if (decoded is List) {
         if (decoded.isEmpty) return [];
-        return decoded
+        products = decoded
             .whereType<Map<String, dynamic>>()
             .map((e) => TopProduct.fromJson(e))
             .toList();
+      } else {
+        final parsed = TopProductsResponse.fromJson(
+          decoded as Map<String, dynamic>,
+        );
+        products = parsed.data.data;
       }
-      final parsed = TopProductsResponse.fromJson(
-        decoded as Map<String, dynamic>,
-      );
-      final products = parsed.data.data;
+      Logger().i('Top products: loaded ${products.length} items');
       return products;
     } catch (e, st) {
-      Logger().e('Top products error', error: e, stackTrace: st);
-      // ❗ kono exception holeo empty list
+      Logger().e('Top products parse error', error: e, stackTrace: st);
       return [];
     }
   }

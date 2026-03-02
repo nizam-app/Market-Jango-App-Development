@@ -33,11 +33,6 @@ import 'package:market_jango/features/buyer/widgets/custom_top_card.dart';
 import 'package:market_jango/features/buyer/widgets/home_product_title.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 
-import '../data/buyer_just_for_you_data.dart';
-import 'all_categori/screen/all_categori_screen.dart';
-import 'all_categori/screen/category_product_screen.dart';
-import 'filter/screen/buyer_filtering.dart';
-
 class BuyerHomeScreen extends ConsumerStatefulWidget {
   const BuyerHomeScreen({super.key});
   static const String routeName = '/buyerHomeScreen';
@@ -99,23 +94,26 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                     onTapCategory: (cat) =>
                         goToCategoriesProductPage(context, cat.id, cat.name),
                   ),
-                  ref.watch(topProductProvider).when(
-                    data: (products) {
-                      if (products.isEmpty) return const SizedBox.shrink();
-                      return Column(
-                        children: [
-                          SeeMoreButton(
-                            name: ref.t(BKeys.topProducts),
-                            seeMoreAction: () {},
-                            isSeeMore: false,
-                          ),
-                          CustomTopProducts(),
-                        ],
-                      );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
+                  ref
+                      .watch(topProductProvider)
+                      .when(
+                        data: (products) {
+                          if (products.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            children: [
+                              SeeMoreButton(
+                                name: ref.t(BKeys.topProducts),
+                                seeMoreAction: () {},
+                                isSeeMore: false,
+                              ),
+                              CustomTopProducts(),
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (err, _) =>
+                            _buildErrorSection(ref, 'Top Products', err),
+                      ),
                   newItems.when(
                     data: (data) {
                       if (data == null || data.data.data.isEmpty) {
@@ -125,14 +123,16 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                         children: [
                           SeeMoreButton(
                             name: ref.t(BKeys.newItems),
-                            seeMoreAction: () => goToNewItemsPage(ref, context, data),
+                            seeMoreAction: () =>
+                                goToNewItemsPage(ref, context, data),
                           ),
                           CustomNewItemsShow(),
                         ],
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (err, _) => const SizedBox.shrink(),
+                    error: (err, _) =>
+                        _buildErrorSection(ref, 'New Items', err),
                   ),
                   justForYou.when(
                     data: (data) {
@@ -151,7 +151,8 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
                       );
                     },
                     loading: () => const SizedBox.shrink(),
-                    error: (err, _) => const SizedBox.shrink(),
+                    error: (err, _) =>
+                        _buildErrorSection(ref, 'Just For You', err),
                   ),
                 ],
               ),
@@ -173,10 +174,7 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
   ) {
     context.pushNamed(
       SeeJustForYouScreen.routeName,
-      extra: {
-        'screenName': 'New Items',
-        'url': BuyerAPIController.new_items,
-      },
+      extra: {'screenName': 'New Items', 'url': BuyerAPIController.new_items},
     );
   }
 
@@ -196,6 +194,32 @@ class _BuyerHomeScreenState extends ConsumerState<BuyerHomeScreen> {
 
   void goToCategoriesProductPage(BuildContext context, int id, String name) {
     context.push(CategoryProductScreen.routeName, extra: id);
+  }
+
+  Widget _buildErrorSection(WidgetRef ref, String section, Object err) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red.shade700, size: 20.sp),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                '$section: ${err.toString()}',
+                style: TextStyle(fontSize: 12.sp, color: Colors.red.shade900),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

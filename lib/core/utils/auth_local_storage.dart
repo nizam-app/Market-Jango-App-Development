@@ -2,21 +2,21 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// AuthLocalStorage - handles authentication data persistence
-/// 
+///
 /// This class provides methods to save, retrieve, and clear authentication data.
 /// It handles both registration tokens and login tokens separately.
 /// It uses SharedPreferences internally to persist data.
 class AuthLocalStorage {
   // Login token (from login API) - this is the main token after full login
   static const String _loginTokenKey = 'auth_token';
-  
+
   // Registration token (from registration flow) - temporary token during registration
   static const String _registrationTokenKey = 'registration_token';
-  
+
   // User data stored after login
   static const String _userJsonKey = 'user_json';
   static const String _hasLoggedInKey = 'has_logged_in';
-  
+
   // Legacy keys (for backward compatibility)
   static const String _legacyUserIdKey = 'user_id';
   static const String _legacyUserTypeKey = 'user_type';
@@ -31,18 +31,18 @@ class AuthLocalStorage {
     await prefs.setString(_loginTokenKey, token);
     await prefs.setString(_userJsonKey, jsonEncode(userJson));
     await prefs.setBool(_hasLoggedInKey, true);
-    
+
     // Extract and save user_id and user_type for backward compatibility
     final userId = userJson['id']?.toString();
     final userType = userJson['user_type']?.toString();
-    
+
     if (userId != null) {
       await prefs.setString(_legacyUserIdKey, userId);
     }
     if (userType != null) {
       await prefs.setString(_legacyUserTypeKey, userType);
     }
-    
+
     // Clear registration token after successful login
     await prefs.remove(_registrationTokenKey);
   }
@@ -58,7 +58,8 @@ class AuthLocalStorage {
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     // Prefer login token over registration token
-    return prefs.getString(_loginTokenKey) ?? prefs.getString(_registrationTokenKey);
+    return prefs.getString(_loginTokenKey) ??
+        prefs.getString(_registrationTokenKey);
   }
 
   /// Get login token specifically (not registration token)
@@ -93,7 +94,7 @@ class AuthLocalStorage {
       final userId = userJson['id']?.toString();
       if (userId != null) return userId;
     }
-    
+
     // Fallback to legacy key
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_legacyUserIdKey);
@@ -107,7 +108,7 @@ class AuthLocalStorage {
       final userType = userJson['user_type']?.toString();
       if (userType != null) return userType.toLowerCase();
     }
-    
+
     // Fallback to legacy key
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_legacyUserTypeKey)?.toLowerCase();
@@ -143,4 +144,3 @@ class AuthLocalStorage {
     await prefs.remove(_registrationTokenKey);
   }
 }
-

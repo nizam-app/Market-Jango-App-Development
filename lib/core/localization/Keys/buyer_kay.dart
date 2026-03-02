@@ -228,14 +228,41 @@ class BKeys {
   static const String  my_bookings = 'my_bookings';
 
 // Transport item;
+  static const String  hello = 'hello';
   static const String  find_your_driver = 'find_your_driver';
   static const String  search_by_vendor_name = 'search_by_vendor_name';
   static const String  or = 'or';
-   static const String  failed_to_load_drivers = 'failed_to_load_drivers';
-   static const String  no_drivers_available = 'No_drivers_available';
+  static const String  transport_type_motorcycle = 'transport_type_motorcycle';
+  static const String  transport_type_car = 'transport_type_car';
+  static const String  transport_type_air = 'transport_type_air';
+  static const String  transport_type_water = 'transport_type_water';
+  static const String  transport_type = 'transport_type';
+  static const String  failed_to_load_drivers = 'failed_to_load_drivers';
+  static const String  no_drivers_available = 'No_drivers_available';
   static const String  assigned_driver = 'assigned_driver';
+  static const String  select_driver = 'select_driver';
 
-   static const String   customer_note= 'customer_note';
+  // Transport booking confirm (package + pay)
+  static const String  my_package_details = 'my_package_details';
+  static const String  length = 'length';
+  static const String  width = 'width';
+  static const String  height = 'height';
+  static const String  number_of_pieces = 'number_of_pieces';
+  static const String  weight_kg = 'weight_kg';
+  static const String  pickup_contact_details = 'pickup_contact_details';
+  static const String  building_shop_number_name = 'building_shop_number_name';
+  static const String  phone_number = 'phone_number';
+  static const String  remove = 'remove';
+  static const String  add_packages = 'add_packages';
+  static const String  totals = 'totals';
+  static const String  total_packages = 'total_packages';
+  static const String  total_weight_kg = 'total_weight_kg';
+  static const String  total_value_of_goods = 'total_value_of_goods';
+  static const String  currency = 'currency';
+  static const String  amount = 'amount';
+  static const String  message_to_driver = 'message_to_driver';
+
+  static const String   customer_note= 'customer_note';
    static const String  special_instruction = 'special_instruction';
   static const String  driver_information = 'driver_information ';
 

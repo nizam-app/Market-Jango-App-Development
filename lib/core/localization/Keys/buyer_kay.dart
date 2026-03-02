@@ -213,88 +213,86 @@ class BKeys {
   static const String delivered_today = 'delivered_today';
   static const String see_details = 'see_details';
   static const String track_order = 'track_order';
-  static const String  bottomName = 'bottomName';
+  static const String bottomName = 'bottomName';
 
   //New item
-  static const String  pickup_address = 'pickup_address';
-  static const String  drop_off_address = 'drop_off_address =';
-  static const String  customer_details = 'customer_details';
-  static const String  message_now = 'message_now';
-  static const String  start_delivery = 'start_dlivery';
- static const String  pick_up_location = 'pick_up_location';
-  static const String  destination = 'destination';
-  static const String  delivered = 'delivered';
-  static const String  enter_your_current_location = 'enter_your_current_location';
-  static const String  my_bookings = 'my_bookings';
+  static const String pickup_address = 'pickup_address';
+  static const String drop_off_address = 'drop_off_address =';
+  static const String customer_details = 'customer_details';
+  static const String message_now = 'message_now';
+  static const String start_delivery = 'start_dlivery';
+  static const String pick_up_location = 'pick_up_location';
+  static const String destination = 'destination';
+  static const String delivered = 'delivered';
+  static const String enter_your_current_location =
+      'enter_your_current_location';
+  static const String my_bookings = 'my_bookings';
+  static const String shipment_list = 'shipment_list';
 
-// Transport item;
-  static const String  hello = 'hello';
-  static const String  find_your_driver = 'find_your_driver';
-  static const String  search_by_vendor_name = 'search_by_vendor_name';
-  static const String  or = 'or';
-  static const String  transport_type_motorcycle = 'transport_type_motorcycle';
-  static const String  transport_type_car = 'transport_type_car';
-  static const String  transport_type_air = 'transport_type_air';
-  static const String  transport_type_water = 'transport_type_water';
-  static const String  transport_type = 'transport_type';
-  static const String  failed_to_load_drivers = 'failed_to_load_drivers';
-  static const String  no_drivers_available = 'No_drivers_available';
-  static const String  assigned_driver = 'assigned_driver';
-  static const String  select_driver = 'select_driver';
+  // Transport item;
+  static const String hello = 'hello';
+  static const String find_your_driver = 'find_your_driver';
+  static const String search_by_vendor_name = 'search_by_vendor_name';
+  static const String or = 'or';
+  static const String transport_type_motorcycle = 'transport_type_motorcycle';
+  static const String transport_type_car = 'transport_type_car';
+  static const String transport_type_air = 'transport_type_air';
+  static const String transport_type_water = 'transport_type_water';
+  static const String transport_type = 'transport_type';
+  static const String transport_type_all = 'transport_type_all';
+  static const String failed_to_load_drivers = 'failed_to_load_drivers';
+  static const String no_drivers_available = 'No_drivers_available';
+  static const String assigned_driver = 'assigned_driver';
+  static const String select_driver = 'select_driver';
 
   // Transport booking confirm (package + pay)
-  static const String  my_package_details = 'my_package_details';
-  static const String  length = 'length';
-  static const String  width = 'width';
-  static const String  height = 'height';
-  static const String  number_of_pieces = 'number_of_pieces';
-  static const String  weight_kg = 'weight_kg';
-  static const String  pickup_contact_details = 'pickup_contact_details';
-  static const String  building_shop_number_name = 'building_shop_number_name';
-  static const String  phone_number = 'phone_number';
-  static const String  remove = 'remove';
-  static const String  add_packages = 'add_packages';
-  static const String  totals = 'totals';
-  static const String  total_packages = 'total_packages';
-  static const String  total_weight_kg = 'total_weight_kg';
-  static const String  total_value_of_goods = 'total_value_of_goods';
-  static const String  currency = 'currency';
-  static const String  amount = 'amount';
-  static const String  message_to_driver = 'message_to_driver';
+  static const String my_package_details = 'my_package_details';
+  static const String create_package = 'create_package';
+  static const String create_shipment = 'create_shipment';
+  static const String length = 'length';
+  static const String width = 'width';
+  static const String height = 'height';
+  static const String number_of_pieces = 'number_of_pieces';
+  static const String weight_kg = 'weight_kg';
+  static const String pickup_contact_details = 'pickup_contact_details';
+  static const String building_shop_number_name = 'building_shop_number_name';
+  static const String phone_number = 'phone_number';
+  static const String remove = 'remove';
+  static const String add_packages = 'add_packages';
+  static const String totals = 'totals';
+  static const String total_packages = 'total_packages';
+  static const String total_weight_kg = 'total_weight_kg';
+  static const String total_value_of_goods = 'total_value_of_goods';
+  static const String currency = 'currency';
+  static const String amount = 'amount';
+  static const String message_to_driver = 'message_to_driver';
 
-  static const String   customer_note= 'customer_note';
-   static const String  special_instruction = 'special_instruction';
-  static const String  driver_information = 'driver_information ';
+  static const String customer_note = 'customer_note';
+  static const String special_instruction = 'special_instruction';
+  static const String driver_information = 'driver_information ';
+  static const String shipment_details = 'shipment_details';
+  static const String origin = 'origin';
+  static const String status = 'status';
+  static const String id = 'id';
 
-  static const String   my_product= 'my_product';
-  static const String   my_settings = 'my_Settings';
-
+  static const String my_product = 'my_product';
+  static const String my_settings = 'my_Settings';
 
   // this is buyer
 
-  static const String  color_attribute = 'color_attribute ';
+  static const String color_attribute = 'color_attribute ';
 
-  static const String   category_title= 'category_title';
-  static const String  enter_your_title_here = 'enter_your_title_here';
-  static const String  category_description = 'category_description ';
-  static const String   upload_category_images= 'upload_category_images';
-  static const String   save_category = 'save_category';
+  static const String category_title = 'category_title';
+  static const String enter_your_title_here = 'enter_your_title_here';
+  static const String category_description = 'category_description ';
+  static const String upload_category_images = 'upload_category_images';
+  static const String save_category = 'save_category';
 
-  static const String  products_list = 'products_list ';
+  static const String products_list = 'products_list ';
 
-  static const String   size_attribute= 'size_attribute';
-  static const String  name = 'name';
-  static const String  value = 'value ';
-  static const String   product_title= 'product_title';
-  static const String   track_shipments = 'track_shipments';
-
-
-
-
-
-
-
-
-
-
+  static const String size_attribute = 'size_attribute';
+  static const String name = 'name';
+  static const String value = 'value ';
+  static const String product_title = 'product_title';
+  static const String track_shipments = 'track_shipments';
 }

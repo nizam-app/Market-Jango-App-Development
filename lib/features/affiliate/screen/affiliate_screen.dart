@@ -106,7 +106,19 @@ class AffiliateScreen extends ConsumerWidget {
                     separatorBuilder: (_, __) => SizedBox(height: 12.h),
                     itemBuilder: (context, index) {
                       final item = influencerList[index];
-                      return _InfluencerLinkCard(item: item);
+                      return _InfluencerLinkCard(
+                        item: item,
+                        onApprove: !item.vendorApproved
+                            ? () => _approveInfluencerLink(context, ref, item.id, influencerNotifier)
+                            : null,
+                        onDelete: () => _deleteInfluencerLink(
+                          context,
+                          ref,
+                          item.id,
+                          item.influencerName,
+                          influencerNotifier,
+                        ),
+                      );
                     },
                   );
                 },
@@ -125,6 +137,83 @@ class AffiliateScreen extends ConsumerWidget {
       return '${base.scheme}://${base.host}${base.port != 80 && base.port != 443 ? ':${base.port}' : ''}';
     } catch (_) {
       return 'https://example.com';
+    }
+  }
+
+  Future<void> _approveInfluencerLink(
+    BuildContext context,
+    WidgetRef ref,
+    int id,
+    InfluencerReferralLinksNotifier notifier,
+  ) async {
+    try {
+      await notifier.approveLink(id);
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Approved',
+          message: 'Referral link approved',
+          type: CustomSnackType.success,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteInfluencerLink(
+    BuildContext context,
+    WidgetRef ref,
+    int id,
+    String name,
+    InfluencerReferralLinksNotifier notifier,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete link'),
+        content: Text('Are you sure you want to delete the link for "$name"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    try {
+      await notifier.deleteLink(id);
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Deleted',
+          message: 'Influencer link removed',
+          type: CustomSnackType.success,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
     }
   }
 
@@ -608,9 +697,15 @@ class _LinkCard extends StatelessWidget {
 
 /// Card for one item from influencer-referral-links API (image + name + link + stats).
 class _InfluencerLinkCard extends StatelessWidget {
-  const _InfluencerLinkCard({required this.item});
+  const _InfluencerLinkCard({
+    required this.item,
+    this.onApprove,
+    required this.onDelete,
+  });
 
   final InfluencerReferralLinkModel item;
+  final Future<void> Function()? onApprove;
+  final Future<void> Function()? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -679,22 +774,38 @@ class _InfluencerLinkCard extends StatelessWidget {
                       ),
                     ],
                     SizedBox(height: 6.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: item.vendorApproved
-                            ? AllColor.green.withOpacity(0.15)
-                            : AllColor.grey200,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        item.vendorApproved ? 'Approved' : 'Pending',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: item.vendorApproved
+                                ? AllColor.green.withOpacity(0.15)
+                                : AllColor.grey200,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            item.vendorApproved ? 'Approved' : 'Pending',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (onApprove != null) ...[
+                          SizedBox(width: 8.w),
+                          TextButton(
+                            onPressed: () => onApprove!(),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                              minimumSize: Size.zero,
+                              foregroundColor: AllColor.loginButtomColor,
+                            ),
+                            child: Text('Approve', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -724,24 +835,37 @@ class _InfluencerLinkCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 10.h),
-          TextButton.icon(
-            onPressed: () {
-              if (item.referralLink.isEmpty) return;
-              Clipboard.setData(ClipboardData(text: item.referralLink));
-              if (context.mounted) {
-                GlobalSnackbar.show(
-                  context,
-                  title: 'Copied',
-                  message: 'Influencer link copied',
-                  type: CustomSnackType.success,
-                );
-              }
-            },
-            icon: Icon(Icons.copy, size: 18.r),
-            label: const Text('Copy link'),
-            style: TextButton.styleFrom(
-              foregroundColor: AllColor.loginButtomColor,
-            ),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  if (item.referralLink.isEmpty) return;
+                  Clipboard.setData(ClipboardData(text: item.referralLink));
+                  if (context.mounted) {
+                    GlobalSnackbar.show(
+                      context,
+                      title: 'Copied',
+                      message: 'Influencer link copied',
+                      type: CustomSnackType.success,
+                    );
+                  }
+                },
+                icon: Icon(Icons.copy, size: 18.r),
+                label: const Text('Copy link'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AllColor.loginButtomColor,
+                ),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => onDelete?.call(),
+                icon: Icon(Icons.delete_outline, size: 18.r, color: AllColor.red),
+                label: Text('Delete', style: TextStyle(fontSize: 13.sp, color: AllColor.red, fontWeight: FontWeight.w600)),
+                style: TextButton.styleFrom(
+                  foregroundColor: AllColor.red,
+                ),
+              ),
+            ],
           ),
         ],
       ),

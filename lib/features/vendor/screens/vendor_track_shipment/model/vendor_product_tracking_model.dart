@@ -322,8 +322,7 @@ class ShipmentItem {
         ? e.salePrice
         : double.tryParse(inv?.payable ?? '0') ?? 0.0;
 
-    final imageUrl =
-        prod?.image ?? 'https://via.placeholder.com/200x200.png?text=Product';
+    final imageUrl = prod?.image ?? '';
 
     final pickupLocation = e.pickupAddress.isNotEmpty
         ? e.pickupAddress

@@ -117,27 +117,27 @@ class TopProductsData {
 
   factory TopProductsData.fromJson(Map<String, dynamic> json) {
     return TopProductsData(
-      currentPage: json['current_page'] ?? 0,
+      currentPage: _toInt(json['current_page']),
       data: (json['data'] as List<dynamic>? ?? [])
           .whereType<Map>()
           .map((e) => TopProduct.fromJson(
         Map<String, dynamic>.from(e),
       ))
           .toList(),
-      firstPageUrl: json['first_page_url'] ?? '',
-      from: json['from'],
-      lastPage: json['last_page'] ?? 0,
-      lastPageUrl: json['last_page_url'] ?? '',
+      firstPageUrl: json['first_page_url']?.toString() ?? '',
+      from: _toIntN(json['from']),
+      lastPage: _toInt(json['last_page']),
+      lastPageUrl: json['last_page_url']?.toString() ?? '',
       links: (json['links'] as List<dynamic>? ?? [])
           .whereType<Map>()
           .map((e) => PageLink.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
-      nextPageUrl: json['next_page_url'],
-      path: json['path'] ?? '',
-      perPage: json['per_page'] ?? 0,
-      prevPageUrl: json['prev_page_url'],
-      to: json['to'] ?? 0,
-      total: json['total'] ?? 0,
+      nextPageUrl: json['next_page_url']?.toString(),
+      path: json['path']?.toString() ?? '',
+      perPage: _toInt(json['per_page']),
+      prevPageUrl: json['prev_page_url']?.toString(),
+      to: _toInt(json['to']),
+      total: _toInt(json['total']),
     );
   }
 
@@ -235,14 +235,14 @@ class TopProduct {
       vendor: Vendor.fromJson(Map<String, dynamic>.from(json['vendor'] as Map? ?? const {})),
       category: Category.fromJson(Map<String, dynamic>.from(json['category'] as Map? ?? const {})),
 
-      // NEW: copy straight from API
-      discount: json['discount'],
-      star: json['star'],
-      remark: json['remark'],
-      isActive: json['is_active'],
-      newItem: json['new_item'],
-      justForYou: json['just_for_you'],
-      topProduct: json['top_product'],
+      // API may return int or String for numeric fields (e.g. is_active: "0")
+      discount: _toIntN(json['discount']),
+      star: _toIntN(json['star']),
+      remark: json['remark']?.toString(),
+      isActive: _toIntN(json['is_active']),
+      newItem: _toIntN(json['new_item']),
+      justForYou: _toIntN(json['just_for_you']),
+      topProduct: _toIntN(json['top_product']),
       publicId: json['public_id'],
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
@@ -503,10 +503,10 @@ class PageLink {
 
   factory PageLink.fromJson(Map<String, dynamic> json) {
     return PageLink(
-      url: json['url'],
-      label: json['label'] ?? '',
-      page: json['page'],
-      active: json['active'] ?? false,
+      url: json['url']?.toString(),
+      label: json['label']?.toString() ?? '',
+      page: _toIntN(json['page']),
+      active: json['active'] == true || json['active'] == 1,
     );
   }
 

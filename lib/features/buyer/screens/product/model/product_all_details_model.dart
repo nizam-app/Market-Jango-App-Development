@@ -95,23 +95,23 @@ class DetailItem {
     }
 
     return DetailItem(
-      id: (data['id'] as num?)?.toInt() ?? 0,
+      id: _toInt(data['id']),
       name: data['name']?.toString() ?? '',
       description: data['description']?.toString() ?? '',
       regularPrice: _toDouble(data['regular_price']),
       sellPrice: _toDouble(data['sell_price']),
-      discount: (data['discount'] as num?)?.toInt() ?? 0,
+      discount: _toInt(data['discount']),
       publicId: data['public_id']?.toString() ?? '',
-      star: (data['star'] is num) ? (data['star'] as num).toDouble() : 0.0,
+      star: _toDouble(data['star']),
       image: data['image']?.toString() ?? '',
       color: _parseColors(data['color']),
       size: _parseStringList(data['size']),
       remark: data['remark']?.toString() ?? '',
       isActive: data['is_active'] is bool
           ? data['is_active'] as bool
-          : (data['is_active'] as num?)?.toInt() == 1,
-      vendorId: (data['vendor_id'] as num?)?.toInt() ?? 0,
-      categoryId: (data['category_id'] as num?)?.toInt() ?? 0,
+          : _toInt(data['is_active']) == 1,
+      vendorId: _toInt(data['vendor_id']),
+      categoryId: _toInt(data['category_id']),
       createdAt: _parseDate(data['created_at']),
       updatedAt: _parseDate(data['updated_at']),
       vendor: Vendor.fromJson(
@@ -124,7 +124,7 @@ class DetailItem {
           .whereType<Map>()
           .map((m) => DetailImage.fromJson(m.cast<String, dynamic>()))
           .toList(),
-      stock: (data['stock'] as num?)?.toInt(),
+      stock: _toIntOrNull(data['stock']),
       attributes: attrString,
     );
   }
@@ -162,11 +162,25 @@ class DetailItem {
     }
   }
 
-  // -------- helpers ----------
+  // -------- helpers (handle both String and num from API) --------
   static double _toDouble(dynamic v) {
     if (v == null) return 0.0;
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString()) ?? 0.0;
+  }
+
+  static int _toInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString()) ?? 0;
+  }
+
+  static int? _toIntOrNull(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
   }
 
   static DateTime _parseDate(dynamic v) {
@@ -254,12 +268,12 @@ class Vendor {
   factory Vendor.fromJson(Map<String, dynamic> json) {
     final j = json;
     return Vendor(
-      id: (j['id'] as num?)?.toInt() ?? 0,
+      id: DetailItem._toInt(j['id']),
       country: j['country']?.toString() ?? '',
       address: j['address']?.toString() ?? '',
       businessName: j['business_name']?.toString() ?? '',
       businessType: j['business_type']?.toString() ?? '',
-      userId: (j['user_id'] as num?)?.toInt() ?? 0,
+      userId: DetailItem._toInt(j['user_id']),
       avgRating: DetailItem._toDouble(j['avg_rating'] ?? 0),
       createdAt: DetailItem._parseDate(j['created_at']),
       updatedAt: DetailItem._parseDate(j['updated_at']),
@@ -314,7 +328,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     final j = json;
     return User(
-      id: (j['id'] as num?)?.toInt() ?? 0,
+      id: DetailItem._toInt(j['id']),
       userType: j['user_type']?.toString() ?? '',
       name: j['name']?.toString() ?? '',
       email: j['email']?.toString() ?? '',
@@ -329,7 +343,7 @@ class User {
       status: j['status']?.toString() ?? '',
       isActive: j['is_active'] is bool
           ? j['is_active'] as bool
-          : ((j['is_active'] as num?)?.toInt() == 1),
+          : (DetailItem._toInt(j['is_active']) == 1),
       isOnline: j['is_online'] is bool ? j['is_online'] as bool : false,
       lastActiveAt: j['last_active_at'] != null
           ? DateTime.tryParse(j['last_active_at'].toString())
@@ -366,11 +380,11 @@ class Category {
   factory Category.fromJson(Map<String, dynamic> json) {
     final j = json;
     return Category(
-      id: (j['id'] as num?)?.toInt() ?? 0,
+      id: DetailItem._toInt(j['id']),
       name: j['name']?.toString() ?? '',
       description: j['description']?.toString() ?? '',
       status: j['status']?.toString() ?? '',
-      vendorId: (j['vendor_id'] as num?)?.toInt() ?? 0,
+      vendorId: DetailItem._toInt(j['vendor_id']),
       createdAt: DetailItem._parseDate(j['created_at']),
       updatedAt: DetailItem._parseDate(j['updated_at']),
     );
@@ -394,10 +408,10 @@ class DetailImage {
   factory DetailImage.fromJson(Map<String, dynamic> json) {
     final j = json;
     return DetailImage(
-      id: (j['id'] as num?)?.toInt() ?? 0,
+      id: DetailItem._toInt(j['id']),
       imagePath: j['image_path']?.toString() ?? '',
       publicId: j['public_id']?.toString() ?? '',
-      productId: (j['product_id'] as num?)?.toInt() ?? 0,
+      productId: DetailItem._toInt(j['product_id']),
     );
   }
 }

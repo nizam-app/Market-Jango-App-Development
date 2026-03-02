@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 
@@ -36,11 +37,12 @@ class JustForYouNotifier
     final authStorage = AuthLocalStorage();
     final token = await authStorage.getToken();
 
-    // baseUrl-এ আগেই query থাকলে মর্জ করে page বসাচ্ছি
     final base = Uri.parse(_baseUrl);
     final qp = Map<String, String>.from(base.queryParameters);
     qp['page'] = '$_page';
     final uri = base.replace(queryParameters: qp);
+
+    Logger().d('Just for you: GET $uri (token: ${token != null ? "yes" : "no"})');
 
     final res = await http.get(
       uri,
@@ -50,9 +52,10 @@ class JustForYouNotifier
       },
     );
 
+    Logger().d('Just for you: status=${res.statusCode} bodyLen=${res.body.length}');
+
     if (res.statusCode == 200) {
       final decoded = jsonDecode(res.body);
-      // Handle case where response might be a List or Map
       final jsonData = decoded is Map<String, dynamic>
           ? decoded
           : <String, dynamic>{
@@ -60,8 +63,11 @@ class JustForYouNotifier
               'message': '',
               'data': decoded is List ? decoded : [],
             };
-      return TopProductsResponse.fromJson(jsonData);
+      final result = TopProductsResponse.fromJson(jsonData);
+      Logger().i('Just for you: loaded ${result.data.data.length} items');
+      return result;
     } else {
+      Logger().e('Just for you failed: ${res.statusCode} ${res.body.length > 200 ? res.body.substring(0, 200) + "..." : res.body}');
       throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
     }
   }

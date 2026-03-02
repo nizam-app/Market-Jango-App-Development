@@ -221,11 +221,12 @@ class GlobalSettingScreen extends ConsumerWidget {
           _DividerLine(),
         _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
         _DividerLine(),
-        _SettingsTile(
-          leadingIcon: Icons.leaderboard_outlined,
-          title: 'Rankings',
-          onTap: () => context.push(RankingScreen.routeName),
-        ),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+          _SettingsTile(
+            leadingIcon: Icons.leaderboard_outlined,
+            title: 'Rankings',
+            onTap: () => context.push(RankingScreen.routeName),
+          ),
         _DividerLine(),
         _SettingsTile(
           leadingIcon: Icons.language_outlined,

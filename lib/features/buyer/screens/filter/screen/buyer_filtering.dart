@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/buyer/screens/filter/model/all_categoris_show_model.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
 
 import '../data/all_categoris_show_data.dart';
 
@@ -17,7 +19,15 @@ class LocationFilteringTab extends ConsumerStatefulWidget {
 }
 
 class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
-  int? _selectedCategoryId; // dropdown value = category id
+  int? _selectedCategoryId;
+  final _locationController = TextEditingController();
+  String? _visibilityState;
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +73,13 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   ),
                   SizedBox(height: 5.h),
                   TextField(
+                    controller: _locationController,
                     decoration: buildInputDecoration().copyWith(
                       hintText: ref.t(BKeys.searchLocation),
                       prefixIcon: Icon(Icons.search_rounded, size: 27.sp),
                       fillColor: AllColor.grey100,
                     ),
+                    onChanged: (v) => _visibilityState = v.trim().isEmpty ? null : v.trim(),
                   ),
 
                   SizedBox(height: 20.h),
@@ -108,7 +120,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                       }
 
                       return DropdownButtonFormField<int>(
-                        initialValue: _selectedCategoryId,
+                        value: _selectedCategoryId,
                         decoration: buildInputDecoration(),
                         hint: Text(
                           'Select category',
@@ -135,6 +147,57 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   ),
 
                   SizedBox(height: 20.h),
+
+                  /// Apply button - call API and show products
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final country = _locationController.text.trim();
+                        if (country.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please enter your location'),
+                            ),
+                          );
+                          return;
+                        }
+                        if (_selectedCategoryId == null || _selectedCategoryId! <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please select a category'),
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.pop(context);
+                        context.push(
+                          FilterScreen.routeName,
+                          extra: {
+                            'visibility_country': country,
+                            'category_id': _selectedCategoryId!,
+                            'visibility_state': _visibilityState,
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AllColor.loginButtomColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Apply',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
                 ],
               ),
             ),

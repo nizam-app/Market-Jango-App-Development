@@ -12,7 +12,6 @@ class VendorCategoryModel {
   });
 
   factory VendorCategoryModel.fromJson(Map<String, dynamic> json) {
-    // Helper to safely convert to int
     int _toInt(dynamic value, {int defaultValue = 0}) {
       if (value == null) return defaultValue;
       if (value is int) return value;

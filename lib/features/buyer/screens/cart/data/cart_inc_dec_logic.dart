@@ -20,6 +20,30 @@ class CartService {
   final Ref ref;
   CartService(this.ref);
 
+  Future<void> deleteCartItem(int cartItemId) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) {
+      throw Exception('Token not found');
+    }
+
+    final uri = Uri.parse(BuyerAPIController.cartDelete(cartItemId));
+    final res = await http.delete(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode == 404) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      throw Exception(map?['message']?.toString() ?? 'Cart item not found');
+    }
+    if (res.statusCode != 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      throw Exception(
+        map?['message']?.toString() ?? 'Failed to remove: ${res.statusCode}',
+      );
+    }
+  }
+
   /// API body: { "product_id": "<id>", "action": "increase|decrease" }
   Future<CartItem> updateQuantity({
     required int productId,

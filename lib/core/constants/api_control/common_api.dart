@@ -22,6 +22,14 @@ class CommonAPIController {
   static String affiliateConversion(String linkCode) =>
       '$_base_api/affiliate/conversion/$linkCode';
   static String affiliateStatistics = '$_base_api/affiliate/statistics';
+  /// Vendor affiliate links (buyer viewing vendor promotions)
+  static String affiliateVendorLinks(int vendorId) =>
+      '$_base_api/affiliate/vendor-links/$vendorId';
+  static String affiliateGenerateReferralLink =
+      '$_base_api/affiliate/generate-referral-link';
+  /// GET influencer referral links (vendor dashboard)
+  static String get influencerReferralLinks =>
+      '$_base_api/vendor-dashboard/influencer-referral-links';
 
   /// Ranking (Buyer, Vendor, Driver)
   static String rankingVendors = '$_base_api/ranking/vendors';

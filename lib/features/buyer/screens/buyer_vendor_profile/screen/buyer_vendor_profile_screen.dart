@@ -3,7 +3,6 @@ import 'package:flutter_rating/flutter_rating.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
@@ -13,6 +12,7 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_propuler_product_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/user_id_by_vendor_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
 import 'package:market_jango/features/buyer/screens/review/data/buyer_review_data.dart';
@@ -23,6 +23,7 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/utils/get_user_type.dart';
 
 import 'buyer_vendor_cetagory_screen.dart';
+import 'vendor_promotion_screen.dart';
 
 class BuyerVendorProfileScreen extends ConsumerWidget {
   const BuyerVendorProfileScreen({
@@ -37,9 +38,18 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Logger().d(vendorId);
     final async = ref.watch(vendorCategoryProductsProvider(vendorId));
-    final userAsync = ref.watch(userProvider(userId.toString()));
+    final int? effectiveUserId;
+    if (userId > 0) {
+      effectiveUserId = userId;
+    } else {
+      effectiveUserId = ref
+          .watch(userIdByVendorIdProvider(vendorId))
+          .valueOrNull;
+    }
+    final userAsync = effectiveUserId != null && effectiveUserId > 0
+        ? ref.watch(userProvider(effectiveUserId.toString()))
+        : const AsyncValue<UserModel>.loading();
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -50,9 +60,12 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                 data: (user) {
                   final coverImageUrl = user.coverImage;
                   final hasCoverImage =
-                      coverImageUrl != null && coverImageUrl.isNotEmpty;
-                  final String safeCoverImage = coverImageUrl ?? '';
-                  
+                      coverImageUrl != null &&
+                      coverImageUrl.trim().isNotEmpty &&
+                      (coverImageUrl.startsWith('http://') ||
+                          coverImageUrl.startsWith('https://'));
+                  final String safeCoverImage = coverImageUrl?.trim() ?? '';
+
                   return Stack(
                     children: [
                       ClipRRect(
@@ -111,12 +124,8 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                     Container(
                       height: 200.h,
                       width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                      ),
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      decoration: BoxDecoration(color: Colors.grey.shade200),
+                      child: const Center(child: CircularProgressIndicator()),
                     ),
                     // Back icon positioned on top of cover image
                     Positioned(
@@ -145,9 +154,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                     Container(
                       height: 200.h,
                       width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                      ),
+                      decoration: BoxDecoration(color: Colors.grey.shade200),
                       child: Center(
                         child: Icon(
                           Icons.store,
@@ -180,7 +187,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                 ),
               ),
               CustomVendorUpperSection(
-                userId: userId.toString(),
+                userId: effectiveUserId?.toString(),
                 vendorId: vendorId,
               ),
               Padding(
@@ -191,8 +198,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                     PopularProduct(vendorId: vendorId),
 
                     async.when(
-                      loading: () =>
-                          const Center(child: Text('Loading...')),
+                      loading: () => const Center(child: Text('Loading...')),
                       error: (e, _) => Center(child: Text(e.toString())),
                       data: (res) {
                         final categories = res?.data.categories.data ?? [];
@@ -238,12 +244,18 @@ class CustomVendorUpperSection extends ConsumerWidget {
     required this.vendorId,
   });
 
-  final String userId;
+  final String? userId;
   final int vendorId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(userProvider(userId));
+    if (userId == null || userId!.isEmpty || userId == '0') {
+      return Padding(
+        padding: EdgeInsets.all(20.w),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    final async = ref.watch(userProvider(userId!));
     final reviewCountAsync = ref.watch(vendorReviewCountProvider(vendorId));
     final theme = Theme.of(context).textTheme;
     final myUserIdAsync = ref.watch(getUserIdProvider);
@@ -259,12 +271,6 @@ class CustomVendorUpperSection extends ConsumerWidget {
         // ---- SAFE READS (no ! anywhere) ----
         final vendor = v.vendor; // may be null
         bool hasText(String? s) => s != null && s.trim().isNotEmpty;
-
-        String truncateWithEllipsis(int cutoff, String myString) {
-          return (myString.length <= cutoff)
-              ? myString
-              : '${myString.substring(0, cutoff)}...';
-        }
 
         final name = hasText(v.name)
             ? v.name
@@ -284,8 +290,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
         final double rating = vendor?.avgRating ?? 0;
         // Use total review count from API instead of nested reviews length
         final reviewCount = reviewCountAsync.value ?? 0;
-        final reviewText =
-            '${rating.toStringAsFixed(2)} ( $reviewCount reviews )';
+        final reviewText = '$reviewCount';
 
         final openingTime = (vendor != null && hasText(vendor.openTime))
             ? vendor.openTime!
@@ -295,88 +300,355 @@ class CustomVendorUpperSection extends ConsumerWidget {
             : '7:00 PM';
         final opening = 'Opening time: $openingTime - $closingTime';
 
-        // ---- UI (unchanged look) ----
+        // ---- Refined profile card (polished) ----
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back icon removed - now on cover image
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipOval(
-                    child: FirstTimeShimmerImage(
-                      imageUrl: img,
-                      width: 70.r,
-                      height: 70.r,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          name ?? '',
-                          style: theme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      SizedBox(width: 5.w),
-                      Icon(Icons.location_on, size: 16.sp, color: Colors.red),
-                      Flexible(
-                        child: Text(
-                          location,
-                          style: theme.titleMedium,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.orange.shade100.withOpacity(0.5),
+                  blurRadius: 28,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -4,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(26.r),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.0, 0.35, 1.0],
+                    colors: [
+                      Colors.orange.shade50.withOpacity(0.5),
+                      Colors.orange.shade50.withOpacity(0.15),
+                      Colors.white,
                     ],
                   ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    opening,
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 24.h,
                   ),
-                  SizedBox(height: 8.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      StarRating(rating: rating, color: Colors.amber),
-                      SizedBox(width: 8.w),
-                      Flexible(
-                        child: GestureDetector(
-                          onTap: () => goToReviewScreen(context, vendorId),
-                          child: Text(
-                            reviewText,
+                      // Top row: Promotion + Chat
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(24.r),
+                            elevation: 1,
+                            shadowColor: Colors.orange.shade200.withOpacity(0.4),
+                            child: InkWell(
+                              onTap: () {
+                                VendorPromotionScreen.showLinkCreatePopup(
+                                  context,
+                                  ref,
+                                  vendorId,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(24.r),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 18.w,
+                                  vertical: 11.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24.r),
+                                  border: Border.all(
+                                    color: Colors.orange.shade200,
+                                    width: 1.2,
+                                  ),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.orange.shade100.withOpacity(0.5),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.campaign_rounded,
+                                      size: 20.r,
+                                      color: Colors.orange.shade700,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      'Promotion',
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.orange.shade800,
+                                        letterSpacing: 0.25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            elevation: 1,
+                            shadowColor: Colors.black.withOpacity(0.06),
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              onTap: () => goToChatScreen(
+                                context,
+                                ref,
+                                v,
+                                myUserIdAsync,
+                              ),
+                              customBorder: const CircleBorder(),
+                              child: Container(
+                                padding: EdgeInsets.all(12.w),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                    width: 1.2,
+                                  ),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.chat_bubble_outline_rounded,
+                                  size: 22.r,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 26.h),
+                      // Profile image with ring
+                      Container(
+                        padding: EdgeInsets.all(5.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.orange.shade200,
+                              Colors.orange.shade500,
+                              Colors.orange.shade700,
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.shade300.withOpacity(0.4),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                              spreadRadius: 0,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 12,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Container(
+                          padding: EdgeInsets.all(3.5.w),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: FirstTimeShimmerImage(
+                              imageUrl: img,
+                              width: 82.r,
+                              height: 82.r,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
+                      // Name
+                      Text(
+                        name,
+                        style: theme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 20.sp,
+                          color: const Color(0xFF1A1A1A),
+                          letterSpacing: -0.35,
+                          height: 1.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 10.h),
+                      // Location
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5.w),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              size: 16.r,
+                              color: Colors.red.shade400,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            location,
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: Colors.black87,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
                             ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      // Opening time
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 8.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: Colors.grey.shade200,
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 6,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.schedule_rounded,
+                              size: 16.r,
+                              color: Colors.orange.shade600,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              opening,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
+                      // Rating + reviews (pill)
+                      GestureDetector(
+                        onTap: () => goToReviewScreen(context, vendorId),
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18.w,
+                            vertical: 12.h,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.amber.shade50,
+                                Colors.orange.shade50.withOpacity(0.6),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18.r),
+                            border: Border.all(
+                              color: Colors.amber.shade200,
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.amber.shade200.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              StarRating(rating: rating, color: Colors.amber),
+                              SizedBox(width: 12.w),
+                              Icon(
+                                Icons.rate_review_outlined,
+                                size: 16.r,
+                                color: Colors.grey.shade700,
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                '$reviewText reviews',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey.shade800,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => goToChatScreen(context, ref, v, myUserIdAsync),
-                child: const Icon(Icons.chat_bubble_outline),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -406,9 +678,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
     final myUserIdInt = int.tryParse(myUserIdStr);
     if (myUserIdInt == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid user ID. Please login again.'),
-        ),
+        const SnackBar(content: Text('Invalid user ID. Please login again.')),
       );
       return;
     }
@@ -416,8 +686,8 @@ class CustomVendorUpperSection extends ConsumerWidget {
     final vendorName = vendor.name.isNotEmpty
         ? vendor.name
         : (vendor.vendor?.businessName.isNotEmpty ?? false)
-            ? vendor.vendor!.businessName
-            : 'Vendor';
+        ? vendor.vendor!.businessName
+        : 'Vendor';
 
     final vendorImage = vendor.image.isNotEmpty
         ? vendor.image
@@ -435,9 +705,7 @@ class CustomVendorUpperSection extends ConsumerWidget {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to open chat: ${e.toString()}'),
-        ),
+        SnackBar(content: Text('Failed to open chat: ${e.toString()}')),
       );
     }
   }
@@ -467,13 +735,17 @@ class FashionProduct extends StatelessWidget {
                 children: [
                   for (int index = 0; index < items.length; index++) ...[
                     GestureDetector(
-                      onTap: () =>
-                          context.push(ProductDetails.routeName, extra: items[index].id),
+                      onTap: () => context.push(
+                        ProductDetails.routeName,
+                        extra: items[index].id,
+                      ),
                       child: CustomNewProduct(
                         width: 130,
                         height: 140,
                         productName: items[index].name,
-                        productPrices: items[index].sellPrice.toStringAsFixed(2),
+                        productPrices: items[index].sellPrice.toStringAsFixed(
+                          2,
+                        ),
                         image: items[index].image,
                         imageHeight: 130,
                       ),

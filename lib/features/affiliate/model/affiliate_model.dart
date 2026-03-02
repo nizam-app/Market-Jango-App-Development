@@ -195,3 +195,73 @@ class AffiliateLinkStatistics {
     );
   }
 }
+
+/// Single item from GET /api/vendor-dashboard/influencer-referral-links
+class InfluencerReferralLinkModel {
+  final int id;
+  final String referralLink;
+  final String linkCode;
+  final String influencerName;
+  final String influencerEmail;
+  final String? affiliateCode;
+  final int clicks;
+  final int conversions;
+  final num earnings;
+  final int totalConversion;
+  final num totalEarnings;
+  final bool vendorApproved;
+  final String status;
+  final String createdAt;
+  final String? image;
+
+  const InfluencerReferralLinkModel({
+    required this.id,
+    required this.referralLink,
+    required this.linkCode,
+    required this.influencerName,
+    required this.influencerEmail,
+    this.affiliateCode,
+    this.clicks = 0,
+    this.conversions = 0,
+    this.earnings = 0,
+    this.totalConversion = 0,
+    this.totalEarnings = 0,
+    this.vendorApproved = false,
+    this.status = 'active',
+    required this.createdAt,
+    this.image,
+  });
+
+  factory InfluencerReferralLinkModel.fromJson(Map<String, dynamic> json) {
+    int toInt(dynamic v, [int def = 0]) {
+      if (v == null) return def;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v.toString()) ?? def;
+    }
+
+    num toNum(dynamic v, [num def = 0]) {
+      if (v == null) return def;
+      if (v is num) return v;
+      return num.tryParse(v.toString()) ?? def;
+    }
+
+    return InfluencerReferralLinkModel(
+      id: toInt(json['id']),
+      referralLink: json['referral_link']?.toString() ?? '',
+      linkCode: json['link_code']?.toString() ?? '',
+      influencerName: json['influencer_name']?.toString() ?? '',
+      influencerEmail: json['influencer_email']?.toString() ?? '',
+      affiliateCode: json['affiliate_code']?.toString(),
+      clicks: toInt(json['clicks']),
+      conversions: toInt(json['conversions']),
+      earnings: toNum(json['earnings']),
+      totalConversion: toInt(json['total_conversion']),
+      totalEarnings: toNum(json['total_earnings']),
+      vendorApproved: json['vendor_approved'] == true,
+      status: json['status']?.toString() ?? 'active',
+      createdAt: json['created_at']?.toString() ?? '',
+      image: json['image']?.toString(),
+    );
+  }
+}

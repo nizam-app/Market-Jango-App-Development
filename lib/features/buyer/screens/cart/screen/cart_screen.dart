@@ -152,6 +152,29 @@ class CartScreen extends ConsumerWidget {
     );
   }
 
+  void _onDeleteCartItem(BuildContext context, WidgetRef ref, CartItem item) {
+    if (item.id == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cannot remove this item')),
+      );
+      return;
+    }
+    ref.read(cartServiceProvider).deleteCartItem(item.id!).then((_) {
+      ref.invalidate(cartProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cart item removed')),
+        );
+      }
+    }).catchError((e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    });
+  }
+
   PaymentPageData _buildPaymentData(List<CartItem> items, double total) {
     double subtotal = 0, delivery = 0;
     for (final it in items) {
@@ -204,17 +227,21 @@ class CartScreen extends ConsumerWidget {
                     fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  Container(
-                    margin: EdgeInsets.all(2.r),
-                    padding: EdgeInsets.all(5.r),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.delete,
-                      color: AllColor.orange,
-                      size: 18.sp,
+                  InkWell(
+                    onTap: () => _onDeleteCartItem(context, ref, item),
+                    borderRadius: BorderRadius.circular(20.r),
+                    child: Container(
+                      margin: EdgeInsets.all(2.r),
+                      padding: EdgeInsets.all(5.r),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.delete,
+                        color: AllColor.orange,
+                        size: 18.sp,
+                      ),
                     ),
                   ),
                 ],

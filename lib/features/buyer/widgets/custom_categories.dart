@@ -21,8 +21,8 @@ class CustomCategories extends ConsumerWidget {
   final bool showOnlyTopCategories;
   final bool requireProducts;
 
-  static const _placeholder =
-      'https://via.placeholder.com/300x300.png?text=Category';
+  /// Use empty string to show local grey placeholder (no network call).
+  static const _placeholder = '';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,15 +37,15 @@ class CustomCategories extends ConsumerWidget {
         final page = resp.data;
         // Filter categories based on requirements
         var all = page.data;
-        
+
         // First filter by status (only Active categories)
         all = all.where((cat) => cat.status == 'Active').toList();
-        
+
         // If showOnlyTopCategories is true, filter by is_top_category == 1
         if (showOnlyTopCategories) {
           all = all.where((cat) => cat.isTopCategory == 1).toList();
         }
-        
+
         // Filter by products if required (after top category filter)
         if (requireProducts) {
           all = all.where((cat) => cat.products.isNotEmpty).toList();
@@ -53,7 +53,7 @@ class CustomCategories extends ConsumerWidget {
 
         // হোমে ৪টা, অল স্ক্রিনে যত আছে সব
         final items = all.take(categoriCount).toList();
-        
+
         if (items.isEmpty) return const SizedBox.shrink();
 
         return GridView.builder(
@@ -96,6 +96,19 @@ class CustomCategories extends ConsumerWidget {
                         ),
                         itemBuilder: (context, i) {
                           final url = thumbs[i];
+                          if (url.isEmpty) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Icon(
+                                Icons.category_outlined,
+                                size: 32.r,
+                                color: Colors.grey.shade500,
+                              ),
+                            );
+                          }
                           return FirstTimeShimmerImage(
                             imageUrl: url,
                             fit: BoxFit.cover,
@@ -135,7 +148,7 @@ class CustomCategories extends ConsumerWidget {
   /// 4) কম হলে placeholder দিয়ে ফিল করি
   List<String> _thumbsFor(CategoryItem cat) {
     final List<String> urls = [];
-    
+
     // First try to get images from products
     for (final p in cat.products) {
       if (p.image.isNotEmpty) {
@@ -145,7 +158,7 @@ class CustomCategories extends ConsumerWidget {
       }
       if (urls.length >= 4) break;
     }
-    
+
     // If not enough from products, use category_images
     if (urls.length < 4) {
       for (final img in cat.categoryImages) {
@@ -155,7 +168,7 @@ class CustomCategories extends ConsumerWidget {
         if (urls.length >= 4) break;
       }
     }
-    
+
     // Fill remaining with placeholder
     while (urls.length < 4) {
       urls.add(_placeholder);

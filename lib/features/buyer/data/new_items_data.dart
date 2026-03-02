@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
-import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/features/buyer/model/buyer_top_model.dart';
 
 final buyerNewItemsProvider =
@@ -28,23 +29,28 @@ class BuyerNewItemsNotifier extends AsyncNotifier<TopProductsResponse?> {
     state = await AsyncValue.guard(_fetchNewItems);
   }
 
-  /// Core data fetch (with token and pagination)
+  /// Core data fetch (token optional - matches top_products & just_for_you)
+  /// API: GET /api/admin-selects/new-items?page=1
+  /// Response: { status, message, data: { current_page, data: [...products] } }
   Future<TopProductsResponse> _fetchNewItems() async {
-    final token = await ref.read(authTokenProvider.future);
-    if (token == null || token.isEmpty) {
-      throw Exception('No authentication token found');
-    }
-
+    final authStorage = AuthLocalStorage();
+    final token = await authStorage.getToken();
     final uri = Uri.parse('${BuyerAPIController.new_items}?page=$_page');
+
+    Logger().d('New items: GET $uri (token: ${token != null && token.isNotEmpty ? "yes" : "no"})');
 
     final response = await http.get(
       uri,
-      headers: {'Accept': 'application/json', 'token': token},
+      headers: {
+        'Accept': 'application/json',
+        if (token != null && token.isNotEmpty) 'token': token,
+      },
     );
+
+    Logger().d('New items: status=${response.statusCode} bodyLen=${response.body.length}');
 
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      // Handle case where response might be a List or Map
       final jsonData = decoded is Map<String, dynamic>
           ? decoded
           : <String, dynamic>{
@@ -52,8 +58,11 @@ class BuyerNewItemsNotifier extends AsyncNotifier<TopProductsResponse?> {
               'message': '',
               'data': decoded is List ? decoded : [],
             };
-      return TopProductsResponse.fromJson(jsonData);
+      final result = TopProductsResponse.fromJson(jsonData);
+      Logger().i('New items: loaded ${result.data.data.length} items');
+      return result;
     } else {
+      Logger().e('New items failed: ${response.statusCode} ${response.body.length > 200 ? response.body.substring(0, 200) + "..." : response.body}');
       throw Exception(
         'Failed to load new items: ${response.statusCode} ${response.reasonPhrase}',
       );

@@ -29,6 +29,7 @@ import 'package:market_jango/features/buyer/screens/all_categori/screen/category
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_cetagory_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/buyer_vendor_profile_screen.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/vendor_promotion_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
@@ -49,6 +50,7 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/transport_booking_confirm_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
@@ -346,8 +348,11 @@ final GoRouter router = GoRouter(
 
     GoRoute(
       path: FilterScreen.routeName,
-      name: 'filter_screen',
-      builder: (context, state) => FilterScreen(),
+      name: FilterScreen.routeName,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return FilterScreen(filterParams: extra);
+      },
     ),
 
     GoRoute(
@@ -451,6 +456,14 @@ final GoRouter router = GoRouter(
       name: 'driverDetails',
       builder: (context, state) {
         return DriverDetailsScreen(driverId: state.extra as int);
+      },
+    ),
+    GoRoute(
+      path: TransportBookingConfirmScreen.routeName,
+      name: 'transportBookingConfirm',
+      builder: (context, state) {
+        final args = state.extra as TransportBookingConfirmArgs;
+        return TransportBookingConfirmScreen(args: args);
       },
     ),
 
@@ -624,6 +637,12 @@ final GoRouter router = GoRouter(
         
         return BuyerVendorProfileScreen(vendorId: vendorId, userId: userId);
       },
+    ),
+    GoRoute(
+      path: VendorPromotionScreen.routeName,
+      name: VendorPromotionScreen.routeName,
+      builder: (context, state) =>
+          VendorPromotionScreen(vendorId: state.extra as int),
     ),
     GoRoute(
       path: ReviewScreen.routeName,

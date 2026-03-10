@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/transport_api.dart';
-
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/data/create_shipment_data.dart';
 import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
 // BuyerAPIController.allTransportOrders => '/api/all-order/transport'
 
@@ -66,3 +66,53 @@ class TransportOrdersNotifier extends AsyncNotifier<TransportOrdersResponse?> {
     return repo.fetchOrders(page: _page);
   }
 }
+
+// ---------- My shipments (GET /shipments, doc §3.6) ----------
+
+final myShipmentsProvider =
+    AsyncNotifierProvider<MyShipmentsNotifier, ShipmentListResult?>(
+  MyShipmentsNotifier.new,
+);
+
+class MyShipmentsNotifier extends AsyncNotifier<ShipmentListResult?> {
+  int _page = 1;
+  static const int _perPage = 15;
+  int get currentPage => _page;
+
+  @override
+  Future<ShipmentListResult?> build() async => _fetch();
+
+  Future<void> refresh() async {
+    _page = 1;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_fetch);
+  }
+
+  Future<void> changePage(int newPage) async {
+    if (newPage == _page) return;
+    _page = newPage;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_fetch);
+  }
+
+  Future<void> nextPage() async {
+    final last = state.value?.lastPage ?? _page;
+    if (_page < last) await changePage(_page + 1);
+  }
+
+  Future<void> prevPage() async {
+    if (_page > 1) await changePage(_page - 1);
+  }
+
+  Future<ShipmentListResult> _fetch() async {
+    final token = await ref.read(authTokenProvider.future) ?? '';
+    return getMyShipments(token: token, page: _page, perPage: _perPage);
+  }
+}
+
+// Single shipment details by id (GET /shipments/{id}, doc §3.7)
+final shipmentDetailProvider =
+    FutureProvider.family<Map<String, dynamic>, int>((ref, shipmentId) async {
+  final token = await ref.read(authTokenProvider.future) ?? '';
+  return getShipmentDetails(token: token, shipmentId: shipmentId);
+});

@@ -294,6 +294,7 @@ import 'package:market_jango/features/transport/screens/driver/screen/driver_det
 import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 
 import '../../driver/data/transport_driver_data.dart';
+import '../../driver/data/transport_types_data.dart';
 import '../../driver/screen/model/transport_driver_model.dart';
 
 class TransportHomeScreen extends ConsumerStatefulWidget {
@@ -301,15 +302,28 @@ class TransportHomeScreen extends ConsumerStatefulWidget {
   static const String routeName = '/transport_home';
 
   @override
-  ConsumerState<TransportHomeScreen> createState() => _TransportHomeScreenState();
+  ConsumerState<TransportHomeScreen> createState() =>
+      _TransportHomeScreenState();
 }
 
-/// Transport type options for shipping (motorcycle / car / air / water)
-enum TransportType {
-  motorcycle,
-  car,
-  air,
-  water,
+/// Transport type options for shipping (motorcycle / car / air / water).
+/// Values match API response from GET /shipments/transport-types.
+enum TransportType { motorcycle, car, air, water }
+
+/// Parse API string (e.g. "motorcycle", "car") to [TransportType]; returns null if unknown.
+TransportType? _transportTypeFromApiString(String value) {
+  switch (value.toLowerCase()) {
+    case 'motorcycle':
+      return TransportType.motorcycle;
+    case 'car':
+      return TransportType.car;
+    case 'air':
+      return TransportType.air;
+    case 'water':
+      return TransportType.water;
+    default:
+      return null;
+  }
 }
 
 class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
@@ -317,7 +331,6 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
 
-  String _searchQuery = '';
   TransportType? _selectedTransportType;
   bool _hasSearched = false;
 
@@ -329,94 +342,71 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
     super.dispose();
   }
 
-  bool _driverMatchesTransportType(Driver driver, TransportType type) {
-    final carName = driver.carName.toLowerCase();
-    final carModel = driver.carModel.toLowerCase();
-    final combined = '$carName $carModel';
-    switch (type) {
-      case TransportType.motorcycle:
-        return combined.contains('motorcycle') ||
-            combined.contains('bike') ||
-            combined.contains('moto');
-      case TransportType.car:
-        return combined.contains('car') ||
-            combined.contains('vehicle') ||
-            combined.contains('sedan') ||
-            combined.contains('suv') ||
-            combined.contains('truck');
-      case TransportType.air:
-        return combined.contains('air') ||
-            combined.contains('plane') ||
-            combined.contains('flight') ||
-            combined.contains('cargo');
-      case TransportType.water:
-        return combined.contains('water') ||
-            combined.contains('ship') ||
-            combined.contains('boat') ||
-            combined.contains('sea');
-    }
-  }
-
   String _transportTypeLabel(WidgetRef ref, TransportType type) {
     switch (type) {
       case TransportType.motorcycle:
-        return ref.t(BKeys.transport_type_motorcycle);
+        return ref.t(BKeys.transport_type_motorcycle, fallback: 'Motorcycle');
       case TransportType.car:
-        return ref.t(BKeys.transport_type_car);
+        return ref.t(BKeys.transport_type_car, fallback: 'Car');
       case TransportType.air:
-        return ref.t(BKeys.transport_type_air);
+        return ref.t(BKeys.transport_type_air, fallback: 'Air');
       case TransportType.water:
-        return ref.t(BKeys.transport_type_water);
+        return ref.t(BKeys.transport_type_water, fallback: 'Water');
     }
   }
 
-  List<Driver> _filterDrivers(
-    List<Driver> drivers,
-    String query, {
-    String? pickup,
-    String? destination,
-    TransportType? transportType,
-    bool applySearchFilters = false,
-  }) {
-    var result = drivers;
-
-    if (applySearchFilters) {
-      if (transportType != null) {
-        result = result.where((d) => _driverMatchesTransportType(d, transportType)).toList();
-      }
-      final pickupTrim = pickup?.trim() ?? '';
-      if (pickupTrim.isNotEmpty) {
-        result = result.where((d) =>
-            d.location.toLowerCase().contains(pickupTrim.toLowerCase())).toList();
-      }
-      final destTrim = destination?.trim() ?? '';
-      if (destTrim.isNotEmpty) {
-        result = result.where((d) =>
-            d.location.toLowerCase().contains(destTrim.toLowerCase())).toList();
-      }
+  Widget _buildDriverListFromSearch(AsyncValue<List<Driver>>? searchState) {
+    if (searchState == null) {
+      return const Center(child: Text('Loading...'));
     }
-
-    if (query.isNotEmpty) {
-      final lowerQuery = query.toLowerCase();
-      result = result.where((driver) {
-        final name = driver.user.name.toLowerCase();
-        final phone = driver.user.phone.toLowerCase();
-        final carName = driver.carName.toLowerCase();
-        final location = driver.location.toLowerCase();
-        final carModel = driver.carModel.toLowerCase();
-        return name.contains(lowerQuery) ||
-            phone.contains(lowerQuery) ||
-            carName.contains(lowerQuery) ||
-            location.contains(lowerQuery) ||
-            carModel.contains(lowerQuery);
-      }).toList();
-    }
-    return result;
+    return searchState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Padding(
+        padding: EdgeInsets.only(top: 16.h),
+        child: Center(child: Text(ref.t(BKeys.failed_to_load_drivers))),
+      ),
+      data: (items) {
+        if (items.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.only(top: 20.h),
+            child: Text(ref.t(BKeys.no_drivers_available)),
+          );
+        }
+        final homeItems = items.take(10).toList();
+        return Column(
+          children: homeItems
+              .map(
+                (d) => _DriverCard(
+                  key: ValueKey(d.id),
+                  driver: d,
+                  images: d.images.whereType<String>().toList(),
+                  onSelect: () {
+                    context.push(
+                      TransportBookingConfirmScreen.routeName,
+                      extra: TransportBookingConfirmArgs(
+                        driver: d,
+                        pickup: _pickupController.text.trim().isEmpty
+                            ? null
+                            : _pickupController.text.trim(),
+                        destination: _destinationController.text.trim().isEmpty
+                            ? null
+                            : _destinationController.text.trim(),
+                        transportType: _selectedTransportType?.name,
+                      ),
+                    );
+                  },
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(approvedDriversProvider);
+    final searchState = ref.watch(searchTransportersResultsProvider);
+    final transportTypesAsync = ref.watch(transportTypesProvider);
     final userID = ref.watch(getUserIdProvider.select((value) => value.value));
     final async = ref.watch(userProvider(userID ?? ''));
     return Scaffold(
@@ -425,9 +415,11 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
         child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(approvedDriversProvider);
+            ref.invalidate(transportTypesProvider);
             ref.invalidate(userProvider(userID ?? ''));
             await Future.wait([
               ref.read(approvedDriversProvider.future),
+              ref.read(transportTypesProvider.future),
               if (userID != null) ref.read(userProvider(userID).future),
             ]);
           },
@@ -438,259 +430,323 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                /// Header
-                async.when(
-                  data: (data) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ref.t(BKeys.hello)}, ${data.name}',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w600,
+                  /// Header
+                  async.when(
+                    data: (data) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${ref.t(BKeys.hello)}, ${data.name}',
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 10.w),
-                        InkWell(
-                          onTap: () {
-                            //"/transport_notificatons"
-                            context.push("/transport_notificatons");
-                          },
-                          child: Icon(
-                            Icons.verified,
-                            size: 20.sp,
-                            color: AllColor.blue500,
+                          SizedBox(width: 10.w),
+                          InkWell(
+                            onTap: () {
+                              //"/transport_notificatons"
+                              context.push("/transport_notificatons");
+                            },
+                            child: Icon(
+                              Icons.verified,
+                              size: 20.sp,
+                              color: AllColor.blue500,
+                            ),
                           ),
-                        ),
-                        Spacer(),
-                        GlobalNotificationIcon(),
-                      ],
-                    );
-                  },
-                  loading: () =>
-                      const Center(child: Text('Loading...')),
-                  error: (e, _) => Center(child: Text(e.toString())),
-                ),
-                //"Find your Driver"
-                Text(
-                  ref.t(BKeys.find_your_driver),
-                  style: TextStyle(fontSize: 10.sp),
-                ),
-                SizedBox(height: 12.h),
-
-                /// Search by vendor name (upore / above)
-                _softField(
-                  hint: ref.t(BKeys.search_by_vendor_name),
-                  icon: Icons.search,
-                  bg: Colors.white,
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                ),
-                SizedBox(height: 16.h),
-
-                /// Transport / Shipping type select (nica / below)
-                Text(
-                  ref.t(BKeys.transport_type),
-                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF6B7280)),
-                ),
-                SizedBox(height: 8.h),
-                DropdownButtonFormField<TransportType?>(
-                  value: _selectedTransportType,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    filled: true,
-                    fillColor: AllColor.grey300,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18.r),
-                      borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18.r),
-                      borderSide: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
-                    ),
-                  ),
-                  hint: Text(
-                    ref.t(BKeys.transport_type),
-                    style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9BA0A6)),
-                  ),
-                  items: TransportType.values.map((type) {
-                    final label = _transportTypeLabel(ref, type);
-                    return DropdownMenuItem<TransportType?>(
-                      value: type,
-                      child: Text(label, style: TextStyle(fontSize: 14.sp)),
-                    );
-                  }).toList(),
-                  onChanged: (TransportType? value) {
-                    setState(() {
-                      _selectedTransportType = value;
-                    });
-                  },
-                ),
-                SizedBox(height: 16.h),
-
-                /// Pickup, Destination
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Or divider
-                    Row(
-                      children: [
-                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          child: Text(ref.t(BKeys.or), style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6B7280))),
-                        ),
-                        Expanded(child: Divider(thickness: 1, color: const Color(0xFFE5E7EB))),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-
-                    // Shipping From (Pickup)
-                    _softField(
-                      hint: ref.t(BKeys.pick_up_location),
-                      icon: Icons.location_on_outlined,
-                      bg: AllColor.grey300,
-                      controller: _pickupController,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    SizedBox(height: 10.h),
-
-                    // Shipping To (Destination)
-                    _softField(
-                      hint: ref.t(BKeys.destination),
-                      icon: Icons.flag_outlined,
-                      bg: AllColor.grey300,
-                      controller: _destinationController,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 20.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _hasSearched = true;
-                      });
+                          Spacer(),
+                          GlobalNotificationIcon(),
+                        ],
+                      );
                     },
-                    child: Text(
-                      ref.t(BKeys.search),
-                      style: TextStyle(fontSize: 16.sp, color: AllColor.white),
+                    loading: () => const Center(child: Text('Loading...')),
+                    error: (e, _) => Center(child: Text(e.toString())),
+                  ),
+                  //"Find your Driver"
+                  // Text(
+                  //   ref.t(BKeys.find_your_driver),
+                  //   style: TextStyle(fontSize: 10.sp),
+                  // ),
+                  // SizedBox(height: 12.h),
+
+                  /// Search by vendor name (upore / above)
+                  // _softField(
+                  //   hint: ref.t(BKeys.search_by_vendor_name),
+                  //   icon: Icons.search,
+                  //   bg: Colors.white,
+                  //   controller: _searchController,
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       _searchQuery = value;
+                  //     });
+                  //   },
+                  // ),
+                  // SizedBox(height: 16.h),
+
+                  /// Transport / Shipping type select (nica / below)
+                  Text(
+                    ref.t(BKeys.transport_type),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF6B7280),
                     ),
                   ),
-                ),
-                SizedBox(height: 20.h),
-                    
-                
-
-                SizedBox(height: 20.h),
-
-                /// Drivers section header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      //"Drivers",
-                      ref.t(BKeys.driver),
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  SizedBox(height: 8.h),
+                  transportTypesAsync.when(
+                    loading: () => _transportTypeDropdown(
+                      ref: ref,
+                      value: _selectedTransportType,
+                      items: const [],
+                      onChanged: null,
+                      loading: true,
                     ),
-                    TextButton(
-                      onPressed: () {
-                        context.push(TransportDriver.routeName);
-                      },
-                      child: Text(ref.t(BKeys.seeAll)),
+                    error: (_, __) => _transportTypeDropdown(
+                      ref: ref,
+                      value: _selectedTransportType,
+                      items: [
+                        DropdownMenuItem<TransportType?>(
+                          value: null,
+                          child: Text(
+                            ref.t(BKeys.transport_type_all, fallback: 'All'),
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
+                        ),
+                        ...TransportType.values.map(
+                          (type) => DropdownMenuItem<TransportType?>(
+                            value: type,
+                            child: Text(
+                              _transportTypeLabel(ref, type),
+                              style: TextStyle(fontSize: 14.sp),
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (v) =>
+                          setState(() => _selectedTransportType = v),
+                      loading: false,
                     ),
-                  ],
-                ),
-
-                /// Driver Cards (ListView → Column with .map)
-                state.when(
-                  loading: () =>
-                      const Center(child: Text('Loading...')),
-                  error: (e, _) => Center(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 16.h),
-                      child: Text(
-                        // 'Failed to load drivers'
-                        ref.t(BKeys.failed_to_load_drivers),
-                      ),
-                    ),
+                    data: (apiTypes) {
+                      final types = apiTypes
+                          .map(_transportTypeFromApiString)
+                          .whereType<TransportType>()
+                          .toList();
+                      if (types.isEmpty) {
+                        types.addAll(TransportType.values);
+                      }
+                      return _transportTypeDropdown(
+                        ref: ref,
+                        value: _selectedTransportType,
+                        items: [
+                          DropdownMenuItem<TransportType?>(
+                            value: null,
+                            child: Text(
+                              ref.t(BKeys.transport_type_all, fallback: 'All'),
+                              style: TextStyle(fontSize: 14.sp),
+                            ),
+                          ),
+                          ...types.map(
+                            (type) => DropdownMenuItem<TransportType?>(
+                              value: type,
+                              child: Text(
+                                _transportTypeLabel(ref, type),
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) =>
+                            setState(() => _selectedTransportType = v),
+                        loading: false,
+                      );
+                    },
                   ),
-                  data: (resp) {
-                    final page = resp?.data;
-                    final items = page?.data ?? <Driver>[];
-                    final pickup = _pickupController.text.trim();
-                    final destination = _destinationController.text.trim();
-                    final filteredItems = _filterDrivers(
-                      items,
-                      _searchQuery,
-                      pickup: pickup.isEmpty ? null : pickup,
-                      destination: destination.isEmpty ? null : destination,
-                      transportType: _selectedTransportType,
-                      applySearchFilters: _hasSearched,
-                    );
+                  SizedBox(height: 16.h),
 
-                    if (filteredItems.isEmpty) {
-                      return Padding(
-                        padding: EdgeInsets.only(top: 20.h),
-                        child: Text(
-                          ref.t(BKeys.no_drivers_available),
+                  /// Pickup, Destination
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Or divider
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: const Color(0xFFE5E7EB),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w),
+                            child: Text(
+                              ref.t(BKeys.or),
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: const Color(0xFFE5E7EB),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      // Shipping From (Pickup)
+                      _softField(
+                        hint: ref.t(BKeys.pick_up_location),
+                        icon: Icons.location_on_outlined,
+                        bg: AllColor.grey300,
+                        controller: _pickupController,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      SizedBox(height: 10.h),
+
+                      // Shipping To (Destination)
+                      _softField(
+                        hint: ref.t(BKeys.destination),
+                        icon: Icons.flag_outlined,
+                        bg: AllColor.grey300,
+                        controller: _destinationController,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 20.h),
+                  Builder(
+                    builder: (_) {
+                      final pickup = _pickupController.text.trim();
+                      final destination = _destinationController.text.trim();
+                      final canSearch = pickup.isNotEmpty && destination.isNotEmpty;
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            backgroundColor: Colors.blue,
+                            disabledBackgroundColor: Colors.grey.shade400,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          onPressed: canSearch
+                              ? () async {
+                                  setState(() => _hasSearched = true);
+                                  await ref
+                                      .read(searchTransportersResultsProvider.notifier)
+                                      .search(
+                                        transportType: _selectedTransportType?.name,
+                                        originAddress: null,
+                                        destinationAddress: null,
+                                      );
+                                }
+                              : null,
+                          child: Text(
+                            ref.t(BKeys.search),
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: AllColor.white,
+                            ),
+                          ),
                         ),
                       );
-                    }
-                    final homeItems = filteredItems.take(10).toList();
+                    },
+                  ),
+                  SizedBox(height: 20.h),
 
-                    return Column(
-                      children: homeItems
-                          .map(
-                            (d) => _DriverCard(
-                              key: ValueKey(d.id),
-                              driver: d,
-                              images: d.images.whereType<String>().toList(),
-                              onSelect: () {
-                                context.push(
-                                  TransportBookingConfirmScreen.routeName,
-                                  extra: TransportBookingConfirmArgs(
-                                    driver: d,
-                                    pickup: _pickupController.text.trim().isEmpty
-                                        ? null
-                                        : _pickupController.text.trim(),
-                                    destination: _destinationController.text.trim().isEmpty
-                                        ? null
-                                        : _destinationController.text.trim(),
-                                  ),
-                                );
-                              },
+                  SizedBox(height: 20.h),
+
+                  /// Drivers section header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        //"Drivers",
+                        ref.t(BKeys.driver),
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          context.push(TransportDriver.routeName);
+                        },
+                        child: Text(ref.t(BKeys.seeAll)),
+                      ),
+                    ],
+                  ),
+
+                  /// Driver list: only show after Search; default = placeholder (no list below)
+                  _hasSearched
+                      ? _buildDriverListFromSearch(searchState)
+                      : Padding(
+                          padding: EdgeInsets.only(top: 24.h),
+                          child: Center(
+                            child: Text(
+                              ref.t(BKeys.find_your_driver, fallback: 'Select transport type, pickup & destination, then tap Search to see drivers'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF6B7280),
+                              ),
                             ),
-                          )
-                          .toList(),
-                    );
-                  },
-                ),
-              ],
+                          ),
+                        ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
+    );
+  }
+
+  Widget _transportTypeDropdown({
+    required WidgetRef ref,
+    required TransportType? value,
+    required List<DropdownMenuItem<TransportType?>> items,
+    required void Function(TransportType?)? onChanged,
+    required bool loading,
+  }) {
+    return DropdownButtonFormField<TransportType?>(
+      value: value,
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: AllColor.grey300,
+        contentPadding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18.r),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18.r),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
+        ),
+      ),
+      hint: Row(
+        children: [
+          if (loading) ...[
+            SizedBox(
+              width: 16.w,
+              height: 16.h,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 8.w),
+          ],
+          Text(
+            ref.t(BKeys.transport_type),
+            style: TextStyle(fontSize: 14.sp, color: const Color(0xFF9BA0A6)),
+          ),
+        ],
+      ),
+      items: items,
+      onChanged: loading ? null : onChanged,
     );
   }
 
@@ -784,7 +840,10 @@ class _DriverCard extends ConsumerWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      context.push(DriverDetailsScreen.routeName, extra: user.id);
+                      context.push(
+                        DriverDetailsScreen.routeName,
+                        extra: user.id,
+                      );
                     },
                     borderRadius: BorderRadius.circular(28.r),
                     child: ClipOval(
@@ -800,7 +859,10 @@ class _DriverCard extends ConsumerWidget {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        context.push(DriverDetailsScreen.routeName, extra: user.id);
+                        context.push(
+                          DriverDetailsScreen.routeName,
+                          extra: user.id,
+                        );
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -827,7 +889,10 @@ class _DriverCard extends ConsumerWidget {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AllColor.blue500.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10.r),
@@ -867,7 +932,11 @@ class _DriverCard extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
-                  Icon(Icons.directions_car_outlined, size: 18.sp, color: const Color(0xFF6B7280)),
+                  Icon(
+                    Icons.directions_car_outlined,
+                    size: 18.sp,
+                    color: const Color(0xFF6B7280),
+                  ),
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
@@ -893,7 +962,10 @@ class _DriverCard extends ConsumerWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        context.push(DriverDetailsScreen.routeName, extra: user.id);
+                        context.push(
+                          DriverDetailsScreen.routeName,
+                          extra: user.id,
+                        );
                       },
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 12.h),

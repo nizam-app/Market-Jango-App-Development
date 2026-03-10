@@ -5,14 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_tracking_screen/screen/global_tracking_screen_1.dart';
-
-import 'package:market_jango/core/utils/image_controller.dart';
-
-
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/data/create_shipment_data.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/transport_shipment_details_screen.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
-import 'package:market_jango/features/transport/screens/my_booking/model/transport_booking_model.dart';
-import 'package:market_jango/features/transport/screens/transport_cancelled_details.dart';
 
 class TransportBooking extends ConsumerStatefulWidget {
   const TransportBooking({super.key});
@@ -30,83 +26,84 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Consumer(
           builder: (context, ref, _) {
-            final state = ref.watch(transportOrdersProvider);
-            final notifier = ref.read(transportOrdersProvider.notifier);
+            final state = ref.watch(myShipmentsProvider);
+            final notifier = ref.read(myShipmentsProvider.notifier);
             return Column(
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Tuppertextandbackbutton(
-                    screenName: ref.t(BKeys.my_bookings),
+                    screenName: ref.t(BKeys.shipment_list, fallback: 'Shipment list'),
                   ),
                 ),
 
                 /// -------- Tabs (All / On the way / Completed) ----------
-                SizedBox(
-                  height: 55.h,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 8.h,
-                    ),
-                    itemCount: tabs.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                    itemBuilder: (context, index) {
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                  child: Row(
+                    children: List.generate(tabs.length, (index) {
                       final tab = tabs[index];
                       final bool isActive = selectedTab == tab;
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedTab = tab),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 10.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? Colors.orange.shade700
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(30.r),
-                            border: Border.all(
+                      return Padding(
+                        padding: EdgeInsets.only(right: index < tabs.length - 1 ? 10.w : 0),
+                        child: GestureDetector(
+                          onTap: () => setState(() => selectedTab = tab),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 10.h,
+                            ),
+                            decoration: BoxDecoration(
                               color: isActive
                                   ? Colors.orange.shade700
-                                  : Colors.grey.shade400,
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(30.r),
+                              border: Border.all(
+                                color: isActive
+                                    ? Colors.orange.shade700
+                                    : Colors.grey.shade400,
+                                width: 1,
+                              ),
+                              boxShadow: isActive
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
                             ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              tab,
-                              style: TextStyle(
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w500,
-                                color: isActive ? Colors.white : Colors.black,
+                            child: Center(
+                              child: Text(
+                                tab,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: isActive ? Colors.white : Colors.black87,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       );
-                    },
+                    }),
                   ),
                 ),
 
-                /// -------- List + pagination ----------
+                /// -------- Shipment list + pagination ----------
                 Expanded(
                   child: state.when(
                     loading: () =>
                         const Center(child: Text('Loading...')),
                     error: (e, _) => Center(child: Text('Failed to load: $e')),
                     data: (resp) {
-                      final page = resp?.data;
-                      final items = page?.data ?? <TransportOrder>[];
-
-                      /// 🔹 deliveryStatus:
-                      ///  - "Completed"
-                      ///  - "On the way"
-                      List<TransportOrder> filtered;
-
+                      final items = resp?.items ?? <ShipmentListItem>[];
+                      List<ShipmentListItem> filtered;
                       if (selectedTab == "All") {
                         filtered = items;
                       } else {
@@ -116,61 +113,54 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                       }
 
                       if (filtered.isEmpty) {
-                        return ListView(
-                          padding: EdgeInsets.all(16.w),
-                          children: [
-                            _emptyBox(
-                              "No ${selectedTab.toLowerCase()} orders found",
-                            ),
-                          ],
+                        return RefreshIndicator(
+                          onRefresh: () async => notifier.refresh(),
+                          child: ListView(
+                            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+                            children: [
+                              _emptyBox(
+                                "No ${selectedTab.toLowerCase()} shipments found",
+                              ),
+                            ],
+                          ),
                         );
                       }
 
-                      return ListView.builder(
-                        padding: EdgeInsets.all(16.w),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final o = filtered[index];
-                          final firstItem = (o.items.isNotEmpty)
-                              ? o.items.first
-                              : null;
+                      return RefreshIndicator(
+                        onRefresh: () async => notifier.refresh(),
+                        child: ListView.builder(
+                          padding: EdgeInsets.fromLTRB(0, 16.h, 0, 24.h),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final item = filtered[index];
+                            final orderIdText = "#${item.id}";
+                            final dateText = _formatDate(item.createdAt ?? '');
+                            final fromText = item.originAddress ?? '';
+                            final toText = item.destinationAddress ?? '';
+                            final status = item.deliveryStatus;
+                            final statusColor = _statusColor(status);
+                            final showTrack = status == 'Completed';
+                            final paymentStatus = item.paymentStatus ?? '';
+                            final price = item.finalPrice ?? item.estimatedPrice;
+                            final pieces = item.totalPieces;
+                            final weight = item.totalWeightKg;
 
-                          final orderIdText = "#${o.taxRef}";
-
-                          /// Driver text (car name + model)
-                          final driverText = firstItem?.driver != null
-                              ? "${firstItem!.driver!.carName} (${firstItem.driver!.carModel})"
-                              : ref.t(BKeys.assigned_driver);
-                          //"Assigned Driver"
-
-                          /// Driver image (nested driver.user.image theke)
-                          final driverImage =
-                              firstItem?.driver?.user?.image ?? "";
-
-                          final dateText = _formatDate(o.createdAt);
-                          final fromText = o.pickupAddress;
-                          final toText = o.dropOfAddress;
-
-                          final status = o.deliveryStatus;
-                          final statusColor = _statusColor(status);
-
-                          /// On the way holei track button dekhabo
-                          /// //"Completed"
-                          final showTrack = status == ref.t(BKeys.completed);
-
-                          return _bookingCard(
-                            status: status,
-                            statusColor: statusColor,
-                            showTrack: showTrack,
-                            orderIdText: orderIdText,
-                            driverText: driverText,
-                            dateText: dateText,
-                            fromText: fromText,
-                            toText: toText,
-                            image: driverImage,
-                            orderId: o.id,
-                          );
-                        },
+                            return _bookingCard(
+                              status: status,
+                              statusColor: statusColor,
+                              showTrack: showTrack,
+                              orderIdText: orderIdText,
+                              dateText: dateText,
+                              fromText: fromText,
+                              toText: toText,
+                              paymentStatus: paymentStatus,
+                              price: price,
+                              totalPieces: pieces,
+                              totalWeightKg: weight,
+                              orderId: item.id,
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
@@ -181,8 +171,8 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                   padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
                   child: state.maybeWhen(
                     data: (resp) {
-                      final cp = resp?.data.currentPage ?? 1;
-                      final lp = resp?.data.lastPage ?? 1;
+                      final cp = resp?.currentPage ?? 1;
+                      final lp = resp?.lastPage ?? 1;
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -219,13 +209,24 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
   // ---------- helpers ----------
 
   Widget _emptyBox(String text) => Container(
-    padding: EdgeInsets.all(16.w),
+    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: Colors.grey.shade300),
+      borderRadius: BorderRadius.circular(16.r),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
     ),
-    child: Text(text),
+    child: Center(
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+      ),
+    ),
   );
 
   ///  - On the way -> blue
@@ -235,6 +236,15 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     if (s.contains('way')) return Colors.blue;
     if (s.contains('complete')) return Colors.green;
     return Colors.grey;
+  }
+
+  /// Payment status color based on API response value.
+  Color _paymentStatusColor(String? status) {
+    final s = (status ?? '').toLowerCase();
+    if (s == 'paid' || s.contains('success')) return Colors.green;
+    if (s == 'pending' || s.contains('await')) return Colors.orange;
+    if (s.isEmpty) return Colors.grey;
+    return Colors.redAccent;
   }
 
   String _formatDate(String iso) {
@@ -257,217 +267,254 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
     return "${months[dt.month - 1]} ${dt.day}, ${dt.year}";
   }
 
-  /// Booking Card Widget (same UI, dynamic text)
+  /// Shipment list card – #ID, status pill, title ("Shipment"), date, route, payment + price + pieces/weight summary.
   Widget _bookingCard({
     required String status,
     required Color statusColor,
     bool showTrack = false,
     String? orderIdText,
-    String? driverText,
     String? dateText,
     String? fromText,
     String? toText,
-    String? image,
+    String? paymentStatus,
+    num? price,
+    int? totalPieces,
+    double? totalWeightKg,
     int? orderId,
   }) {
-    final imageUrl = (image != null && image.isNotEmpty)
-        ? image
-        : "https://www.pngall.com/wp-content/uploads/2016/07/Dress-Transparent.png";
-
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(12.w),
+      margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// Order ID + Status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                orderIdText ?? "Order #not found",
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  status,
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Shipment #ID + Status pill
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  orderIdText ?? "#—",
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-
-          /// Item + Driver Info
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.r),
-                child: FirstTimeShimmerImage(
-                  imageUrl: imageUrl,
-                  height: 80.h,
-                  width: 80.w,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      driverText ?? "Driver",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
+                if (status.isNotEmpty)
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      dateText ?? "",
+                    child: Text(
+                      status,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
                       ),
                     ),
-                    SizedBox(height: 6.h),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 14.sp,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(width: 4.w),
-                        Expanded(
-                          child: Text(
-                            fromText ?? "",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.flag, size: 14.sp, color: Colors.grey),
-                        SizedBox(width: 4.w),
-                        Expanded(
-                          child: Text(
-                            toText ?? "",
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ),
-                      ],
+                  ),
+              ],
+            ),
+            SizedBox(height: 14.h),
+
+            /// Title, date, origin, destination (no image)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shipment',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  dateText ?? '',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.location_on_outlined,
+                        size: 16.sp, color: Colors.grey[600]),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        fromText ?? '—',
+                        style:
+                            TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-
-          /// Buttons
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.shade700,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
+                SizedBox(height: 4.h),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.flag_outlined,
+                        size: 16.sp, color: Colors.grey[600]),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        toText ?? '—',
+                        style:
+                            TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                  onPressed: () {
-                    //"/cancelledDetails"
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
 
-                    /// TODO: এখানে তোমার details route change korte paro
+            /// See Details (orange) + Track Order (blue, only when Completed)
+            SizedBox(height: 12.h),
 
-                    context.push(
-                      TransportCancelledDetails.routeName,
-                      extra: orderId,
-                    );
-                  },
-                  child: Text(
-                    //"See details",
-                    ref.t(BKeys.see_details),
-                    style: TextStyle(fontSize: 13.sp, color: Colors.white),
+            /// Payment + summary row (payment status pill + price + pieces/weight)
+            Row(
+              children: [
+                if ((paymentStatus ?? '').isNotEmpty)
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: _paymentStatusColor(paymentStatus)
+                          .withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      (paymentStatus ?? '').toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: _paymentStatusColor(paymentStatus),
+                      ),
+                    ),
                   ),
+                const Spacer(),
+                if (price != null)
+                  Text(
+                    '\$${price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+              ],
+            ),
+            if ((totalPieces ?? 0) > 0 || (totalWeightKg ?? 0) > 0)
+              Padding(
+                padding: EdgeInsets.only(top: 4.h),
+                child: Row(
+                  children: [
+                    if ((totalPieces ?? 0) > 0)
+                      Text(
+                        '${totalPieces ?? 0} pcs',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    if ((totalPieces ?? 0) > 0 && (totalWeightKg ?? 0) > 0)
+                      Text(
+                        '  •  ',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    if ((totalWeightKg ?? 0) > 0)
+                      Text(
+                        '${(totalWeightKg ?? 0).toStringAsFixed(1)} kg',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              SizedBox(width: 10.w),
 
-              if (showTrack)
+            SizedBox(height: 12.h),
+
+            Row(
+              children: [
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.orange.shade700,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30.r),
                       ),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                     ),
                     onPressed: () {
-                      context.pushNamed(
-                        GlobalTrackingScreen1.routeName,
-                        pathParameters: {"screenName": "transport"},
+                      context.push(
+                        TransportShipmentDetailsScreen.routeName,
+                        extra: TransportShipmentDetailsArgs(shipmentId: orderId),
                       );
                     },
                     child: Text(
-                      // "Track order"
-                      ref.t(BKeys.track_order),
-                      style: TextStyle(fontSize: 13.sp, color: Colors.white),
+                      ref.t(BKeys.see_details),
+                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
-
-              // if (showTrack)
-              //   Expanded(
-              //     child: ElevatedButton(
-              //       style: ElevatedButton.styleFrom(
-              //         backgroundColor: Colors.blue,
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(30.r),
-              //         ),
-              //         padding: EdgeInsets.symmetric(vertical: 12.h),
-              //       ),
-              //       onPressed: () {
-              //         context.pushNamed(
-              //           GlobalTrackingScreen1.routeName,
-              //           pathParameters: {"screenName": "transport"},
-              //         );
-              //       },
-              //       child: Text(
-              //         "Track order",
-              //         style: TextStyle(fontSize: 13.sp, color: Colors.white),
-              //       ),
-              //     ),
-              //   ),
-            ],
-          ),
-        ],
+                if (showTrack) ...[
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                      ),
+                      onPressed: () {
+                        context.pushNamed(
+                          GlobalTrackingScreen1.routeName,
+                          pathParameters: {"screenName": "transport"},
+                        );
+                      },
+                      child: Text(
+                        ref.t(BKeys.track_order),
+                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

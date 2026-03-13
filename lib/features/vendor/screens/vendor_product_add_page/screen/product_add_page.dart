@@ -44,8 +44,10 @@ class _ProductAddPageState extends ConsumerState<ProductAddPage> {
 
   @override
   void dispose() {
-    // Clear attributes when leaving the page
+    // Clear attributes and option-2 fields when leaving the page
     ref.read(selectedAttributesProvider.notifier).state = {};
+    ref.read(saleTypeProvider.notifier).state = '';
+    ref.read(termsAndConditionsProvider.notifier).state = '';
     super.dispose();
   }
 
@@ -75,6 +77,8 @@ class _ProductAddPageState extends ConsumerState<ProductAddPage> {
                 error: (err, _) => Center(child: Text('Error: $err')),
               ),
 
+              SizedBox(height: 16.h),
+              _TwoOptionSection(),
               SizedBox(height: 16.h),
                 PriceAndImagesSection(),
               ],
@@ -292,6 +296,61 @@ class _Label extends StatelessWidget {
   }
 }
 
+/// Sale type field (attributes are above; terms & conditions at bottom in orange box).
+class _TwoOptionSection extends ConsumerStatefulWidget {
+  const _TwoOptionSection();
+
+  @override
+  ConsumerState<_TwoOptionSection> createState() => _TwoOptionSectionState();
+}
+
+class _TwoOptionSectionState extends ConsumerState<_TwoOptionSection> {
+  final _saleTypeC = TextEditingController();
+  static const _lblColor = Color(0xFF436AA0);
+  static const _hintColor = Color(0xFF95A6C4);
+
+  OutlineInputBorder _border() => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5.r),
+        borderSide: BorderSide(color: AllColor.grey, width: 1.2),
+      );
+
+  @override
+  void dispose() {
+    _saleTypeC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sale type',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+            color: _lblColor,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        TextField(
+          controller: _saleTypeC,
+          onChanged: (v) =>
+              ref.read(saleTypeProvider.notifier).state = v,
+          decoration: InputDecoration(
+            hintText: 'e.g. kg, piece, etc.',
+            hintStyle: TextStyle(fontSize: 14.sp, color: _hintColor),
+            fillColor: AllColor.white,
+            enabledBorder: _border(),
+            focusedBorder: _border(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class PriceAndImagesSection extends ConsumerStatefulWidget{
   const PriceAndImagesSection({super.key,});
 
@@ -304,10 +363,17 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
 
 
   @override
+  void dispose() {
+    _termsC.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     
     const borderBlue = Color(0xFFBFD5F1);
     const labelBlue = Color(0xFF2B6CB0);
+    const _hintColor = Color(0xFF95A6C4);
     final createState = ref.watch(createProductProvider);
 
     bool loading = createState.isLoading;
@@ -465,6 +531,43 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
             }),
           ),
           SizedBox(height: 20.h),
+
+          // Terms & conditions - last position, orange box
+          Text(
+            'Terms & conditions',
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: labelBlue,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: Colors.orange.shade200, width: 1.2),
+            ),
+            child: TextField(
+              controller: _termsC,
+              onChanged: (v) =>
+                  ref.read(termsAndConditionsProvider.notifier).state = v,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Enter terms and conditions (optional)',
+                hintStyle: TextStyle(fontSize: 14.sp, color: _hintColor),
+                fillColor: Colors.transparent,
+                filled: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
           GlobalSaveBotton(
                 bottonName:loading? "Creating....": "Create a Product",
                 onPressed: () {
@@ -494,6 +597,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                   final name = ref.watch(productNameProvider);
                   final desc = ref.watch(productDescProvider);
                   final categoryId = ref.watch(productCategoryProvider);
+                  final saleType = ref.watch(saleTypeProvider);
+                  final termsAndConditions = ref.watch(termsAndConditionsProvider);
                   createAsync.createProduct(
                     name: name,
                     description: desc,
@@ -503,6 +608,8 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
                     attributes: selectedAttributes,
                     stock: _stockC.text,
                     weight: _weightC.text,
+                    saleType: saleType,
+                    termsAndConditions: termsAndConditions,
                     image: File(_cover!.path),
                     files: _gallery.map((x) => File(x.path)).toList(),
                   );
@@ -532,6 +639,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
   final _previousC = TextEditingController();
   final _stockC = TextEditingController();
   final _weightC = TextEditingController();
+  final _termsC = TextEditingController();
 
   final _picker = ImagePicker();
 

@@ -143,4 +143,31 @@ class ProductNotifier extends AsyncNotifier<PaginatedProducts?> {
     }
     throw Exception('Failed to fetch products: ${response.statusCode}');
   }
+
+  Future<void> reorderProducts(List<int> productIds) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null) {
+      throw Exception('Token not found');
+    }
+
+    final uri = Uri.parse(VendorAPIController.vendor_product_reorder);
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+      },
+      body: jsonEncode({'product_ids': productIds}),
+    );
+
+    if (response.statusCode == 200) {
+      // Refresh products after successful reorder
+      state = const AsyncLoading();
+      state = await AsyncValue.guard(() => _fetchProducts());
+      return;
+    }
+
+    throw Exception(
+        'Failed to reorder products: ${response.statusCode} ${response.body}');
+  }
 }

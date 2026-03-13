@@ -3,6 +3,7 @@ import 'global_api.dart';
 class VendorAPIController {
   static final String _base_api = "$api/api";
   static String vendor_product = "$_base_api/vendor/product";
+  static String vendor_product_reorder = "$_base_api/vendor/product/reorder";
   static String product_update(int id) => "$_base_api/product/update/$id";
   static String product_attribute_vendor =
       "$_base_api/product-attribute/vendor";
@@ -51,4 +52,18 @@ class VendorAPIController {
       '$_base_api/product-visibility/$id';
   static String vendorDashboardVisibility =
       '$_base_api/vendor-dashboard/visibility';
+
+  /// Vendor Route Points (delivery setting) – GET list, POST opt-in, DELETE opt-out
+  static String get vendor_route_points => '$_base_api/vendor/route-points';
+  static String vendorRoutePoints({String? search, int page = 1}) {
+    final buf = StringBuffer('$_base_api/vendor/route-points');
+    final params = <String>[];
+    if (search != null && search.trim().isNotEmpty) {
+      params.add('search=${Uri.encodeComponent(search.trim())}');
+    }
+    params.add('page=$page');
+    return '$buf?${params.join('&')}';
+  }
+  static String vendorRoutePointsDelete(int id) =>
+      '$_base_api/vendor/route-points/$id';
 }

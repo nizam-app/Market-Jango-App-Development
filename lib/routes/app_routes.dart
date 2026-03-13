@@ -78,6 +78,7 @@ import 'package:market_jango/features/vendor/screens/vendor_track_shipment/scree
 import 'package:market_jango/features/vendor/screens/visibility/model/visibility_model.dart';
 import 'package:market_jango/features/vendor/screens/visibility/screen/visibility_form_screen.dart';
 import 'package:market_jango/features/vendor/screens/visibility/screen/visibility_management_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
 import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
 import 'package:market_jango/features/ranking/screen/ranking_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
@@ -258,6 +259,11 @@ final GoRouter router = GoRouter(
       path: VisibilityManagementScreen.routeName,
       name: 'vendor_visibility_management',
       builder: (context, state) => const VisibilityManagementScreen(),
+    ),
+    GoRoute(
+      path: VendorDeliverySettingScreen.routeName,
+      name: 'vendor_delivery_setting',
+      builder: (context, state) => const VendorDeliverySettingScreen(),
     ),
     GoRoute(
       path: VisibilityFormScreen.routeName,

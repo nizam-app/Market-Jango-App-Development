@@ -26,6 +26,7 @@ import 'package:market_jango/features/buyer/screens/review/review_screen.dart';
 import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
 import '../../visibility/screen/visibility_management_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
 import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
 import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
@@ -113,7 +114,25 @@ class VendorHomeScreen extends ConsumerWidget {
                         final products = paginated.products;
                         return Column(
                           children: [
-                            _buildProductGridViewSection(products),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20.w),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    _showReorderBottomSheet(
+                                      context,
+                                      ref,
+                                      products,
+                                    );
+                                  },
+                                  icon: const Icon(Icons.swap_vert),
+                                  label: const Text('Reorder products'),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            _buildProductGridViewSection(context, ref, products),
                             SizedBox(height: 20.h),
                             GlobalPagination(
                               currentPage: paginated.currentPage,
@@ -143,9 +162,10 @@ class VendorHomeScreen extends ConsumerWidget {
   Widget buildDrawer(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           SizedBox(height: 20.h),
           CustomBackButton(),
           SizedBox(height: 10.h),
@@ -257,6 +277,27 @@ class VendorHomeScreen extends ConsumerWidget {
           Divider(color: Colors.grey.shade300),
           InkWell(
             onTap: () {
+              context.push(VendorDeliverySettingScreen.routeName);
+            },
+            child: ListTile(
+              leading: Icon(
+                Icons.delivery_dining_outlined,
+                size: 20.r,
+                color: Colors.black,
+              ),
+              title: Text(
+                'Delivery setting',
+                style: TextStyle(color: Colors.black, fontSize: 14.sp),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Divider(color: Colors.grey.shade300),
+          InkWell(
+            onTap: () {
               context.push(AffiliateScreen.routeName);
             },
             child: ListTile(
@@ -320,11 +361,13 @@ class VendorHomeScreen extends ConsumerWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
 
-  Widget _buildProductGridViewSection(List<VendorProduct> products) {
+  Widget _buildProductGridViewSection(
+      BuildContext context, WidgetRef ref, List<VendorProduct> products) {
     final safeProducts = products.whereType<VendorProduct>().toList();
 
     return GridView.builder(
@@ -367,6 +410,140 @@ class VendorHomeScreen extends ConsumerWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showReorderBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<VendorProduct> products,
+  ) {
+    final productNotifier = ref.read(productNotifierProvider.notifier);
+    final List<VendorProduct> localList = List<VendorProduct>.from(products);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.7,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Reorder products',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final ids = localList.map((e) => e.id).toList();
+                            try {
+                              Navigator.of(ctx).pop();
+                              await productNotifier.reorderProducts(ids);
+                              if (context.mounted) {
+                                GlobalSnackbar.show(
+                                  context,
+                                  title: 'Success',
+                                  message:
+                                      'Product order updated successfully',
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                GlobalSnackbar.show(
+                                  context,
+                                  title: 'Error',
+                                  message: e.toString(),
+                                  type: CustomSnackType.error,
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Save'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 8.h,
+                      ),
+                      itemCount: localList.length,
+                      onReorder: (oldIndex, newIndex) {
+                        if (newIndex > oldIndex) {
+                          newIndex -= 1;
+                        }
+                        final item = localList.removeAt(oldIndex);
+                        localList.insert(newIndex, item);
+                      },
+                      itemBuilder: (ctx, index) {
+                        final prod = localList[index];
+                        return ListTile(
+                          key: ValueKey(prod.id),
+                          leading: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.drag_handle),
+                              SizedBox(width: 8.w),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6.r),
+                                child: SizedBox(
+                                  width: 40.w,
+                                  height: 40.w,
+                                  child: prod.image.isNotEmpty
+                                      ? FirstTimeShimmerImage(
+                                          imageUrl: prod.image,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(
+                                          color: Colors.grey.shade200,
+                                          child: Icon(
+                                            Icons.image,
+                                            size: 20.r,
+                                            color: Colors.grey.shade400,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          title: Text(
+                            prod.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '#${prod.id}',
+                            style: TextStyle(fontSize: 12.sp),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );

@@ -164,7 +164,8 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                 ProductTitleAndDescription(product: product),
 
                 /// ✅ ONLY attributes show (no size/color widgets)
-                if (attrs.isNotEmpty)
+                if (attrs.isNotEmpty) ...[
+                  SizedBox(height: 16.h),
                   ProductAttributesSelector(
                     attributes: attrs,
                     selected: _selectedAttrs,
@@ -172,7 +173,8 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                       setState(() => _selectedAttrs[key] = value);
                     },
                   ),
-
+                ],
+                SizedBox(height: 16.h),
                 ProductMaterialAndStoreInfo(
                   product: product,
                   userId: product.vendor.userId,
@@ -219,9 +221,17 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                   },
                 ),
 
+                SizedBox(height: 16.h),
+                /// Sale type & Terms – under Specifications (orange tag + orange box)
+                ProductSaleTypeAndTermsUnderSection(
+                  saleType: product.saleType,
+                  termsAndConditions: product.termsAndConditions,
+                ),
+
+                SizedBox(height: 16.h),
                 // Just For You – no extra gap, title tight to grid
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 0.h),
+                  padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -571,7 +581,7 @@ class ProductTitleAndDescription extends StatelessWidget {
 
     return Container(
       color: AllColor.white,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -731,6 +741,246 @@ class ProductTitleAndDescription extends StatelessWidget {
   }
 }
 
+/// Sale type + Terms & conditions – shown **under** Specifications (orange tag style + orange box).
+class ProductSaleTypeAndTermsUnderSection extends StatelessWidget {
+  const ProductSaleTypeAndTermsUnderSection({
+    super.key,
+    this.saleType,
+    this.termsAndConditions,
+  });
+
+  final String? saleType;
+  final String? termsAndConditions;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSaleType = saleType != null && saleType!.trim().isNotEmpty;
+    final hasTerms =
+        termsAndConditions != null && termsAndConditions!.trim().isNotEmpty;
+    if (!hasSaleType && !hasTerms) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasSaleType) ...[
+            Text(
+              'Sale type',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.black,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: [
+                _OrangeTag(
+                  text: _capitalize(saleType!.trim()),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+          if (hasTerms) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  size: 20.r,
+                  color: Colors.orange.shade700,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'Terms & conditions',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AllColor.black,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.orange.shade200,
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.orange.shade100.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                termsAndConditions!.trim(),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: AllColor.black87,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _capitalize(String s) {
+    if (s.isEmpty) return s;
+    return '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+  }
+}
+
+/// Orange tag – same style as Specifications (Cotton 95%, Nylon 5%).
+class _OrangeTag extends StatelessWidget {
+  const _OrangeTag({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: AllColor.orange200,
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+          color: AllColor.black,
+        ),
+      ),
+    );
+  }
+}
+
+/// Sale type chip – shows e.g. "Retail", "12 pices" from API.
+class ProductSaleTypeChip extends StatelessWidget {
+  const ProductSaleTypeChip({super.key, required this.saleType});
+  final String saleType;
+
+  String _capitalize(String s) {
+    if (s.isEmpty) return s;
+    return '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.h),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Icon(
+            Icons.sell_rounded,
+            size: 18.r,
+            color: AllColor.orange,
+          ),
+          SizedBox(width: 8.w),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: AllColor.orange.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: AllColor.orange.withOpacity(0.4),
+                width: 1.2,
+              ),
+            ),
+            child: Text(
+              _capitalize(saleType.trim()),
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.orange.shade800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Terms & conditions in an orange box – matches vendor add page style.
+class ProductTermsSection extends StatelessWidget {
+  const ProductTermsSection({super.key, required this.terms});
+  final String terms;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                size: 20.r,
+                color: Colors.orange.shade700,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Terms & conditions',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AllColor.black,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Colors.orange.shade200,
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.shade100.withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              terms.trim(),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AllColor.black87,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// ------------------------------------------------------
 /// ✅ Dynamic Attributes UI (same design style)
 /// ------------------------------------------------------
@@ -817,7 +1067,7 @@ class _SizeStyle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -889,7 +1139,7 @@ class _ChipStyle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -967,7 +1217,7 @@ class SizeColorAnd extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

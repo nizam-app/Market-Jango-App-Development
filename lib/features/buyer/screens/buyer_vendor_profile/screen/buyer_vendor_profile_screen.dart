@@ -12,6 +12,7 @@ import 'package:market_jango/core/widget/custom_new_product.dart';
 import 'package:market_jango/core/widget/see_more_button.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_categori_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_propuler_product_data.dart';
+import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/buyer_vendor_product_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/data/user_id_by_vendor_data.dart';
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/model/buyer_vendor_category_model.dart';
 import 'package:market_jango/features/buyer/screens/product/product_details.dart';
@@ -24,6 +25,57 @@ import 'package:market_jango/core/utils/get_user_type.dart';
 
 import 'buyer_vendor_cetagory_screen.dart';
 import 'vendor_promotion_screen.dart';
+
+/// First 4 products from GET api/product/vendor/{id} (see doc/API_PRODUCT_VENDOR.md). Shown above Popular.
+class VendorFirstFourProductSection extends ConsumerWidget {
+  const VendorFirstFourProductSection({super.key, required this.vendorId});
+
+  final int vendorId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(vendorFirstFourProductsProvider(vendorId));
+    return async.when(
+      loading: () => Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        child: Center(child: Text(e.toString(), style: TextStyle(fontSize: 12.sp))),
+      ),
+      data: (products) {
+        if (products.isEmpty) return const SizedBox.shrink();
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 10.w),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 8.w,
+            mainAxisSpacing: 8.h,
+            childAspectRatio: 0.60,
+          ),
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            final p = products[index];
+            return GestureDetector(
+              onTap: () => context.push(ProductDetails.routeName, extra: p.id),
+              child: CustomNewProduct(
+                width: 162.w,
+                height: 175.h,
+                productName: p.name,
+                productPrices: p.sellPrice.toStringAsFixed(2),
+                image: p.image,
+                imageHeight: 175,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
 
 class BuyerVendorProfileScreen extends ConsumerWidget {
   const BuyerVendorProfileScreen({
@@ -194,6 +246,7 @@ class BuyerVendorProfileScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Column(
                   children: [
+                    VendorFirstFourProductSection(vendorId: vendorId),
                     SeeMoreButton(name: "Popular", isSeeMore: false),
                     PopularProduct(vendorId: vendorId),
 

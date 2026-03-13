@@ -46,6 +46,8 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
     required Map<String, List<String>> attributes,
     required String stock,
     required String weight,
+    required String saleType,
+    required String termsAndConditions,
     required File image,
     required List<File> files,
   }) async {
@@ -83,6 +85,8 @@ class CreateProductNotifier extends StateNotifier<AsyncValue<String>> {
       
       request.fields['stock'] = stock; // stock quantity
       request.fields['weight'] = weight; // weight in kg
+      request.fields['sale_type'] = saleType;
+      request.fields['terms_and_conditions'] = termsAndConditions;
 
       // 🖼️ Main Image
       request.files.add(await http.MultipartFile.fromPath('image', cover.path, filename: 'cover.jpg'));

@@ -6,3 +6,5 @@ final selectedAttributesProvider = StateProvider<Map<String, List<String>>>((ref
 final productNameProvider = StateProvider<String>((ref) => '');
 final productDescProvider = StateProvider<String>((ref) => '');
 final productCategoryProvider = StateProvider<int?>((ref) => null);
+final saleTypeProvider = StateProvider<String>((ref) => '');
+final termsAndConditionsProvider = StateProvider<String>((ref) => '');

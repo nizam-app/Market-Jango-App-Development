@@ -62,7 +62,7 @@ class _VendorDeliverySettingScreenState
           child: const CustomBackButton(),
         ),
         title: Text(
-          'Vendor delivery setting',
+          'Delivery setting',
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w600,

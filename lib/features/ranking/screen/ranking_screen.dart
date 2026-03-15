@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/features/ranking/data/ranking_data.dart';
 import 'package:market_jango/features/ranking/model/ranking_model.dart';
@@ -131,7 +133,7 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Center(child: Text('Could not load user type')),
+        error: (_, __) => Center(child: Text(ref.t(BKeys.could_not_load_user_type, fallback: 'Could not load user type'))),
       ),
     );
   }

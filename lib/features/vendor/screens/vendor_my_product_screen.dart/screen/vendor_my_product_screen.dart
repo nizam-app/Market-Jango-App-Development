@@ -30,6 +30,14 @@ class VendorMyProductScreen extends ConsumerStatefulWidget {
 
 class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
   final List<String> attributes = [];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _showAttributeMenu(BuildContext context) async {
     // Get vendor ID
@@ -145,13 +153,58 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
               ),
               SizedBox(height: 20.h),
 
-              /// Products List
+              /// Products List + Search
               Text(
-                // "Products List",
                 ref.t(BKeys.products_list),
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AllColor.black,
+                ),
               ),
               SizedBox(height: 12.h),
+
+              /// Search product
+              TextField(
+                controller: _searchController,
+                onChanged: (v) => setState(() => _searchQuery = v.trim()),
+                style: TextStyle(fontSize: 15.sp, color: AllColor.black),
+                decoration: InputDecoration(
+                  hintText: 'Search product...',
+                  hintStyle: TextStyle(
+                    fontSize: 14.sp,
+                    color: AllColor.grey500,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    size: 24.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide(
+                      color: AllColor.orange,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
 
               /// Product items
               productAsync.when(
@@ -160,17 +213,46 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
                     return const Center(child: Text("No Data"));
                   }
                   final products = paginetion.products;
+                  final filtered = _searchQuery.isEmpty
+                      ? products
+                      : products
+                          .where(
+                            (p) =>
+                                p.name
+                                    .toLowerCase()
+                                    .contains(_searchQuery.toLowerCase()) ||
+                                (p.categoryName
+                                    .toLowerCase()
+                                    .contains(_searchQuery.toLowerCase())),
+                          )
+                          .toList();
+                  if (filtered.isEmpty) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.h),
+                      child: Center(
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? 'No products'
+                              : 'No products found for "$_searchQuery"',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AllColor.grey500,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                   return Column(
                     children: [
                       ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: products.length,
+                        itemCount: filtered.length,
                         separatorBuilder: (_, __) => SizedBox(height: 10.h),
                         itemBuilder: (context, index) {
-                          final product = products[index];
+                          final product = filtered[index];
                           return _ProductCard(
-                            imageUrl: product.image, // ✅ placeholder image
+                            imageUrl: product.image,
                             title: product.name,
                             category: product.categoryName,
                             price: product.sellPrice,

@@ -56,7 +56,9 @@ class VendorHomeScreen extends ConsumerWidget {
               onRefresh: () async {
                 ref.invalidate(vendorProvider);
                 ref.invalidate(productNotifierProvider);
-                ref.invalidate(vendorCategoryProvider(VendorAPIController.vendor_category));
+                ref.invalidate(
+                  vendorCategoryProvider(VendorAPIController.vendor_category),
+                );
                 await ref.read(vendorProvider.future);
                 await ref.read(productNotifierProvider.future);
               },
@@ -66,9 +68,16 @@ class VendorHomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     vendorAsync.when(
-                      data: (vendor) => buildCoverAndProfileSection(innerContext, ref, vendor),
+                      data: (vendor) => buildCoverAndProfileSection(
+                        innerContext,
+                        ref,
+                        vendor,
+                      ),
                       loading: () => Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30.w,
+                          vertical: 5.h,
+                        ),
                         child: const Center(child: Text('Loading...')),
                       ),
                       error: (err, _) => Padding(
@@ -132,7 +141,11 @@ class VendorHomeScreen extends ConsumerWidget {
                               ),
                             ),
                             SizedBox(height: 10.h),
-                            _buildProductGridViewSection(context, ref, products),
+                            _buildProductGridViewSection(
+                              context,
+                              ref,
+                              products,
+                            ),
                             SizedBox(height: 20.h),
                             GlobalPagination(
                               currentPage: paginated.currentPage,
@@ -145,8 +158,7 @@ class VendorHomeScreen extends ConsumerWidget {
                           ],
                         );
                       },
-                      loading: () =>
-                          const Center(child: Text('Loading...')),
+                      loading: () => const Center(child: Text('Loading...')),
                       error: (err, _) => Center(child: Text('Error: $err')),
                     ),
                   ],
@@ -166,208 +178,200 @@ class VendorHomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          SizedBox(height: 20.h),
-          CustomBackButton(),
-          SizedBox(height: 10.h),
-          InkWell(
-            onTap: () {
-              context.push(VendorShipmentsScreen.routeName);
-            },
-            child: ListTile(
-              leading: ImageIcon(
-                const AssetImage("assets/icon/bag.png"),
-                size: 20.r,
-              ),
-              title: Text(
-                ref.t(BKeys.order),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {
-              context.push("/vendorSalePlatform");
-            },
-            child: ListTile(
-              leading: ImageIcon(
-                const AssetImage("assets/icon/sale.png"),
-                size: 20.r,
-              ),
-              title: Text(
-                // "Sale",
-                ref.t(BKeys.sales),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-             Divider(color: Colors.grey.shade300),
-
-          InkWell(
-            onTap: () {
-              final vendorAsync = ref.read(vendorProvider);
-              vendorAsync.maybeWhen(
-                data: (vendor) {
-                  context.push(ReviewScreen.routeName, extra: vendor.id);
-                },
-                orElse: () {
-                  // Handle case when vendor data is not available
-                  GlobalSnackbar.show(
-                    context,
-                    title: "Error",
-                    message: "Vendor information not available",
-                    type: CustomSnackType.error,
-                  );
-                },
-              );
-            },
-            child: ListTile(
-              leading: const Icon(
-                Icons.star_outline,
-                size: 20,
-                color: Colors.black,
-              ),
-              title: Text(
-                ref.t(BKeys.review),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        
-
-
-
-
-
-
-
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {
-              context.push(VisibilityManagementScreen.routeName);
-            },
-            child: ListTile(
-              leading: Icon(
-                Icons.visibility_outlined,
-                size: 20.r,
-                color: Colors.black,
-              ),
-              title: Text(
-                'Visibility',
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {
-              context.push(VendorDeliverySettingScreen.routeName);
-            },
-            child: ListTile(
-              leading: Icon(
-                Icons.delivery_dining_outlined,
-                size: 20.r,
-                color: Colors.black,
-              ),
-              title: Text(
-                'Delivery setting',
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {
-              context.push(AffiliateScreen.routeName);
-            },
-            child: ListTile(
-              leading: Icon(
-                Icons.link,
-                size: 20.r,
-                color: Colors.black,
-              ),
-              title: Text(
-                'Affiliate Links',
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {
-              context.push("/language");
-            },
-            child: ListTile(
-              leading: ImageIcon(
-                const AssetImage("assets/icon/language.png"),
-                size: 20.r,
-              ),
-              title: Text(
-                // "Language",
-                ref.t(BKeys.language),
-                style: TextStyle(color: Colors.black, fontSize: 14.sp),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Divider(color: Colors.grey.shade300),
-          InkWell(
-            onTap: () {},
-            child: ListTile(
-              leading: ImageIcon(
-                const AssetImage("assets/icon/logout.png"),
-                size: 20.r,
-                color: const Color(0xffFF3B3B),
-              ),
-              title: Text(
-                // "Log Out",
-                ref.t(BKeys.logOut),
-                style: TextStyle(
-                  color: const Color(0xffFF3B3B),
-                  fontSize: 14.sp,
+            SizedBox(height: 20.h),
+            CustomBackButton(),
+            SizedBox(height: 10.h),
+            InkWell(
+              onTap: () {
+                context.push(VendorShipmentsScreen.routeName);
+              },
+              child: ListTile(
+                leading: ImageIcon(
+                  const AssetImage("assets/icon/bag.png"),
+                  size: 20.r,
+                ),
+                title: Text(
+                  ref.t(BKeys.order),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
                 ),
               ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_outlined,
-                color: Colors.black,
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push("/vendorSalePlatform");
+              },
+              child: ListTile(
+                leading: ImageIcon(
+                  const AssetImage("assets/icon/sale.png"),
+                  size: 20.r,
+                ),
+                title: Text(
+                  // "Sale",
+                  ref.t(BKeys.sales),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
-        ],
+            Divider(color: Colors.grey.shade300),
+
+            InkWell(
+              onTap: () {
+                final vendorAsync = ref.read(vendorProvider);
+                vendorAsync.maybeWhen(
+                  data: (vendor) {
+                    context.push(ReviewScreen.routeName, extra: vendor.id);
+                  },
+                  orElse: () {
+                    // Handle case when vendor data is not available
+                    GlobalSnackbar.show(
+                      context,
+                      title: "Error",
+                      message: "Vendor information not available",
+                      type: CustomSnackType.error,
+                    );
+                  },
+                );
+              },
+              child: ListTile(
+                leading: const Icon(
+                  Icons.star_outline,
+                  size: 20,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  ref.t(BKeys.review),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VisibilityManagementScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(
+                  Icons.visibility_outlined,
+                  size: 20.r,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  'Visibility',
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VendorDeliverySettingScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(
+                  Icons.delivery_dining_outlined,
+                  size: 20.r,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  'Delivery setting',
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(AffiliateScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(Icons.link, size: 20.r, color: Colors.black),
+                title: Text(
+                  'Affiliate Links',
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push("/language");
+              },
+              child: ListTile(
+                leading: ImageIcon(
+                  const AssetImage("assets/icon/language.png"),
+                  size: 20.r,
+                ),
+                title: Text(
+                  // "Language",
+                  ref.t(BKeys.language),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {},
+              child: ListTile(
+                leading: ImageIcon(
+                  const AssetImage("assets/icon/logout.png"),
+                  size: 20.r,
+                  color: const Color(0xffFF3B3B),
+                ),
+                title: Text(
+                  // "Log Out",
+                  ref.t(BKeys.logOut),
+                  style: TextStyle(
+                    color: const Color(0xffFF3B3B),
+                    fontSize: 14.sp,
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildProductGridViewSection(
-      BuildContext context, WidgetRef ref, List<VendorProduct> products) {
+    BuildContext context,
+    WidgetRef ref,
+    List<VendorProduct> products,
+  ) {
     final safeProducts = products.whereType<VendorProduct>().toList();
 
     return GridView.builder(
@@ -461,8 +465,7 @@ class VendorHomeScreen extends ConsumerWidget {
                                 GlobalSnackbar.show(
                                   context,
                                   title: 'Success',
-                                  message:
-                                      'Product order updated successfully',
+                                  message: 'Product order updated successfully',
                                 );
                               }
                             } catch (e) {
@@ -582,10 +585,15 @@ Widget buildAddUrProduct(BuildContext context) {
   );
 }
 
-Widget buildProfileSection(BuildContext context, WidgetRef ref, VendorDetailsModel vendor) {
+Widget buildProfileSection(
+  BuildContext context,
+  WidgetRef ref,
+  VendorDetailsModel vendor,
+) {
   // Check if image is null or empty
-  final bool hasImage = vendor.image.isNotEmpty && vendor.image.trim().isNotEmpty;
-  
+  final bool hasImage =
+      vendor.image.isNotEmpty && vendor.image.trim().isNotEmpty;
+
   return Row(
     children: [
       Spacer(),
@@ -647,7 +655,10 @@ Widget buildProfileSection(BuildContext context, WidgetRef ref, VendorDetailsMod
                       decoration: BoxDecoration(
                         color: AllColor.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AllColor.loginButtomColor, width: 1.w),
+                        border: Border.all(
+                          color: AllColor.loginButtomColor,
+                          width: 1.w,
+                        ),
                       ),
                       child: Icon(
                         Icons.camera_alt,
@@ -678,9 +689,14 @@ Widget buildProfileSection(BuildContext context, WidgetRef ref, VendorDetailsMod
   );
 }
 
-Widget buildCoverAndProfileSection(BuildContext context, WidgetRef ref, VendorDetailsModel vendor) {
-  final bool hasCoverImage = vendor.coverImage != null && vendor.coverImage!.isNotEmpty;
-  
+Widget buildCoverAndProfileSection(
+  BuildContext context,
+  WidgetRef ref,
+  VendorDetailsModel vendor,
+) {
+  final bool hasCoverImage =
+      vendor.coverImage != null && vendor.coverImage!.isNotEmpty;
+
   return Column(
     children: [
       // Cover image section (Facebook style - at the top, no padding)
@@ -694,9 +710,7 @@ Widget buildCoverAndProfileSection(BuildContext context, WidgetRef ref, VendorDe
             child: Container(
               height: 200.h,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-              ),
+              decoration: BoxDecoration(color: Colors.grey.shade200),
               child: hasCoverImage
                   ? FirstTimeShimmerImage(
                       imageUrl: vendor.coverImage!,
@@ -735,7 +749,11 @@ Widget buildCoverAndProfileSection(BuildContext context, WidgetRef ref, VendorDe
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.camera_alt, size: 16.r, color: AllColor.loginButtomColor),
+                    Icon(
+                      Icons.camera_alt,
+                      size: 16.r,
+                      color: AllColor.loginButtomColor,
+                    ),
                     SizedBox(width: 6.w),
                     Text(
                       hasCoverImage ? 'Edit Cover' : 'Add Cover',
@@ -765,9 +783,14 @@ Widget buildCoverAndProfileSection(BuildContext context, WidgetRef ref, VendorDe
   );
 }
 
-Widget buildCoverImageSection(BuildContext context, WidgetRef ref, VendorDetailsModel vendor) {
-  final bool hasCoverImage = vendor.coverImage != null && vendor.coverImage!.isNotEmpty;
-  
+Widget buildCoverImageSection(
+  BuildContext context,
+  WidgetRef ref,
+  VendorDetailsModel vendor,
+) {
+  final bool hasCoverImage =
+      vendor.coverImage != null && vendor.coverImage!.isNotEmpty;
+
   return Consumer(
     builder: (context, ref, child) {
       return Stack(
@@ -819,7 +842,11 @@ Widget buildCoverImageSection(BuildContext context, WidgetRef ref, VendorDetails
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.camera_alt, size: 16.r, color: AllColor.loginButtomColor),
+                    Icon(
+                      Icons.camera_alt,
+                      size: 16.r,
+                      color: AllColor.loginButtomColor,
+                    ),
                     SizedBox(width: 6.w),
                     Text(
                       hasCoverImage ? 'Edit Cover' : 'Add Cover',
@@ -840,9 +867,12 @@ Widget buildCoverImageSection(BuildContext context, WidgetRef ref, VendorDetails
   );
 }
 
-Future<void> _handleProfileImageEdit(BuildContext context, WidgetRef ref) async {
+Future<void> _handleProfileImageEdit(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final ImagePicker picker = ImagePicker();
-  
+
   showModalBottomSheet(
     context: context,
     builder: (builder) {
@@ -884,14 +914,18 @@ Future<void> _handleProfileImageEdit(BuildContext context, WidgetRef ref) async 
   );
 }
 
-Future<void> _updateProfileImage(BuildContext context, WidgetRef ref, File imageFile) async {
+Future<void> _updateProfileImage(
+  BuildContext context,
+  WidgetRef ref,
+  File imageFile,
+) async {
   try {
     final notifier = ref.read(updateUserProvider.notifier);
     final success = await notifier.updateUser(
       userType: 'vendor',
       image: imageFile,
     );
-    
+
     if (success) {
       if (context.mounted) {
         ref.invalidate(vendorProvider);
@@ -925,7 +959,7 @@ Future<void> _updateProfileImage(BuildContext context, WidgetRef ref, File image
 
 Future<void> _handleCoverImageEdit(BuildContext context, WidgetRef ref) async {
   final ImagePicker picker = ImagePicker();
-  
+
   showModalBottomSheet(
     context: context,
     builder: (builder) {
@@ -967,14 +1001,18 @@ Future<void> _handleCoverImageEdit(BuildContext context, WidgetRef ref) async {
   );
 }
 
-Future<void> _updateCoverImage(BuildContext context, WidgetRef ref, File imageFile) async {
+Future<void> _updateCoverImage(
+  BuildContext context,
+  WidgetRef ref,
+  File imageFile,
+) async {
   try {
     final notifier = ref.read(updateUserProvider.notifier);
     final success = await notifier.updateUser(
       userType: 'vendor',
       coverImage: imageFile,
     );
-    
+
     if (success) {
       if (context.mounted) {
         // Invalidate vendorProvider to refetch from user/show API
@@ -992,10 +1030,12 @@ Future<void> _updateCoverImage(BuildContext context, WidgetRef ref, File imageFi
         // Wait a bit to ensure error state is set
         await Future.delayed(const Duration(milliseconds: 100));
         // Get error message from provider state
-        final errorMsg = ref.read(updateUserProvider).maybeWhen(
-          error: (error, _) => error.toString(),
-          orElse: () => "Failed to update cover image. Please try again.",
-        );
+        final errorMsg = ref
+            .read(updateUserProvider)
+            .maybeWhen(
+              error: (error, _) => error.toString(),
+              orElse: () => "Failed to update cover image. Please try again.",
+            );
         GlobalSnackbar.show(
           context,
           title: "Error",
@@ -1023,7 +1063,8 @@ class DocumentUploadSection extends ConsumerStatefulWidget {
   const DocumentUploadSection({super.key});
 
   @override
-  ConsumerState<DocumentUploadSection> createState() => _DocumentUploadSectionState();
+  ConsumerState<DocumentUploadSection> createState() =>
+      _DocumentUploadSectionState();
 }
 
 class _DocumentUploadSectionState extends ConsumerState<DocumentUploadSection> {
@@ -1133,7 +1174,9 @@ class _DocumentUploadSectionState extends ConsumerState<DocumentUploadSection> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
               border: Border.all(
-                  color: AllColor.textBorderColor, width: 0.5.sp),
+                color: AllColor.textBorderColor,
+                width: 0.5.sp,
+              ),
               borderRadius: BorderRadius.circular(30.r),
               color: AllColor.orange50,
             ),
@@ -1314,10 +1357,8 @@ class _CategoryBarState extends ConsumerState<CategoryBar> {
           ),
         );
       },
-      loading: () => const SizedBox(
-        height: 40,
-        child: Center(child: Text('Loading...')),
-      ),
+      loading: () =>
+          const SizedBox(height: 40, child: Center(child: Text('Loading...'))),
       error: (e, _) => Text('Category load error: $e'),
     );
   }

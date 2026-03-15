@@ -19,9 +19,14 @@ class TransportBooking extends ConsumerStatefulWidget {
 }
 
 class _TransportBookingState extends ConsumerState<TransportBooking> {
-  /// tabs: VendorShipmentsScreen er moto simple chips
+  /// tabs: value used for filtering; label from keys for language
   String selectedTab = "All";
-  final List<String> tabs = ["All", "On the way", "Completed"];
+  static const List<String> tabs = ["All", "On the way", "Completed"];
+  static const List<String> tabKeys = [
+    BKeys.shipment_tab_all,
+    BKeys.shipment_tab_on_the_way,
+    BKeys.shipment_tab_completed,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +85,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             ),
                             child: Center(
                               child: Text(
-                                tab,
+                                ref.t(tabKeys[index], fallback: tab),
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w600,
@@ -99,8 +104,8 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                 Expanded(
                   child: state.when(
                     loading: () =>
-                        const Center(child: Text('Loading...')),
-                    error: (e, _) => Center(child: Text('Failed to load: $e')),
+                        Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
+                    error: (e, _) => Center(child: Text('${ref.t(BKeys.error, fallback: 'Failed to load')}: $e')),
                     data: (resp) {
                       final items = resp?.items ?? <ShipmentListItem>[];
                       List<ShipmentListItem> filtered;
@@ -184,11 +189,11 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             children: [
                               TextButton(
                                 onPressed: cp > 1 ? notifier.prevPage : null,
-                                child: const Text("Prev"),
+                                child: Text(ref.t(BKeys.prev, fallback: 'Prev')),
                               ),
                               TextButton(
                                 onPressed: cp < lp ? notifier.nextPage : null,
-                                child: const Text("Next"),
+                                child: Text(ref.t(BKeys.next, fallback: 'Next')),
                               ),
                             ],
                           ),

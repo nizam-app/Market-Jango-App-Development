@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/google_map/data/location_store.dart';
 import 'package:market_jango/core/screen/google_map/screen/google_map.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
@@ -35,7 +37,7 @@ class _SetDropLocationScreenState extends ConsumerState<SetDropLocationScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Set drop location')),
+      appBar: AppBar(title: Text(ref.t(BKeys.set_drop_location, fallback: 'Set drop location'))),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Column(
@@ -49,7 +51,7 @@ class _SetDropLocationScreenState extends ConsumerState<SetDropLocationScreen> {
             TextField(
               controller: _addressController,
               decoration: InputDecoration(
-                hintText: 'Enter drop address',
+                hintText: ref.t(BKeys.enter_drop_address, fallback: 'Enter drop address'),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -96,8 +98,8 @@ class _SetDropLocationScreenState extends ConsumerState<SetDropLocationScreen> {
 
                       GlobalSnackbar.show(
                         context,
-                        title: "Success",
-                        message: "Location selected successfully!",
+                        title: ref.t(BKeys.success, fallback: 'Success'),
+                        message: ref.t(BKeys.location_selected_successfully, fallback: 'Location selected successfully!'),
                         type: CustomSnackType.success,
                       );
                     }
@@ -141,8 +143,8 @@ class _SetDropLocationScreenState extends ConsumerState<SetDropLocationScreen> {
                   if (addr.isEmpty) {
                     GlobalSnackbar.show(
                       context,
-                      title: "Error",
-                      message: "Please enter drop address",
+                      title: ref.t(BKeys.error, fallback: 'Error'),
+                      message: ref.t(BKeys.please_enter_drop_address, fallback: 'Please enter drop address'),
                       type: CustomSnackType.error,
                     );
                     return;
@@ -150,8 +152,8 @@ class _SetDropLocationScreenState extends ConsumerState<SetDropLocationScreen> {
                   if (_lat == null || _lng == null) {
                     GlobalSnackbar.show(
                       context,
-                      title: "Error",
-                      message: "Please select drop location",
+                      title: ref.t(BKeys.error, fallback: 'Error'),
+                      message: ref.t(BKeys.please_select_drop_location, fallback: 'Please select drop location'),
                       type: CustomSnackType.error,
                     );
                     return;

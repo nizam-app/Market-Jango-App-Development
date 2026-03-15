@@ -147,6 +147,44 @@ class InfluencerReferralLinksNotifier extends AsyncNotifier<List<InfluencerRefer
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _fetch());
   }
+
+  /// POST approve influencer referral link
+  Future<void> approveLink(int id) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.influencerApproveLink(id));
+    final res = await http.post(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg = map?['message']?.toString() ?? 'Failed to approve link';
+      throw Exception(msg);
+    }
+    await refresh();
+  }
+
+  /// DELETE influencer referral link
+  Future<void> deleteLink(int id) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.influencerDeleteLink(id));
+    final res = await http.delete(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200 && res.statusCode != 204) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg = map?['message']?.toString() ?? 'Failed to delete link';
+      throw Exception(msg);
+    }
+    await refresh();
+  }
 }
 
 // ---------------------------------------------------------------------------

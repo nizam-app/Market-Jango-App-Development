@@ -6,20 +6,26 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
+import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/data/create_shipment_data.dart';
+import 'package:market_jango/features/transport/screens/booking_confirm/transport_shipment_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/model/transport_driver_model.dart';
 
-/// Arguments passed when navigating to this screen (selected driver + optional pickup/destination).
+/// Arguments passed when navigating to this screen (selected driver + optional pickup/destination/transportType).
 class TransportBookingConfirmArgs {
   const TransportBookingConfirmArgs({
     required this.driver,
     this.pickup,
     this.destination,
+    this.transportType,
   });
 
   final Driver driver;
   final String? pickup;
   final String? destination;
+  /// API value: "motorcycle", "car", "air", "water"
+  final String? transportType;
 }
 
 class TransportBookingConfirmScreen extends ConsumerStatefulWidget {
@@ -37,8 +43,6 @@ class _TransportBookingConfirmScreenState
     extends ConsumerState<TransportBookingConfirmScreen> {
   /// One list of controllers per package: [length, width, height, pieces, weight, buildingShop, phone]
   final List<List<TextEditingController>> _packageControllers = [];
-  final TextEditingController _totalValueController = TextEditingController();
-  final TextEditingController _currencyController = TextEditingController(text: 'USD');
   final TextEditingController _messageController = TextEditingController();
 
   @override
@@ -78,23 +82,62 @@ class _TransportBookingConfirmScreenState
         c.dispose();
       }
     }
-    _totalValueController.dispose();
-    _currencyController.dispose();
     _messageController.dispose();
     super.dispose();
   }
 
-  int get _totalPackageCount => _packageControllers.length;
+  Future<void> _createShipmentAndNavigate() async {
+    final driver = widget.args.driver;
+    final origin = widget.args.pickup?.trim();
+    final destination = widget.args.destination?.trim();
+    final packages = _packageControllers.map((list) {
+      final length = double.tryParse(list.length > 0 ? list[0].text : '');
+      final width = double.tryParse(list.length > 1 ? list[1].text : '');
+      final height = double.tryParse(list.length > 2 ? list[2].text : '');
+      final pieces = int.tryParse(list.length > 3 ? list[3].text : '1') ?? 1;
+      final weight = double.tryParse(list.length > 4 ? list[4].text : '');
+      return ShipmentPackageInput(
+        lengthCm: length,
+        widthCm: width,
+        heightCm: height,
+        weightKg: weight,
+        quantity: pieces,
+      );
+    }).toList();
 
-  double get _totalWeightKg {
-    double sum = 0;
-    const weightIndex = 4;
-    for (final list in _packageControllers) {
-      if (list.length > weightIndex) {
-        sum += (double.tryParse(list[weightIndex].text) ?? 0);
+    final firstBuilding = _packageControllers.isNotEmpty && _packageControllers.first.length > 5
+        ? _packageControllers.first[5].text.trim()
+        : null;
+    final firstPhone = _packageControllers.isNotEmpty && _packageControllers.first.length > 6
+        ? _packageControllers.first[6].text.trim()
+        : null;
+
+    final request = CreateShipmentRequest(
+      driverId: driver.id,
+      transportType: widget.args.transportType?.isNotEmpty == true ? widget.args.transportType : null,
+      originAddress: (origin != null && origin.isNotEmpty) ? origin : null,
+      destinationAddress: (destination != null && destination.isNotEmpty) ? destination : null,
+      pickupInstructions: firstBuilding?.isNotEmpty == true ? firstBuilding : null,
+      pickupContactPhone: firstPhone?.isNotEmpty == true ? firstPhone : null,
+      messageToDriver: _messageController.text.trim().isNotEmpty ? _messageController.text.trim() : null,
+      packages: packages,
+    );
+
+    try {
+      final token = await ref.read(authTokenProvider.future) ?? '';
+      final result = await createShipment(token: token, request: request);
+      if (!mounted) return;
+      context.push(
+        TransportShipmentDetailsScreen.routeName,
+        extra: TransportShipmentDetailsArgs(result: result),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
-    return sum;
   }
 
   @override
@@ -122,7 +165,7 @@ class _TransportBookingConfirmScreenState
           onPressed: () => context.pop(),
         ),
         title: Text(
-          ref.t(BKeys.my_package_details),
+          ref.t(BKeys.create_package, fallback: 'Create package'),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
@@ -190,7 +233,10 @@ class _TransportBookingConfirmScreenState
                           ),
                           SizedBox(height: 6.h),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 4.h,
+                            ),
                             decoration: BoxDecoration(
                               color: AllColor.blue500.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6.r),
@@ -215,7 +261,10 @@ class _TransportBookingConfirmScreenState
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 10.h,
+                        ),
                         side: BorderSide(color: borderLight),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.r),
@@ -224,7 +273,10 @@ class _TransportBookingConfirmScreenState
                       ),
                       child: Text(
                         ref.t(BKeys.see_details),
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -232,9 +284,8 @@ class _TransportBookingConfirmScreenState
               ),
             ),
             SizedBox(height: 28.h),
-
             /// Package list
-            _sectionTitle(ref.t(BKeys.my_package_details)),
+            _sectionTitle(ref.t(BKeys.create_package, fallback: 'Create package')),
             SizedBox(height: 12.h),
             ...List.generate(_packageControllers.length, (index) {
               return _PackageCard(
@@ -261,7 +312,11 @@ class _TransportBookingConfirmScreenState
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_circle_outline, size: 22.sp, color: AllColor.blue500),
+                    Icon(
+                      Icons.add_circle_outline,
+                      size: 22.sp,
+                      color: AllColor.blue500,
+                    ),
                     SizedBox(width: 8.w),
                     Text(
                       ref.t(BKeys.add_packages),
@@ -273,61 +328,6 @@ class _TransportBookingConfirmScreenState
                     ),
                   ],
                 ),
-              ),
-            ),
-            SizedBox(height: 28.h),
-
-            /// Totals
-            _sectionTitle(ref.t(BKeys.totals)),
-            SizedBox(height: 10.h),
-            Container(
-              padding: EdgeInsets.all(18.w),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _totalRow(ref.t(BKeys.total_packages), '$_totalPackageCount', textSecondary),
-                  SizedBox(height: 10.h),
-                  _totalRow(
-                    ref.t(BKeys.total_weight_kg),
-                    '${_totalWeightKg.toStringAsFixed(1)} kg',
-                    textSecondary,
-                  ),
-                  SizedBox(height: 16.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: _styledInput(
-                          controller: _currencyController,
-                          label: ref.t(BKeys.currency),
-                          borderLight: borderLight,
-                          surfaceLight: surfaceLight,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        flex: 2,
-                        child: _styledInput(
-                          controller: _totalValueController,
-                          label: ref.t(BKeys.amount),
-                          keyboardType: TextInputType.number,
-                          borderLight: borderLight,
-                          surfaceLight: surfaceLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ),
             SizedBox(height: 28.h),
@@ -344,7 +344,10 @@ class _TransportBookingConfirmScreenState
                 hintStyle: TextStyle(color: textSecondary, fontSize: 14.sp),
                 filled: true,
                 fillColor: cardBg,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14.r),
                   borderSide: BorderSide(color: borderLight),
@@ -361,13 +364,11 @@ class _TransportBookingConfirmScreenState
             ),
             SizedBox(height: 32.h),
 
-            /// Pay
+            /// Create shipment
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: integrate payment
-                },
+                onPressed: _createShipmentAndNavigate,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   backgroundColor: AllColor.blue500,
@@ -378,7 +379,7 @@ class _TransportBookingConfirmScreenState
                   ),
                 ),
                 child: Text(
-                  ref.t(BKeys.pay),
+                  ref.t(BKeys.create_shipment, fallback: 'Create shipment'),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
@@ -401,59 +402,6 @@ class _TransportBookingConfirmScreenState
         fontWeight: FontWeight.w700,
         color: const Color(0xFF1E293B),
         letterSpacing: -0.2,
-      ),
-    );
-  }
-
-  Widget _totalRow(String label, String value, Color labelColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 14.sp, color: labelColor, fontWeight: FontWeight.w500),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1E293B),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _styledInput({
-    required TextEditingController controller,
-    required String label,
-    TextInputType? keyboardType,
-    required Color borderLight,
-    required Color surfaceLight,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      style: TextStyle(fontSize: 14.sp, color: const Color(0xFF1E293B)),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: const Color(0xFF64748B), fontSize: 13.sp),
-        filled: true,
-        fillColor: surfaceLight,
-        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: borderLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: borderLight),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AllColor.blue500, width: 1.5),
-        ),
       ),
     );
   }
@@ -514,7 +462,7 @@ class _PackageCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${ref.t(BKeys.my_package_details)} #${index + 1}',
+                  '${ref.t(BKeys.create_package, fallback: 'Create package')} #${index + 1}',
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
@@ -526,11 +474,18 @@ class _PackageCard extends StatelessWidget {
                     onTap: onRemove,
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.delete_outline, size: 18.sp, color: const Color(0xFFDC2626)),
+                          Icon(
+                            Icons.delete_outline,
+                            size: 18.sp,
+                            color: const Color(0xFFDC2626),
+                          ),
                           SizedBox(width: 4.w),
                           Text(
                             ref.t(BKeys.remove),
@@ -553,9 +508,7 @@ class _PackageCard extends StatelessWidget {
                   child: _input(lengthC, ref.t(BKeys.length), hint: 'cm'),
                 ),
                 SizedBox(width: 10.w),
-                Expanded(
-                  child: _input(widthC, ref.t(BKeys.width), hint: 'cm'),
-                ),
+                Expanded(child: _input(widthC, ref.t(BKeys.width), hint: 'cm')),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: _input(heightC, ref.t(BKeys.height), hint: 'cm'),
@@ -566,29 +519,31 @@ class _PackageCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _input(piecesC, ref.t(BKeys.number_of_pieces),
-                      keyboardType: TextInputType.number),
+                  child: _input(
+                    piecesC,
+                    ref.t(BKeys.number_of_pieces),
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
-                  child: _input(weightC, ref.t(BKeys.weight_kg),
-                      hint: 'kg', keyboardType: TextInputType.number),
+                  child: _input(
+                    weightC,
+                    ref.t(BKeys.weight_kg),
+                    hint: 'kg',
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 16.h),
-            Text(
-              ref.t(BKeys.pickup_contact_details),
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-                color: _textSecondary,
-              ),
-            ),
-            SizedBox(height: 8.h),
             _input(buildingC, ref.t(BKeys.building_shop_number_name)),
             SizedBox(height: 10.h),
-            _input(phoneC, ref.t(BKeys.phone_number), keyboardType: TextInputType.phone),
+            _input(
+              phoneC,
+              ref.t(BKeys.phone_number),
+              keyboardType: TextInputType.phone,
+            ),
           ],
         ),
       ),

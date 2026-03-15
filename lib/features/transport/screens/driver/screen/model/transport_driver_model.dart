@@ -145,6 +145,111 @@ class Driver {
       images: (json['images'] as List? ?? []),
     );
   }
+
+  /// Build a [Driver] from a search-transporters API [TransporterItem] for UI reuse.
+  static Driver fromTransporterItem(TransporterItem item) {
+    return Driver(
+      id: item.id,
+      carName: item.carName ?? '',
+      carModel: item.carModel ?? '',
+      location: item.location ?? '',
+      price: item.price ?? '${item.estimatedPrice}',
+      rating: item.rating,
+      userId: item.user?.id ?? 0,
+      routeId: 0,
+      createdAt: '',
+      updatedAt: '',
+      user: item.user != null
+          ? DriverUser.fromTransporterUser(item.user!)
+          : DriverUser(
+              id: 0,
+              userType: '',
+              name: '',
+              email: '',
+              phone: '',
+              image: null,
+              status: null,
+              isActive: null,
+              language: null,
+              phoneVerifiedAt: null,
+              publicId: null,
+              createdAt: '',
+              updatedAt: '',
+            ),
+      images: item.coverImage != null ? [item.coverImage!] : [],
+    );
+  }
+}
+
+/// Item returned by GET /shipments/search-transporters (data.items).
+class TransporterItem {
+  final int id;
+  final String? carName;
+  final String? carModel;
+  final String? transportType;
+  final String? location;
+  final String? price;
+  final double estimatedPrice;
+  final int rating;
+  final String? coverImage;
+  final TransporterUser? user;
+
+  TransporterItem({
+    required this.id,
+    this.carName,
+    this.carModel,
+    this.transportType,
+    this.location,
+    this.price,
+    this.estimatedPrice = 0,
+    this.rating = 0,
+    this.coverImage,
+    this.user,
+  });
+
+  factory TransporterItem.fromJson(Map<String, dynamic> json) {
+    return TransporterItem(
+      id: (json['id'] as num).toInt(),
+      carName: json['car_name'] as String?,
+      carModel: json['car_model'] as String?,
+      transportType: json['transport_type'] as String?,
+      location: json['location'] as String?,
+      price: json['price']?.toString(),
+      estimatedPrice: (json['estimated_price'] as num?)?.toDouble() ?? 0,
+      rating: (json['rating'] as num?)?.toInt() ?? 0,
+      coverImage: json['cover_image'] as String?,
+      user: json['user'] != null
+          ? TransporterUser.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+/// User nested in search-transporters response.
+class TransporterUser {
+  final int id;
+  final String? name;
+  final String? email;
+  final String? phone;
+  final String? image;
+
+  TransporterUser({
+    required this.id,
+    this.name,
+    this.email,
+    this.phone,
+    this.image,
+  });
+
+  factory TransporterUser.fromJson(Map<String, dynamic> json) {
+    return TransporterUser(
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String?,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      image: json['image'] as String?,
+    );
+  }
 }
 
 class DriverUser {
@@ -193,6 +298,25 @@ class DriverUser {
       publicId: json['public_id'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
+    );
+  }
+
+  /// From search-transporters API TransporterUser (minimal user info).
+  static DriverUser fromTransporterUser(TransporterUser u) {
+    return DriverUser(
+      id: u.id,
+      userType: '',
+      name: u.name ?? '',
+      email: u.email ?? '',
+      phone: u.phone ?? '',
+      image: u.image,
+      status: null,
+      isActive: null,
+      language: null,
+      phoneVerifiedAt: null,
+      publicId: null,
+      createdAt: '',
+      updatedAt: '',
     );
   }
 }

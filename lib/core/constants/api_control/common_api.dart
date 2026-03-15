@@ -30,6 +30,12 @@ class CommonAPIController {
   /// GET influencer referral links (vendor dashboard)
   static String get influencerReferralLinks =>
       '$_base_api/vendor-dashboard/influencer-referral-links';
+  /// POST approve influencer referral link
+  static String influencerApproveLink(int id) =>
+      '$_base_api/vendor-dashboard/influencer-referral-links/$id/approve';
+  /// DELETE influencer referral link
+  static String influencerDeleteLink(int id) =>
+      '$_base_api/vendor-dashboard/influencer-referral-links/$id';
 
   /// Ranking (Buyer, Vendor, Driver)
   static String rankingVendors = '$_base_api/ranking/vendors';

@@ -220,13 +220,13 @@ class GlobalSettingScreen extends ConsumerWidget {
             onTap: () => context.push(SubscriptionScreen.routeName),
           ),
             _DividerLine(),
-        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+        if (userTypeAsync.value == "vendor")
           _SettingsTile(
             leadingIcon: Icons.link,
             title: 'Affiliate Links',
             onTap: () => context.push(AffiliateScreen.routeName),
           ),
-        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+        if (userTypeAsync.value == "vendor")
           _DividerLine(),
         _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
         _DividerLine(),

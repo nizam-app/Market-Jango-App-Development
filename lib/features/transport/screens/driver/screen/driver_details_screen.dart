@@ -9,8 +9,6 @@ import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
-import 'package:market_jango/features/transport/screens/driver/logic/transport_driver_perment_logic.dart';
-import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 class DriverDetailsScreen extends ConsumerWidget {
@@ -53,18 +51,11 @@ class DriverDetailsScreen extends ConsumerWidget {
               ? d!.description
               : "Not available";
 
-          // car images from userImages (if any), otherwise fallback list
-          final carImages = (user.userImages.isNotEmpty)
-              ? user.userImages
-                    .map((e) => e.imagePath)
-                    .where((u) => u.isNotEmpty)
-                    .toList()
-              : <String>[
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUn6fL1_OXhaWOYa0QSrP5jHKIjFHezT18Yw&s",
-                ];
+          // car images from userImages (if any)
+          final carImages = user.userImages
+              .map((e) => e.imagePath)
+              .where((u) => u.isNotEmpty)
+              .toList();
           // Logger().d(user);
           Logger().d(driverId);
           
@@ -246,117 +237,108 @@ class DriverDetailsScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10.h),
+                      SizedBox(height: 12.h),
 
-                      if (user.userImages.isNotEmpty)
+                      if (carImages.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(vertical: 32.h),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.directions_car_outlined,
+                                size: 48.r,
+                                color: Colors.grey.shade400,
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                "No car images",
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: carImages.isNotEmpty
-                              ? carImages.length.clamp(0, 4)
-                              : 4,
+                          itemCount: carImages.length,
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 10.w,
-                            mainAxisSpacing: 10.h,
-                            childAspectRatio: 1.3,
+                            crossAxisSpacing: 12.w,
+                            mainAxisSpacing: 12.h,
+                            childAspectRatio: 1.25,
                           ),
                           itemBuilder: (context, index) {
-                            final img = index < carImages.length
-                                ? carImages[index]
-                                : "https://static.vecteezy.com/system/resources/previews/0"
-                                      "24/228/025/non_2x/slashed-zero-icon-symbol-in-mathematics-null-set-empty-set-illustration-free-vector.jpg";
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(8.r),
-                              child: Card(
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14.r),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14.r),
                                 child: FirstTimeShimmerImage(
-                                  imageUrl: img,
+                                  imageUrl: carImages[index],
                                   fit: BoxFit.cover,
                                 ),
                               ),
                             );
                           },
                         ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 24.h),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.r),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                              ),
-                              onPressed: () async {
-                                final authStorage = AuthLocalStorage();
-                                final userIdStr = await authStorage.getUserId();
-                                if (userIdStr == null || userIdStr.isEmpty) {
-                                  throw Exception("user id not founde");
-                                }
-                                final myUserId = int.tryParse(userIdStr);
-                                if (myUserId == null) {
-                                  throw Exception("Invalid user id");
-                                }
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                          ),
+                          onPressed: () async {
+                            final authStorage = AuthLocalStorage();
+                            final userIdStr = await authStorage.getUserId();
+                            if (userIdStr == null || userIdStr.isEmpty) {
+                              throw Exception("user id not founde");
+                            }
+                            final myUserId = int.tryParse(userIdStr);
+                            if (myUserId == null) {
+                              throw Exception("Invalid user id");
+                            }
 
-                                context.push(
-                                  GlobalChatScreen.routeName,
-                                  extra: ChatArgs(
-                                    partnerId: user.id,
-                                    partnerName: user.name,
-                                    partnerImage: user.image,
-                                    myUserId: myUserId,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "Send Message",
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.white,
-                                ),
+                            context.push(
+                              GlobalChatScreen.routeName,
+                              extra: ChatArgs(
+                                partnerId: user.id,
+                                partnerName: user.name,
+                                partnerImage: user.image,
+                                myUserId: myUserId,
                               ),
+                            );
+                          },
+                          child: Text(
+                            "Send Message",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.white,
                             ),
                           ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.r),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                              ),
-                              onPressed: () async {
-                                // 1) নতুন screen থেকে address + location নাও
-                                final dropData = await context
-                                    .push<TransportDropLocation>(
-                                      SetDropLocationScreen.routeName,
-                                    );
-                                if (dropData == null) return;
-
-                                // 2) payment API + webview
-                                await startTransportInvoiceCheckout(
-                                  context,
-                                  driverId: driverId,
-                                  dropAddress: dropData.address,
-                                  dropLatitude: dropData.latitude,
-                                  dropLongitude: dropData.longitude,
-                                );
-                              },
-                              child: Text(
-                                "Pay Now",
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                       SizedBox(height: 30.h),
                     ],

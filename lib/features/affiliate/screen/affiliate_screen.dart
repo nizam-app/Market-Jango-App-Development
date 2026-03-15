@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/common_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/affiliate/data/affiliate_data.dart';
 import 'package:market_jango/features/affiliate/model/affiliate_model.dart';
@@ -17,6 +18,7 @@ class AffiliateScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userTypeAsync = ref.watch(getUserTypeProvider);
     final statsAsync = ref.watch(affiliateStatisticsProvider);
     final influencerLinksAsync = ref.watch(influencerReferralLinksProvider);
     final statsNotifier = ref.read(affiliateStatisticsProvider.notifier);
@@ -25,6 +27,45 @@ class AffiliateScreen extends ConsumerWidget {
     Future<void> onRefresh() async {
       await statsNotifier.refresh();
       await influencerNotifier.refresh();
+    }
+
+    if (userTypeAsync.value == 'driver') {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: AppBar(
+          backgroundColor: AllColor.white,
+          elevation: 0,
+          leading: Padding(
+            padding: EdgeInsets.only(left: 12.w),
+            child: IconButton(
+              onPressed: () => context.pop(),
+              icon: Icon(Icons.arrow_back_ios, size: 20.r, color: AllColor.black),
+            ),
+          ),
+          title: Text(
+            'Affiliate',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Text(
+              'Affiliate feature is not available for driver accounts.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AllColor.grey500,
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return Scaffold(

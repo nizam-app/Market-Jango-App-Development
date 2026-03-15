@@ -64,7 +64,7 @@ class _ProductAddPageState extends ConsumerState<ProductAddPage> {
             child: Column(
               children: [
                 //"Profile Edite"
-                Tuppertextandbackbutton(screenName: "Profile Edite"),
+                Tuppertextandbackbutton(screenName: ref.t(BKeys.profile_edit, fallback: 'Profile Edit')),
                 ProductBasicInfoSection(),
                 SizedBox(height: 16.h),
               attributeAsync.when(

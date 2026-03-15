@@ -99,12 +99,22 @@ class AffiliateStatisticsNotifier
 // GET influencer referral links: /api/vendor-dashboard/influencer-referral-links
 // ---------------------------------------------------------------------------
 
-final influencerReferralLinksProvider =
-    AsyncNotifierProvider<InfluencerReferralLinksNotifier, List<InfluencerReferralLinkModel>>(
-      InfluencerReferralLinksNotifier.new,
-    );
+/// Interface for vendor/driver influencer link notifiers (refresh, approve, delete).
+abstract class InfluencerReferralLinksNotifierInterface {
+  Future<void> refresh();
+  Future<void> approveLink(int id);
+  Future<void> deleteLink(int id);
+}
 
-class InfluencerReferralLinksNotifier extends AsyncNotifier<List<InfluencerReferralLinkModel>> {
+final influencerReferralLinksProvider =
+    AsyncNotifierProvider<
+      InfluencerReferralLinksNotifier,
+      List<InfluencerReferralLinkModel>
+    >(InfluencerReferralLinksNotifier.new);
+
+class InfluencerReferralLinksNotifier
+    extends AsyncNotifier<List<InfluencerReferralLinkModel>>
+    implements InfluencerReferralLinksNotifierInterface {
   @override
   Future<List<InfluencerReferralLinkModel>> build() async => _fetch();
 
@@ -120,7 +130,8 @@ class InfluencerReferralLinksNotifier extends AsyncNotifier<List<InfluencerRefer
 
     if (res.statusCode != 200) {
       final map = jsonDecode(res.body) as Map<String, dynamic>?;
-      final msg = map?['message']?.toString() ?? 'Failed to load influencer links';
+      final msg =
+          map?['message']?.toString() ?? 'Failed to load influencer links';
       throw Exception(msg);
     }
 
@@ -173,6 +184,99 @@ class InfluencerReferralLinksNotifier extends AsyncNotifier<List<InfluencerRefer
     if (token == null || token.isEmpty) throw Exception('Not logged in');
 
     final uri = Uri.parse(CommonAPIController.influencerDeleteLink(id));
+    final res = await http.delete(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200 && res.statusCode != 204) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg = map?['message']?.toString() ?? 'Failed to delete link';
+      throw Exception(msg);
+    }
+    await refresh();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GET influencer referral links (driver): /api/driver-dashboard/influencer-referral-links
+// ---------------------------------------------------------------------------
+
+final driverInfluencerReferralLinksProvider =
+    AsyncNotifierProvider<
+      DriverInfluencerReferralLinksNotifier,
+      List<InfluencerReferralLinkModel>>(DriverInfluencerReferralLinksNotifier.new);
+
+class DriverInfluencerReferralLinksNotifier
+    extends AsyncNotifier<List<InfluencerReferralLinkModel>>
+    implements InfluencerReferralLinksNotifierInterface {
+  @override
+  Future<List<InfluencerReferralLinkModel>> build() async => _fetch();
+
+  Future<List<InfluencerReferralLinkModel>> _fetch() async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.driverDashboardInfluencerReferralLinks);
+    final res = await http.get(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg =
+          map?['message']?.toString() ?? 'Failed to load influencer links';
+      throw Exception(msg);
+    }
+
+    final body = jsonDecode(res.body);
+    List<dynamic> list = [];
+    if (body is List) {
+      list = body;
+    } else if (body is Map<String, dynamic>) {
+      final data = body['data'];
+      if (data is List) {
+        list = data;
+      } else if (data is Map<String, dynamic> && data['items'] is List) {
+        list = data['items'] as List;
+      }
+    }
+
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(InfluencerReferralLinkModel.fromJson)
+        .toList();
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _fetch());
+  }
+
+  Future<void> approveLink(int id) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.driverInfluencerApproveLink(id));
+    final res = await http.post(
+      uri,
+      headers: {'Accept': 'application/json', 'token': token},
+    );
+
+    if (res.statusCode != 200) {
+      final map = jsonDecode(res.body) as Map<String, dynamic>?;
+      final msg = map?['message']?.toString() ?? 'Failed to approve link';
+      throw Exception(msg);
+    }
+    await refresh();
+  }
+
+  Future<void> deleteLink(int id) async {
+    final token = await ref.read(authTokenProvider.future);
+    if (token == null || token.isEmpty) throw Exception('Not logged in');
+
+    final uri = Uri.parse(CommonAPIController.driverInfluencerDeleteLink(id));
     final res = await http.delete(
       uri,
       headers: {'Accept': 'application/json', 'token': token},
@@ -247,7 +351,8 @@ Future<AffiliateGenerateResult> affiliateGenerate(
   if (destinationUrl != null && destinationUrl.isNotEmpty)
     body['destination_url'] = destinationUrl;
   if (customRate != null) body['custom_rate'] = customRate;
-  if (cookieDurationDays != null) body['cookie_duration_days'] = cookieDurationDays;
+  if (cookieDurationDays != null)
+    body['cookie_duration_days'] = cookieDurationDays;
   if (attributionModel != null && attributionModel.isNotEmpty)
     body['attribution_model'] = attributionModel;
   if (expiresAt != null && expiresAt.isNotEmpty) body['expires_at'] = expiresAt;

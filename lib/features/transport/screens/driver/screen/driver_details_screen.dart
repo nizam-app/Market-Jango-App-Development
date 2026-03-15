@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_promotion_screen.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
@@ -300,45 +301,106 @@ class DriverDetailsScreen extends ConsumerWidget {
                         ),
                       SizedBox(height: 24.h),
 
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.r),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 14.h),
-                          ),
-                          onPressed: () async {
-                            final authStorage = AuthLocalStorage();
-                            final userIdStr = await authStorage.getUserId();
-                            if (userIdStr == null || userIdStr.isEmpty) {
-                              throw Exception("user id not founde");
-                            }
-                            final myUserId = int.tryParse(userIdStr);
-                            if (myUserId == null) {
-                              throw Exception("Invalid user id");
-                            }
-
-                            context.push(
-                              GlobalChatScreen.routeName,
-                              extra: ChatArgs(
-                                partnerId: user.id,
-                                partnerName: user.name,
-                                partnerImage: user.image,
-                                myUserId: myUserId,
+                      // Promotion + Send Message row (same as buyer vendor profile)
+                      Row(
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(24.r),
+                            elevation: 1,
+                            shadowColor: Colors.orange.shade200.withOpacity(0.4),
+                            child: InkWell(
+                              onTap: () {
+                                context.push(
+                                  DriverPromotionScreen.routeName,
+                                  extra: driverId,
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(24.r),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 18.w,
+                                  vertical: 11.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24.r),
+                                  border: Border.all(
+                                    color: Colors.orange.shade200,
+                                    width: 1.2,
+                                  ),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.orange.shade100.withOpacity(0.5),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.campaign_rounded,
+                                      size: 20.r,
+                                      color: Colors.orange.shade700,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      'Promotion',
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.orange.shade800,
+                                        letterSpacing: 0.25,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            );
-                          },
-                          child: Text(
-                            "Send Message",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.white,
                             ),
                           ),
-                        ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.r),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                              ),
+                              onPressed: () async {
+                                final authStorage = AuthLocalStorage();
+                                final userIdStr = await authStorage.getUserId();
+                                if (userIdStr == null || userIdStr.isEmpty) {
+                                  throw Exception("user id not founde");
+                                }
+                                final myUserId = int.tryParse(userIdStr);
+                                if (myUserId == null) {
+                                  throw Exception("Invalid user id");
+                                }
+
+                                context.push(
+                                  GlobalChatScreen.routeName,
+                                  extra: ChatArgs(
+                                    partnerId: user.id,
+                                    partnerName: user.name,
+                                    partnerImage: user.image,
+                                    myUserId: myUserId,
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Send Message",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 30.h),
                     ],

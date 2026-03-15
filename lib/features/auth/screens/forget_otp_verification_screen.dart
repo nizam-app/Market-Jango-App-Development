@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../logic/forget_password_reverport.dart';
 import '../logic/verification_reverpod.dart';
@@ -133,32 +136,90 @@ class VerifiUpperText extends StatelessWidget {
   }
 }
 
-class CustomVerificationResendText extends ConsumerWidget {
+class CustomVerificationResendText extends ConsumerStatefulWidget {
   CustomVerificationResendText({super.key, required this.onEnter, this.loading});
   final VoidCallback onEnter;
   final bool? loading;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isLoading = loading ?? false;
+  ConsumerState<CustomVerificationResendText> createState() =>
+      _CustomVerificationResendTextState();
+}
+
+class _CustomVerificationResendTextState
+    extends ConsumerState<CustomVerificationResendText> {
+  static const int _countdownSeconds = 59;
+  int _secondsRemaining = _countdownSeconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _timer?.cancel();
+    setState(() => _secondsRemaining = _countdownSeconds);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      setState(() {
+        _secondsRemaining--;
+        if (_secondsRemaining <= 0) t.cancel();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String get _formattedTime {
+    final m = _secondsRemaining ~/ 60;
+    final s = _secondsRemaining % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')} sec';
+  }
+
+  Future<void> _onResendTap() async {
+    final isLoading = widget.loading ?? false;
+    if (isLoading || _secondsRemaining > 0) return;
+    widget.onEnter();
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email') ?? '';
+    if (email.isNotEmpty) {
+      await ref.read(forgetPasswordProvider.notifier).sendForgetPassword(
+            context: context,
+            email: email,
+            resendOnly: true,
+          );
+      if (mounted) _startCountdown();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoading = widget.loading ?? false;
+    final canResend = _secondsRemaining <= 0 && !isLoading;
     return Column(
       children: [
         SizedBox(height: 32.h),
         Text.rich(
           TextSpan(
             text: "Didn't receive a code? ",
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall!.copyWith(color: AllColor.grey),
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall!
+                .copyWith(color: AllColor.grey),
             children: [
               TextSpan(
                 text: isLoading ? "Resending" : "Resend",
-                recognizer: TapGestureRecognizer()
-                  ..onTap = isLoading ? () {} : onEnter,
+                recognizer: TapGestureRecognizer()..onTap = _onResendTap,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AllColor.black,
-                  fontWeight: FontWeight.w700,
-                ),
+                      color: canResend ? AllColor.black : AllColor.grey,
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
             ],
           ),
@@ -166,7 +227,7 @@ class CustomVerificationResendText extends ConsumerWidget {
         SizedBox(height: 32.h),
         Center(
           child: Text(
-            "00:59 sec",
+            _formattedTime,
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),

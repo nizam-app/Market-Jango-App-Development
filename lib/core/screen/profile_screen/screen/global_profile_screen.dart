@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/global_currency/screen/global_currency_screen.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
@@ -21,7 +22,9 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
+import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/transport/screens/billing/screen/transport_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,10 +54,7 @@ class GlobalSettingScreen extends ConsumerWidget {
           ),
           content: Text(
             'Are you sure you want to logout?',
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: AllColor.black87,
-            ),
+            style: TextStyle(fontSize: 16.sp, color: AllColor.black87),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
@@ -66,10 +66,7 @@ class GlobalSettingScreen extends ConsumerWidget {
               },
               child: Text(
                 'Cancel',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  color: AllColor.black87,
-                ),
+                style: TextStyle(fontSize: 16.sp, color: AllColor.black87),
               ),
             ),
             TextButton(
@@ -117,7 +114,9 @@ class GlobalSettingScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: 12.h),
-                        Tuppertextandbackbutton(screenName: ref.t(BKeys.settings)),
+                        Tuppertextandbackbutton(
+                          screenName: ref.t(BKeys.settings),
+                        ),
                         SizedBox(height: 16.h),
                         ProfileSection(
                           name: user.name,
@@ -126,7 +125,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                           userType: user,
                         ),
                         SizedBox(height: 20.h),
-                        _buildSettingsContent(context, ref, user, userTypeAsync),
+                        _buildSettingsContent(
+                          context,
+                          ref,
+                          user,
+                          userTypeAsync,
+                        ),
                       ],
                     ),
                   ),
@@ -134,7 +138,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                 if (isDriver)
                   Padding(
                     padding: EdgeInsets.all(20.r),
-                    child: _buildSettingsContent(context, ref, user, userTypeAsync),
+                    child: _buildSettingsContent(
+                      context,
+                      ref,
+                      user,
+                      userTypeAsync,
+                    ),
                   ),
               ],
             ),
@@ -167,10 +176,7 @@ class GlobalSettingScreen extends ConsumerWidget {
         //     userType: user,
         //   ),
         // if (!isDriver) SizedBox(height: 5.h),
-        _SettingsLine(
-          icon: Icons.phone_in_talk_outlined,
-          text: user.phone,
-        ),
+        _SettingsLine(icon: Icons.phone_in_talk_outlined, text: user.phone),
         _DividerLine(),
         _SettingsLine(icon: Icons.email_outlined, text: user.email),
 
@@ -183,11 +189,6 @@ class GlobalSettingScreen extends ConsumerWidget {
             // "My Order"
             title: ref.t(BKeys.myOrders),
             onTap: () => context.push(BuyerOrderPage.routeName),
-          ),
-        if (userTypeAsync.value == "driver")
-          _SettingsLine(
-            icon: Icons.price_change,
-            text: user.driver?.price ?? "Not set now",
           ),
         if (userTypeAsync.value == "driver") ...[
           _DividerLine(),
@@ -212,6 +213,19 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: ref.t(BKeys.orderHistory),
             onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
           ),
+            _DividerLine(),
+        if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.receipt_long_outlined,
+            title: ref.t(BKeys.billing),
+            onTap: () => context.push(BuyerBillingScreen.routeName),
+          ),
+        if (userTypeAsync.value == "transport")
+          _SettingsTile(
+            leadingIcon: Icons.receipt_long_outlined,
+            title: ref.t(BKeys.billing),
+            onTap: () => context.push(TransportBillingScreen.routeName),
+          ),
         _DividerLine(),
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _SettingsTile(
@@ -219,16 +233,20 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: 'Subscription',
             onTap: () => context.push(SubscriptionScreen.routeName),
           ),
-            _DividerLine(),
-        if (userTypeAsync.value == "vendor")
+        _DividerLine(),
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.link,
             title: 'Affiliate Links',
             onTap: () => context.push(AffiliateScreen.routeName),
           ),
-        if (userTypeAsync.value == "vendor")
+        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _DividerLine(),
-        _SettingsLine(icon: Icons.attach_money, text: user.currency ?? 'USD'),
+        _SettingsTile(
+          leadingIcon: Icons.attach_money,
+          title: '${ref.t(BKeys.currency)} (${user.currency ?? 'USD'})',
+          onTap: () => context.push(GlobalCurrencyScreen.routeName),
+        ),
         _DividerLine(),
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _SettingsTile(
@@ -278,9 +296,7 @@ class GlobalSettingScreen extends ConsumerWidget {
               child: Container(
                 height: 200.h,
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                ),
+                decoration: BoxDecoration(color: Colors.grey.shade200),
                 child: hasCoverImage
                     ? FirstTimeShimmerImage(
                         imageUrl: coverImage,
@@ -302,9 +318,13 @@ class GlobalSettingScreen extends ConsumerWidget {
               bottom: 10.h,
               right: 10.w,
               child: InkWell(
-                onTap: () => _handleCoverImageEdit(context, ref, user.id.toString()),
+                onTap: () =>
+                    _handleCoverImageEdit(context, ref, user.id.toString()),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
                   decoration: BoxDecoration(
                     color: AllColor.white,
                     borderRadius: BorderRadius.circular(20.r),
@@ -319,8 +339,11 @@ class GlobalSettingScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.camera_alt,
-                          size: 16.r, color: AllColor.loginButtomColor),
+                      Icon(
+                        Icons.camera_alt,
+                        size: 16.r,
+                        color: AllColor.loginButtomColor,
+                      ),
                       SizedBox(width: 6.w),
                       Text(
                         hasCoverImage ? 'Edit Cover' : 'Add Cover',
@@ -362,7 +385,11 @@ class GlobalSettingScreen extends ConsumerWidget {
                           bottom: 0,
                           right: 0,
                           child: InkWell(
-                            onTap: () => _handleProfileImageEdit(context, ref, user.id.toString()),
+                            onTap: () => _handleProfileImageEdit(
+                              context,
+                              ref,
+                              user.id.toString(),
+                            ),
                             child: Container(
                               padding: EdgeInsets.all(4.w),
                               decoration: BoxDecoration(
@@ -402,7 +429,10 @@ class GlobalSettingScreen extends ConsumerWidget {
                       onPressed: () {
                         ref.invalidate(selectedLatitudeProvider);
                         ref.invalidate(selectedLongitudeProvider);
-                        context.push(BuyerProfileEditScreen.routeName, extra: user);
+                        context.push(
+                          BuyerProfileEditScreen.routeName,
+                          extra: user,
+                        );
                       },
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -446,7 +476,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                     imageQuality: 85,
                   );
                   if (image != null) {
-                    await _updateCoverImage(context, ref, File(image.path), userId);
+                    await _updateCoverImage(
+                      context,
+                      ref,
+                      File(image.path),
+                      userId,
+                    );
                   }
                 },
               ),
@@ -460,7 +495,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                     imageQuality: 85,
                   );
                   if (image != null) {
-                    await _updateCoverImage(context, ref, File(image.path), userId);
+                    await _updateCoverImage(
+                      context,
+                      ref,
+                      File(image.path),
+                      userId,
+                    );
                   }
                 },
               ),
@@ -481,7 +521,7 @@ class GlobalSettingScreen extends ConsumerWidget {
       final notifier = ref.read(updateUserProvider.notifier);
       final userTypeAsync = await ref.read(getUserTypeProvider.future);
       final userType = userTypeAsync ?? 'driver';
-      
+
       final success = await notifier.updateUser(
         userType: userType,
         coverImage: imageFile,
@@ -541,7 +581,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                     imageQuality: 85,
                   );
                   if (image != null) {
-                    await _updateProfileImage(context, ref, File(image.path), userId);
+                    await _updateProfileImage(
+                      context,
+                      ref,
+                      File(image.path),
+                      userId,
+                    );
                   }
                 },
               ),
@@ -555,7 +600,12 @@ class GlobalSettingScreen extends ConsumerWidget {
                     imageQuality: 85,
                   );
                   if (image != null) {
-                    await _updateProfileImage(context, ref, File(image.path), userId);
+                    await _updateProfileImage(
+                      context,
+                      ref,
+                      File(image.path),
+                      userId,
+                    );
                   }
                 },
               ),
@@ -576,7 +626,7 @@ class GlobalSettingScreen extends ConsumerWidget {
       final notifier = ref.read(updateUserProvider.notifier);
       final userTypeAsync = await ref.read(getUserTypeProvider.future);
       final userType = userTypeAsync ?? 'driver';
-      
+
       final success = await notifier.updateUser(
         userType: userType,
         image: imageFile,

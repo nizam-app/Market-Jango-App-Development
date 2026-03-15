@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
@@ -48,20 +50,20 @@ class TransportDriver extends ConsumerWidget {
               Expanded(
                 child: state.when(
                   loading: () =>
-                      const Center(child: Text('Loading...')),
+                      Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
                   error: (e, _) => Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Failed to load drivers',
+                          ref.t(BKeys.failed_to_load_drivers, fallback: 'Failed to load drivers'),
                           style: TextStyle(fontSize: 14.sp),
                         ),
                         SizedBox(height: 8.h),
                         ElevatedButton(
                           onPressed: () =>
                               ref.invalidate(approvedDriversProvider),
-                          child: const Text('Retry'),
+                          child: Text(ref.t(BKeys.retry, fallback: 'Retry')),
                         ),
                       ],
                     ),
@@ -70,13 +72,12 @@ class TransportDriver extends ConsumerWidget {
                     final page = resp?.data;
                     final items = page?.data ?? <Driver>[];
 
-                    // If nothing to show, avoid building pagination math in your widget tree
                     if (items.isEmpty) {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(height: 40.h),
-                          const Text('No drivers found'),
+                          Text(ref.t(BKeys.no_drivers_found, fallback: 'No drivers found')),
                           SizedBox(height: 12.h),
                         ],
                       );

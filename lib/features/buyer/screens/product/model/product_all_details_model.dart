@@ -46,6 +46,11 @@ class DetailItem {
   final List<DetailImage> images;
   final int? stock;
 
+  /// sale_type from API (e.g. retail, wholesale) – nullable
+  final String? saleType;
+  /// terms_and_conditions from API – nullable
+  final String? termsAndConditions;
+
   /// ✅ API string JSON like:
   /// "{\"color\":[\"red\",\"green\"],\"size\":[\"m\",\"xl\"],\"brand\":[\"apple\"]}"
   final String? attributes;
@@ -72,6 +77,8 @@ class DetailItem {
     required this.category,
     required this.images,
     this.stock,
+    this.saleType,
+    this.termsAndConditions,
     this.attributes, // ✅ optional (clean)
   });
 
@@ -125,6 +132,12 @@ class DetailItem {
           .map((m) => DetailImage.fromJson(m.cast<String, dynamic>()))
           .toList(),
       stock: _toIntOrNull(data['stock']),
+      saleType: data['sale_type']?.toString().trim().isNotEmpty == true
+          ? data['sale_type'].toString().trim()
+          : null,
+      termsAndConditions: data['terms_and_conditions']?.toString().trim().isNotEmpty == true
+          ? data['terms_and_conditions'].toString().trim()
+          : null,
       attributes: attrString,
     );
   }

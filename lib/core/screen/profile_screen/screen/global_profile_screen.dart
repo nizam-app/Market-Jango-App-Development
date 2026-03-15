@@ -26,6 +26,7 @@ import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_pag
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
+import '../../../../features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
 import '../../../utils/get_user_type.dart';
 import '../data/profile_data.dart';
 import '../model/profile_model.dart';
@@ -188,6 +189,14 @@ class GlobalSettingScreen extends ConsumerWidget {
             icon: Icons.price_change,
             text: user.driver?.price ?? "Not set now",
           ),
+        if (userTypeAsync.value == "driver") ...[
+          _DividerLine(),
+          _SettingsTile(
+            leadingIcon: Icons.delivery_dining_outlined,
+            title: 'Delivery setting',
+            onTap: () => context.push(VendorDeliverySettingScreen.routeName),
+          ),
+        ],
         if (userTypeAsync.value == "vendor")
           _SettingsTile(
             leadingIcon: Icons.shopping_bag_outlined,

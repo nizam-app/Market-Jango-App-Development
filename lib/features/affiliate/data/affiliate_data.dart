@@ -196,6 +196,7 @@ class InfluencerReferralLinksNotifier
     }
     await refresh();
   }
+
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +290,7 @@ class DriverInfluencerReferralLinksNotifier
     }
     await refresh();
   }
+
 }
 
 // ---------------------------------------------------------------------------

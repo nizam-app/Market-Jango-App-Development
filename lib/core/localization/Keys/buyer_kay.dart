@@ -242,9 +242,11 @@ class BKeys {
       'enter_your_current_location';
   static const String my_bookings = 'my_bookings';
   static const String shipment_list = 'shipment_list';
+
   static const String shipment_tab_all = 'shipment_tab_all';
   static const String shipment_tab_on_the_way = 'shipment_tab_on_the_way';
   static const String shipment_tab_completed = 'shipment_tab_completed';
+
 
   // Transport item;
   static const String hello = 'hello';
@@ -312,6 +314,7 @@ class BKeys {
   static const String value = 'value ';
   static const String product_title = 'product_title';
   static const String track_shipments = 'track_shipments';
+
 
   // Features: driver, buyer, vendor, transport, subscription, ranking, affiliate (static text keys)
   static const String filter_products = 'filter_products';
@@ -386,4 +389,5 @@ class BKeys {
   static const String color_name_attribute = 'color_name_attribute';
   static const String gallery_multiple = 'gallery_multiple';
   static const String complete_payment = 'complete_payment';
+
 }

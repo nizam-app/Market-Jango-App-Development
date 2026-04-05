@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/common_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/affiliate/data/affiliate_data.dart';
 import 'package:market_jango/features/affiliate/model/affiliate_model.dart';
@@ -17,13 +18,18 @@ class AffiliateScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDriver = ref.watch(getUserTypeProvider).value == 'driver';
     final statsAsync = ref.watch(affiliateStatisticsProvider);
-    final influencerLinksAsync = ref.watch(influencerReferralLinksProvider);
+    final influencerLinksAsync = isDriver
+        ? ref.watch(driverInfluencerReferralLinksProvider)
+        : ref.watch(influencerReferralLinksProvider);
     final statsNotifier = ref.read(affiliateStatisticsProvider.notifier);
-    final influencerNotifier = ref.read(influencerReferralLinksProvider.notifier);
+    final InfluencerReferralLinksNotifierInterface influencerNotifier = isDriver
+        ? ref.read(driverInfluencerReferralLinksProvider.notifier)
+        : ref.read(influencerReferralLinksProvider.notifier);
 
     Future<void> onRefresh() async {
-      await statsNotifier.refresh();
+      if (!isDriver) await statsNotifier.refresh();
       await influencerNotifier.refresh();
     }
 
@@ -84,7 +90,7 @@ class AffiliateScreen extends ConsumerWidget {
                   message: e.toString().replaceFirst('Exception: ', ''),
                   onRetry: () {
                     influencerNotifier.refresh();
-                    statsNotifier.refresh();
+                    if (!isDriver) statsNotifier.refresh();
                   },
                 ),
                 data: (influencerList) {
@@ -94,7 +100,10 @@ class AffiliateScreen extends ConsumerWidget {
                       child: Center(
                         child: Text(
                           'No influencer links yet.',
-                          style: TextStyle(fontSize: 14.sp, color: AllColor.grey500),
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AllColor.grey500,
+                          ),
                         ),
                       ),
                     );
@@ -109,7 +118,16 @@ class AffiliateScreen extends ConsumerWidget {
                       return _InfluencerLinkCard(
                         item: item,
                         onApprove: !item.vendorApproved
-                            ? () => _approveInfluencerLink(context, ref, item.id, influencerNotifier)
+
+                            ? () => _approveInfluencerLink(
+                                context,
+                                ref,
+                                item.id,
+                                influencerNotifier,
+                              )
+
+                          //  ? () => _approveInfluencerLink(context, ref, item.id, influencerNotifier)
+
                             : null,
                         onDelete: () => _deleteInfluencerLink(
                           context,
@@ -144,7 +162,11 @@ class AffiliateScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int id,
-    InfluencerReferralLinksNotifier notifier,
+
+    InfluencerReferralLinksNotifierInterface notifier,
+
+  //  InfluencerReferralLinksNotifier notifier,
+
   ) async {
     try {
       await notifier.approveLink(id);
@@ -173,7 +195,11 @@ class AffiliateScreen extends ConsumerWidget {
     WidgetRef ref,
     int id,
     String name,
-    InfluencerReferralLinksNotifier notifier,
+
+    InfluencerReferralLinksNotifierInterface notifier,
+=======
+   // InfluencerReferralLinksNotifier notifier,
+
   ) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -242,7 +268,11 @@ class AffiliateScreen extends ConsumerWidget {
     }
   }
 
-  void _openAddSheet(BuildContext context, WidgetRef ref, List<AffiliateLinkModel> links) {
+  void _openAddSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<AffiliateLinkModel> links,
+  ) {
     if (links.isNotEmpty) {
       GlobalSnackbar.show(
         context,
@@ -296,9 +326,7 @@ class AffiliateScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete link?'),
-        content: Text(
-          'Remove "${link.displayName}"? This cannot be undone.',
-        ),
+        content: Text('Remove "${link.displayName}"? This cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -472,10 +500,7 @@ class _StatCard extends StatelessWidget {
           SizedBox(height: 2.h),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: AllColor.grey500,
-            ),
+            style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
           ),
         ],
       ),
@@ -505,11 +530,7 @@ class _EmptyState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.link_off,
-            size: 48.sp,
-            color: AllColor.grey300,
-          ),
+          Icon(Icons.link_off, size: 48.sp, color: AllColor.grey300),
           SizedBox(height: 16.h),
           Text(
             'No affiliate links yet',
@@ -640,20 +661,11 @@ class _LinkCard extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              _MiniChip(
-                icon: Icons.touch_app,
-                label: '${link.clicks}',
-              ),
+              _MiniChip(icon: Icons.touch_app, label: '${link.clicks}'),
               SizedBox(width: 12.w),
-              _MiniChip(
-                icon: Icons.trending_up,
-                label: '${link.conversions}',
-              ),
+              _MiniChip(icon: Icons.trending_up, label: '${link.conversions}'),
               SizedBox(width: 12.w),
-              _MiniChip(
-                icon: Icons.attach_money,
-                label: link.revenue,
-              ),
+              _MiniChip(icon: Icons.attach_money, label: link.revenue),
             ],
           ),
           SizedBox(height: 12.h),
@@ -709,9 +721,7 @@ class _InfluencerLinkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = item.image?.trim().isNotEmpty == true
-        ? item.image!
-        : null;
+    final imageUrl = item.image?.trim().isNotEmpty == true ? item.image! : null;
 
     return Container(
       padding: EdgeInsets.all(14.w),
@@ -777,7 +787,14 @@ class _InfluencerLinkCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
+                          ),
+
+                       //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+
                           decoration: BoxDecoration(
                             color: item.vendorApproved
                                 ? AllColor.green.withOpacity(0.15)
@@ -789,7 +806,13 @@ class _InfluencerLinkCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
-                              color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+
+                              color: item.vendorApproved
+                                  ? AllColor.green
+                                  : AllColor.grey500,
+
+                             // color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+
                             ),
                           ),
                         ),
@@ -798,11 +821,28 @@ class _InfluencerLinkCard extends StatelessWidget {
                           TextButton(
                             onPressed: () => onApprove!(),
                             style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 4.h,
+                              ),
                               minimumSize: Size.zero,
                               foregroundColor: AllColor.loginButtomColor,
                             ),
-                            child: Text('Approve', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                            child: Text(
+                              'Approve',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+//                               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+//                               minimumSize: Size.zero,
+//                               foregroundColor: AllColor.loginButtomColor,
+//                             ),
+//                             child: Text('Approve', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+
                           ),
                         ],
                       ],
@@ -859,11 +899,28 @@ class _InfluencerLinkCard extends StatelessWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: () => onDelete?.call(),
-                icon: Icon(Icons.delete_outline, size: 18.r, color: AllColor.red),
-                label: Text('Delete', style: TextStyle(fontSize: 13.sp, color: AllColor.red, fontWeight: FontWeight.w600)),
-                style: TextButton.styleFrom(
-                  foregroundColor: AllColor.red,
+
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 18.r,
+                  color: AllColor.red,
                 ),
+                label: Text(
+                  'Delete',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AllColor.red,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: TextButton.styleFrom(foregroundColor: AllColor.red),
+
+//                 icon: Icon(Icons.delete_outline, size: 18.r, color: AllColor.red),
+//                 label: Text('Delete', style: TextStyle(fontSize: 13.sp, color: AllColor.red, fontWeight: FontWeight.w600)),
+//                 style: TextButton.styleFrom(
+//                   foregroundColor: AllColor.red,
+//                 ),
+
               ),
             ],
           ),
@@ -937,7 +994,11 @@ class _CreatedLinkDialog extends StatelessWidget {
                     color: AllColor.loginButtomColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(Icons.link_rounded, size: 28.r, color: AllColor.loginButtomColor),
+                  child: Icon(
+                    Icons.link_rounded,
+                    size: 28.r,
+                    color: AllColor.loginButtomColor,
+                  ),
                 ),
                 SizedBox(width: 14.w),
                 Expanded(
@@ -955,7 +1016,10 @@ class _CreatedLinkDialog extends StatelessWidget {
                       SizedBox(height: 2.h),
                       Text(
                         'Share this link to track clicks',
-                        style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: AllColor.grey500,
+                        ),
                       ),
                     ],
                   ),
@@ -998,7 +1062,9 @@ class _CreatedLinkDialog extends StatelessWidget {
                       foregroundColor: AllColor.loginButtomColor,
                       side: BorderSide(color: AllColor.loginButtomColor),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
                   ),
                 ),
@@ -1010,7 +1076,9 @@ class _CreatedLinkDialog extends StatelessWidget {
                       backgroundColor: AllColor.loginButtomColor,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 12.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
                     child: const Text('Done'),
                   ),
@@ -1082,9 +1150,15 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
 
       final result = await affiliateGenerate(
         token,
-        name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        destinationUrl: _destinationController.text.trim().isEmpty ? null : _destinationController.text.trim(),
+        name: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        destinationUrl: _destinationController.text.trim().isEmpty
+            ? null
+            : _destinationController.text.trim(),
         customRate: customRate,
         cookieDurationDays: cookieDurationDays,
         attributionModel: _attributionModel,
@@ -1109,8 +1183,14 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
     }
   }
 
-  void _showCreatedLinkDialog(BuildContext context, String fullUrl, String linkCode) {
-    final displayUrl = fullUrl.isNotEmpty ? fullUrl : '${Uri.parse(CommonAPIController.affiliateLinks).origin}/affiliate/$linkCode';
+  void _showCreatedLinkDialog(
+    BuildContext context,
+    String fullUrl,
+    String linkCode,
+  ) {
+    final displayUrl = fullUrl.isNotEmpty
+        ? fullUrl
+        : '${Uri.parse(CommonAPIController.affiliateLinks).origin}/affiliate/$linkCode';
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -1149,7 +1229,9 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
         ],
       ),
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1177,304 +1259,413 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
                     ),
                     child: Icon(
                       Icons.add_link_rounded,
-                    size: 28.r,
-                    color: AllColor.loginButtomColor,
+                      size: 28.r,
+                      color: AllColor.loginButtomColor,
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'New affiliate link',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AllColor.black,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Share this link to track clicks & conversions',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: AllColor.grey500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 28.h),
+              Text(
+                'Link details',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AllColor.grey500,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              TextField(
+                controller: _nameController,
+                style: TextStyle(fontSize: 15.sp),
+                decoration: InputDecoration(
+                  hintText: 'e.g. Summer campaign',
+                  labelText: 'Name',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.label_outline_rounded,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
                   ),
                 ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'New affiliate link',
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AllColor.black,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Share this link to track clicks & conversions',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: AllColor.grey500,
-                        ),
-                      ),
-                    ],
+              ),
+              SizedBox(height: 14.h),
+              TextField(
+                controller: _descriptionController,
+                maxLines: 2,
+                style: TextStyle(fontSize: 15.sp),
+                decoration: InputDecoration(
+                  hintText: 'Where or how you’ll use this link',
+                  labelText: 'Description',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  alignLabelWithHint: true,
+                  prefixIcon: Icon(
+                    Icons.description_outlined,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 28.h),
-            Text(
-              'Link details',
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: AllColor.grey500,
               ),
-            ),
-            SizedBox(height: 10.h),
-            TextField(
-              controller: _nameController,
-              style: TextStyle(fontSize: 15.sp),
-              decoration: InputDecoration(
-                hintText: 'e.g. Summer campaign',
-                labelText: 'Name',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                prefixIcon: Icon(Icons.label_outline_rounded, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
+              SizedBox(height: 14.h),
+              TextField(
+                controller: _destinationController,
+                style: TextStyle(fontSize: 15.sp),
+                keyboardType: TextInputType.url,
+                decoration: InputDecoration(
+                  hintText: 'https://example.com/page',
+                  labelText: 'Destination URL',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.link_rounded,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               ),
-            ),
-            SizedBox(height: 14.h),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 2,
-              style: TextStyle(fontSize: 15.sp),
-              decoration: InputDecoration(
-                hintText: 'Where or how you’ll use this link',
-                labelText: 'Description',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                alignLabelWithHint: true,
-                prefixIcon: Icon(Icons.description_outlined, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
+              SizedBox(height: 28.h),
+              Text(
+                'Tracking & settings',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AllColor.grey500,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               ),
-            ),
-            SizedBox(height: 14.h),
-            TextField(
-              controller: _destinationController,
-              style: TextStyle(fontSize: 15.sp),
-              keyboardType: TextInputType.url,
-              decoration: InputDecoration(
-                hintText: 'https://example.com/page',
-                labelText: 'Destination URL',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                prefixIcon: Icon(Icons.link_rounded, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
+              SizedBox(height: 10.h),
+              TextField(
+                controller: _customRateController,
+                style: TextStyle(fontSize: 15.sp),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                decoration: InputDecoration(
+                  hintText: 'e.g. 10',
+                  labelText: 'Custom rate %',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.percent_rounded,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               ),
-            ),
-            SizedBox(height: 28.h),
-            Text(
-              'Tracking & settings',
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: AllColor.grey500,
+              SizedBox(height: 14.h),
+              TextField(
+                controller: _cookieDurationController,
+                style: TextStyle(fontSize: 15.sp),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'e.g. 30',
+                  labelText: 'Cookie duration (days)',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.cookie_rounded,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 10.h),
-            TextField(
-              controller: _customRateController,
-              style: TextStyle(fontSize: 15.sp),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                hintText: 'e.g. 10',
-                labelText: 'Custom rate %',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                prefixIcon: Icon(Icons.percent_rounded, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
+              SizedBox(height: 14.h),
+              DropdownButtonFormField<String>(
+                value: _attributionModel,
+                decoration: InputDecoration(
+                  labelText: 'Attribution model',
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.touch_app_rounded,
+                    size: 22.r,
+                    color: AllColor.grey500,
+                  ),
+                  filled: true,
+                  fillColor: AllColor.grey100.withOpacity(0.6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(color: AllColor.grey200, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                    borderSide: BorderSide(
+                      color: AllColor.loginButtomColor,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 14.h,
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-              ),
-            ),
-            SizedBox(height: 14.h),
-            TextField(
-              controller: _cookieDurationController,
-              style: TextStyle(fontSize: 15.sp),
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'e.g. 30',
-                labelText: 'Cookie duration (days)',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                prefixIcon: Icon(Icons.cookie_rounded, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-              ),
-            ),
-            SizedBox(height: 14.h),
-            DropdownButtonFormField<String>(
-              value: _attributionModel,
-              decoration: InputDecoration(
-                labelText: 'Attribution model',
-                labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                prefixIcon: Icon(Icons.touch_app_rounded, size: 22.r, color: AllColor.grey500),
-                filled: true,
-                fillColor: AllColor.grey100.withOpacity(0.6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-              ),
-              items: _attributionOptions
-                  .map((String value) => DropdownMenuItem<String>(
+                items: _attributionOptions
+                    .map(
+                      (String value) => DropdownMenuItem<String>(
                         value: value,
                         child: Text(
                           value == 'first_click' ? 'First click' : 'Last click',
                           style: TextStyle(fontSize: 15.sp),
                         ),
-                      ))
-                  .toList(),
-              onChanged: (String? value) {
-                if (value != null) setState(() => _attributionModel = value);
-              },
-            ),
-            SizedBox(height: 14.h),
-            InkWell(
-              onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now().add(const Duration(days: 365)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2030),
-                );
-                if (picked != null && mounted) {
-                  final y = picked.year;
-                  final m = picked.month.toString().padLeft(2, '0');
-                  final d = picked.day.toString().padLeft(2, '0');
-                  _expiresAtController.text = '$y-$m-$d';
-                }
-              },
-              borderRadius: BorderRadius.circular(14.r),
-              child: IgnorePointer(
-                child: TextField(
-                  controller: _expiresAtController,
-                  readOnly: true,
-                  style: TextStyle(fontSize: 15.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Tap to pick date',
-                    labelText: 'Expires at',
-                    labelStyle: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-                    prefixIcon: Icon(Icons.calendar_today_rounded, size: 22.r, color: AllColor.grey500),
-                    filled: true,
-                    fillColor: AllColor.grey100.withOpacity(0.6),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                      borderSide: BorderSide.none,
+                      ),
+                    )
+                    .toList(),
+                onChanged: (String? value) {
+                  if (value != null) setState(() => _attributionModel = value);
+                },
+              ),
+              SizedBox(height: 14.h),
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now().add(const Duration(days: 365)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2030),
+                  );
+                  if (picked != null && mounted) {
+                    final y = picked.year;
+                    final m = picked.month.toString().padLeft(2, '0');
+                    final d = picked.day.toString().padLeft(2, '0');
+                    _expiresAtController.text = '$y-$m-$d';
+                  }
+                },
+                borderRadius: BorderRadius.circular(14.r),
+                child: IgnorePointer(
+                  child: TextField(
+                    controller: _expiresAtController,
+                    readOnly: true,
+                    style: TextStyle(fontSize: 15.sp),
+                    decoration: InputDecoration(
+                      hintText: 'Tap to pick date',
+                      labelText: 'Expires at',
+                      labelStyle: TextStyle(
+                        fontSize: 11.sp,
+                        color: AllColor.grey500,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.calendar_today_rounded,
+                        size: 22.r,
+                        color: AllColor.grey500,
+                      ),
+                      filled: true,
+                      fillColor: AllColor.grey100.withOpacity(0.6),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                        borderSide: BorderSide(
+                          color: AllColor.grey200,
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                        borderSide: BorderSide(
+                          color: AllColor.loginButtomColor,
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 14.h,
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                      borderSide: BorderSide(color: AllColor.grey200, width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                      borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 28.h),
-            SizedBox(
-              height: 52.h,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AllColor.loginButtomColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+              SizedBox(height: 28.h),
+              SizedBox(
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AllColor.loginButtomColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: _loading
+                      ? SizedBox(
+                          height: 24.h,
+                          width: 24.w,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_rounded, size: 22.r),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Create link',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
-                child: _loading
-                    ? SizedBox(
-                        height: 24.h,
-                        width: 24.w,
-                        child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add_rounded, size: 22.r),
-                          SizedBox(width: 8.w),
-                          Text('Create link', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
-                        ],
-                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }
@@ -1503,7 +1694,9 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.link.name ?? '');
-    _destinationController = TextEditingController(text: widget.link.destinationUrl ?? '');
+    _destinationController = TextEditingController(
+      text: widget.link.destinationUrl ?? '',
+    );
     _active = widget.link.status == 'active';
   }
 
@@ -1521,9 +1714,13 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
       await affiliateUpdate(
         token,
         id: widget.link.id,
-        name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+        name: _nameController.text.trim().isEmpty
+            ? null
+            : _nameController.text.trim(),
         status: _active ? 'active' : 'inactive',
-        destinationUrl: _destinationController.text.trim().isEmpty ? null : _destinationController.text.trim(),
+        destinationUrl: _destinationController.text.trim().isEmpty
+            ? null
+            : _destinationController.text.trim(),
       );
       if (mounted) {
         widget.onSaved();
@@ -1639,7 +1836,11 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
               style: TextStyle(fontSize: 15.sp),
               decoration: InputDecoration(
                 labelText: 'Name',
-                prefixIcon: Icon(Icons.label_outline_rounded, size: 22.r, color: AllColor.grey500),
+                prefixIcon: Icon(
+                  Icons.label_outline_rounded,
+                  size: 22.r,
+                  color: AllColor.grey500,
+                ),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
                 border: OutlineInputBorder(
@@ -1652,9 +1853,15 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                  borderSide: BorderSide(
+                    color: AllColor.loginButtomColor,
+                    width: 1.5,
+                  ),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
               ),
             ),
             SizedBox(height: 14.h),
@@ -1665,7 +1872,11 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
               decoration: InputDecoration(
                 hintText: 'https://example.com',
                 labelText: 'Destination URL',
-                prefixIcon: Icon(Icons.link_rounded, size: 22.r, color: AllColor.grey500),
+                prefixIcon: Icon(
+                  Icons.link_rounded,
+                  size: 22.r,
+                  color: AllColor.grey500,
+                ),
                 filled: true,
                 fillColor: AllColor.grey100.withOpacity(0.6),
                 border: OutlineInputBorder(
@@ -1678,9 +1889,15 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+                  borderSide: BorderSide(
+                    color: AllColor.loginButtomColor,
+                    width: 1.5,
+                  ),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
               ),
             ),
             SizedBox(height: 14.h),
@@ -1694,7 +1911,10 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
               child: SwitchListTile(
                 title: Text(
                   'Link active',
-                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 subtitle: Text(
                   _active ? 'Clicks are being tracked' : 'Link is paused',
@@ -1703,7 +1923,9 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
                 value: _active,
                 onChanged: (v) => setState(() => _active = v),
                 activeColor: AllColor.loginButtomColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
               ),
             ),
             SizedBox(height: 28.h),
@@ -1716,20 +1938,31 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
                 ),
                 child: _loading
                     ? SizedBox(
                         height: 24.h,
                         width: 24.w,
-                        child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.check_rounded, size: 22.r),
                           SizedBox(width: 8.w),
-                          Text('Save changes', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                          Text(
+                            'Save changes',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
               ),

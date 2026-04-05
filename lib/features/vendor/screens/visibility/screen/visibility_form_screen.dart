@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'package:market_jango/features/vendor/screens/visibility/data/visibility_data.dart';
 import 'package:market_jango/features/vendor/screens/visibility/model/visibility_model.dart';
@@ -27,10 +31,14 @@ class _VisibilityFormScreenState extends ConsumerState<VisibilityFormScreen> {
   final _countryController = TextEditingController();
   final _stateController = TextEditingController();
   final _townController = TextEditingController();
+  final _searchController = TextEditingController();
 
   int? _selectedProductId;
+  String? _selectedProductName; // from search when not in list
   bool _isActive = true;
   bool _loading = false;
+  String _searchQuery = '';
+  Timer? _searchDebounce;
 
   bool get isEdit => widget.visibility != null;
 
@@ -45,10 +53,30 @@ class _VisibilityFormScreenState extends ConsumerState<VisibilityFormScreen> {
       _isActive = v.isActive;
       _selectedProductId = v.productId;
     }
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      if (mounted) setState(() => _searchQuery = _searchController.text.trim());
+    });
+  }
+
+  void _onSearchResultSelect(int productId, String productName) {
+    setState(() {
+      _selectedProductId = productId;
+      _selectedProductName = productName;
+      _searchController.clear();
+      _searchQuery = '';
+    });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     _countryController.dispose();
     _stateController.dispose();
     _townController.dispose();
@@ -91,7 +119,15 @@ class _VisibilityFormScreenState extends ConsumerState<VisibilityFormScreen> {
                 _ProductSection(
                   productsAsync: productsAsync,
                   selectedProductId: _selectedProductId,
-                  onChanged: (v) => setState(() => _selectedProductId = v),
+                  selectedProductName: _selectedProductName,
+                  onChanged: (v) =>
+                      setState(() {
+                        _selectedProductId = v;
+                        _selectedProductName = null;
+                      }),
+                  searchController: _searchController,
+                  searchQuery: _searchQuery,
+                  onSearchResultSelect: _onSearchResultSelect,
                 ),
                 SizedBox(height: 24.h),
               ],
@@ -212,7 +248,9 @@ class _HeaderSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(14.r),
           ),
           child: Icon(
-            isEdit ? Icons.edit_location_alt_rounded : Icons.add_location_alt_rounded,
+            isEdit
+                ? Icons.edit_location_alt_rounded
+                : Icons.add_location_alt_rounded,
             size: 28.r,
             color: AllColor.loginButtomColor,
           ),
@@ -235,10 +273,7 @@ class _HeaderSection extends StatelessWidget {
                 isEdit
                     ? 'Update location or active status'
                     : 'Choose product and location (empty = global)',
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: AllColor.grey500,
-                ),
+                style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
               ),
             ],
           ),
@@ -248,19 +283,31 @@ class _HeaderSection extends StatelessWidget {
   }
 }
 
-class _ProductSection extends StatelessWidget {
+class _ProductSection extends ConsumerWidget {
   final AsyncValue<List<ProductOption>> productsAsync;
   final int? selectedProductId;
+  final String? selectedProductName;
   final ValueChanged<int?> onChanged;
+  final TextEditingController searchController;
+  final String searchQuery;
+  final void Function(int productId, String productName) onSearchResultSelect;
 
   const _ProductSection({
     required this.productsAsync,
     required this.selectedProductId,
+    this.selectedProductName,
     required this.onChanged,
+    required this.searchController,
+    required this.searchQuery,
+    required this.onSearchResultSelect,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchAsync = searchQuery.isEmpty
+        ? AsyncValue.data(GlobalSearchResponse.empty())
+        : ref.watch(searchProvider(searchQuery));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -273,9 +320,151 @@ class _ProductSection extends StatelessWidget {
           ),
         ),
         SizedBox(height: 10.h),
+        // ----- Search (option 1: search and add by search) -----
+        Container(
+          decoration: BoxDecoration(
+            color: AllColor.white,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: AllColor.grey200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Search product by name...',
+              hintStyle: TextStyle(fontSize: 14.sp, color: AllColor.grey500),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                size: 22.r,
+                color: AllColor.grey500,
+              ),
+              filled: true,
+              fillColor: AllColor.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.r),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.r),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14.r),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 14.w,
+                vertical: 14.h,
+              ),
+            ),
+            onChanged: (_) {},
+          ),
+        ),
+        // Search results (when query not empty)
+        if (searchQuery.isNotEmpty) ...[
+          SizedBox(height: 8.h),
+          searchAsync.when(
+            data: (response) {
+              final products = response.products;
+              if (products.isEmpty) {
+                return Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: AllColor.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(color: AllColor.grey200),
+                  ),
+                  child: Text(
+                    'No products found for "$searchQuery"',
+                    style: TextStyle(fontSize: 14.sp, color: AllColor.grey500),
+                  ),
+                );
+              }
+              return Container(
+                constraints: BoxConstraints(maxHeight: 220.h),
+                decoration: BoxDecoration(
+                  color: AllColor.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: AllColor.grey200),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(vertical: 6.h),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final p = products[index];
+                    return _SearchProductTile(
+                      product: p,
+                      onTap: () => onSearchResultSelect(p.id, p.name),
+                    );
+                  },
+                ),
+              );
+            },
+            loading: () => Container(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              decoration: BoxDecoration(
+                color: AllColor.white,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: AllColor.grey200),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            error: (e, _) => Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: AllColor.red.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Text(
+                e.toString().replaceFirst('Exception: ', ''),
+                style: TextStyle(fontSize: 13.sp, color: AllColor.red),
+              ),
+            ),
+          ),
+        ],
+        SizedBox(height: 16.h),
+        // ----- Option 2: Select from list -----
+        Text(
+          'Or select from list',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
+            color: AllColor.grey500,
+          ),
+        ),
+        SizedBox(height: 8.h),
         productsAsync.when(
           data: (products) {
-            if (products.isEmpty) {
+            final list = List<ProductOption>.from(products);
+            if (selectedProductId != null &&
+                selectedProductName != null &&
+                !list.any((e) => e.id == selectedProductId)) {
+              list.insert(
+                0,
+                ProductOption(
+                  id: selectedProductId!,
+                  name: selectedProductName!,
+                  image: null,
+                ),
+              );
+            }
+            if (list.isEmpty) {
               return Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
@@ -285,11 +474,18 @@ class _ProductSection extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.inventory_2_outlined, size: 24.r, color: AllColor.grey500),
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 24.r,
+                      color: AllColor.grey500,
+                    ),
                     SizedBox(width: 12.w),
                     Text(
                       'No products. Add products first.',
-                      style: TextStyle(fontSize: 14.sp, color: AllColor.grey500),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AllColor.grey500,
+                      ),
                     ),
                   ],
                 ),
@@ -330,20 +526,33 @@ class _ProductSection extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14.r),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 12.h,
+                        ),
                       ),
                       hint: _ProductTile(
-                        option: ProductOption(id: 0, name: 'Select product', image: null),
+                        option: ProductOption(
+                          id: 0,
+                          name: 'Select product',
+                          image: null,
+                        ),
                         isHint: true,
                       ),
-                      items: products
-                          .map((p) => DropdownMenuItem<int>(
-                                value: p.id,
-                                child: _ProductTile(option: p, isHint: false),
-                              ))
+                      items: list
+                          .map(
+                            (p) => DropdownMenuItem<int>(
+                              value: p.id,
+                              child: _ProductTile(option: p, isHint: false),
+                            ),
+                          )
                           .toList(),
                       onChanged: onChanged,
-                      icon: Icon(Icons.keyboard_arrow_down_rounded, color: AllColor.grey500, size: 24.r),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: AllColor.grey500,
+                        size: 24.r,
+                      ),
                       validator: (v) {
                         if (v == null || v == 0) return 'Select a product';
                         return null;
@@ -360,7 +569,9 @@ class _ProductSection extends StatelessWidget {
               color: AllColor.white,
               borderRadius: BorderRadius.circular(14.r),
             ),
-            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           ),
           error: (e, _) => Container(
             padding: EdgeInsets.all(14.w),
@@ -375,6 +586,49 @@ class _ProductSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SearchProductTile extends StatelessWidget {
+  final GlobalSearchProduct product;
+  final VoidCallback onTap;
+
+  const _SearchProductTile({
+    required this.product,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 44.w,
+              height: 44.w,
+              child: _ProductImage(imageUrl: product.image, size: 44.w),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                product.name,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                  color: AllColor.black,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(Icons.add_circle_outline, size: 22.r, color: AllColor.orange),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -430,10 +684,7 @@ class _ProductImage extends StatelessWidget {
         child: SizedBox(
           width: size,
           height: size,
-          child: FirstTimeShimmerImage(
-            imageUrl: imageUrl!,
-            fit: BoxFit.cover,
-          ),
+          child: FirstTimeShimmerImage(imageUrl: imageUrl!, fit: BoxFit.cover),
         ),
       );
     }
@@ -455,7 +706,11 @@ class _ProductImagePlaceholder extends StatelessWidget {
         color: AllColor.grey200,
         borderRadius: BorderRadius.circular(10.r),
       ),
-      child: Icon(Icons.image_outlined, size: size * 0.5, color: AllColor.grey500),
+      child: Icon(
+        Icons.image_outlined,
+        size: size * 0.5,
+        color: AllColor.grey500,
+      ),
     );
   }
 }
@@ -576,7 +831,11 @@ class _ActiveSwitch extends StatelessWidget {
       child: SwitchListTile(
         title: Text(
           'Active',
-          style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: AllColor.black),
+          style: TextStyle(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w600,
+            color: AllColor.black,
+          ),
         ),
         subtitle: Text(
           value ? 'This visibility rule is active' : 'Visibility is paused',
@@ -585,7 +844,9 @@ class _ActiveSwitch extends StatelessWidget {
         value: value,
         onChanged: onChanged,
         activeColor: AllColor.loginButtomColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.r),
+        ),
       ),
     );
   }
@@ -612,22 +873,33 @@ class _SubmitButton extends StatelessWidget {
           backgroundColor: AllColor.loginButtomColor,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
         ),
         child: loading
             ? SizedBox(
                 height: 24.h,
                 width: 24.w,
-                child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                child: const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(isEdit ? Icons.check_rounded : Icons.add_rounded, size: 22.r),
+                  Icon(
+                    isEdit ? Icons.check_rounded : Icons.add_rounded,
+                    size: 22.r,
+                  ),
                   SizedBox(width: 8.w),
                   Text(
                     isEdit ? 'Update' : 'Add visibility',
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

@@ -35,6 +35,9 @@ class BuyerAPIController {
   static String buyer_tracking_details(int id) =>
       "$_base_api/buyer/invoice/tracking/details/$id";
 
+  /// GET api/InvoiceProductList/{id} — invoice details with items (product, vendor per item)
+  static String invoiceProductList(int id) => "$_base_api/InvoiceProductList/$id";
+
   static String buyer_search_product(name) =>
       "$_base_api/search/product?name=$name";
   /// GET api/product/search?visibility_country=&category_id=&visibility_state=

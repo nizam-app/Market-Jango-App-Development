@@ -10,9 +10,9 @@ import 'package:market_jango/core/widget/global_snackbar.dart';
 import '../screens/forget_otp_verification_screen.dart';
 
 final forgetPasswordProvider =
-StateNotifierProvider<ForgetPasswordNotifier, AsyncValue<bool>>(
+    StateNotifierProvider<ForgetPasswordNotifier, AsyncValue<bool>>(
       (ref) => ForgetPasswordNotifier(),
-);
+    );
 
 class ForgetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
   ForgetPasswordNotifier() : super(const AsyncValue.data(false));
@@ -20,6 +20,7 @@ class ForgetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
   Future<void> sendForgetPassword({
     required BuildContext context,
     required String email,
+    bool resendOnly = false,
   }) async {
     state = const AsyncValue.loading();
 
@@ -49,16 +50,13 @@ class ForgetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
           message: json['message'] ?? "OTP sent successfully!",
           type: CustomSnackType.success,
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Your verification code is: ${json['data'].toString()}"),
-            duration: const Duration(seconds: 15),
-            backgroundColor: Colors.blue,
-          ),
-        );
 
-
-        context.push(ForgetOTPVerificationScreen.routeName, extra: json['data']);
+        if (!resendOnly) {
+          context.push(
+            ForgetOTPVerificationScreen.routeName,
+            extra: json['data'],
+          );
+        }
       } else {
         throw Exception(json['message'] ?? 'Request failed');
       }

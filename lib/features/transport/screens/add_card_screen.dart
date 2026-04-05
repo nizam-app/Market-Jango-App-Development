@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/core/widget/global_success_popup.dart';
@@ -8,15 +11,15 @@ import 'package:market_jango/features/buyer/screens/prement/widget/custom_paymen
 
 import '../../buyer/screens/prement/data/prement_data.dart';
 
-class AddCardScreen extends StatefulWidget {
+class AddCardScreen extends ConsumerStatefulWidget {
   const AddCardScreen({super.key});
   static const String routeName = "/addCard";
 
   @override
-  State<AddCardScreen> createState() => _AddCardScreenState();
+  ConsumerState<AddCardScreen> createState() => _AddCardScreenState();
 }
 
-class _AddCardScreenState extends State<AddCardScreen> {
+class _AddCardScreenState extends ConsumerState<AddCardScreen> {
   String selectedMethod = "Card"; // ✅ Default selected tab
 
   @override
@@ -34,8 +37,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      //Add Card
-                   Tuppertextandbackbutton(screenName: "Add Card"),
+                      Tuppertextandbackbutton(screenName: ref.t(BKeys.add_card, fallback: 'Add Card')),
 
                   CustomPaymentMethod(
                  options: paymentOptions,

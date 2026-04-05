@@ -118,12 +118,16 @@ class AffiliateScreen extends ConsumerWidget {
                       return _InfluencerLinkCard(
                         item: item,
                         onApprove: !item.vendorApproved
+
                             ? () => _approveInfluencerLink(
                                 context,
                                 ref,
                                 item.id,
                                 influencerNotifier,
                               )
+
+                          //  ? () => _approveInfluencerLink(context, ref, item.id, influencerNotifier)
+
                             : null,
                         onDelete: () => _deleteInfluencerLink(
                           context,
@@ -158,7 +162,11 @@ class AffiliateScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int id,
+
     InfluencerReferralLinksNotifierInterface notifier,
+
+  //  InfluencerReferralLinksNotifier notifier,
+
   ) async {
     try {
       await notifier.approveLink(id);
@@ -187,7 +195,11 @@ class AffiliateScreen extends ConsumerWidget {
     WidgetRef ref,
     int id,
     String name,
+
     InfluencerReferralLinksNotifierInterface notifier,
+=======
+   // InfluencerReferralLinksNotifier notifier,
+
   ) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -775,10 +787,14 @@ class _InfluencerLinkCard extends StatelessWidget {
                     Row(
                       children: [
                         Container(
+
                           padding: EdgeInsets.symmetric(
                             horizontal: 8.w,
                             vertical: 4.h,
                           ),
+
+                       //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+
                           decoration: BoxDecoration(
                             color: item.vendorApproved
                                 ? AllColor.green.withOpacity(0.15)
@@ -790,9 +806,13 @@ class _InfluencerLinkCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
+
                               color: item.vendorApproved
                                   ? AllColor.green
                                   : AllColor.grey500,
+
+                             // color: item.vendorApproved ? AllColor.green : AllColor.grey500,
+
                             ),
                           ),
                         ),
@@ -801,6 +821,7 @@ class _InfluencerLinkCard extends StatelessWidget {
                           TextButton(
                             onPressed: () => onApprove!(),
                             style: TextButton.styleFrom(
+
                               padding: EdgeInsets.symmetric(
                                 horizontal: 10.w,
                                 vertical: 4.h,
@@ -815,6 +836,13 @@ class _InfluencerLinkCard extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+
+//                               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+//                               minimumSize: Size.zero,
+//                               foregroundColor: AllColor.loginButtomColor,
+//                             ),
+//                             child: Text('Approve', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+
                           ),
                         ],
                       ],
@@ -871,6 +899,7 @@ class _InfluencerLinkCard extends StatelessWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: () => onDelete?.call(),
+
                 icon: Icon(
                   Icons.delete_outline,
                   size: 18.r,
@@ -885,6 +914,13 @@ class _InfluencerLinkCard extends StatelessWidget {
                   ),
                 ),
                 style: TextButton.styleFrom(foregroundColor: AllColor.red),
+
+//                 icon: Icon(Icons.delete_outline, size: 18.r, color: AllColor.red),
+//                 label: Text('Delete', style: TextStyle(fontSize: 13.sp, color: AllColor.red, fontWeight: FontWeight.w600)),
+//                 style: TextButton.styleFrom(
+//                   foregroundColor: AllColor.red,
+//                 ),
+
               ),
             ],
           ),

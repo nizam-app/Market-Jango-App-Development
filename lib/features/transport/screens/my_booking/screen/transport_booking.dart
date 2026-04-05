@@ -85,7 +85,11 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                             ),
                             child: Center(
                               child: Text(
+
                                 ref.t(tabKeys[index], fallback: tab),
+
+//                                 tab,
+
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w600,

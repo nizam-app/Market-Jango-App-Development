@@ -45,14 +45,6 @@ class CommonAPIController {
   static String influencerDeleteLink(int id) =>
       '$_base_api/vendor-dashboard/influencer-referral-links/$id';
 
-  /// POST approve influencer referral link
-  static String influencerApproveLink(int id) =>
-      '$_base_api/vendor-dashboard/influencer-referral-links/$id/approve';
-
-  /// DELETE influencer referral link
-  static String influencerDeleteLink(int id) =>
-      '$_base_api/vendor-dashboard/influencer-referral-links/$id';
-
   /// GET influencer referral links (driver dashboard) – same structure, data.items
   static String get driverDashboardInfluencerReferralLinks =>
       '$_base_api/driver-dashboard/influencer-referral-links';

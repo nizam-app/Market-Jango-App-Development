@@ -66,4 +66,133 @@ class VendorAPIController {
   }
   static String vendorRoutePointsDelete(int id) =>
       '$_base_api/vendor/route-points/$id';
+
+  // --- Order management (see doc/VENDOR_ORDER_MANAGEMENT_AND_BILLING.md) ---
+
+  /// Paginated marketplace line items for this vendor (`invoice_items`).
+  static String vendorOrders({
+    int page = 1,
+    int perPage = 10,
+    String? fromDate,
+    String? toDate,
+    String? orderNumber,
+    String? status,
+  }) {
+    final q = <String, String>{
+      'page': '$page',
+      'per_page': '$perPage',
+    };
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    if (orderNumber != null && orderNumber.trim().isNotEmpty) {
+      q['order_number'] = orderNumber.trim();
+    }
+    if (status != null && status.trim().isNotEmpty) q['status'] = status.trim();
+    return Uri.parse('$_base_api/vendor/orders').replace(queryParameters: q).toString();
+  }
+
+  static String vendorOrderDetail(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId';
+
+  static String vendorOrderUpdateStatus(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/status';
+
+  static String get vendorOrderStatuses => '$_base_api/vendor/orders/statuses';
+
+  /// Manual / walk-in orders (paginated invoices).
+  static String vendorManualOrders({
+    int page = 1,
+    int perPage = 10,
+    String? fromDate,
+    String? toDate,
+    String? orderNumber,
+    String? status,
+  }) {
+    final q = <String, String>{
+      'page': '$page',
+      'per_page': '$perPage',
+    };
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    if (orderNumber != null && orderNumber.trim().isNotEmpty) {
+      q['order_number'] = orderNumber.trim();
+    }
+    if (status != null && status.trim().isNotEmpty) q['status'] = status.trim();
+    return Uri.parse('$_base_api/vendor/manual-orders')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String vendorManualOrderDetail(int invoiceId) =>
+      '$_base_api/vendor/manual-orders/$invoiceId';
+
+  static String get vendorManualOrderCreate => '$_base_api/vendor/manual-orders';
+
+  static String vendorManualOrderAddItem(int invoiceId) =>
+      '$_base_api/vendor/manual-orders/$invoiceId/items';
+
+  static String vendorManualOrderDeleteItem(int invoiceId, int itemId) =>
+      '$_base_api/vendor/manual-orders/$invoiceId/items/$itemId';
+
+  static String vendorManualOrderDeliver(int invoiceId) =>
+      '$_base_api/vendor/manual-orders/$invoiceId/deliver';
+
+  /// Wallet (vendor)
+  static String get vendorWallet => '$_base_api/vendor/wallet';
+
+  static String vendorWalletTransactions({
+    int page = 1,
+    int perPage = 15,
+    String? fromDate,
+    String? toDate,
+    String? type,
+    String? status,
+  }) {
+    final q = <String, String>{
+      'page': '$page',
+      'per_page': '$perPage',
+    };
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    if (type != null && type.trim().isNotEmpty) q['type'] = type.trim();
+    if (status != null && status.trim().isNotEmpty) q['status'] = status.trim();
+    return Uri.parse('$_base_api/vendor/wallet/transactions')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String get vendorWalletPayout => '$_base_api/vendor/wallet/payout';
+
+  static String vendorWalletPayouts({int page = 1}) =>
+      Uri.parse('$_base_api/vendor/wallet/payouts')
+          .replace(queryParameters: {'page': '$page'})
+          .toString();
+
+  // --- Barcodes (see doc/VENDOR_BARCODE_AND_SCANNER_API.md) ---
+
+  /// Paginated active products with barcode payload (20/page); empty barcodes may be auto-filled.
+  static String vendorProductBarcodes({String? search, int page = 1}) {
+    final buf = StringBuffer('$_base_api/vendor/products/barcodes');
+    final params = <String>[];
+    if (search != null && search.trim().isNotEmpty) {
+      params.add('search=${Uri.encodeComponent(search.trim())}');
+    }
+    params.add('page=$page');
+    return '$buf?${params.join('&')}';
+  }
+
+  /// Scanner lookup — [code] must be path-encoded (slashes, #, spaces, etc.).
+  static String vendorProductBarcodeScan(String code) {
+    final enc = Uri.encodeComponent(code);
+    return '$_base_api/vendor/products/barcode/$enc';
+  }
+
+  static String vendorProductBarcodeByProductId(int productId) =>
+      '$_base_api/vendor/products/$productId/barcode';
+
+  static String vendorProductBarcodeRegenerate(int productId) =>
+      '$_base_api/vendor/products/$productId/barcode/regenerate';
+
+  static String vendorProductBarcodeLabels(int productId) =>
+      '$_base_api/vendor/products/$productId/barcode/labels';
 }

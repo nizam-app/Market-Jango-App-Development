@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/features/buyer/screens/filter/data/filter_product_search_data.dart';
 import 'package:market_jango/features/buyer/screens/filter/model/filter_search_product_model.dart';
@@ -24,7 +26,7 @@ class FilterScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Tuppertextandbackbutton(screenName: "Filter Products"),
+            Tuppertextandbackbutton(screenName: ref.t(BKeys.filter_products, fallback: 'Filter Products')),
             if (params == null || !params.isValid)
               Expanded(
                 child: Center(

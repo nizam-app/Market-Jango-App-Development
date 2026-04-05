@@ -30,28 +30,27 @@ class DriverHomeScreen extends ConsumerWidget {
     // If token is not ready yet, show loading
     // This ensures data providers don't try to fetch before token is available
     return tokenAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: Text('Loading...')),
+      loading: () => Scaffold(
+        body: Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
       ),
       error: (e, _) => Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Authentication error: $e'),
+              Text('${ref.t(BKeys.authentication_error, fallback: 'Authentication error')}: $e'),
               ElevatedButton(
                 onPressed: () => ref.invalidate(authTokenProvider),
-                child: const Text('Retry'),
+                child: Text(ref.t(BKeys.retry, fallback: 'Retry')),
               ),
             ],
           ),
         ),
       ),
       data: (token) {
-        // Token is ready, now load the stats
         if (token == null || token.isEmpty) {
-          return const Scaffold(
-            body: Center(child: Text('No authentication token available')),
+          return Scaffold(
+            body: Center(child: Text(ref.t(BKeys.no_authentication_token, fallback: 'No authentication token available'))),
           );
         }
         
@@ -78,7 +77,7 @@ class DriverHomeScreen extends ConsumerWidget {
             ]);
           },
           child: statsAsync.when(
-            loading: () => const Center(child: Text('Loading...')),
+            loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
             error: (e, _) => SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
@@ -93,7 +92,7 @@ class DriverHomeScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      'Failed to load stats',
+                      ref.t(BKeys.failed_to_load_stats, fallback: 'Failed to load stats'),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -115,7 +114,7 @@ class DriverHomeScreen extends ConsumerWidget {
                         ref.invalidate(driverHomeStatsProvider);
                       },
                       icon: Icon(Icons.refresh, size: 18.sp),
-                      label: Text('Retry'),
+                      label: Text(ref.t(BKeys.retry, fallback: 'Retry')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AllColor.blue500,
                         foregroundColor: AllColor.white,
@@ -137,7 +136,7 @@ class DriverHomeScreen extends ConsumerWidget {
                   children: [
                 _HeaderSection(
                   name: "John", // later profile theke
-                  subtitle: "Keep going! You're doing great today.",
+                  subtitle: ref.t(BKeys.keep_going_great_today, fallback: "Keep going! You're doing great today."),
                 ),
                 const SizedBox(height: 12),
 
@@ -238,7 +237,7 @@ class _HeaderSection extends ConsumerWidget {
                   ],
                 );
               },
-              loading: () => const Center(child: Text('Loading...')),
+              loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
               error: (e, _) => Center(child: Text(e.toString())),
             ),
           ),
@@ -351,11 +350,11 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () => const Center(child: Text('Loading...')),
-      error: (e, _) => Center(child: Text('Failed to load orders: $e')),
+      loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
+      error: (e, _) => Center(child: Text('${ref.t(BKeys.failed_to_load_orders, fallback: 'Failed to load orders')}: $e')),
       data: (resp) {
         if (resp == null) {
-          return const Center(child: Text("No found data"));
+          return Center(child: Text(ref.t(BKeys.no_found_data, fallback: 'No found data')));
         }
 
         final page = resp.data;

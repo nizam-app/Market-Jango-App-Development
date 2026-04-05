@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
+import 'package:market_jango/core/screen/global_currency/screen/global_currency_screen.dart';
 import 'package:market_jango/core/screen/global_language/screen/global_language_screen.dart';
 import 'package:market_jango/features/subscription/screen/subscription_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
@@ -32,6 +33,8 @@ import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/vendor_promotion_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
+import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
+import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice_details_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -50,9 +53,12 @@ import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
+import 'package:market_jango/features/transport/screens/billing/screen/transport_billing_screen.dart';
+import 'package:market_jango/features/transport/screens/billing/screen/transport_billing_details_screen.dart';
 import 'package:market_jango/features/transport/screens/booking_confirm/transport_booking_confirm_screen.dart';
 import 'package:market_jango/features/transport/screens/booking_confirm/transport_shipment_details_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
+import 'package:market_jango/features/transport/screens/driver/screen/driver_promotion_screen.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/transport_See_all_driver.dart';
 import 'package:market_jango/features/transport/screens/driver/widget/transport_driver_input_data.dart';
 import 'package:market_jango/features/transport/screens/home/screen/transport_home.dart';
@@ -407,7 +413,28 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: TransportBooking.routeName,
       name: 'transport_booking',
-      builder: (context, state) => TransportBooking(),
+      builder: (context, state) => const TransportBooking(),
+    ),
+    GoRoute(
+      path: TransportBillingScreen.routeName,
+      name: TransportBillingScreen.routeName,
+      builder: (context, state) => const TransportBillingScreen(),
+    ),
+    GoRoute(
+      path: TransportBillingDetailsScreen.routeName,
+      name: TransportBillingDetailsScreen.routeName,
+      builder: (context, state) {
+        final extra = state.extra;
+        final int id = extra is int
+            ? extra
+            : (extra is String ? int.tryParse(extra) ?? 0 : 0);
+        if (id <= 0) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid shipment')),
+          );
+        }
+        return TransportBillingDetailsScreen(shipmentId: id);
+      },
     ),
 
     GoRoute(
@@ -447,6 +474,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => GlobalLanguageScreen(),
     ),
     GoRoute(
+      path: GlobalCurrencyScreen.routeName,
+      name: 'currency',
+      builder: (context, state) => const GlobalCurrencyScreen(),
+    ),
+    GoRoute(
       path: SubscriptionScreen.routeName,
       name: 'subscription',
       builder: (context, state) => const SubscriptionScreen(),
@@ -463,6 +495,13 @@ final GoRouter router = GoRouter(
       name: 'driverDetails',
       builder: (context, state) {
         return DriverDetailsScreen(driverId: state.extra as int);
+      },
+    ),
+    GoRoute(
+      path: DriverPromotionScreen.routeName,
+      name: 'driverPromotion',
+      builder: (context, state) {
+        return DriverPromotionScreen(driverId: state.extra as int);
       },
     ),
     GoRoute(
@@ -691,7 +730,28 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerOrderHistoryScreen.routeName,
       name: BuyerOrderHistoryScreen.routeName,
-      builder: (context, state) => BuyerOrderHistoryScreen(),
+      builder: (context, state) => const BuyerOrderHistoryScreen(),
+    ),
+    GoRoute(
+      path: BuyerBillingScreen.routeName,
+      name: BuyerBillingScreen.routeName,
+      builder: (context, state) => const BuyerBillingScreen(),
+    ),
+    GoRoute(
+      path: BuyerInvoiceDetailsScreen.routeName,
+      name: BuyerInvoiceDetailsScreen.routeName,
+      builder: (context, state) {
+        final extra = state.extra;
+        final int invoiceId = extra is int
+            ? extra
+            : (extra is String ? int.tryParse(extra) ?? 0 : 0);
+        if (invoiceId <= 0) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid invoice')),
+          );
+        }
+        return BuyerInvoiceDetailsScreen(invoiceId: invoiceId);
+      },
     ),
     GoRoute(
       path: MyProductColorScreen.routeName,

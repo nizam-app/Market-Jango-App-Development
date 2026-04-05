@@ -38,7 +38,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera access is needed for capturing photos/video.</string>
+	<string>Camera is used to scan product barcodes and for photos when needed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to show nearby content.</string>
 	<key>NSMicrophoneUsageDescription</key>

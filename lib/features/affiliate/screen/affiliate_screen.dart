@@ -197,9 +197,6 @@ class AffiliateScreen extends ConsumerWidget {
     String name,
 
     InfluencerReferralLinksNotifierInterface notifier,
-=======
-   // InfluencerReferralLinksNotifier notifier,
-
   ) async {
     final confirm = await showDialog<bool>(
       context: context,

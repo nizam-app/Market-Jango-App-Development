@@ -27,6 +27,8 @@ import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
 import '../../visibility/screen/visibility_management_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_orders_hub_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_hub_screen.dart';
 import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
 import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
@@ -192,6 +194,40 @@ class VendorHomeScreen extends ConsumerWidget {
                 ),
                 title: Text(
                   ref.t(BKeys.order),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VendorOrdersHubScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(Icons.receipt_long, size: 20.r, color: Colors.black),
+                title: Text(
+                  'Orders & billing',
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VendorBarcodeHubScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(Icons.qr_code_2, size: 20.r, color: Colors.black),
+                title: Text(
+                  'Barcodes & scan',
                   style: TextStyle(color: Colors.black, fontSize: 14.sp),
                 ),
                 trailing: const Icon(

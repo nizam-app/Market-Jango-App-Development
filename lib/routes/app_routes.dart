@@ -74,6 +74,13 @@ import 'package:market_jango/features/vendor/screens/product_edit/screen/attribu
 import 'package:market_jango/features/vendor/screens/product_edit/screen/product_edit_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
 import 'package:market_jango/features/vendor/screens/vendor_assigned_order/screen/vendor_assigned_order.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_create_manual_order_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_manual_order_detail_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_marketplace_order_detail_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_orders_hub_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_hub_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_product_detail_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_scan_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_cancelled_screen/screen/vendor_cancelled_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_category_add_page/screen/category_add_page.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
@@ -225,6 +232,56 @@ final GoRouter router = GoRouter(
       path: VendorAssignedOrder.routeName,
       name: 'vendorOrderAssigned',
       builder: (context, state) => const VendorAssignedOrder(),
+    ),
+
+    GoRoute(
+      path: VendorOrdersHubScreen.routeName,
+      name: 'vendorOrdersHub',
+      builder: (context, state) => const VendorOrdersHubScreen(),
+    ),
+    GoRoute(
+      path: '/vendor/marketplace-order/:id',
+      name: 'vendorMarketplaceOrderDetail',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return VendorMarketplaceOrderDetailScreen(lineId: id);
+      },
+    ),
+    GoRoute(
+      path: '/vendor/manual-order/:id',
+      name: 'vendorManualOrderDetail',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return VendorManualOrderDetailScreen(invoiceId: id);
+      },
+    ),
+    GoRoute(
+      path: VendorCreateManualOrderScreen.routeName,
+      name: 'vendorCreateManualOrder',
+      builder: (context, state) {
+        final extra = state.extra;
+        final presetId = extra is int ? extra : null;
+        return VendorCreateManualOrderScreen(presetProductId: presetId);
+      },
+    ),
+
+    GoRoute(
+      path: VendorBarcodeHubScreen.routeName,
+      name: 'vendorBarcodeHub',
+      builder: (context, state) => const VendorBarcodeHubScreen(),
+    ),
+    GoRoute(
+      path: VendorBarcodeScanScreen.routeName,
+      name: 'vendorBarcodeScan',
+      builder: (context, state) => const VendorBarcodeScanScreen(),
+    ),
+    GoRoute(
+      path: '/vendor/barcodes/product/:productId',
+      name: 'vendorBarcodeProductDetail',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['productId'] ?? '') ?? 0;
+        return VendorBarcodeProductDetailScreen(productId: id);
+      },
     ),
 
     // GoRoute(

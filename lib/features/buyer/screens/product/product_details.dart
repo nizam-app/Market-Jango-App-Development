@@ -183,8 +183,7 @@ class _ProductDetailsState extends ConsumerState<ProductDetails> {
                       product.vendor.businessName ??
                       '',
                   image:
-                      (product.vendor.user.image != null &&
-                          product.vendor.user.image.isNotEmpty)
+                      (product.vendor.user.image.isNotEmpty)
                       ? product.vendor.user.image
                       : "https://www.selikoff.net/blog-files/null-value.gif",
                   vendorId: product.vendor.id,

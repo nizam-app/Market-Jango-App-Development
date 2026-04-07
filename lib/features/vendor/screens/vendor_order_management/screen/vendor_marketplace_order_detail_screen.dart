@@ -199,7 +199,7 @@ class _VendorMarketplaceOrderDetailScreenState
           ),
           SizedBox(height: 8.h),
           DropdownButtonFormField<String>(
-            value: _nextStatus,
+            initialValue: _nextStatus,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               filled: true,

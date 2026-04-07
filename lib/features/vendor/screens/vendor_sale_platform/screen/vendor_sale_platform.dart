@@ -617,7 +617,6 @@ class _DaysFilterDropdown extends StatelessWidget {
   final ValueChanged<int> onDaysChanged;
 
   const _DaysFilterDropdown({
-    super.key,
     required this.selectedDays,
     required this.onDaysChanged,
   });

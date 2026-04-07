@@ -135,6 +135,17 @@ class BKeys {
   static const String productLabel = 'product_label';
   static const String vendorLabel = 'vendor_label';
   static const String qty = 'qty';
+  static const String numberOfProducts = 'number_of_products';
+  static const String orderNumber = 'order_number';
+  static const String productName = 'product_name';
+  static const String cost = 'cost';
+  static const String tax = 'tax';
+  static const String platformFees = 'platform_fees';
+  static const String totalFees = 'total_fees';
+  static const String download = 'download';
+  static const String invoiceCopied = 'invoice_copied';
+  /// Prefix for grouped vendor blocks: "Vendor A · Shop name" when invoice has multiple vendors.
+  static const String invoiceVendorBlock = 'invoice_vendor_block';
   static const String errorOccurred = 'error_occurred';
   static const String language = 'language';
   static const String logOut = 'log_out';

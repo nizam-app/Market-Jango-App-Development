@@ -41,7 +41,7 @@ class UserProfileData {
       ),
       images: (json['images'] as List? ?? [])
           .whereType<Map<String, dynamic>>()
-          .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
+          .map((e) => UserImage.fromJson(e))
           .toList(),
       reviewCount: json['review_count'] is int
           ? json['review_count'] as int
@@ -151,7 +151,7 @@ class UserModel {
       // ==== user_images list ====
       userImages: (json['user_images'] as List? ?? [])
           .whereType<Map<String, dynamic>>()
-          .map((e) => UserImage.fromJson(e as Map<String, dynamic>))
+          .map((e) => UserImage.fromJson(e))
           .toList(),
       
       // ==== cover image ====
@@ -222,7 +222,7 @@ class VendorInfo {
     // reviews list
     reviews: (json['reviews'] as List? ?? [])
         .whereType<Map<String, dynamic>>()
-        .map((e) => VendorReviewProfile.fromJson(e as Map<String, dynamic>))
+        .map((e) => VendorReviewProfile.fromJson(e))
         .toList(),
   );
 }

@@ -373,7 +373,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
     
     const borderBlue = Color(0xFFBFD5F1);
     const labelBlue = Color(0xFF2B6CB0);
-    const _hintColor = Color(0xFF95A6C4);
+    const hintColor = Color(0xFF95A6C4);
     final createState = ref.watch(createProductProvider);
 
     bool loading = createState.isLoading;
@@ -557,7 +557,7 @@ class _PriceAndImagesSectionState extends ConsumerState<PriceAndImagesSection> {
               maxLines: 4,
               decoration: InputDecoration(
                 hintText: 'Enter terms and conditions (optional)',
-                hintStyle: TextStyle(fontSize: 14.sp, color: _hintColor),
+                hintStyle: TextStyle(fontSize: 14.sp, color: hintColor),
                 fillColor: Colors.transparent,
                 filled: true,
                 border: InputBorder.none,

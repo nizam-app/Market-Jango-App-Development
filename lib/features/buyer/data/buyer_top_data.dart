@@ -35,7 +35,7 @@ class TopProductNotifier extends AsyncNotifier<List<TopProduct>> {
       Logger().d('Top products: status=${res.statusCode} bodyLen=${res.body.length}');
 
       if (res.statusCode != 200) {
-        Logger().e('Top products failed: ${res.statusCode} body=${res.body.length > 200 ? res.body.substring(0, 200) + "..." : res.body}');
+        Logger().e('Top products failed: ${res.statusCode} body=${res.body.length > 200 ? "${res.body.substring(0, 200)}..." : res.body}');
         return [];
       }
 

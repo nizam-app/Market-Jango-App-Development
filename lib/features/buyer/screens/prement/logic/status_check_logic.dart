@@ -40,7 +40,7 @@ Future<bool> verifyPaymentFromServer(
     );
 
     log.i('PaymentVerify ← status=${res.statusCode}');
-    log.t('PaymentVerify ← body: ${res.body.length > 500 ? res.body.substring(0, 500) + '…' : res.body}');
+    log.t('PaymentVerify ← body: ${res.body.length > 500 ? '${res.body.substring(0, 500)}…' : res.body}');
 
     if (res.statusCode != 200) {
       log.w('PaymentVerify ← Failed with status ${res.statusCode}');

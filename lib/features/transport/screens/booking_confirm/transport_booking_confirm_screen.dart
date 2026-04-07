@@ -91,7 +91,7 @@ class _TransportBookingConfirmScreenState
     final origin = widget.args.pickup?.trim();
     final destination = widget.args.destination?.trim();
     final packages = _packageControllers.map((list) {
-      final length = double.tryParse(list.length > 0 ? list[0].text : '');
+      final length = double.tryParse(list.isNotEmpty ? list[0].text : '');
       final width = double.tryParse(list.length > 1 ? list[1].text : '');
       final height = double.tryParse(list.length > 2 ? list[2].text : '');
       final pieces = int.tryParse(list.length > 3 ? list[3].text : '1') ?? 1;
@@ -432,7 +432,7 @@ class _PackageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lengthC = controllers.length > 0 ? controllers[0] : null;
+    final lengthC = controllers.isNotEmpty ? controllers[0] : null;
     final widthC = controllers.length > 1 ? controllers[1] : null;
     final heightC = controllers.length > 2 ? controllers[2] : null;
     final piecesC = controllers.length > 3 ? controllers[3] : null;

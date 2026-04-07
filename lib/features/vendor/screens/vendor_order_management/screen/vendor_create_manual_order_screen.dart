@@ -224,7 +224,7 @@ class _VendorCreateManualOrderScreenState
           ),
           SizedBox(height: 10.h),
           DropdownButtonFormField<String>(
-            value: _payment,
+            initialValue: _payment,
             decoration: const InputDecoration(
               labelText: 'Payment method',
               border: OutlineInputBorder(),
@@ -293,7 +293,7 @@ class _VendorCreateManualOrderScreenState
                             ),
                           )
                         : DropdownButtonFormField<int>(
-                            value: line.productId,
+                            initialValue: line.productId,
                             isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Product',

@@ -197,7 +197,7 @@ class _BuyerProfileEditScreenState
                     ),
                     SizedBox(height: 8.h),
                     DropdownButtonFormField<String>(
-                      value: _selectedCurrency,
+                      initialValue: _selectedCurrency,
                       decoration: InputDecoration(
                         fillColor: const Color(0xffE6F0F8),
                         hintText: "Select Currency",

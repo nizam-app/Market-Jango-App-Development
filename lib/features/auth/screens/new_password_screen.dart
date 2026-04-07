@@ -10,7 +10,6 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/Congratulation.dart';
 import 'package:market_jango/features/auth/screens/login/logic/obscureText_controller.dart';
 import 'package:market_jango/features/auth/screens/login/logic/password_validator.dart';
-import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/auth/logic/register_password_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

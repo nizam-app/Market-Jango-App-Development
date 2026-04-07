@@ -650,7 +650,7 @@ class _FilterCard extends StatelessWidget {
                 data: (st) {
                   if (st.statuses.isEmpty) return const SizedBox.shrink();
                   return DropdownButtonFormField<String?>(
-                    value: statusValue,
+                    initialValue: statusValue,
                     decoration: const InputDecoration(
                       labelText: 'Status',
                       isDense: true,
@@ -766,8 +766,8 @@ class _MarketplaceTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          'Order ${line.invoice.orderNumber}\n'
-          '${line.status} · qty ${line.quantity}',
+          'Order Number: ${line.invoice.orderNumber}\n'
+          'Number of products: ${line.quantity}',
         ),
         trailing: const Icon(Icons.chevron_right),
       ),

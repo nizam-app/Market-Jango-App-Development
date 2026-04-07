@@ -404,7 +404,6 @@ class _StatusTile extends StatefulWidget {
     this.onTap,
     // this.badgeText,
     this.onBadgeTap,
-    this.badgeColor,
     this.onChanged,
   });
 

@@ -82,8 +82,8 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           onWebResourceError: (error) {
             // Handle cleartext HTTP errors and other loading errors
             if (error.errorCode == -2 || // ERR_FAILED
-                (error.description?.contains('ERR_CLEARTEXT_NOT_PERMITTED') == true) ||
-                (error.description?.contains('cleartext') == true)) {
+                (error.description.contains('ERR_CLEARTEXT_NOT_PERMITTED') == true) ||
+                (error.description.contains('cleartext') == true)) {
               debugPrint('WebView error: ${error.description}');
               // If it's a payment response URL, hide WebView and verify
               final uri = Uri.tryParse(error.url ?? '');

@@ -43,7 +43,7 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
     // Get vendor ID
     final vendorAsync = ref.read(vendorProvider);
     int? vendorId;
-    await vendorAsync.when(
+    vendorAsync.when(
       data: (vendor) => vendorId = vendor.id,
       loading: () => null,
       error: (_, __) => null,

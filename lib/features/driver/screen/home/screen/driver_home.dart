@@ -13,6 +13,8 @@ import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/data/new_oder_driver_data.dart';
+import 'package:market_jango/features/driver/screen/wallet/provider/driver_wallet_provider.dart';
+import 'package:market_jango/features/driver/screen/wallet/screen/driver_wallet_screen.dart';
 
 import '../data/driver_home_status_data.dart';
 import '../model/driver_home_status_model.dart';
@@ -26,7 +28,7 @@ class DriverHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // ✅ Ensure token is ready before loading data (fixes first-load issue)
     final tokenAsync = ref.watch(authTokenProvider);
-    
+
     // If token is not ready yet, show loading
     // This ensures data providers don't try to fetch before token is available
     return tokenAsync.when(
@@ -38,7 +40,9 @@ class DriverHomeScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('${ref.t(BKeys.authentication_error, fallback: 'Authentication error')}: $e'),
+              Text(
+                '${ref.t(BKeys.authentication_error, fallback: 'Authentication error')}: $e',
+              ),
               ElevatedButton(
                 onPressed: () => ref.invalidate(authTokenProvider),
                 child: Text(ref.t(BKeys.retry, fallback: 'Retry')),
@@ -50,24 +54,37 @@ class DriverHomeScreen extends ConsumerWidget {
       data: (token) {
         if (token == null || token.isEmpty) {
           return Scaffold(
-            body: Center(child: Text(ref.t(BKeys.no_authentication_token, fallback: 'No authentication token available'))),
+            body: Center(
+              child: Text(
+                ref.t(
+                  BKeys.no_authentication_token,
+                  fallback: 'No authentication token available',
+                ),
+              ),
+            ),
           );
         }
-        
+
         final statsAsync = ref.watch(driverHomeStatsProvider);
         return _buildHomeContent(context, ref, statsAsync);
       },
     );
   }
-  
-  Widget _buildHomeContent(BuildContext context, WidgetRef ref, AsyncValue<DriverHomeStats> statsAsync) {
+
+  Widget _buildHomeContent(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<DriverHomeStats> statsAsync,
+  ) {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(driverHomeStatsProvider);
             ref.invalidate(driverNewOrdersProvider);
-            final userID = ref.read(getUserIdProvider.select((value) => value.value));
+            final userID = ref.read(
+              getUserIdProvider.select((value) => value.value),
+            );
             if (userID != null) {
               ref.invalidate(userProvider(userID));
             }
@@ -77,7 +94,9 @@ class DriverHomeScreen extends ConsumerWidget {
             ]);
           },
           child: statsAsync.when(
-            loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
+            loading: () => Center(
+              child: Text(ref.t(BKeys.loading, fallback: 'Loading...')),
+            ),
             error: (e, _) => SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
@@ -92,7 +111,10 @@ class DriverHomeScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      ref.t(BKeys.failed_to_load_stats, fallback: 'Failed to load stats'),
+                      ref.t(
+                        BKeys.failed_to_load_stats,
+                        fallback: 'Failed to load stats',
+                      ),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -134,44 +156,51 @@ class DriverHomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                _HeaderSection(
-                  name: "John", // later profile theke
-                  subtitle: ref.t(BKeys.keep_going_great_today, fallback: "Keep going! You're doing great today."),
-                ),
-                const SizedBox(height: 12),
-
-                _StatsGrid(
-                  stats: [
-                    _StatItem(
-                      //"Total Active Orders"
-                      title: ref.t(BKeys.total_active_order),
-                      value: stats.totalActiveOrders.toString(),
+                    _HeaderSection(
+                      name: "John", // later profile theke
+                      subtitle: ref.t(
+                        BKeys.keep_going_great_today,
+                        fallback: "Keep going! You're doing great today.",
+                      ),
                     ),
-                    _StatItem(
-                        //"Picked"
-                        title: ref.t(BKeys.picked),
-                        value: stats.picked.toString()),
-                    _StatItem(
-                      //Pending Deliveries
-                      title: ref.t(BKeys.pending_deliveries),
-                      value: stats.pendingsDeliveries.toString(),
-                    ),
-                    _StatItem(
-                      //"Delivered Today"
-                      title: ref.t(BKeys.delivered_today),
-                      value: stats.deliveredToday.toString(),
-                    ),
-                  ],
-                ),
+                    const SizedBox(height: 12),
 
-                const SizedBox(height: 16),
-                //"New Orders"
-                 _SectionTitle(title: ref.t(BKeys.new_order)),
-                const SizedBox(height: 10),
+                    _StatsGrid(
+                      stats: [
+                        _StatItem(
+                          //"Total Active Orders"
+                          title: ref.t(BKeys.total_active_order),
+                          value: stats.totalActiveOrders.toString(),
+                        ),
+                        _StatItem(
+                          //"Picked"
+                          title: ref.t(BKeys.picked),
+                          value: stats.picked.toString(),
+                        ),
+                        _StatItem(
+                          //Pending Deliveries
+                          title: ref.t(BKeys.pending_deliveries),
+                          value: stats.pendingsDeliveries.toString(),
+                        ),
+                        _StatItem(
+                          //"Delivered Today"
+                          title: ref.t(BKeys.delivered_today),
+                          value: stats.deliveredToday.toString(),
+                        ),
+                      ],
+                    ),
 
-                /// 🔹 Orders List - Expanded removed for scrollable content
-                _OrdersList(),
-                SizedBox(height: 20.h),
+                    SizedBox(height: 12.h),
+                    const _DriverWalletHomeCard(),
+
+                    const SizedBox(height: 16),
+                    //"New Orders"
+                    _SectionTitle(title: ref.t(BKeys.new_order)),
+                    const SizedBox(height: 10),
+
+                    /// 🔹 Orders List - Expanded removed for scrollable content
+                    _OrdersList(),
+                    SizedBox(height: 20.h),
                   ],
                 ),
               );
@@ -237,7 +266,9 @@ class _HeaderSection extends ConsumerWidget {
                   ],
                 );
               },
-              loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
+              loading: () => Center(
+                child: Text(ref.t(BKeys.loading, fallback: 'Loading...')),
+              ),
               error: (e, _) => Center(child: Text(e.toString())),
             ),
           ),
@@ -350,11 +381,18 @@ class _OrdersList extends ConsumerWidget {
     final notifier = ref.read(driverNewOrdersProvider.notifier);
 
     return async.when(
-      loading: () => Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
-      error: (e, _) => Center(child: Text('${ref.t(BKeys.failed_to_load_orders, fallback: 'Failed to load orders')}: $e')),
+      loading: () =>
+          Center(child: Text(ref.t(BKeys.loading, fallback: 'Loading...'))),
+      error: (e, _) => Center(
+        child: Text(
+          '${ref.t(BKeys.failed_to_load_orders, fallback: 'Failed to load orders')}: $e',
+        ),
+      ),
       data: (resp) {
         if (resp == null) {
-          return Center(child: Text(ref.t(BKeys.no_found_data, fallback: 'No found data')));
+          return Center(
+            child: Text(ref.t(BKeys.no_found_data, fallback: 'No found data')),
+          );
         }
 
         final page = resp.data;
@@ -421,9 +459,7 @@ class _OrderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-
     return Container(
-
       decoration: BoxDecoration(
         color: AllColor.white,
         borderRadius: BorderRadius.circular(14.r),
@@ -442,7 +478,6 @@ class _OrderCard extends ConsumerWidget {
           children: [
             // left block
             Expanded(
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -690,6 +725,82 @@ class _OrderModel {
 // }
 
 // List<_OrderModel> _mockOrders() => _OrdersListData.list;
+
+class _DriverWalletHomeCard extends ConsumerWidget {
+  const _DriverWalletHomeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(driverWalletOverviewProvider);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Material(
+        color: AllColor.white,
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
+          onTap: () => context.push(DriverWalletScreen.routeName),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: AllColor.loginButtomColor,
+                  size: 28.sp,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Wallet',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15.sp,
+                        ),
+                      ),
+                      async.when(
+                        loading: () => Text(
+                          '…',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: AllColor.grey500,
+                          ),
+                        ),
+                        error: (_, __) => Text(
+                          'Tap to view balance & withdrawals',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AllColor.grey500,
+                          ),
+                        ),
+                        data: (w) {
+                          final cur = w.currency?.trim();
+                          final suffix =
+                              cur != null && cur.isNotEmpty ? ' $cur' : '';
+                          return Text(
+                            '${w.balanceLabel}$suffix',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AllColor.grey500),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _StatItem {
   final String title;

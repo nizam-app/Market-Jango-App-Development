@@ -1,4 +1,6 @@
 // providers/driver_all_orders_provider.dart
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/driver_api.dart';
@@ -9,6 +11,23 @@ final driverAllOrdersProvider =
     AsyncNotifierProvider<DriverAllOrdersNotifier, DriverAllOrdersResponse?>(
       DriverAllOrdersNotifier.new,
     );
+
+/// Uses JSON `message` when present (e.g. `{ "status":"failed", "message":"Driver not found" }`).
+String _driverOrdersHttpError(int code, String body) {
+  final t = body.trim();
+  if (t.isNotEmpty) {
+    try {
+      final j = jsonDecode(t);
+      if (j is Map<String, dynamic>) {
+        final msg = j['message']?.toString().trim();
+        if (msg != null && msg.isNotEmpty) return msg;
+      }
+    } catch (_) {}
+  }
+  if (code == 401 || code == 403) return 'Session expired. Please sign in again.';
+  if (code == 404) return 'Driver not found. Contact support if you are registered as a driver.';
+  return 'Could not load orders (HTTP $code).';
+}
 
 class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
   int _page = 1;
@@ -48,9 +67,17 @@ class DriverAllOrdersNotifier extends AsyncNotifier<DriverAllOrdersResponse?> {
       headers: {'Accept': 'application/json', 'token': token},
     );
     if (r.statusCode != 200) {
-      throw Exception('Fetch failed: ${r.statusCode} ${r.body}');
+      throw Exception(_driverOrdersHttpError(r.statusCode, r.body));
     }
-    return driverAllOrdersResponseFromJson(r.body);
+    final parsed = driverAllOrdersResponseFromJson(r.body);
+    final st = parsed.status.toLowerCase();
+    if (st == 'failed' || st == 'error') {
+      final m = parsed.message?.trim();
+      throw Exception(
+        (m != null && m.isNotEmpty) ? m : 'Could not load orders.',
+      );
+    }
+    return parsed;
   }
 
   /* ---------- UI mapping: কেবল order.status ---------- */

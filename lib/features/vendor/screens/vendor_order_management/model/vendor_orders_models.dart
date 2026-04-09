@@ -68,23 +68,35 @@ class VendorNestedInvoice {
   final String orderNumber;
   final String status;
   final String? paymentMethod;
+  final String? cusName;
+  final bool? isManualOrder;
 
   VendorNestedInvoice({
     required this.id,
     required this.orderNumber,
     required this.status,
     this.paymentMethod,
+    this.cusName,
+    this.isManualOrder,
   });
 
   factory VendorNestedInvoice.fromJson(Map<String, dynamic>? j) {
     if (j == null) {
       return VendorNestedInvoice(id: 0, orderNumber: '', status: '');
     }
+    final manual = j['is_manual_order'];
     return VendorNestedInvoice(
       id: _toInt(j['id']),
       orderNumber: _s(j['order_number']),
       status: _s(j['status']),
       paymentMethod: j['payment_method']?.toString(),
+      cusName: j['cus_name']?.toString(),
+      isManualOrder: manual == null
+          ? null
+          : (manual == true ||
+              manual == 1 ||
+              manual.toString().toLowerCase() == 'true' ||
+              manual.toString() == '1'),
     );
   }
 }
@@ -97,10 +109,7 @@ class VendorNestedProduct {
 
   factory VendorNestedProduct.fromJson(Map<String, dynamic>? j) {
     if (j == null) return VendorNestedProduct(id: 0, name: '');
-    return VendorNestedProduct(
-      id: _toInt(j['id']),
-      name: _s(j['name']),
-    );
+    return VendorNestedProduct(id: _toInt(j['id']), name: _s(j['name']));
   }
 }
 
@@ -135,6 +144,15 @@ class VendorMarketplaceLine {
   final VendorNestedProduct product;
   final VendorNestedDriver? driver;
 
+  /// Line-level fields when API returns full `invoice_item` objects.
+  final String? lineCustomerName;
+  final String? shipAddress;
+  final String? pickupAddress;
+  final String? linePaymentMethod;
+  final String? totalPay;
+  final String? unitPrice;
+  final String? lineNote;
+
   VendorMarketplaceLine({
     required this.id,
     required this.quantity,
@@ -146,6 +164,13 @@ class VendorMarketplaceLine {
     required this.invoice,
     required this.product,
     this.driver,
+    this.lineCustomerName,
+    this.shipAddress,
+    this.pickupAddress,
+    this.linePaymentMethod,
+    this.totalPay,
+    this.unitPrice,
+    this.lineNote,
   });
 
   factory VendorMarketplaceLine.fromJson(Map<String, dynamic> j) {
@@ -170,6 +195,13 @@ class VendorMarketplaceLine {
       driver: j['driver'] is Map<String, dynamic>
           ? VendorNestedDriver.fromJson(j['driver'] as Map<String, dynamic>)
           : null,
+      lineCustomerName: j['cus_name']?.toString(),
+      shipAddress: j['ship_address']?.toString(),
+      pickupAddress: j['pickup_address']?.toString(),
+      linePaymentMethod: j['payment_method']?.toString(),
+      totalPay: j['total_pay']?.toString(),
+      unitPrice: j['unit_price']?.toString(),
+      lineNote: j['note']?.toString(),
     );
   }
 }
@@ -188,6 +220,13 @@ class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
     required super.invoice,
     required super.product,
     super.driver,
+    super.lineCustomerName,
+    super.shipAddress,
+    super.pickupAddress,
+    super.linePaymentMethod,
+    super.totalPay,
+    super.unitPrice,
+    super.lineNote,
     required this.allowedNextStatuses,
   });
 
@@ -208,6 +247,13 @@ class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
       invoice: base.invoice,
       product: base.product,
       driver: base.driver,
+      lineCustomerName: base.lineCustomerName,
+      shipAddress: base.shipAddress,
+      pickupAddress: base.pickupAddress,
+      linePaymentMethod: base.linePaymentMethod,
+      totalPay: base.totalPay,
+      unitPrice: base.unitPrice,
+      lineNote: base.lineNote,
       allowedNextStatuses: next,
     );
   }
@@ -361,6 +407,23 @@ class VendorWalletOverview {
     }
     return '—';
   }
+
+  String? get currency => raw['currency']?.toString();
+
+  String get creditedLabel => _s(raw['total_credited']);
+  String get debitedLabel => _s(raw['total_debited']);
+
+  /// Parsed balance for payout validation (same keys as [balanceLabel]).
+  num? get balanceNumeric {
+    for (final k in ['balance', 'available_balance', 'available', 'total']) {
+      final v = raw[k];
+      if (v == null) continue;
+      if (v is num) return v;
+      final p = num.tryParse(v.toString().replaceAll(',', ''));
+      if (p != null) return p;
+    }
+    return null;
+  }
 }
 
 class VendorWalletTransaction {
@@ -370,6 +433,7 @@ class VendorWalletTransaction {
   final String status;
   final String? description;
   final DateTime? createdAt;
+  final String? transactionId;
 
   VendorWalletTransaction({
     this.id,
@@ -378,16 +442,233 @@ class VendorWalletTransaction {
     required this.status,
     this.description,
     this.createdAt,
+    this.transactionId,
   });
 
   factory VendorWalletTransaction.fromJson(Map<String, dynamic> j) {
+    final sign = j['amount_sign']?.toString().trim();
+    final rawAmt = _s(j['amount']);
+    final amt = (sign != null && sign.isNotEmpty) ? '$sign$rawAmt' : rawAmt;
     return VendorWalletTransaction(
       id: j['id'] != null ? _toInt(j['id']) : null,
       type: _s(j['type']),
-      amount: _s(j['amount']),
+      amount: amt,
       status: _s(j['status']),
       description: j['description']?.toString(),
-      createdAt: _dt(j['created_at']),
+      createdAt: _dt(j['date']) ?? _dt(j['created_at']),
+      transactionId: j['transaction_id']?.toString(),
     );
   }
+}
+
+/// `GET /vendor/wallet/payouts` row.
+class VendorPayoutRequest {
+  final int id;
+  final double amount;
+  final String status;
+  final String paymentMethod;
+  final DateTime? createdAt;
+  final String? note;
+
+  VendorPayoutRequest({
+    required this.id,
+    required this.amount,
+    required this.status,
+    required this.paymentMethod,
+    this.createdAt,
+    this.note,
+  });
+
+  factory VendorPayoutRequest.fromJson(Map<String, dynamic> j) {
+    return VendorPayoutRequest(
+      id: _toInt(j['id']),
+      amount: _toDouble(j['amount']),
+      status: _s(j['status']),
+      paymentMethod: _s(j['payment_method']),
+      createdAt: _dt(j['created_at']),
+      note: j['note']?.toString(),
+    );
+  }
+}
+
+class VendorRefundBucket {
+  final int count;
+  final double total;
+
+  const VendorRefundBucket({this.count = 0, this.total = 0});
+
+  factory VendorRefundBucket.fromJson(dynamic v) {
+    if (v is! Map<String, dynamic>) {
+      return const VendorRefundBucket();
+    }
+    return VendorRefundBucket(
+      count: _toInt(v['count']),
+      total: _toDouble(v['total']),
+    );
+  }
+}
+
+class VendorRefundSummary {
+  final VendorRefundBucket pending;
+  final VendorRefundBucket approved;
+  final VendorRefundBucket rejected;
+
+  VendorRefundSummary({
+    required this.pending,
+    required this.approved,
+    required this.rejected,
+  });
+
+  factory VendorRefundSummary.fromJson(Map<String, dynamic> j) {
+    return VendorRefundSummary(
+      pending: VendorRefundBucket.fromJson(j['pending']),
+      approved: VendorRefundBucket.fromJson(j['approved']),
+      rejected: VendorRefundBucket.fromJson(j['rejected']),
+    );
+  }
+}
+
+class VendorRefundListItem {
+  final int id;
+  final String status;
+  final double amount;
+  final String reason;
+  final String productName;
+  final String customerName;
+  final String orderNumber;
+
+  VendorRefundListItem({
+    required this.id,
+    required this.status,
+    required this.amount,
+    required this.reason,
+    required this.productName,
+    required this.customerName,
+    required this.orderNumber,
+  });
+
+  factory VendorRefundListItem.fromJson(Map<String, dynamic> j) {
+    final item = j['invoice_item'] is Map<String, dynamic>
+        ? j['invoice_item'] as Map<String, dynamic>
+        : null;
+    final product = item?['product'] is Map<String, dynamic>
+        ? item!['product'] as Map<String, dynamic>
+        : null;
+    Map<String, dynamic>? inv = item?['invoice'] is Map<String, dynamic>
+        ? item!['invoice'] as Map<String, dynamic>
+        : null;
+    inv ??=
+        j['invoice'] is Map<String, dynamic> ? j['invoice'] as Map<String, dynamic> : null;
+    final user =
+        j['user'] is Map<String, dynamic> ? j['user'] as Map<String, dynamic> : null;
+    return VendorRefundListItem(
+      id: _toInt(j['id']),
+      status: _s(j['status']),
+      amount: _toDouble(j['amount']),
+      reason: _s(j['reason']),
+      productName: _s(product?['name']),
+      customerName: _s(user?['name']),
+      orderNumber: _s(inv?['order_number']),
+    );
+  }
+}
+
+class VendorRefundsPayload {
+  final VendorRefundSummary? summary;
+  final VendorOrdersPage<VendorRefundListItem> refunds;
+
+  VendorRefundsPayload({required this.summary, required this.refunds});
+
+  static VendorRefundsPayload parse(Map<String, dynamic>? data) {
+    if (data == null) {
+      return VendorRefundsPayload(
+        summary: null,
+        refunds: _emptyRefundPage(),
+      );
+    }
+    VendorRefundSummary? summary;
+    final s = data['summary'];
+    if (s is Map<String, dynamic>) {
+      summary = VendorRefundSummary.fromJson(s);
+    }
+    Map<String, dynamic>? pageMap;
+    final r = data['refunds'];
+    if (r is Map<String, dynamic>) pageMap = r;
+    final page = VendorOrdersPage.parse(
+      pageMap,
+      VendorRefundListItem.fromJson,
+    );
+    return VendorRefundsPayload(summary: summary, refunds: page);
+  }
+
+  static VendorOrdersPage<VendorRefundListItem> _emptyRefundPage() {
+    return const VendorOrdersPage(
+      currentPage: 1,
+      lastPage: 1,
+      perPage: 15,
+      total: 0,
+      items: [],
+    );
+  }
+}
+
+class VendorRefundDetail {
+  final int id;
+  final String status;
+  final double amount;
+  final String reason;
+  final String? reviewNote;
+  final String? requestedBy;
+  final String productName;
+  final String orderNumber;
+  final String customerName;
+  final String? customerPhone;
+  final String? reviewerName;
+
+  VendorRefundDetail({
+    required this.id,
+    required this.status,
+    required this.amount,
+    required this.reason,
+    this.reviewNote,
+    this.requestedBy,
+    required this.productName,
+    required this.orderNumber,
+    required this.customerName,
+    this.customerPhone,
+    this.reviewerName,
+  });
+
+  factory VendorRefundDetail.fromJson(Map<String, dynamic> j) {
+    final item = j['invoice_item'] is Map<String, dynamic>
+        ? j['invoice_item'] as Map<String, dynamic>
+        : null;
+    final product = item?['product'] is Map<String, dynamic>
+        ? item!['product'] as Map<String, dynamic>
+        : null;
+    Map<String, dynamic>? inv = item?['invoice'] is Map<String, dynamic>
+        ? item!['invoice'] as Map<String, dynamic>
+        : null;
+    inv ??=
+        j['invoice'] is Map<String, dynamic> ? j['invoice'] as Map<String, dynamic> : null;
+    final user =
+        j['user'] is Map<String, dynamic> ? j['user'] as Map<String, dynamic> : null;
+    final reviewer =
+        j['reviewer'] is Map<String, dynamic> ? j['reviewer'] as Map<String, dynamic> : null;
+    return VendorRefundDetail(
+      id: _toInt(j['id']),
+      status: _s(j['status']),
+      amount: _toDouble(j['amount']),
+      reason: _s(j['reason']),
+      reviewNote: j['review_note']?.toString(),
+      requestedBy: j['requested_by']?.toString(),
+      productName: _s(product?['name']),
+      orderNumber: _s(inv?['order_number']),
+      customerName: _s(user?['name']),
+      customerPhone: user?['phone']?.toString(),
+      reviewerName: reviewer?['name']?.toString(),
+    );
+  }
+
+  bool get isPending => status.toLowerCase() == 'pending';
 }

@@ -163,10 +163,44 @@ class VendorAPIController {
 
   static String get vendorWalletPayout => '$_base_api/vendor/wallet/payout';
 
-  static String vendorWalletPayouts({int page = 1}) =>
-      Uri.parse('$_base_api/vendor/wallet/payouts')
-          .replace(queryParameters: {'page': '$page'})
-          .toString();
+  /// Paginated payout requests; optional `status` filter.
+  static String vendorWalletPayouts({int page = 1, String? status}) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/vendor/wallet/payouts')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  /// Refunds list + summary — see doc/VENDOR_WALLET_AND_REFUND_API.md §5.2
+  static String vendorRefunds({
+    int page = 1,
+    String? status,
+    String? fromDate,
+    String? toDate,
+  }) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) q['status'] = status.trim();
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    return Uri.parse('$_base_api/vendor/refunds')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String vendorRefundDetail(int id) => '$_base_api/vendor/refunds/$id';
+
+  static String vendorRefundApprove(int id) =>
+      '$_base_api/vendor/refunds/$id/approve';
+
+  static String vendorRefundReject(int id) =>
+      '$_base_api/vendor/refunds/$id/reject';
+
+  /// `item_id` = invoice line id (same as marketplace order detail).
+  static String vendorOrderLineRefund(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/refund';
 
   // --- Barcodes (see doc/VENDOR_BARCODE_AND_SCANNER_API.md) ---
 

@@ -35,6 +35,9 @@ import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice_details_screen.dart';
+import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refund_detail_screen.dart';
+import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
+import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -48,6 +51,7 @@ import 'package:market_jango/features/driver/screen/driver_order/screen/driver_o
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/screen/driver_home.dart';
+import 'package:market_jango/features/driver/screen/wallet/screen/driver_wallet_screen.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
@@ -78,6 +82,7 @@ import 'package:market_jango/features/vendor/screens/vendor_order_management/scr
 import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_manual_order_detail_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_marketplace_order_detail_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_orders_hub_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_refund_detail_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_hub_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_product_detail_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_scan_screen.dart';
@@ -245,6 +250,14 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
         return VendorMarketplaceOrderDetailScreen(lineId: id);
+      },
+    ),
+    GoRoute(
+      path: '/vendor/refund/:id',
+      name: 'vendorRefundDetail',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return VendorRefundDetailScreen(refundId: id);
       },
     ),
     GoRoute(
@@ -486,9 +499,7 @@ final GoRouter router = GoRouter(
             ? extra
             : (extra is String ? int.tryParse(extra) ?? 0 : 0);
         if (id <= 0) {
-          return const Scaffold(
-            body: Center(child: Text('Invalid shipment')),
-          );
+          return const Scaffold(body: Center(child: Text('Invalid shipment')));
         }
         return TransportBillingDetailsScreen(shipmentId: id);
       },
@@ -602,7 +613,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: BuyerBottomNavBar.routeName,
       name: 'bottom_nav_bar',
-      builder: (context, state) =>  BuyerBottomNavBar(),
+      builder: (context, state) => BuyerBottomNavBar(),
     ),
 
     GoRoute(
@@ -631,6 +642,12 @@ final GoRouter router = GoRouter(
       path: DriverHomeScreen.routeName,
       name: 'driverHome',
       builder: (context, state) => const DriverHomeScreen(),
+    ),
+
+    GoRoute(
+      path: DriverWalletScreen.routeName,
+      name: 'driverWallet',
+      builder: (context, state) => const DriverWalletScreen(),
     ),
 
     GoRoute(
@@ -696,7 +713,7 @@ final GoRouter router = GoRouter(
       name: GlobalChatScreen.routeName,
       builder: (context, state) {
         final extra = state.extra;
-        
+
         if (extra is! ChatArgs) {
           return Scaffold(
             appBar: AppBar(title: const Text('Error')),
@@ -733,7 +750,7 @@ final GoRouter router = GoRouter(
         final extra = state.extra;
         int vendorId;
         int userId = 0;
-        
+
         if (extra is Map<String, dynamic>) {
           vendorId = extra['vendorId'] as int? ?? 0;
           userId = extra['userId'] as int? ?? 0;
@@ -745,7 +762,7 @@ final GoRouter router = GoRouter(
         } else {
           vendorId = 0;
         }
-        
+
         return BuyerVendorProfileScreen(vendorId: vendorId, userId: userId);
       },
     ),
@@ -799,15 +816,48 @@ final GoRouter router = GoRouter(
       name: BuyerInvoiceDetailsScreen.routeName,
       builder: (context, state) {
         final extra = state.extra;
-        final int invoiceId = extra is int
-            ? extra
-            : (extra is String ? int.tryParse(extra) ?? 0 : 0);
+        var invoiceId = 0;
+        var fromMyOrders = false;
+        if (extra is BuyerInvoiceDetailsArgs) {
+          invoiceId = extra.invoiceId;
+          fromMyOrders = extra.fromMyOrders;
+        } else if (extra is int) {
+          invoiceId = extra;
+        } else if (extra is String) {
+          invoiceId = int.tryParse(extra) ?? 0;
+        }
         if (invoiceId <= 0) {
+          return const Scaffold(body: Center(child: Text('Invalid invoice')));
+        }
+        return BuyerInvoiceDetailsScreen(
+          invoiceId: invoiceId,
+          fromMyOrders: fromMyOrders,
+        );
+      },
+    ),
+    GoRoute(
+      path: BuyerWalletScreen.routeName,
+      name: BuyerWalletScreen.routeName,
+      builder: (context, state) => const BuyerWalletScreen(),
+    ),
+    GoRoute(
+      path: BuyerRefundsScreen.routeName,
+      name: BuyerRefundsScreen.routeName,
+      builder: (context, state) => const BuyerRefundsScreen(),
+    ),
+    GoRoute(
+      path: BuyerRefundDetailScreen.routeName,
+      name: BuyerRefundDetailScreen.routeName,
+      builder: (context, state) {
+        final id = state.extra is int
+            ? state.extra as int
+            : int.tryParse('${state.extra ?? ''}') ?? 0;
+        if (id <= 0) {
           return const Scaffold(
-            body: Center(child: Text('Invalid invoice')),
+            body: Center(child: Text('Invalid refund')),
           );
         }
-        return BuyerInvoiceDetailsScreen(invoiceId: invoiceId);
+        return BuyerRefundDetailScreen(refundId: id);
       },
     ),
     GoRoute(

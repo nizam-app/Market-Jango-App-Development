@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/screen/profile_screen/data/profile_data.dart';
+import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
+import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice_details_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/data/buyer_orders_data.dart';
 import 'package:market_jango/features/buyer/screens/order/model/order_summary.dart';
 import 'package:market_jango/features/buyer/screens/order/widget/custom_buyer_order_upper_image.dart';
-import 'package:market_jango/core/utils/auth_local_storage.dart';
 
 import '../../../../../core/localization/tr.dart';
 
@@ -23,6 +25,8 @@ class BuyerOrderPage extends ConsumerStatefulWidget {
 
 class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
   String? _userId;
+  /// 0 = To receive (not completed), 1 = All orders
+  int _orderFilterTab = 0;
 
   @override
   void initState() {
@@ -42,7 +46,6 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(buyerOrdersProvider);
-    final notifier = ref.read(buyerOrdersProvider.notifier);
 
     final userAsync = (_userId == null)
         ? const AsyncValue.loading()
@@ -69,13 +72,50 @@ class _BuyerOrderPageState extends ConsumerState<BuyerOrderPage> {
                 loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => Center(child: Text(e.toString())),
               ),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _OrderFilterChip(
+                      label: 'To receive',
+                      selected: _orderFilterTab == 0,
+                      onTap: () => setState(() => _orderFilterTab = 0),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: _OrderFilterChip(
+                      label: 'All orders',
+                      selected: _orderFilterTab == 1,
+                      onTap: () => setState(() => _orderFilterTab = 1),
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 16.h),
 
-              /// Orders list
+              /// Orders list (grouped by day; tap → invoice / order details)
               Expanded(
                 child: ordersAsync.when(
-                  data: (page) =>
-                      CusotomShowOrder(orders: page?.orders ?? const <Order>[]),
+                  data: (page) {
+                    final all = page?.orders ?? const <Order>[];
+                    final filtered = _orderFilterTab == 0
+                        ? all.where((o) => !o.isCompleted).toList()
+                        : all;
+                    return CusotomShowOrder(
+                      orders: filtered,
+                      groupByDate: true,
+                      onOrderTap: (ctx, order) {
+                        ctx.push(
+                          BuyerInvoiceDetailsScreen.routeName,
+                          extra: BuyerInvoiceDetailsArgs(
+                            order.invoiceId,
+                            fromMyOrders: true,
+                          ),
+                        );
+                      },
+                    );
+                  },
                   loading: () =>
                       const Center(child: Text('Loading...')),
                   error: (e, _) => Center(child: Text(e.toString())),
@@ -114,27 +154,179 @@ class CusotomShowOrder extends StatelessWidget {
     super.key,
     required this.orders,
     this.scrollable = true,
+    this.groupByDate = false,
+    this.onOrderTap,
   });
 
   final List<Order> orders;
   final bool scrollable;
+  final bool groupByDate;
+  final void Function(BuildContext context, Order order)? onOrderTap;
+
+  static DateTime _dayOnly(DateTime? d) {
+    if (d == null) return DateTime(1970);
+    final l = d.toLocal();
+    return DateTime(l.year, l.month, l.day);
+  }
+
+  static String _dayHeader(DateTime day) {
+    if (day.year == 1970) return 'Date unknown';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    if (day == today) return 'Today';
+    final y = today.subtract(const Duration(days: 1));
+    if (day == DateTime(y.year, y.month, y.day)) return 'Yesterday';
+    const months = <String>[
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return '${day.day} / ${months[day.month - 1]} / ${day.year}';
+  }
 
   @override
-  Widget build(BuildContext context) => ListView.separated(
-    itemCount: orders.length,
-    padding: EdgeInsets.zero,
-    physics: scrollable
-        ? const BouncingScrollPhysics()
-        : const NeverScrollableScrollPhysics(),
-    shrinkWrap: !scrollable,
-    separatorBuilder: (_, __) => SizedBox(height: 10.h),
-    itemBuilder: (_, i) => _OrderCard(order: orders[i]),
-  );
+  Widget build(BuildContext context) {
+    if (orders.isEmpty) {
+      return Center(
+        child: Text(
+          'No orders yet.',
+          style: TextStyle(fontSize: 14.sp, color: AllColor.grey),
+        ),
+      );
+    }
+
+    if (!groupByDate) {
+      return ListView.separated(
+        itemCount: orders.length,
+        padding: EdgeInsets.zero,
+        physics: scrollable
+            ? const BouncingScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
+        shrinkWrap: !scrollable,
+        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+        itemBuilder: (_, i) => _OrderCard(
+          order: orders[i],
+          onTap: onOrderTap == null
+              ? null
+              : () => onOrderTap!(context, orders[i]),
+        ),
+      );
+    }
+
+    final sorted = List<Order>.from(orders)
+      ..sort(
+        (a, b) => (b.createdAt ?? DateTime(0)).compareTo(
+          a.createdAt ?? DateTime(0),
+        ),
+      );
+
+    final children = <Widget>[];
+    DateTime? lastDay;
+    for (final o in sorted) {
+      final day = _dayOnly(o.createdAt);
+      if (lastDay == null || day != lastDay) {
+        lastDay = day;
+        if (children.isNotEmpty) {
+          children.add(SizedBox(height: 6.h));
+        }
+        children.add(_DateSectionHeader(title: _dayHeader(day)));
+        children.add(SizedBox(height: 8.h));
+      }
+      children.add(
+        _OrderCard(
+          order: o,
+          onTap: onOrderTap == null ? null : () => onOrderTap!(context, o),
+        ),
+      );
+      children.add(SizedBox(height: 10.h));
+    }
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      physics: scrollable
+          ? const BouncingScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
+      shrinkWrap: !scrollable,
+      children: children,
+    );
+  }
+}
+
+class _DateSectionHeader extends StatelessWidget {
+  const _DateSectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w700,
+        color: AllColor.grey500,
+      ),
+    );
+  }
+}
+
+class _OrderFilterChip extends StatelessWidget {
+  const _OrderFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final orange = AllColor.loginButtomColor;
+    return Material(
+      color: selected ? orange.withValues(alpha: 0.12) : AllColor.grey100,
+      borderRadius: BorderRadius.circular(20.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20.r),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: selected ? orange : AllColor.grey200,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+              color: selected ? orange : AllColor.black87,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, this.onTap});
   final Order order;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +336,7 @@ class _OrderCard extends StatelessWidget {
         ? order.shipAddress!
         : (order.pickupAddress ?? '');
 
-    return Container(
+    final card = Container(
       padding: EdgeInsets.only(top: 10.h, bottom: 10.h, right: 8.w, left: 8.w),
       decoration: BoxDecoration(
         color: AllColor.white,
@@ -168,10 +360,25 @@ class _OrderCard extends StatelessWidget {
               address: address,
               description: order.statusDescription,
               status: order.effectiveStatus,
-              paymentLabel: order.paymentLabel, // 👈 same row e jabe
+              paymentLabel: order.paymentLabel,
             ),
           ),
+          if (onTap != null) ...[
+            SizedBox(width: 4.w),
+            Icon(Icons.chevron_right, color: AllColor.grey500, size: 22.sp),
+          ],
         ],
+      ),
+    );
+
+    if (onTap == null) return card;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(5.r),
+        onTap: onTap,
+        child: card,
       ),
     );
   }

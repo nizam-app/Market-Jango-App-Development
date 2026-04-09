@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/provider/vendor_orders_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
@@ -11,6 +12,7 @@ import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'vendor_create_manual_order_screen.dart';
 import 'vendor_manual_order_detail_screen.dart';
 import 'vendor_marketplace_order_detail_screen.dart';
+import 'vendor_refunds_tab.dart';
 
 /// Entry: marketplace orders (date range), walk-in orders, wallet — see doc/VENDOR_ORDER_MANAGEMENT_AND_BILLING.md
 class VendorOrdersHubScreen extends ConsumerStatefulWidget {
@@ -34,7 +36,7 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -143,6 +145,7 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
             Tab(text: 'Marketplace'),
             Tab(text: 'Walk-in'),
             Tab(text: 'Wallet'),
+            Tab(text: 'Refunds'),
           ],
         ),
       ),
@@ -168,6 +171,7 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
             onApply: () => _applySearch(false),
           ),
           const _WalletTab(),
+          const VendorRefundsTab(),
         ],
       ),
     );
@@ -415,6 +419,267 @@ class _WalkInTab extends ConsumerWidget {
   }
 }
 
+/// Payout form → `POST /vendor/wallet/payout`.
+/// API expects `payment_method` ∈ allowed values and `payment_details` as `{ account, name, ... }`.
+class _VendorPayoutRequestDialog extends StatefulWidget {
+  const _VendorPayoutRequestDialog({this.walletBalance});
+
+  /// When set, amount must be ≤ this (client-side check before API).
+  final num? walletBalance;
+
+  @override
+  State<_VendorPayoutRequestDialog> createState() =>
+      _VendorPayoutRequestDialogState();
+}
+
+class _VendorPayoutRequestDialogState extends State<_VendorPayoutRequestDialog> {
+  static const _methodChoices = <({String value, String label})>[
+    (value: 'bank_transfer', label: 'Bank transfer'),
+    (value: 'mobile_money', label: 'Mobile money'),
+    (value: 'paypal', label: 'PayPal'),
+    (value: 'cash', label: 'Cash'),
+  ];
+
+  final _amount = TextEditingController();
+  final _account = TextEditingController();
+  final _holderName = TextEditingController();
+  final _bankName = TextEditingController();
+  final _note = TextEditingController();
+  String _paymentMethod = _methodChoices.first.value;
+  bool _busy = false;
+  String? _error;
+
+  InputDecoration _fieldDeco({required String label, String? hint}) {
+    final orange = AllColor.loginButtomColor;
+    final soft = AllColor.orange200;
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      filled: true,
+      fillColor: AllColor.orange50.withValues(alpha: 0.35),
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: soft, width: 1.2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: orange, width: 1.5),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _amount.dispose();
+    _account.dispose();
+    _holderName.dispose();
+    _bankName.dispose();
+    _note.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    setState(() => _error = null);
+    final a = _amount.text.trim();
+    final acc = _account.text.trim();
+    final name = _holderName.text.trim();
+    if (a.isEmpty || acc.isEmpty || name.isEmpty) {
+      setState(
+        () => _error = 'Amount, account number, and account name are required.',
+      );
+      return;
+    }
+    final amtNum = num.tryParse(a.replaceAll(',', ''));
+    if (amtNum == null) {
+      setState(() => _error = 'Enter a valid amount.');
+      return;
+    }
+    if (amtNum <= 0) {
+      setState(() => _error = 'Amount must be greater than zero.');
+      return;
+    }
+    final maxBal = widget.walletBalance;
+    if (maxBal != null && amtNum > maxBal) {
+      setState(
+        () => _error =
+            'Insufficient wallet balance. Available: $maxBal · Requested: $amtNum',
+      );
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await VendorOrderApi.instance.requestWalletPayout(
+        amount: a,
+        paymentMethod: _paymentMethod,
+        account: acc,
+        accountHolderName: name,
+        bankName: _bankName.text.trim().isEmpty ? null : _bankName.text.trim(),
+        note: _note.text.trim().isEmpty ? null : _note.text.trim(),
+      );
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _error = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      title: Text(
+        'Request payout',
+        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_error != null)
+                Container(
+                  margin: EdgeInsets.only(bottom: 12.h),
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: AllColor.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                      color: AllColor.red.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: TextStyle(
+                      color: AllColor.red,
+                      fontSize: 12.sp,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              TextField(
+                controller: _amount,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: _fieldDeco(
+                  label: 'Amount',
+                  hint: 'e.g. 2000',
+                ),
+              ),
+              if (widget.walletBalance != null) ...[
+                SizedBox(height: 6.h),
+                Text(
+                  'Available balance: ${widget.walletBalance}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AllColor.grey500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              SizedBox(height: 12.h),
+              InputDecorator(
+                decoration: _fieldDeco(label: 'Payment method'),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _paymentMethod,
+                    isExpanded: true,
+                    items: _methodChoices
+                        .map(
+                          (e) => DropdownMenuItem<String>(
+                            value: e.value,
+                            child: Text(e.label),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: _busy
+                        ? null
+                        : (v) {
+                            if (v != null) {
+                              setState(() => _paymentMethod = v);
+                            }
+                          },
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: _account,
+                keyboardType: TextInputType.text,
+                decoration: _fieldDeco(
+                  label: 'Account / phone number',
+                  hint: 'Number the payout should go to',
+                ),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: _holderName,
+                textCapitalization: TextCapitalization.words,
+                decoration: _fieldDeco(
+                  label: 'Account name',
+                  hint: 'Name on account or wallet',
+                ),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: _bankName,
+                textCapitalization: TextCapitalization.words,
+                decoration: _fieldDeco(
+                  label: 'Bank name (optional)',
+                  hint: 'For bank transfer',
+                ),
+              ),
+              SizedBox(height: 12.h),
+              TextField(
+                controller: _note,
+                maxLines: 2,
+                decoration: _fieldDeco(
+                  label: 'Note (optional)',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+          style: TextButton.styleFrom(foregroundColor: AllColor.loginButtomColor),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _busy ? null : _submit,
+          style: FilledButton.styleFrom(
+            backgroundColor: AllColor.loginButtomColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          child: _busy
+              ? SizedBox(
+                  width: 20.w,
+                  height: 20.w,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Submit'),
+        ),
+      ],
+    );
+  }
+}
+
 class _WalletTab extends ConsumerWidget {
   const _WalletTab();
 
@@ -423,11 +688,17 @@ class _WalletTab extends ConsumerWidget {
     final overview = ref.watch(vendorWalletOverviewProvider);
     final txParams = ref.watch(vendorWalletTxParamsProvider);
     final tx = ref.watch(vendorWalletTransactionsProvider);
+    final payouts = ref.watch(vendorWalletPayoutsProvider);
+    final payoutPage = ref.watch(vendorWalletPayoutsPageProvider);
+    final payoutStatusFilter = ref.watch(vendorWalletPayoutStatusFilterProvider);
+    final txTypeFilter = ref.watch(vendorWalletTxTypeFilterProvider);
+    final txStatusFilter = ref.watch(vendorWalletTxStatusFilterProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(vendorWalletOverviewProvider);
         ref.invalidate(vendorWalletTransactionsProvider);
+        ref.invalidate(vendorWalletPayoutsProvider);
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -444,23 +715,84 @@ class _WalletTab extends ConsumerWidget {
               ),
               child: Padding(
                 padding: EdgeInsets.all(16.w),
-                child: Column(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Wallet balance',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: AllColor.grey500,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Wallet balance',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: AllColor.grey500,
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            w.balanceLabel,
+                            style: TextStyle(
+                              fontSize: 22.sp,
+                              fontWeight: FontWeight.w800,
+                              color: AllColor.black,
+                            ),
+                          ),
+                          if (w.currency != null &&
+                              w.currency!.trim().isNotEmpty) ...[
+                            SizedBox(height: 4.h),
+                            Text(
+                              w.currency!.trim(),
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: AllColor.grey500,
+                              ),
+                            ),
+                          ],
+                          if (w.raw.containsKey('total_credited') ||
+                              w.raw.containsKey('total_debited')) ...[
+                            SizedBox(height: 6.h),
+                            Text(
+                              'Credited ${w.creditedLabel} · Debited ${w.debitedLabel}',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: AllColor.grey500,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      w.balanceLabel,
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w800,
-                        color: AllColor.black,
+                    TextButton(
+                      onPressed: () async {
+                        final ok = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => _VendorPayoutRequestDialog(
+                            walletBalance: w.balanceNumeric,
+                          ),
+                        );
+                        if (ok == true && context.mounted) {
+                          ref.invalidate(vendorWalletOverviewProvider);
+                          ref.invalidate(vendorWalletTransactionsProvider);
+                          ref.invalidate(vendorWalletPayoutsProvider);
+                          GlobalSnackbar.show(
+                            context,
+                            title: 'Success',
+                            message: 'Payout request submitted',
+                            type: CustomSnackType.success,
+                          );
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: AllColor.loginButtomColor,
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      ),
+                      child: Text(
+                        'Request',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -469,6 +801,112 @@ class _WalletTab extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 12.h),
+          Text(
+            'Payout requests',
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          DropdownButtonFormField<String?>(
+            value: payoutStatusFilter,
+            decoration: InputDecoration(
+              labelText: 'Payout status',
+              filled: true,
+              fillColor: AllColor.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            ),
+            items: const [
+              DropdownMenuItem<String?>(
+                value: null,
+                child: Text('All'),
+              ),
+              DropdownMenuItem(value: 'pending', child: Text('Pending')),
+              DropdownMenuItem(value: 'processing', child: Text('Processing')),
+              DropdownMenuItem(value: 'completed', child: Text('Completed')),
+              DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+            ],
+            onChanged: (v) {
+              ref.read(vendorWalletPayoutStatusFilterProvider.notifier).state =
+                  v;
+              ref.read(vendorWalletPayoutsPageProvider.notifier).state = 1;
+            },
+          ),
+          SizedBox(height: 8.h),
+          payouts.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => Text(e.toString()),
+            data: (payoutPageData) {
+              if (payoutPageData.items.isEmpty) {
+                return Text(
+                  'No payout requests.',
+                  style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
+                );
+              }
+              return Column(
+                children: [
+                  ...payoutPageData.items.map(
+                    (row) => Card(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      child: ListTile(
+                        title: Text(
+                          '${row.amount} · ${row.status}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${row.paymentMethod}'
+                          '${row.createdAt != null ? '\n${row.createdAt}' : ''}'
+                          '${row.note != null && row.note!.isNotEmpty ? '\n${row.note}' : ''}',
+                          style: TextStyle(fontSize: 12.sp),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: payoutPage <= 1
+                            ? null
+                            : () {
+                                ref
+                                        .read(vendorWalletPayoutsPageProvider
+                                            .notifier)
+                                        .state =
+                                    payoutPage - 1;
+                              },
+                        child: const Text('Prev'),
+                      ),
+                      Text('$payoutPage / ${payoutPageData.lastPage}'),
+                      TextButton(
+                        onPressed: payoutPage >= payoutPageData.lastPage
+                            ? null
+                            : () {
+                                ref
+                                        .read(vendorWalletPayoutsPageProvider
+                                            .notifier)
+                                        .state =
+                                    payoutPage + 1;
+                              },
+                        child: const Text('Next'),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
@@ -520,8 +958,92 @@ class _WalletTab extends ConsumerWidget {
                 onPressed: () {
                   ref.read(vendorWalletTxParamsProvider.notifier).state =
                       const VendorOrderListParams(page: 1);
+                  ref.read(vendorWalletTxTypeFilterProvider.notifier).state =
+                      null;
+                  ref.read(vendorWalletTxStatusFilterProvider.notifier).state =
+                      null;
                 },
                 icon: const Icon(Icons.clear),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String?>(
+                  value: txTypeFilter,
+                  decoration: InputDecoration(
+                    labelText: 'Tx type',
+                    filled: true,
+                    fillColor: AllColor.white,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                  ),
+                  items: const [
+                    DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Any'),
+                    ),
+                    DropdownMenuItem(value: 'credit', child: Text('credit')),
+                    DropdownMenuItem(value: 'debit', child: Text('debit')),
+                    DropdownMenuItem(value: 'refund', child: Text('refund')),
+                    DropdownMenuItem(value: 'withdraw', child: Text('withdraw')),
+                    DropdownMenuItem(value: 'topup', child: Text('topup')),
+                    DropdownMenuItem(
+                      value: 'order_payment',
+                      child: Text('order_payment'),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    ref.read(vendorWalletTxTypeFilterProvider.notifier).state =
+                        v;
+                    ref.read(vendorWalletTxParamsProvider.notifier).state =
+                        ref.read(vendorWalletTxParamsProvider).copyWith(page: 1);
+                  },
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: DropdownButtonFormField<String?>(
+                  value: txStatusFilter,
+                  decoration: InputDecoration(
+                    labelText: 'Tx status',
+                    filled: true,
+                    fillColor: AllColor.white,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                  ),
+                  items: const [
+                    DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Any'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'completed',
+                      child: Text('completed'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'processing',
+                      child: Text('processing'),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    ref.read(vendorWalletTxStatusFilterProvider.notifier).state =
+                        v;
+                    ref.read(vendorWalletTxParamsProvider.notifier).state =
+                        ref.read(vendorWalletTxParamsProvider).copyWith(page: 1);
+                  },
+                ),
               ),
             ],
           ),
@@ -555,8 +1077,10 @@ class _WalletTab extends ConsumerWidget {
                       child: ListTile(
                         title: Text(t.type),
                         subtitle: Text(
+                          '${t.transactionId != null && t.transactionId!.isNotEmpty ? '${t.transactionId!} · ' : ''}'
                           '${t.amount} · ${t.status}'
-                          '${t.createdAt != null ? '\n${t.createdAt}' : ''}',
+                          '${t.createdAt != null ? '\n${t.createdAt}' : ''}'
+                          '${t.description != null && t.description!.isNotEmpty ? '\n${t.description}' : ''}',
                         ),
                       ),
                     ),

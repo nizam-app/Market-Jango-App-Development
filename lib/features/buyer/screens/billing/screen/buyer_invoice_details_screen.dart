@@ -6,16 +6,37 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
+import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/buyer/screens/billing/data/invoice_details_data.dart';
 import 'package:market_jango/features/buyer/screens/billing/model/invoice_details_model.dart';
 import 'package:market_jango/features/buyer/screens/billing/util/invoice_receipt_pdf.dart';
+import 'package:market_jango/features/buyer/screens/refunds/data/buyer_refunds_api.dart';
+import 'package:market_jango/features/buyer/screens/refunds/provider/buyer_refunds_provider.dart';
 import 'package:printing/printing.dart';
 
+bool _buyerLineEligibleForRefund(String status) {
+  final s = status.toLowerCase().trim();
+  return s.contains('delivered') || s.contains('return');
+}
+
+/// Pass as [GoRouter] `extra` when opening from My Orders (title + order-style meta).
+class BuyerInvoiceDetailsArgs {
+  const BuyerInvoiceDetailsArgs(this.invoiceId, {this.fromMyOrders = false});
+
+  final int invoiceId;
+  final bool fromMyOrders;
+}
+
 class BuyerInvoiceDetailsScreen extends ConsumerWidget {
-  const BuyerInvoiceDetailsScreen({super.key, required this.invoiceId});
+  const BuyerInvoiceDetailsScreen({
+    super.key,
+    required this.invoiceId,
+    this.fromMyOrders = false,
+  });
   static const routeName = '/buyer_invoice_details';
 
   final int invoiceId;
+  final bool fromMyOrders;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +51,9 @@ class BuyerInvoiceDetailsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Tuppertextandbackbutton(
-                  screenName: '${ref.t(BKeys.invoiceDetails)} #$invoiceId',
+                  screenName: fromMyOrders
+                      ? 'Order details'
+                      : '${ref.t(BKeys.invoiceDetails)} #$invoiceId',
                 ),
                 SizedBox(height: 12.h),
                 Expanded(
@@ -54,6 +77,7 @@ class BuyerInvoiceDetailsScreen extends ConsumerWidget {
                           ref: ref,
                           details: details,
                           invoiceId: invoiceId,
+                          fromMyOrders: fromMyOrders,
                         ),
                       );
                     },
@@ -103,11 +127,19 @@ class _InvoiceWireframeCard extends StatelessWidget {
     required this.ref,
     required this.details,
     required this.invoiceId,
+    this.fromMyOrders = false,
   });
 
   final WidgetRef ref;
   final InvoiceDetails details;
   final int invoiceId;
+  final bool fromMyOrders;
+
+  String _modeLabel() {
+    final ds = details.deliveryStatus?.trim();
+    if (ds != null && ds.isNotEmpty) return ds;
+    return 'Delivery';
+  }
 
   static List<MapEntry<int, List<InvoiceItemDetail>>> _groupByVendor(
     List<InvoiceItemDetail> items,
@@ -271,11 +303,26 @@ class _InvoiceWireframeCard extends StatelessWidget {
                 _metaRow(
                   ref.t(BKeys.orderNumber, fallback: 'Order Number'),
                   _orderNumberDisplay(),
-                  isLast: true,
+                  isLast: !fromMyOrders,
                 ),
+                if (fromMyOrders) ...[
+                  _metaRow(
+                    ref.t(BKeys.status, fallback: 'Status'),
+                    (details.status != null && details.status!.trim().isNotEmpty)
+                        ? details.status!.trim()
+                        : '—',
+                  ),
+                  _metaRow(
+                    'Mode',
+                    _modeLabel(),
+                    isLast: true,
+                  ),
+                ],
               ],
             ),
           ),
+          SizedBox(height: 12.h),
+          _LiveTrackingCard(invoiceId: invoiceId),
           SizedBox(height: 18.h),
           Text(
             ref.t(BKeys.items, fallback: 'Items'),
@@ -416,11 +463,61 @@ class _InvoiceWireframeCard extends StatelessWidget {
                               children: [
                                 Expanded(
                                   flex: 2,
-                                  child: Text(
-                                    name,
-                                    style: cellStyle,
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        name,
+                                        style: cellStyle,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      if (item.status.trim().isNotEmpty) ...[
+                                        SizedBox(height: 4.h),
+                                        Text(
+                                          '${ref.t(BKeys.status, fallback: 'Status')}: ${item.status}',
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            color: AllColor.grey500,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                      if (_buyerLineEligibleForRefund(
+                                        item.status,
+                                      )) ...[
+                                        SizedBox(height: 6.h),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: TextButton(
+                                            onPressed: () =>
+                                                _openBuyerLineRefundDialog(
+                                              context,
+                                              ref,
+                                              invoiceId: invoiceId,
+                                              invoiceItemId: item.id,
+                                              suggestedAmount: item.totalPay,
+                                            ),
+                                            style: TextButton.styleFrom(
+                                              padding: EdgeInsets.zero,
+                                              minimumSize: Size.zero,
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              foregroundColor:
+                                                  AllColor.loginButtomColor,
+                                            ),
+                                            child: Text(
+                                              'Request refund',
+                                              style: TextStyle(
+                                                fontSize: 12.sp,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                                 Expanded(
@@ -690,6 +787,222 @@ class _InvoiceWireframeCard extends StatelessWidget {
           ),
         );
       }
+    }
+  }
+}
+
+List<Widget> _buyerTrackLineWidgets(Map<String, dynamic> raw) {
+  final items = raw['items'];
+  if (items is! List || items.isEmpty) {
+    return [
+      Padding(
+        padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+        child: Text(
+          'No driver assignments for this order yet.',
+          style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+        ),
+      ),
+    ];
+  }
+  final out = <Widget>[];
+  for (final e in items) {
+    if (e is! Map) continue;
+    final m = Map<String, dynamic>.from(e);
+    final driverRaw = m['driver'];
+    var driverName = '—';
+    if (driverRaw is Map<String, dynamic>) {
+      driverName = driverRaw['name']?.toString() ??
+          driverRaw['full_name']?.toString() ??
+          '—';
+    }
+    final itemId = m['item_id'] ?? m['invoice_item_id'];
+    final loc = m['live_location'] ?? m['location'] ?? m['current_location'];
+    var locStr = '—';
+    if (loc is Map) {
+      locStr = '${loc['lat'] ?? ''}, ${loc['lng'] ?? ''}';
+    } else if (loc != null) {
+      locStr = loc.toString();
+    }
+    out.add(
+      ListTile(
+        dense: true,
+        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 0),
+        title: Text(
+          'Line ${itemId ?? '—'} · $driverName',
+          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          locStr,
+          style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+        ),
+      ),
+    );
+  }
+  if (out.isEmpty) {
+    return [
+      Padding(
+        padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+        child: Text(
+          'Tracking response had no readable lines.',
+          style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+        ),
+      ),
+    ];
+  }
+  return out;
+}
+
+class _LiveTrackingCard extends ConsumerWidget {
+  const _LiveTrackingCard({required this.invoiceId});
+
+  final int invoiceId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final live = ref.watch(buyerLiveTrackProvider(invoiceId));
+
+    return Material(
+      color: AllColor.white,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+          title: Text(
+            'Live delivery tracking',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
+          children: [
+            live.when(
+              loading: () => Padding(
+                padding: EdgeInsets.all(16.w),
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => Padding(
+                padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+                child: Text(
+                  e.toString(),
+                  style: TextStyle(fontSize: 12.sp, color: AllColor.red),
+                ),
+              ),
+              data: (raw) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _buyerTrackLineWidgets(raw),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _openBuyerLineRefundDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  required int invoiceId,
+  required int invoiceItemId,
+  String? suggestedAmount,
+}) async {
+  final reasonCtrl = TextEditingController();
+  final amountCtrl = TextEditingController(text: suggestedAmount?.trim() ?? '');
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(
+        'Request refund',
+        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: reasonCtrl,
+              decoration: InputDecoration(
+                labelText: 'Reason',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              maxLines: 3,
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: amountCtrl,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Amount (optional)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (reasonCtrl.text.trim().isEmpty) return;
+            Navigator.pop(ctx, true);
+          },
+          style: FilledButton.styleFrom(
+            backgroundColor: AllColor.loginButtomColor,
+          ),
+          child: const Text('Submit'),
+        ),
+      ],
+    ),
+  );
+
+  if (ok != true) {
+    reasonCtrl.dispose();
+    amountCtrl.dispose();
+    return;
+  }
+
+  final reason = reasonCtrl.text.trim();
+  final amtRaw = amountCtrl.text.trim();
+  reasonCtrl.dispose();
+  amountCtrl.dispose();
+
+  try {
+    final amtParsed = double.tryParse(amtRaw.replaceAll(',', ''));
+    await BuyerRefundsApi.instance.requestLineRefund(
+      invoiceItemId: invoiceItemId,
+      reason: reason,
+      amount: amtParsed,
+    );
+    ref.invalidate(invoiceDetailsProvider(invoiceId));
+    ref.invalidate(buyerRefundsListProvider);
+    if (context.mounted) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Sent',
+        message: 'Refund request submitted',
+        type: CustomSnackType.success,
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Error',
+        message: e.toString().replaceFirst('Exception: ', ''),
+        type: CustomSnackType.error,
+      );
     }
   }
 }

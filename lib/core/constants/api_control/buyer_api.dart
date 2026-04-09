@@ -55,6 +55,81 @@ class BuyerAPIController {
   }
   static String review_buyer(id) => "$_base_api/review/create/buyer/$id";
   static String review_vendor(id) => "$_base_api/review/vendor/$id";
+
+  // --- Buyer wallet (doc/details.md §D) — `/api/wallet` ---
+  static String get buyerWallet => '$_base_api/wallet';
+
+  static String buyerWalletTransactions({
+    int page = 1,
+    int perPage = 20,
+    String? fromDate,
+    String? toDate,
+    String? type,
+    String? status,
+  }) {
+    final q = <String, String>{'page': '$page', 'per_page': '$perPage'};
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    if (type != null && type.trim().isNotEmpty) q['type'] = type.trim();
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/wallet/transactions')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String get buyerWalletTopup => '$_base_api/wallet/topup';
+  static String get buyerWalletPayout => '$_base_api/wallet/payout';
+
+  static String buyerWalletPayouts({int page = 1, String? status}) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/wallet/payouts')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  // --- Buyer refunds (doc/details.md §E) ---
+  static String buyerRefunds({int page = 1, String? status}) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/buyer/refunds')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String buyerRefundDetail(int id) => '$_base_api/buyer/refunds/$id';
+
+  /// `item_id` = invoice line id.
+  static String buyerOrderLineRefund(int invoiceItemId) =>
+      '$_base_api/buyer/orders/$invoiceItemId/refund';
+
+  // --- Live tracking (doc/details.md §5) — `order_id` = invoice id ---
+  static String buyerOrderTrack(int invoiceId) =>
+      '$_base_api/buyer/orders/$invoiceId/track';
+
+  static String buyerOrderTrackPath(int invoiceId, {int? itemId}) {
+    final base = '$_base_api/buyer/orders/$invoiceId/track/path';
+    if (itemId == null) return base;
+    return '$base?item_id=$itemId';
+  }
+
+  /// Query: `tx_ref` (required).
+  static String paymentVerify({required String txRef}) =>
+      Uri.parse('$_base_api/payment/verify')
+          .replace(queryParameters: {'tx_ref': txRef})
+          .toString();
+
+  /// Successful-delivery invoices only; 10/page (doc B2).
+  static String buyerInvoicesSuccessful({int page = 1}) =>
+      Uri.parse('$_base_api/invoice').replace(queryParameters: {
+        'page': '$page',
+      }).toString();
 }
 
 // lib/core/constants/api_control/buyer_api.dart

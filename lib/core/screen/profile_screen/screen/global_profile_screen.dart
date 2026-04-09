@@ -24,8 +24,11 @@ import 'package:market_jango/core/widget/sreeen_brackground.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/driver/screen/wallet/screen/driver_wallet_screen.dart';
 import 'package:market_jango/features/transport/screens/billing/screen/transport_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
+import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
+import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
@@ -197,6 +200,12 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: 'Delivery setting',
             onTap: () => context.push(VendorDeliverySettingScreen.routeName),
           ),
+          _DividerLine(),
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: 'Wallet',
+            onTap: () => context.push(DriverWalletScreen.routeName),
+          ),
         ],
         if (userTypeAsync.value == "vendor")
           _SettingsTile(
@@ -219,6 +228,20 @@ class GlobalSettingScreen extends ConsumerWidget {
             leadingIcon: Icons.receipt_long_outlined,
             title: ref.t(BKeys.billing),
             onTap: () => context.push(BuyerBillingScreen.routeName),
+          ),
+        if (userTypeAsync.value == "buyer")
+          _DividerLine(),
+               if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: 'Wallet',
+            onTap: () => context.push(BuyerWalletScreen.routeName),
+          ),
+        if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.undo_outlined,
+            title: 'Refunds',
+            onTap: () => context.push(BuyerRefundsScreen.routeName),
           ),
         if (userTypeAsync.value == "transport")
           _SettingsTile(

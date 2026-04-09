@@ -69,7 +69,11 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
             Expanded(
               child: async.when(
                 loading: () => const Center(child: Text('Loading...')),
-                error: (e, _) => Center(child: Text(e.toString())),
+                error: (e, _) => _DriverOrdersError(
+                  message: _driverOrderErrorMessage(e),
+                  onRetry: () =>
+                      ref.invalidate(driverAllOrdersProvider),
+                ),
                 data: (_) => ListView.separated(
                   padding: EdgeInsets.symmetric(
                     horizontal: 16.w,
@@ -101,6 +105,73 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
             //   totalPages: notifier.lastPage,
             //   onPageChanged: (p) => notifier.changePage(p),
             // ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _driverOrderErrorMessage(Object e) {
+  var s = e.toString();
+  if (s.startsWith('Exception: ')) {
+    s = s.substring('Exception: '.length);
+  }
+  return s;
+}
+
+class _DriverOrdersError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _DriverOrdersError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 28.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.local_shipping_outlined,
+              size: 48.sp,
+              color: AllColor.grey500,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15.sp,
+                color: AllColor.black87,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 22.h),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AllColor.loginButtomColor,
+                elevation: 0,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: Text(
+                'Try again',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AllColor.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -214,7 +285,6 @@ class _OrderCard extends ConsumerWidget {
   });
 
   @override
-  @override
   Widget build(BuildContext context, ref) {
     final priceText = "\$${data.price.toStringAsFixed(2).replaceAll('.', ',')}";
 
@@ -260,11 +330,11 @@ class _OrderCard extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           //Pick up location:
-          _kvBold(ref.t(BKeys.pick_up_location ),  data.pickup),
+          _kvBold(ref.t(BKeys.pick_up_location), data.pickup),
           SizedBox(height: 8.h),
-          
+
           //'Destination:
-          _kvBold(ref.t(BKeys.destination ), data.destination),
+          _kvBold(ref.t(BKeys.destination), data.destination),
           SizedBox(height: 14.h),
 
           // 🔻 Not Deliver হলে কোন বোতামই দেখাবো না
@@ -273,10 +343,16 @@ class _OrderCard extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 //'See details'
-                _PrimaryButton(text:  ref.t(BKeys.see_details), onTap: onSeeDetails),
+                _PrimaryButton(
+                  text: ref.t(BKeys.see_details),
+                  onTap: onSeeDetails,
+                ),
                 if (onTrackOrder != null)
                   // 'Track order'
-                  _SecondaryButton(text:ref.t(BKeys.track_order), onTap: onTrackOrder!),
+                  _SecondaryButton(
+                    text: ref.t(BKeys.track_order),
+                    onTap: onTrackOrder!,
+                  ),
               ],
             ),
         ],
@@ -386,7 +462,11 @@ class _SecondaryButton extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(color: AllColor.white, fontWeight: FontWeight.w700, fontSize: 11.sp),
+          style: TextStyle(
+            color: AllColor.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 11.sp,
+          ),
         ),
       ),
     );

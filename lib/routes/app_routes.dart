@@ -38,6 +38,7 @@ import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refund_detail_screen.dart';
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
 import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
+import 'package:market_jango/features/transport/screens/wallet/screen/transport_wallet_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/buyer_payment_screen.dart';
@@ -51,6 +52,8 @@ import 'package:market_jango/features/driver/screen/driver_order/screen/driver_o
 import 'package:market_jango/features/driver/screen/driver_order/screen/driver_order_details.dart';
 import 'package:market_jango/features/driver/screen/driver_status/screen/driver_traking_screen.dart';
 import 'package:market_jango/features/driver/screen/home/screen/driver_home.dart';
+import 'package:market_jango/features/driver/screen/deliveries/screen/driver_deliveries_screen.dart';
+import 'package:market_jango/features/driver/screen/deliveries/screen/driver_delivery_detail_screen.dart';
 import 'package:market_jango/features/driver/screen/wallet/screen/driver_wallet_screen.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
@@ -286,7 +289,9 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: VendorBarcodeScanScreen.routeName,
       name: 'vendorBarcodeScan',
-      builder: (context, state) => const VendorBarcodeScanScreen(),
+      builder: (context, state) => VendorBarcodeScanScreen(
+        returnProductIdOnSuccess: state.extra == true,
+      ),
     ),
     GoRoute(
       path: '/vendor/barcodes/product/:productId',
@@ -649,6 +654,25 @@ final GoRouter router = GoRouter(
       name: 'driverWallet',
       builder: (context, state) => const DriverWalletScreen(),
     ),
+    GoRoute(
+      path: DriverDeliveriesScreen.routeName,
+      name: 'driverDeliveries',
+      builder: (context, state) => const DriverDeliveriesScreen(),
+    ),
+    GoRoute(
+      path: '/driver/deliveries/:assignmentId',
+      name: 'driverDeliveryDetail',
+      builder: (context, state) {
+        final id =
+            int.tryParse(state.pathParameters['assignmentId'] ?? '') ?? 0;
+        if (id <= 0) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid assignment id')),
+          );
+        }
+        return DriverDeliveryDetailScreen(assignmentId: id);
+      },
+    ),
 
     GoRoute(
       path: OrderDetailsScreen.routeName, // "/orderDetails"
@@ -841,6 +865,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const BuyerWalletScreen(),
     ),
     GoRoute(
+      path: TransportWalletScreen.routeName,
+      name: TransportWalletScreen.routeName,
+      builder: (context, state) => const TransportWalletScreen(),
+    ),
+    GoRoute(
       path: BuyerRefundsScreen.routeName,
       name: BuyerRefundsScreen.routeName,
       builder: (context, state) => const BuyerRefundsScreen(),
@@ -853,9 +882,7 @@ final GoRouter router = GoRouter(
             ? state.extra as int
             : int.tryParse('${state.extra ?? ''}') ?? 0;
         if (id <= 0) {
-          return const Scaffold(
-            body: Center(child: Text('Invalid refund')),
-          );
+          return const Scaffold(body: Center(child: Text('Invalid refund')));
         }
         return BuyerRefundDetailScreen(refundId: id);
       },

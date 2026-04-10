@@ -8,7 +8,14 @@ import 'package:market_jango/features/vendor/screens/vendor_barcode/data/vendor_
 import 'vendor_barcode_product_detail_screen.dart';
 
 class VendorBarcodeScanScreen extends StatefulWidget {
-  const VendorBarcodeScanScreen({super.key});
+  const VendorBarcodeScanScreen({
+    super.key,
+    this.returnProductIdOnSuccess = false,
+  });
+
+  /// When true (e.g. opened from walk-in POS), successful lookup pops with
+  /// `Navigator.pop(context, productId)` instead of opening product detail.
+  final bool returnProductIdOnSuccess;
 
   static const routeName = '/vendor/barcodes/scan';
 
@@ -54,6 +61,10 @@ class _VendorBarcodeScanScreenState extends State<VendorBarcodeScanScreen> {
       if (!mounted) return;
       await _controller.stop();
       if (!mounted) return;
+      if (widget.returnProductIdOnSuccess) {
+        context.pop(product.id);
+        return;
+      }
       context.pushReplacement(
         VendorBarcodeProductDetailScreen.routePath(product.id),
       );

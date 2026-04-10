@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/auth_session_utils.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -50,7 +51,10 @@ class VendorHomeScreen extends ConsumerWidget {
       child: Scaffold(
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-          child: buildDrawer(context, ref),
+          child: Builder(
+            builder: (drawerContext) =>
+                buildDrawer(drawerContext, context, ref),
+          ),
         ),
         body: Builder(
           builder: (innerContext) {
@@ -173,7 +177,13 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context, WidgetRef ref) {
+  /// [hostContext] = [VendorHomeScreen] build context; stays mounted when the
+  /// drawer closes (drawer context does not — use host for logout dialog/nav).
+  Widget buildDrawer(
+    BuildContext context,
+    BuildContext hostContext,
+    WidgetRef ref,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: SingleChildScrollView(
@@ -375,26 +385,32 @@ class VendorHomeScreen extends ConsumerWidget {
               ),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {},
-              child: ListTile(
-                leading: ImageIcon(
-                  const AssetImage("assets/icon/logout.png"),
-                  size: 20.r,
+            ListTile(
+              onTap: () {
+                Scaffold.of(context).closeEndDrawer();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (hostContext.mounted) {
+                    AuthSessionUtils.showLogoutConfirmationDialog(
+                      hostContext,
+                    );
+                  }
+                });
+              },
+              leading: ImageIcon(
+                const AssetImage("assets/icon/logout.png"),
+                size: 20.r,
+                color: const Color(0xffFF3B3B),
+              ),
+              title: Text(
+                ref.t(BKeys.logOut),
+                style: TextStyle(
                   color: const Color(0xffFF3B3B),
+                  fontSize: 14.sp,
                 ),
-                title: Text(
-                  // "Log Out",
-                  ref.t(BKeys.logOut),
-                  style: TextStyle(
-                    color: const Color(0xffFF3B3B),
-                    fontSize: 14.sp,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
               ),
             ),
           ],

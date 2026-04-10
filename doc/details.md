@@ -1,185 +1,346 @@
-# Buyer: order management, wallet & refund API (Flutter)
+# Vendor module — API list & Flutter integration reference
 
-**Base URL:** `{BASE_URL}/api` (Laravel `api` prefix on every path).
-
----
-
-## API list (quick reference)
-
-### A. Cart & checkout (`userTypeVerify:buyer`)
-
-| # | Method | Path | Purpose |
-|---|--------|------|---------|
-| A1 | `GET` | `/api/cart` | Active cart lines + computed `total` |
-| A2 | `POST` | `/api/cart/create` | Add/update line (`product_id`, optional `quantity`, `attributes`, `action`) |
-| A3 | `DELETE` | `/api/cart/{id}` | Remove one cart row (`id` = cart item id) |
-| A4 | `POST` | `/api/cart/checkout` | Checkout flow from cart (see `CartController`) |
-| A5 | `POST` | `/api/cart/offer/{offerId}/add` | Add offer to cart |
-
-### B. Orders & invoices (`tokenVerify` only — filtered by `id` header; **use buyer account**)
-
-| # | Method | Path | Purpose |
-|---|--------|------|---------|
-| B1 | `POST` | `/api/invoice/create` | Create invoice from cart + `payment_method`. **Deep dive:** [FLUTTER_INVOICE_CREATE.md](./FLUTTER_INVOICE_CREATE.md) |
-| B2 | `GET` | `/api/invoice` | Invoices with `delivery_status` = **`successful`** only; paginated (10/page) |
-| B3 | `GET` | `/api/buyer/all-order` | All **invoice line items** for this user (flat list, `data` array; not paginated in code) |
-| B4 | `GET` | `/api/InvoiceProductList/{invoice_id}` | One invoice + lines + products + vendors (must belong to user). **Path is case-sensitive (`InvoiceProductList`).** |
-| B5 | `GET` | `/api/payment/verify` | Query: **`tx_ref`** (required). Verifies Flutterwave payment for **your** invoice |
-
-### C. Tracking (`userTypeVerify:buyer`)
-
-| # | Method | Path | Purpose |
-|---|--------|------|---------|
-| C1 | `GET` | `/api/buyer/invoice/tracking/details/{id}` | Status history for invoice **`id`** (`statusLogs`) |
-| C2 | `GET` | `/api/buyer/orders/{order_id}/track` | Live tracking: **`order_id` = invoice id** — per-line driver + map-friendly fields |
-| C3 | `GET` | `/api/buyer/orders/{order_id}/track/path` | GPS path for one line. Query: **`item_id`** (invoice item id) when multiple lines |
-
-### D. Wallet (`userTypeVerify:buyer`)
-
-| # | Method | Path | Purpose |
-|---|--------|------|---------|
-| D1 | `GET` | `/api/wallet` | Balance + summary |
-| D2 | `GET` | `/api/wallet/transactions` | History. Query: `type`, `status`, `from_date`, `to_date` |
-| D3 | `POST` | `/api/wallet/topup` | Self top-up (`amount`, optional `note`) — buyer allowed |
-| D4 | `POST` | `/api/wallet/payout` | Withdrawal request (same body rules as vendor/driver) |
-| D5 | `GET` | `/api/wallet/payouts` | My payouts. Query: optional `status` |
-
-### E. Refunds (`userTypeVerify:buyer`)
-
-| # | Method | Path | Purpose |
-|---|--------|------|---------|
-| E1 | `GET` | `/api/buyer/refunds` | My refund requests (paginated 15). Query: optional `status` |
-| E2 | `GET` | `/api/buyer/refunds/{id}` | One refund + `invoiceItem`, `invoice`, `vendor`, `reviewer` |
-| E3 | `POST` | `/api/buyer/orders/{item_id}/refund` | Create request — **`item_id` = invoice item id** |
-
-**Buyer cannot approve/reject refunds** — vendor (or admin) does. When approved, **your wallet** is credited (`RefundService`).
-
-Section details below.
+Maps the **Postman “vendor”** collection (orders, manual orders, barcodes, refunds, wallet, driver assignment) to this Laravel backend. Paths use prefix **`/api`**.
 
 ---
 
-## Authentication & headers
+## Auth & middleware
 
-| Route group | Middleware |
-|-------------|------------|
-| Cart, wallet, refunds, §C tracking | `tokenVerify` + **`userTypeVerify:buyer`** |
-| §B invoice/order listing & create | **`tokenVerify` only** (no `userTypeVerify` on route) — data scoped by **`id`** header |
+- Outer: **`tokenVerify`** (header **`token`** = JWT).
+- **`userTypeVerify:vendor`**
+- Inner group: **`statusVerify`** — vendor account is expected to be in an allowed status (e.g. approved); blocked users may get errors from that middleware.
 
-**Token:** `TokenVerifyMiddleware` reads the **`token`** header (JWT). Send the same way as the rest of your app; many clients also send `Authorization: Bearer …` — align with your existing Flutter client.
+### Headers
 
-**Headers commonly required:** `id` (user id), often `email` for checkout flows — see [FLUTTER_INVOICE_CREATE.md](./FLUTTER_INVOICE_CREATE.md).
+| Header | Value |
+|--------|--------|
+| `token` | JWT |
+| `Accept` | `application/json` |
+| `Content-Type` | `application/json` for bodies |
 
-**JSON envelope** (`ResponseHelper`): `{ "status", "message", "data" }`.
+### Response `status` field
 
----
-
-## 1. Cart
-
-- **`GET /api/cart`** — Requires a **`buyers`** row linked to `user_id` (`CartController` loads `Buyer::where('user_id', header id)`). Returns `[carts, "total" => …]`.
-- **`POST /api/cart/create`** — Body: `product_id` (required), `quantity`, `attributes` (JSON string), `action` (`increase`/`decrease`).
-- **`DELETE /api/cart/{id}`** — `id` = cart row id owned by buyer.
-- **`POST /api/cart/checkout`** — See `CartController::checkout` for full validation and response.
-- **`POST /api/cart/offer/{offerId}/add`** — Adds offer line.
+Most endpoints use `ResponseHelper` with `status`: **`success`** / **`error`**. Some vendor order/manual-order paths return **`failed`** instead of **`error`** on errors — in Flutter, treat any non-`success` as failure and read `message` / `data`.
 
 ---
 
-## 2. Create order (invoice)
+## Master list — Vendor (Postman mapping)
 
-**`POST /api/invoice/create`**
+### Order management
 
-Body includes **`payment_method`** and relies on active cart + buyer shipping fields. Full field list, payment URL flow, and Flutter samples: **[FLUTTER_INVOICE_CREATE.md](./FLUTTER_INVOICE_CREATE.md)**.
+| Postman idea | Method | Path |
+|--------------|--------|------|
+| List vendor orders with filters | `GET` | `/api/vendor/orders` |
+| Valid statuses + transition matrix | `GET` | `/api/vendor/orders/statuses` |
+| Single order (item) + allowed next statuses | `GET` | `/api/vendor/orders/{id}` |
+| Change order status | `PUT` | `/api/vendor/orders/{id}/status` |
 
----
+`{id}` = **`invoice_items.id`** (one line item).
 
-## 3. List & detail orders
+### Manual (walk-in) orders
 
-| Endpoint | Behaviour |
-|----------|-----------|
-| **`GET /api/invoice`** | Only invoices where **`delivery_status`** is **`successful`**. Pagination: 10 per page. Includes `items` + `items.product`. |
-| **`GET /api/buyer/all-order`** | All **`InvoiceItem`** rows for user, with `invoice` + `product`, ordered by id desc. Wrapped as `data` in response. |
-| **`GET /api/InvoiceProductList/{invoice_id}`** | Full invoice if `user_id` matches. Includes items, product images, vendors. |
+| Postman idea | Method | Path |
+|--------------|--------|------|
+| List manual orders with filters | `GET` | `/api/vendor/manual-orders` |
+| Create manual order | `POST` | `/api/vendor/manual-orders` |
+| Manual order detail | `GET` | `/api/vendor/manual-orders/{id}` |
+| Add item to pending order | `POST` | `/api/vendor/manual-orders/{id}/items` |
+| Remove an item | `DELETE` | `/api/vendor/manual-orders/{id}/items/{item_id}` |
+| Mark as delivered (customer picked up) | `POST` | `/api/vendor/manual-orders/{id}/deliver` |
 
----
+`{id}` for manual flows = **`invoices.id`** where `is_manual_order` is true (vendor’s walk-in invoice).
 
-## 4. Payment verify
+### Products & barcodes
 
-**`GET /api/payment/verify?tx_ref=<value>`**
+| Postman idea | Method | Path |
+|--------------|--------|------|
+| List products + barcodes | `GET` | `/api/vendor/products/barcodes` |
+| Scan barcode (camera / scanner) | `GET` | `/api/vendor/products/barcode/{code}` |
+| Barcode for one product | `GET` | `/api/vendor/products/{id}/barcode` |
+| Regenerate barcode | `POST` | `/api/vendor/products/{id}/barcode/regenerate` |
+| Print labels | `POST` | `/api/vendor/products/{id}/barcode/labels` |
 
-- Validates `tx_ref` required.
-- Finds invoice by `tax_ref` + **`user_id`** from header `id`.
-- Calls Flutterwave verify; returns `verified`, `transaction_id`, `amount`, etc. on success.
+`{code}` = raw scanned string (URL-encode if needed).
 
----
+### Refunds
 
-## 5. Tracking
+| Postman idea | Method | Path (this backend) |
+|--------------|--------|---------------------|
+| Vendor sees pending refunds | `GET` | `/api/vendor/refunds?status=pending` |
+| List all refund requests for my store | `GET` | `/api/vendor/refunds` |
+| View one refund detail | `GET` | `/api/vendor/refunds/{id}` |
+| Vendor initiates refund on behalf of buyer | `POST` | `/api/vendor/orders/{item_id}/refund` |
+| Vendor approves refund | `POST` | `/api/vendor/refunds/{id}/approve` |
+| Vendor rejects refund | `POST` | `/api/vendor/refunds/{id}/reject` |
 
-| Endpoint | ID meaning |
-|----------|------------|
-| **`GET /api/buyer/invoice/tracking/details/{id}`** | **`id`** = **invoice id** |
-| **`GET /api/buyer/orders/{order_id}/track`** | **`order_id`** = **invoice id** (not a line id). Response includes `items[]` with `item_id`, driver, `live_location`, `timeline`. |
-| **`GET /api/buyer/orders/{order_id}/track/path`** | **`order_id`** = invoice id. Query **`item_id`** = invoice item id (use when multiple lines; otherwise first item may be used). Returns `path` array of GPS points. |
+**Postman note:** If your collection uses **POST** for “list” or “detail”, align the app with the backend: **list = GET**, **detail = GET**. Use query params on `GET /vendor/refunds` for filters.
 
----
+### Wallet & payouts (no self top-up)
 
-## 6. Wallet
+| Postman idea | Method | Path |
+|--------------|--------|------|
+| Balance + summary | `GET` | `/api/vendor/wallet` |
+| Transaction history | `GET` | `/api/vendor/wallet/transactions` |
+| Request withdrawal | `POST` | `/api/vendor/wallet/payout` |
+| My payout requests | `GET` | `/api/vendor/wallet/payouts` |
 
-Same controller as other roles: **`WalletController`** + **`WalletService`**.
-
-| Endpoint | Notes |
-|----------|--------|
-| **`GET /api/wallet`** | Summary: `balance`, `currency`, `total_credited`, `total_debited`, `by_type`. |
-| **`GET /api/wallet/transactions`** | Paginated (20); nested under `data.transactions`. |
-| **`POST /api/wallet/topup`** | Body: `amount` (required, min 0.01), `note` optional. **Buyer is allowed** (sandbox direct credit in controller). |
-| **`POST /api/wallet/payout`** | Body: `amount` (min 1), `payment_method` (`bank_transfer` \| `mobile_money` \| `paypal` \| `cash`), `payment_details` with `account` + `name`, optional `note`. |
-| **`GET /api/wallet/payouts`** | Paginated (15); optional `status`. |
-
-For field-level parity with vendor wallet docs, see [VENDOR_WALLET_AND_REFUND_API.md](./VENDOR_WALLET_AND_REFUND_API.md) §1–4 (same shapes, different path prefix: buyer uses **`/api/wallet`** not `/api/vendor/wallet`).
-
----
-
-## 7. Refunds
-
-### 7.1 Request refund
-
-**`POST /api/buyer/orders/{item_id}/refund`**
-
-- **`item_id`** = **invoice item id** (same id as in `buyer/all-order` / `InvoiceProductList` lines).
-- Body: **`reason`** (required, max 1000), **`amount`** (optional partial refund, min 0.01).
-
-**Rules** (`RefundService`): line must be **`delivered`** or **`returned`**; no duplicate pending/approved refund for same line; amount ≤ line `total_pay`.
-
-**Success:** `201`, `data` = new `Refund` (`status`: `pending`).
-
-### 7.2 List & show
-
-- **`GET /api/buyer/refunds`** — Optional query **`status`**: `pending` \| `approved` \| `rejected`. Paginate 15. Includes `invoiceItem.product`, `invoice`, `vendor`.
-- **`GET /api/buyer/refunds/{id}`** — Same ownership check; richer relations including `reviewer`.
-
-### 7.3 After approval
-
-Vendor (or admin flow) approves → buyer **wallet** credited with `type` **`refund`**. Buyer app should refresh **`GET /api/wallet`** / transactions.
+There is **no** `POST /api/vendor/wallet/topup` in this codebase (unlike buyer/transport).
 
 ---
 
-## 8. Flutter checklist
+## Vendor ▸ Driver (assignment)
 
-1. Use **`user_type: buyer`** JWT for cart, wallet, refunds, and §C tracking routes or you get **403**.
-2. **`order_id` in tracking URLs = invoice id**; **`item_id` in refund URL = invoice item id** — do not swap.
-3. **`GET /api/invoice`** ≠ all orders; use **`/buyer/all-order`** or **`InvoiceProductList`** for full history / detail.
-4. Ensure **`Buyer`** profile + shipping coords exist before **`invoice/create`** (see invoice doc).
-5. Send **`token`** (+ `id` / `email` as your app already does) on every call.
+| Postman idea | Method | Path |
+|--------------|--------|------|
+| List available drivers | `GET` | `/api/vendor/drivers/available` |
+| Assign driver to order item | `POST` | `/api/vendor/orders/{item_id}/assign-driver` |
+| Cancel driver assignment | `POST` | `/api/vendor/orders/{item_id}/unassign-driver` |
+| Assignment history for item | `GET` | `/api/vendor/orders/{item_id}/assignment` |
+
+`{item_id}` = **`invoice_items.id`**.
 
 ---
 
-## 9. Implementation references
+## Endpoint details
 
-| Area | Files |
-|------|--------|
-| Routes | `routes/api.php` — `userTypeVerify:buyer` block + shared `tokenVerify` invoice routes |
-| Cart | `app/Http/Controllers/Api/CartController.php` |
-| Invoice / orders | `app/Http/Controllers/Api/InvoiceController.php` |
-| Tracking | `app/Http/Controllers/Api/BuyerTrackingController.php` |
-| Wallet | `app/Http/Controllers/Api/WalletController.php`, `app/Services/WalletService.php` |
-| Refunds | `app/Http/Controllers/Api/BuyerRefundController.php`, `app/Services/RefundService.php` |
+### `GET /api/vendor/orders`
 
-Index: [FLUTTER_API_BY_ROLE.md](./FLUTTER_API_BY_ROLE.md) §1.
+**Query:** `from_date`, `to_date` (Y-m-d), `order_number` (partial), `status` (item status), `per_page` (default 10).
+
+**Data:** Paginated **`invoice_items`** for this vendor with `invoice`, `product`, `driver.user`.
+
+**Filter note:** `status` matches **`invoice_items.status`** (`pending`, `processing`, …).
+
+---
+
+### `GET /api/vendor/orders/statuses`
+
+**Data:**
+
+- `statuses` — all valid values
+- `transitions` — map of allowed next statuses (see `App\Enums\OrderStatus`)
+
+Use this to drive status buttons in Flutter.
+
+---
+
+### `GET /api/vendor/orders/{id}`
+
+Single **`InvoiceItem`** with `invoice`, `product`, `driver`, `statusLogs`.
+
+Extra attribute: **`allowed_next_statuses`** — array of statuses allowed from the current one (from `OrderStatusService`).
+
+---
+
+### `PUT /api/vendor/orders/{id}/status`
+
+**Body:**
+
+| Field | Rules |
+|-------|--------|
+| `status` | required — must be one of `OrderStatus::all()` |
+| `note` | optional, max 500 |
+
+**422** if transition invalid (`OrderStatusService` / `InvalidArgumentException`) or validation fails.
+
+---
+
+### `GET /api/vendor/manual-orders`
+
+**Query:** `from_date`, `to_date`, `order_number`, `status` (at least one line item on invoice has this status), `per_page` (default 10).
+
+**Data:** Paginated **`invoices`** (`is_manual_order` true) with nested `items` + computed `summary` per row.
+
+---
+
+### `POST /api/vendor/manual-orders`
+
+**Body:**
+
+| Field | Rules |
+|-------|--------|
+| `customer_name` | required, max 100 |
+| `customer_phone` | optional, max 30 |
+| `payment_method` | required: `Cash`, `Card`, or `Mobile` |
+| `customer_paid` | optional numeric ≥ 0 (for change calculation) |
+| `items` | required array, min 1 |
+| `items.*.product_id` | required, exists in `products` |
+| `items.*.quantity` | required integer ≥ 1 |
+
+Products must belong to the vendor and have enough **stock**. Creates invoice with `user_id` = vendor user, items start as **`pending`**.
+
+---
+
+### `GET /api/vendor/manual-orders/{id}`
+
+Invoice id. Returns `invoice`, `items`, `summary` (`item_count`, `total`, `payable`, `customer_paid`, `change`).
+
+---
+
+### `POST /api/vendor/manual-orders/{id}/items`
+
+**Body:** `product_id` (required), `quantity` (required, ≥ 1).
+
+Only while the order still has at least one **`pending`** line item. Merges quantity if the same `product_id` already exists on the invoice.
+
+---
+
+### `DELETE /api/vendor/manual-orders/{id}/items/{item_id}`
+
+Removes one line item only if that line is **`pending`**. Restores stock.
+
+---
+
+### `POST /api/vendor/manual-orders/{id}/deliver`
+
+**Body (optional):** `customer_paid` (numeric ≥ 0), `note` (max 500).
+
+All items must be in **`pending`**, **`processing`**, or **`completed`**. Sets every item to **`delivered`** and logs status.
+
+---
+
+### `GET /api/vendor/products/barcodes`
+
+**Query:** `search` (optional) — name or barcode, `page` (pagination, **20** per page).
+
+Missing barcodes are auto-generated when listing. **Data:** paginator of product payload objects (`id`, `name`, `barcode`, prices, `stock`, `image`).
+
+---
+
+### `GET /api/vendor/products/barcode/{code}`
+
+Resolve scan to a product for this vendor. **404** if no match.
+
+---
+
+### `GET /api/vendor/products/{id}/barcode`
+
+Returns barcode payload; generates barcode if empty.
+
+---
+
+### `POST /api/vendor/products/{id}/barcode/regenerate`
+
+Force new barcode string (format `PRD-{vendorId}-{productId}-{random}`).
+
+---
+
+### `POST /api/vendor/products/{id}/barcode/labels`
+
+**Body:** `label_count` required integer 1–500.
+
+**Data:** `product`, `label_count`, `print_data` (`barcode`, `product_name`, `price`, `vendor_name`, `copies`) for PDF/UI in Flutter.
+
+---
+
+### `GET /api/vendor/refunds`
+
+**Query:** `status` (`pending` \| `approved` \| `rejected`), `from_date`, `to_date`, `page` (15 per page).
+
+**Data:**
+
+```json
+{
+  "summary": {
+    "pending":  { "count": 0, "total": 0 },
+    "approved": { "count": 0, "total": 0 },
+    "rejected": { "count": 0, "total": 0 }
+  },
+  "refunds": { "...pagination..." }
+}
+```
+
+---
+
+### `GET /api/vendor/refunds/{id}`
+
+Full refund for this vendor with `invoiceItem`, `invoice`, `user`, `reviewer`.
+
+---
+
+### `POST /api/vendor/orders/{item_id}/refund`
+
+Same rules as buyer-initiated refunds (`RefundService::request`): item must be **delivered** or **returned**; no duplicate pending/approved refund; amount ≤ `total_pay`.
+
+**Body:** `reason` (required), `amount` (optional partial).
+
+**Requested by:** `vendor` on the refund record.
+
+---
+
+### `POST /api/vendor/refunds/{id}/approve`
+
+Optional body `note` (passed to service). **422** if not pending.
+
+---
+
+### `POST /api/vendor/refunds/{id}/reject`
+
+**Body:** `note` **required**, max 500.
+
+---
+
+### Wallet (`/api/vendor/wallet/...`)
+
+Same behaviour as **driver** wallet: **show**, **transactions**, **payout**, **payouts** — see `docs/TRANSPORT_WALLET_AND_FLUTTER_API.md` for payout body (`payment_method`, `payment_details`, etc.). **No topup** route for vendor.
+
+---
+
+### `GET /api/vendor/drivers/available`
+
+**Query:** `search` (optional) — partial match on driver **user name**.
+
+**Data:** array of drivers with `is_available` true and `is_on_delivery` false.
+
+---
+
+### `POST /api/vendor/orders/{item_id}/assign-driver`
+
+**Body:** `driver_id` (required, exists in `drivers`).
+
+Creates assignment via `DriverAssignmentService::assign` (**422** on business rules, e.g. item state / existing assignment).
+
+---
+
+### `POST /api/vendor/orders/{item_id}/unassign-driver`
+
+Cancels latest **active** assignment (not `rejected`, `cancelled`, or `delivered`).
+
+---
+
+### `GET /api/vendor/orders/{item_id}/assignment`
+
+**Data:** `order_item` (id, status, product_id, quantity) + **`assignments`** array (all assignments for that line, newest first), with `driver.user`, `assignedBy`.
+
+---
+
+## Flutter tips
+
+- One **ApiClient** with base `.../api` and `token` header.
+- Normalize errors: check `status == 'success'`; if not, read `message` and optional validation `data` / `errors`.
+- Use **`GET /vendor/orders/statuses`** to build status UI; use **`allowed_next_statuses`** on order detail to show only valid actions.
+- Manual order id in URLs is **invoice id**; regular vendor order detail id is **invoice item id** — keep both clear in your models.
+- Barcode scan: `GET .../barcode/{Uri.encodeComponent(code)}`.
+
+---
+
+## Source files
+
+| Area | Controller |
+|------|------------|
+| Orders | `App\Http\Controllers\Api\VendorOrderController` |
+| Manual orders | `App\Http\Controllers\Api\VendorManualOrderController` |
+| Barcodes | `App\Http\Controllers\Api\VendorBarcodeController` |
+| Refunds | `App\Http\Controllers\Api\VendorRefundController` |
+| Wallet | `App\Http\Controllers\Api\WalletController` |
+| Driver assign | `App\Http\Controllers\Api\VendorDriverAssignmentController` |
+
+Routes: `routes/api.php` inside `middleware('userTypeVerify:vendor')` → `middleware('statusVerify')`.
+
+---
+
+## Related docs
+
+- Buyer refunds / wallet patterns: `docs/BUYER_MODULE_AND_FLUTTER_API.md`
+- Driver side after assign: `docs/DRIVER_MODULE_AND_FLUTTER_API.md`
+- Payout JSON detail: `docs/TRANSPORT_WALLET_AND_FLUTTER_API.md`

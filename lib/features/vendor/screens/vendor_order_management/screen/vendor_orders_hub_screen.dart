@@ -9,7 +9,6 @@ import 'package:market_jango/features/vendor/screens/vendor_order_management/mod
 import 'package:market_jango/features/vendor/screens/vendor_order_management/provider/vendor_orders_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-import 'vendor_create_manual_order_screen.dart';
 import 'vendor_manual_order_detail_screen.dart';
 import 'vendor_marketplace_order_detail_screen.dart';
 import 'vendor_refunds_tab.dart';
@@ -47,7 +46,10 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
     super.dispose();
   }
 
-  Future<void> _pickDate({required bool isFrom, required bool marketplace}) async {
+  Future<void> _pickDate({
+    required bool isFrom,
+    required bool marketplace,
+  }) async {
     final now = DateTime.now();
     final initial = now;
     final d = await showDatePicker(
@@ -83,30 +85,32 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
   void _clearDates(bool marketplace) {
     if (marketplace) {
       final n = ref.read(vendorMarketplaceListParamsProvider.notifier);
-      n.state = ref.read(vendorMarketplaceListParamsProvider).copyWith(
-            page: 1,
-            clearDates: true,
-          );
+      n.state = ref
+          .read(vendorMarketplaceListParamsProvider)
+          .copyWith(page: 1, clearDates: true);
     } else {
       final n = ref.read(vendorManualListParamsProvider.notifier);
-      n.state = ref.read(vendorManualListParamsProvider).copyWith(
-            page: 1,
-            clearDates: true,
-          );
+      n.state = ref
+          .read(vendorManualListParamsProvider)
+          .copyWith(page: 1, clearDates: true);
     }
   }
 
   void _applySearch(bool marketplace) {
     if (marketplace) {
       final n = ref.read(vendorMarketplaceListParamsProvider.notifier);
-      n.state = ref.read(vendorMarketplaceListParamsProvider).copyWith(
+      n.state = ref
+          .read(vendorMarketplaceListParamsProvider)
+          .copyWith(
             page: 1,
             orderNumber: _orderNoMp.text.trim(),
             status: _statusMp ?? '',
           );
     } else {
       final n = ref.read(vendorManualListParamsProvider.notifier);
-      n.state = ref.read(vendorManualListParamsProvider).copyWith(
+      n.state = ref
+          .read(vendorManualListParamsProvider)
+          .copyWith(
             page: 1,
             orderNumber: _orderNoMan.text.trim(),
             status: _statusMan ?? '',
@@ -246,7 +250,10 @@ class _MarketplaceTab extends ConsumerWidget {
                       Center(
                         child: Text(
                           'No line items in this range.',
-                          style: TextStyle(color: AllColor.grey500, fontSize: 14.sp),
+                          style: TextStyle(
+                            color: AllColor.grey500,
+                            fontSize: 14.sp,
+                          ),
                         ),
                       ),
                     ],
@@ -274,8 +281,9 @@ class _MarketplaceTab extends ConsumerWidget {
           current: params.page,
           lastPage: async.valueOrNull?.lastPage ?? 1,
           onPage: (p) {
-            ref.read(vendorMarketplaceListParamsProvider.notifier).state =
-                ref.read(vendorMarketplaceListParamsProvider).copyWith(page: p);
+            ref.read(vendorMarketplaceListParamsProvider.notifier).state = ref
+                .read(vendorMarketplaceListParamsProvider)
+                .copyWith(page: p);
           },
         ),
       ],
@@ -306,6 +314,7 @@ class _WalkInTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final params = ref.watch(vendorManualListParamsProvider);
     final async = ref.watch(vendorManualOrdersProvider);
+    final fabBottom = MediaQuery.paddingOf(context).bottom + 88.h;
 
     return Stack(
       children: [
@@ -330,7 +339,8 @@ class _WalkInTab extends ConsumerWidget {
                   ref.invalidate(vendorOrderStatusesProvider);
                 },
                 child: async.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (e, _) => ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
@@ -384,29 +394,33 @@ class _WalkInTab extends ConsumerWidget {
               current: params.page,
               lastPage: async.valueOrNull?.lastPage ?? 1,
               onPage: (p) {
-                ref.read(vendorManualListParamsProvider.notifier).state =
-                    ref.read(vendorManualListParamsProvider).copyWith(page: p);
+                ref.read(vendorManualListParamsProvider.notifier).state = ref
+                    .read(vendorManualListParamsProvider)
+                    .copyWith(page: p);
               },
             ),
           ],
         ),
         Positioned(
           right: 20.w,
-          bottom: 90.h,
+          bottom: fabBottom,
           child: FloatingActionButton.extended(
             onPressed: () async {
-              final ok = await context.push<bool>(
-                VendorCreateManualOrderScreen.routeName,
+              // Walk-in create → `POST /api/vendor/manual-orders`; pops created invoice id.
+              final newInvoiceId = await context.pushNamed<int?>(
+                'vendorCreateManualOrder',
               );
               if (!context.mounted) return;
-              if (ok == true) {
+              if (newInvoiceId != null) {
                 ref.invalidate(vendorManualOrdersProvider);
-                GlobalSnackbar.show(
-                  context,
-                  title: 'Created',
-                  message: 'Walk-in order saved',
-                  type: CustomSnackType.success,
-                );
+                if (newInvoiceId > 0) {
+                  GlobalSnackbar.show(
+                    context,
+                    title: 'Created',
+                    message: 'Walk-in order saved',
+                    type: CustomSnackType.success,
+                  );
+                }
               }
             },
             backgroundColor: AllColor.loginButtomColor,
@@ -432,7 +446,8 @@ class _VendorPayoutRequestDialog extends StatefulWidget {
       _VendorPayoutRequestDialogState();
 }
 
-class _VendorPayoutRequestDialogState extends State<_VendorPayoutRequestDialog> {
+class _VendorPayoutRequestDialogState
+    extends State<_VendorPayoutRequestDialog> {
   static const _methodChoices = <({String value, String label})>[
     (value: 'bank_transfer', label: 'Bank transfer'),
     (value: 'mobile_money', label: 'Mobile money'),
@@ -570,10 +585,7 @@ class _VendorPayoutRequestDialogState extends State<_VendorPayoutRequestDialog> 
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: _fieldDeco(
-                  label: 'Amount',
-                  hint: 'e.g. 2000',
-                ),
+                decoration: _fieldDeco(label: 'Amount', hint: 'e.g. 2000'),
               ),
               if (widget.walletBalance != null) ...[
                 SizedBox(height: 6.h),
@@ -642,9 +654,7 @@ class _VendorPayoutRequestDialogState extends State<_VendorPayoutRequestDialog> 
               TextField(
                 controller: _note,
                 maxLines: 2,
-                decoration: _fieldDeco(
-                  label: 'Note (optional)',
-                ),
+                decoration: _fieldDeco(label: 'Note (optional)'),
               ),
             ],
           ),
@@ -653,7 +663,9 @@ class _VendorPayoutRequestDialogState extends State<_VendorPayoutRequestDialog> 
       actions: [
         TextButton(
           onPressed: _busy ? null : () => Navigator.of(context).pop(false),
-          style: TextButton.styleFrom(foregroundColor: AllColor.loginButtomColor),
+          style: TextButton.styleFrom(
+            foregroundColor: AllColor.loginButtomColor,
+          ),
           child: const Text('Cancel'),
         ),
         FilledButton(
@@ -690,7 +702,9 @@ class _WalletTab extends ConsumerWidget {
     final tx = ref.watch(vendorWalletTransactionsProvider);
     final payouts = ref.watch(vendorWalletPayoutsProvider);
     final payoutPage = ref.watch(vendorWalletPayoutsPageProvider);
-    final payoutStatusFilter = ref.watch(vendorWalletPayoutStatusFilterProvider);
+    final payoutStatusFilter = ref.watch(
+      vendorWalletPayoutStatusFilterProvider,
+    );
     final txTypeFilter = ref.watch(vendorWalletTxTypeFilterProvider);
     final txStatusFilter = ref.watch(vendorWalletTxStatusFilterProvider);
 
@@ -785,7 +799,10 @@ class _WalletTab extends ConsumerWidget {
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: AllColor.loginButtomColor,
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.h,
+                        ),
                       ),
                       child: Text(
                         'Request',
@@ -803,14 +820,11 @@ class _WalletTab extends ConsumerWidget {
           SizedBox(height: 12.h),
           Text(
             'Payout requests',
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
           ),
           SizedBox(height: 8.h),
           DropdownButtonFormField<String?>(
-            value: payoutStatusFilter,
+            initialValue: payoutStatusFilter,
             decoration: InputDecoration(
               labelText: 'Payout status',
               filled: true,
@@ -818,13 +832,13 @@ class _WalletTab extends ConsumerWidget {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 8.h,
+              ),
             ),
             items: const [
-              DropdownMenuItem<String?>(
-                value: null,
-                child: Text('All'),
-              ),
+              DropdownMenuItem<String?>(value: null, child: Text('All')),
               DropdownMenuItem(value: 'pending', child: Text('Pending')),
               DropdownMenuItem(value: 'processing', child: Text('Processing')),
               DropdownMenuItem(value: 'completed', child: Text('Completed')),
@@ -880,8 +894,10 @@ class _WalletTab extends ConsumerWidget {
                             ? null
                             : () {
                                 ref
-                                        .read(vendorWalletPayoutsPageProvider
-                                            .notifier)
+                                        .read(
+                                          vendorWalletPayoutsPageProvider
+                                              .notifier,
+                                        )
                                         .state =
                                     payoutPage - 1;
                               },
@@ -893,8 +909,10 @@ class _WalletTab extends ConsumerWidget {
                             ? null
                             : () {
                                 ref
-                                        .read(vendorWalletPayoutsPageProvider
-                                            .notifier)
+                                        .read(
+                                          vendorWalletPayoutsPageProvider
+                                              .notifier,
+                                        )
                                         .state =
                                     payoutPage + 1;
                               },
@@ -922,11 +940,9 @@ class _WalletTab extends ConsumerWidget {
                     if (d == null) return;
                     final f =
                         '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                    ref.read(vendorWalletTxParamsProvider.notifier).state =
-                        ref.read(vendorWalletTxParamsProvider).copyWith(
-                              page: 1,
-                              fromDate: f,
-                            );
+                    ref.read(vendorWalletTxParamsProvider.notifier).state = ref
+                        .read(vendorWalletTxParamsProvider)
+                        .copyWith(page: 1, fromDate: f);
                   },
                   child: Text(txParams.fromDate ?? 'Tx from'),
                 ),
@@ -945,11 +961,9 @@ class _WalletTab extends ConsumerWidget {
                     if (d == null) return;
                     final f =
                         '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                    ref.read(vendorWalletTxParamsProvider.notifier).state =
-                        ref.read(vendorWalletTxParamsProvider).copyWith(
-                              page: 1,
-                              toDate: f,
-                            );
+                    ref.read(vendorWalletTxParamsProvider.notifier).state = ref
+                        .read(vendorWalletTxParamsProvider)
+                        .copyWith(page: 1, toDate: f);
                   },
                   child: Text(txParams.toDate ?? 'Tx to'),
                 ),
@@ -973,7 +987,7 @@ class _WalletTab extends ConsumerWidget {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String?>(
-                  value: txTypeFilter,
+                  initialValue: txTypeFilter,
                   decoration: InputDecoration(
                     labelText: 'Tx type',
                     filled: true,
@@ -982,18 +996,20 @@ class _WalletTab extends ConsumerWidget {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 8.h,
+                    ),
                   ),
                   items: const [
-                    DropdownMenuItem<String?>(
-                      value: null,
-                      child: Text('Any'),
-                    ),
+                    DropdownMenuItem<String?>(value: null, child: Text('Any')),
                     DropdownMenuItem(value: 'credit', child: Text('credit')),
                     DropdownMenuItem(value: 'debit', child: Text('debit')),
                     DropdownMenuItem(value: 'refund', child: Text('refund')),
-                    DropdownMenuItem(value: 'withdraw', child: Text('withdraw')),
+                    DropdownMenuItem(
+                      value: 'withdraw',
+                      child: Text('withdraw'),
+                    ),
                     DropdownMenuItem(value: 'topup', child: Text('topup')),
                     DropdownMenuItem(
                       value: 'order_payment',
@@ -1003,15 +1019,16 @@ class _WalletTab extends ConsumerWidget {
                   onChanged: (v) {
                     ref.read(vendorWalletTxTypeFilterProvider.notifier).state =
                         v;
-                    ref.read(vendorWalletTxParamsProvider.notifier).state =
-                        ref.read(vendorWalletTxParamsProvider).copyWith(page: 1);
+                    ref.read(vendorWalletTxParamsProvider.notifier).state = ref
+                        .read(vendorWalletTxParamsProvider)
+                        .copyWith(page: 1);
                   },
                 ),
               ),
               SizedBox(width: 8.w),
               Expanded(
                 child: DropdownButtonFormField<String?>(
-                  value: txStatusFilter,
+                  initialValue: txStatusFilter,
                   decoration: InputDecoration(
                     labelText: 'Tx status',
                     filled: true,
@@ -1020,14 +1037,13 @@ class _WalletTab extends ConsumerWidget {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 8.h,
+                    ),
                   ),
                   items: const [
-                    DropdownMenuItem<String?>(
-                      value: null,
-                      child: Text('Any'),
-                    ),
+                    DropdownMenuItem<String?>(value: null, child: Text('Any')),
                     DropdownMenuItem(
                       value: 'completed',
                       child: Text('completed'),
@@ -1038,10 +1054,13 @@ class _WalletTab extends ConsumerWidget {
                     ),
                   ],
                   onChanged: (v) {
-                    ref.read(vendorWalletTxStatusFilterProvider.notifier).state =
+                    ref
+                            .read(vendorWalletTxStatusFilterProvider.notifier)
+                            .state =
                         v;
-                    ref.read(vendorWalletTxParamsProvider.notifier).state =
-                        ref.read(vendorWalletTxParamsProvider).copyWith(page: 1);
+                    ref.read(vendorWalletTxParamsProvider.notifier).state = ref
+                        .read(vendorWalletTxParamsProvider)
+                        .copyWith(page: 1);
                   },
                 ),
               ),
@@ -1050,10 +1069,7 @@ class _WalletTab extends ConsumerWidget {
           SizedBox(height: 8.h),
           Text(
             'Transactions',
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
           ),
           SizedBox(height: 8.h),
           tx.when(
@@ -1093,9 +1109,10 @@ class _WalletTab extends ConsumerWidget {
                             ? null
                             : () {
                                 ref
-                                        .read(vendorWalletTxParamsProvider.notifier)
-                                        .state =
-                                    txParams.copyWith(page: txParams.page - 1);
+                                    .read(vendorWalletTxParamsProvider.notifier)
+                                    .state = txParams.copyWith(
+                                  page: txParams.page - 1,
+                                );
                               },
                         child: const Text('Prev'),
                       ),
@@ -1105,9 +1122,10 @@ class _WalletTab extends ConsumerWidget {
                             ? null
                             : () {
                                 ref
-                                        .read(vendorWalletTxParamsProvider.notifier)
-                                        .state =
-                                    txParams.copyWith(page: txParams.page + 1);
+                                    .read(vendorWalletTxParamsProvider.notifier)
+                                    .state = txParams.copyWith(
+                                  page: txParams.page + 1,
+                                );
                               },
                         child: const Text('Next'),
                       ),
@@ -1185,10 +1203,8 @@ class _FilterCard extends StatelessWidget {
                         child: Text('Any'),
                       ),
                       ...st.statuses.map(
-                        (s) => DropdownMenuItem<String?>(
-                          value: s,
-                          child: Text(s),
-                        ),
+                        (s) =>
+                            DropdownMenuItem<String?>(value: s, child: Text(s)),
                       ),
                     ],
                     onChanged: onStatusChanged,
@@ -1211,7 +1227,10 @@ class _FilterCard extends StatelessWidget {
                       child: Text(toLabel, overflow: TextOverflow.ellipsis),
                     ),
                   ),
-                  IconButton(onPressed: onClearDates, icon: const Icon(Icons.clear)),
+                  IconButton(
+                    onPressed: onClearDates,
+                    icon: const Icon(Icons.clear),
+                  ),
                 ],
               ),
               SizedBox(height: 4.h),
@@ -1261,7 +1280,9 @@ class _PaginationBar extends StatelessWidget {
                 child: Text('$current / $lastPage'),
               ),
               TextButton(
-                onPressed: current >= lastPage ? null : () => onPage(current + 1),
+                onPressed: current >= lastPage
+                    ? null
+                    : () => onPage(current + 1),
                 child: const Text('Next'),
               ),
             ],
@@ -1285,7 +1306,9 @@ class _MarketplaceTile extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         title: Text(
-          line.product.name.isEmpty ? 'Product #${line.productId}' : line.product.name,
+          line.product.name.isEmpty
+              ? 'Product #${line.productId}'
+              : line.product.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -1311,7 +1334,9 @@ class _ManualTile extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 10.h),
       child: ListTile(
         onTap: onTap,
-        title: Text(invoice.orderNumber.isEmpty ? '#${invoice.id}' : invoice.orderNumber),
+        title: Text(
+          invoice.orderNumber.isEmpty ? '#${invoice.id}' : invoice.orderNumber,
+        ),
         subtitle: Text(
           '${invoice.customerName ?? "Customer"}\n'
           'Payable ${invoice.summary.payable} · ${invoice.status}',

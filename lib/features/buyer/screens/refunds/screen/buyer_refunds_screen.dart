@@ -61,7 +61,7 @@ class BuyerRefundsScreen extends ConsumerWidget {
           padding: EdgeInsets.all(16.w),
           children: [
             DropdownButtonFormField<String?>(
-              value: statusFilter,
+              initialValue: statusFilter,
               decoration: InputDecoration(
                 labelText: 'Status',
                 filled: true,

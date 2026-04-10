@@ -48,4 +48,32 @@ class DriverAPIController {
         .replace(queryParameters: q)
         .toString();
   }
+
+  // --- Driver assignments (`doc/details.md`) — `/api/driver/deliveries` ---
+  static String driverDeliveries({int page = 1, String? status}) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/driver/deliveries')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String driverDelivery(int id) => '$_base_api/driver/deliveries/$id';
+
+  static String driverDeliveryAccept(int id) =>
+      '$_base_api/driver/deliveries/$id/accept';
+
+  static String driverDeliveryReject(int id) =>
+      '$_base_api/driver/deliveries/$id/reject';
+
+  static String driverDeliveryPickup(int id) =>
+      '$_base_api/driver/deliveries/$id/pickup';
+
+  static String driverDeliveryDeliver(int id) =>
+      '$_base_api/driver/deliveries/$id/deliver';
+
+  static String driverDeliveryLocation(int id) =>
+      '$_base_api/driver/deliveries/$id/location';
 }

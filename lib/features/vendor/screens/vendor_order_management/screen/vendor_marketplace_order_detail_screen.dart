@@ -30,6 +30,9 @@ class _VendorMarketplaceOrderDetailScreenState
   String? _nextStatus;
   bool _saving = false;
   bool _refundBusy = false;
+  VendorOrderAssignmentPayload? _assignment;
+  bool _assignmentLoadFailed = false;
+  bool _unassignBusy = false;
 
   static final _fieldShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(8),
@@ -77,9 +80,21 @@ class _VendorMarketplaceOrderDetailScreenState
       final d = await VendorOrderApi.instance.fetchMarketplaceLineDetail(
         widget.lineId,
       );
+      VendorOrderAssignmentPayload? assign;
+      var assignFail = false;
+      try {
+        assign = await VendorOrderApi.instance.fetchOrderAssignmentHistory(
+          widget.lineId,
+        );
+      } catch (_) {
+        assign = null;
+        assignFail = true;
+      }
       if (mounted) {
         setState(() {
           _detail = d;
+          _assignment = assign;
+          _assignmentLoadFailed = assignFail;
           _nextStatus = d.allowedNextStatuses.isNotEmpty
               ? d.allowedNextStatuses.first
               : null;
@@ -173,6 +188,68 @@ class _VendorMarketplaceOrderDetailScreenState
   bool _canRequestRefund(VendorMarketplaceLineDetail d) {
     final s = d.status.toLowerCase().replaceAll(RegExp(r'[\s_\-]+'), '');
     return s.contains('delivered') || s.contains('returned');
+  }
+
+  bool _assignmentIsTerminal(String status) {
+    final t = status.toLowerCase().trim();
+    return t == 'rejected' || t == 'cancelled' || t == 'delivered';
+  }
+
+  bool _showUnassignButton(VendorMarketplaceLineDetail d) {
+    if (d.driver != null && d.driver!.id > 0) return true;
+    final p = _assignment;
+    if (p == null || p.assignments.isEmpty) return false;
+    return !_assignmentIsTerminal(p.assignments.first.status);
+  }
+
+  Future<void> _openAssignDriverSheet() async {
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetCtx) {
+        final h = MediaQuery.sizeOf(context).height * 0.58;
+        return SafeArea(
+          child: SizedBox(
+            height: h,
+            child: _VendorAssignDriverSheet(
+              lineId: widget.lineId,
+              onAssigned: () async {
+                Navigator.of(sheetCtx).pop();
+                await _load();
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _unassignDriver() async {
+    setState(() => _unassignBusy = true);
+    try {
+      await VendorOrderApi.instance.unassignDriverFromOrderItem(widget.lineId);
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Updated',
+          message: 'Driver assignment removed',
+          type: CustomSnackType.success,
+        );
+        await _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _unassignBusy = false);
+    }
   }
 
   Future<void> _openRefundDialog() async {
@@ -508,6 +585,74 @@ class _VendorMarketplaceOrderDetailScreenState
                   ],
                 ),
               ),
+              SizedBox(height: 14.h),
+              if (_assignmentLoadFailed)
+                Text(
+                  'Assignment history could not be loaded. Pull to refresh to retry.',
+                  style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                )
+              else if (_assignment != null && _assignment!.assignments.isNotEmpty) ...[
+                Text(
+                  'Assignment history',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AllColor.grey500,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                ..._assignment!.assignments.map(
+                  (a) => Padding(
+                    padding: EdgeInsets.only(bottom: 6.h),
+                    child: Text(
+                      '${a.status} · ${a.driver == null || a.driver!.name.isEmpty ? "Driver #${a.driver?.id ?? "—"}" : a.driver!.name}'
+                      '${a.assignedByName != null && a.assignedByName!.isNotEmpty ? " · by ${a.assignedByName}" : ""}',
+                      style: TextStyle(fontSize: 13.sp, color: AllColor.black),
+                    ),
+                  ),
+                ),
+              ] else if (_assignment != null)
+                Text(
+                  'No assignments yet for this line.',
+                  style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                ),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _openAssignDriverSheet,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AllColor.loginButtomColor,
+                        side: BorderSide(color: AllColor.loginButtomColor),
+                      ),
+                      child: const Text('Assign driver'),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed:
+                          (!_showUnassignButton(d) || _unassignBusy)
+                              ? null
+                              : _unassignDriver,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AllColor.grey.shade700,
+                        side: BorderSide(color: AllColor.grey300),
+                      ),
+                      child: _unassignBusy
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Remove assignment'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           SizedBox(height: 12.h),
@@ -629,6 +774,200 @@ class _VendorMarketplaceOrderDetailScreenState
         '• $text',
         style: TextStyle(fontSize: 13.sp, color: AllColor.black, height: 1.35),
       ),
+    );
+  }
+}
+
+class _VendorAssignDriverSheet extends StatefulWidget {
+  const _VendorAssignDriverSheet({
+    required this.lineId,
+    required this.onAssigned,
+  });
+
+  final int lineId;
+  final Future<void> Function() onAssigned;
+
+  @override
+  State<_VendorAssignDriverSheet> createState() => _VendorAssignDriverSheetState();
+}
+
+class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
+  final _search = TextEditingController();
+  List<VendorAvailableDriver> _drivers = [];
+  bool _loading = true;
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetch() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final q = _search.text.trim();
+      final list = await VendorOrderApi.instance.fetchAvailableDrivers(
+        search: q.isEmpty ? null : q,
+      );
+      if (mounted) {
+        setState(() {
+          _drivers = list;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceFirst('Exception: ', '');
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _assign(VendorAvailableDriver dr) async {
+    setState(() => _submitting = true);
+    try {
+      await VendorOrderApi.instance.assignDriverToOrderItem(
+        invoiceItemId: widget.lineId,
+        driverId: dr.id,
+      );
+      if (!mounted) return;
+      GlobalSnackbar.show(
+        context,
+        title: 'Assigned',
+        message: 'Driver assigned to this line',
+        type: CustomSnackType.success,
+      );
+      await widget.onAssigned();
+    } catch (e) {
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Available drivers',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AllColor.black,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: _loading || _submitting ? null : () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _search,
+                  decoration: InputDecoration(
+                    hintText: 'Search by name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 10.h,
+                    ),
+                  ),
+                  onSubmitted: (_) => _fetch(),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              FilledButton(
+                onPressed: _loading || _submitting ? null : _fetch,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AllColor.loginButtomColor,
+                ),
+                child: const Text('Search'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Expanded(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
+                        ),
+                      ),
+                    )
+                  : _drivers.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No drivers match your search.',
+                            style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          itemCount: _drivers.length,
+                          itemBuilder: (ctx, i) {
+                            final dr = _drivers[i];
+                            final label =
+                                dr.name.isEmpty ? 'Driver #${dr.id}' : dr.name;
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(label),
+                              trailing: _submitting
+                                  ? SizedBox(
+                                      width: 22.w,
+                                      height: 22.w,
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.chevron_right),
+                              onTap: _submitting ? null : () => _assign(dr),
+                            );
+                          },
+                        ),
+        ),
+      ],
     );
   }
 }

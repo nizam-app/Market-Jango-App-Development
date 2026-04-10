@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -11,6 +14,7 @@ import 'package:market_jango/features/buyer/screens/billing/data/invoice_details
 import 'package:market_jango/features/buyer/screens/billing/model/invoice_details_model.dart';
 import 'package:market_jango/features/buyer/screens/billing/util/invoice_receipt_pdf.dart';
 import 'package:market_jango/features/buyer/screens/refunds/data/buyer_refunds_api.dart';
+import 'package:market_jango/features/buyer/screens/refunds/model/buyer_track_path_model.dart';
 import 'package:market_jango/features/buyer/screens/refunds/provider/buyer_refunds_provider.dart';
 import 'package:printing/printing.dart';
 
@@ -791,7 +795,28 @@ class _InvoiceWireframeCard extends StatelessWidget {
   }
 }
 
-List<Widget> _buyerTrackLineWidgets(Map<String, dynamic> raw) {
+int? _parseBuyerLineItemId(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  return int.tryParse(v.toString());
+}
+
+String _buyerLiveLocationLabel(dynamic loc) {
+  if (loc is Map) {
+    final lat = loc['latitude'] ?? loc['lat'];
+    final lng = loc['longitude'] ?? loc['lng'];
+    if (lat != null && lng != null) return '$lat, $lng';
+  }
+  if (loc != null) return loc.toString();
+  return '—';
+}
+
+List<Widget> _buyerTrackLineWidgets(
+  WidgetRef ref,
+  int invoiceId,
+  Map<String, dynamic> raw,
+) {
   final items = raw['items'];
   if (items is! List || items.isEmpty) {
     return [
@@ -816,25 +841,34 @@ List<Widget> _buyerTrackLineWidgets(Map<String, dynamic> raw) {
           '—';
     }
     final itemId = m['item_id'] ?? m['invoice_item_id'];
+    final lineItemId = _parseBuyerLineItemId(itemId);
     final loc = m['live_location'] ?? m['location'] ?? m['current_location'];
-    var locStr = '—';
-    if (loc is Map) {
-      locStr = '${loc['lat'] ?? ''}, ${loc['lng'] ?? ''}';
-    } else if (loc != null) {
-      locStr = loc.toString();
-    }
+    final locStr = _buyerLiveLocationLabel(loc);
     out.add(
-      ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 0),
-        title: Text(
-          'Line ${itemId ?? '—'} · $driverName',
-          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          locStr,
-          style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
-        ),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 0),
+            title: Text(
+              'Line ${itemId ?? '—'} · $driverName',
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              locStr,
+              style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+            ),
+          ),
+          if (lineItemId != null && lineItemId > 0)
+            Padding(
+              padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 8.h),
+              child: _BuyerTrackPathRow(
+                invoiceId: invoiceId,
+                itemId: lineItemId,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -850,6 +884,145 @@ List<Widget> _buyerTrackLineWidgets(Map<String, dynamic> raw) {
     ];
   }
   return out;
+}
+
+class _BuyerTrackPathRow extends ConsumerWidget {
+  const _BuyerTrackPathRow({
+    required this.invoiceId,
+    required this.itemId,
+  });
+
+  final int invoiceId;
+  final int itemId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final key = BuyerTrackPathKey(invoiceId: invoiceId, itemId: itemId);
+    final async = ref.watch(buyerOrderTrackPathProvider(key));
+    return async.when(
+      loading: () => Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'Loading driver route…',
+          style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+        ),
+      ),
+      error: (e, _) => Text(
+        e.toString().replaceFirst('Exception: ', ''),
+        style: TextStyle(fontSize: 11.sp, color: AllColor.red),
+      ),
+      data: (path) {
+        if (path.points.isEmpty) {
+          return Text(
+            'No GPS trail yet for this line.',
+            style: TextStyle(fontSize: 11.sp, color: AllColor.grey500),
+          );
+        }
+        return TextButton.icon(
+          onPressed: () => _openBuyerPathMapBottomSheet(context, path.points),
+          icon: Icon(
+            Icons.route,
+            size: 18.sp,
+            color: AllColor.loginButtomColor,
+          ),
+          label: Text(
+            'View route (${path.points.length} pts)',
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: AllColor.loginButtomColor,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        );
+      },
+    );
+  }
+}
+
+void _openBuyerPathMapBottomSheet(
+  BuildContext context,
+  List<BuyerTrackPathPoint> points,
+) {
+  if (points.isEmpty) return;
+  final latLngs =
+      points.map((p) => LatLng(p.latitude, p.longitude)).toList();
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+    ),
+    builder: (ctx) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.92,
+      builder: (_, __) => Column(
+        children: [
+          SizedBox(height: 8.h),
+          Text(
+            'Driver route',
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 8.h),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: latLngs.first,
+                    zoom: 14,
+                  ),
+                  polylines: {
+                    Polyline(
+                      polylineId: const PolylineId('buyer_track_path'),
+                      points: latLngs,
+                      color: AllColor.blue500,
+                      width: 5,
+                    ),
+                  },
+                  onMapCreated: (c) {
+                    if (latLngs.length < 2) return;
+                    try {
+                      final swLat = latLngs
+                          .map((e) => e.latitude)
+                          .reduce(math.min);
+                      final swLng = latLngs
+                          .map((e) => e.longitude)
+                          .reduce(math.min);
+                      final neLat = latLngs
+                          .map((e) => e.latitude)
+                          .reduce(math.max);
+                      final neLng = latLngs
+                          .map((e) => e.longitude)
+                          .reduce(math.max);
+                      c.animateCamera(
+                        CameraUpdate.newLatLngBounds(
+                          LatLngBounds(
+                            southwest: LatLng(swLat, swLng),
+                            northeast: LatLng(neLat, neLng),
+                          ),
+                          56,
+                        ),
+                      );
+                    } catch (_) {}
+                  },
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+        ],
+      ),
+    ),
+  );
 }
 
 class _LiveTrackingCard extends ConsumerWidget {
@@ -891,7 +1064,7 @@ class _LiveTrackingCard extends ConsumerWidget {
               ),
               data: (raw) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _buyerTrackLineWidgets(raw),
+                children: _buyerTrackLineWidgets(ref, invoiceId, raw),
               ),
             ),
           ],

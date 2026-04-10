@@ -67,16 +67,10 @@ VendorOrdersPage<VendorWalletTransaction> _parseWalletTransactionsPage(
 ) {
   final nested = data['transactions'];
   if (nested is Map<String, dynamic>) {
-    return VendorOrdersPage.parse(
-      nested,
-      VendorWalletTransaction.fromJson,
-    );
+    return VendorOrdersPage.parse(nested, VendorWalletTransaction.fromJson);
   }
   if (data['data'] is List) {
-    return VendorOrdersPage.parse(
-      data,
-      VendorWalletTransaction.fromJson,
-    );
+    return VendorOrdersPage.parse(data, VendorWalletTransaction.fromJson);
   }
   return const VendorOrdersPage(
     currentPage: 1,
@@ -129,10 +123,7 @@ class VendorOrderApi {
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top);
-    return VendorOrdersPage.parse(
-      data,
-      VendorMarketplaceLine.fromJson,
-    );
+    return VendorOrdersPage.parse(data, VendorMarketplaceLine.fromJson);
   }
 
   Future<VendorMarketplaceLineDetail> fetchMarketplaceLineDetail(int id) async {
@@ -149,6 +140,84 @@ class VendorOrderApi {
     return VendorMarketplaceLineDetail.fromJson(data);
   }
 
+  /// `GET /vendor/drivers/available` — optional `search` on driver user name.
+  Future<List<VendorAvailableDriver>> fetchAvailableDrivers({
+    String? search,
+  }) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(
+      VendorAPIController.vendorDriversAvailable(search: search),
+    );
+    final res = await http.get(uri, headers: headers);
+    _throwIfBad(res);
+    final top = _decodeObj(res.body);
+    _assertJsonSuccess(top);
+    final d = top['data'];
+    final rows = <Map<String, dynamic>>[];
+    if (d is List) {
+      for (final e in d) {
+        if (e is Map<String, dynamic>) rows.add(e);
+      }
+    } else if (d is Map<String, dynamic>) {
+      final inner = d['data'] ?? d['drivers'];
+      if (inner is List) {
+        for (final e in inner) {
+          if (e is Map<String, dynamic>) rows.add(e);
+        }
+      }
+    }
+    return rows.map(VendorAvailableDriver.fromJson).toList();
+  }
+
+  /// `GET /vendor/orders/{item_id}/assignment` — `order_item` + `assignments`.
+  Future<VendorOrderAssignmentPayload> fetchOrderAssignmentHistory(
+    int invoiceItemId,
+  ) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(
+      VendorAPIController.vendorOrderAssignment(invoiceItemId),
+    );
+    final res = await http.get(uri, headers: headers);
+    _throwIfBad(res);
+    final top = _decodeObj(res.body);
+    _assertJsonSuccess(top);
+    final data = _unwrapDataMap(top) ?? top;
+    return VendorOrderAssignmentPayload.fromJson(data);
+  }
+
+  /// `POST /vendor/orders/{item_id}/assign-driver` — body `driver_id`.
+  Future<void> assignDriverToOrderItem({
+    required int invoiceItemId,
+    required int driverId,
+  }) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(
+      VendorAPIController.vendorOrderAssignDriver(invoiceItemId),
+    );
+    final res = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(<String, dynamic>{'driver_id': driverId}),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+  }
+
+  /// `POST /vendor/orders/{item_id}/unassign-driver` — cancels latest active assignment.
+  Future<void> unassignDriverFromOrderItem(int invoiceItemId) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(
+      VendorAPIController.vendorOrderUnassignDriver(invoiceItemId),
+    );
+    final res = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(<String, dynamic>{}),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+  }
+
   Future<VendorMarketplaceLineDetail> updateMarketplaceLineStatus({
     required int id,
     required String status,
@@ -158,11 +227,7 @@ class VendorOrderApi {
     final uri = Uri.parse(VendorAPIController.vendorOrderUpdateStatus(id));
     final body = <String, dynamic>{'status': status};
     if (note != null && note.isNotEmpty) body['note'] = note;
-    final res = await http.put(
-      uri,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    final res = await http.put(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     Map<String, dynamic> data = _unwrapDataMap(top) ?? top;
@@ -206,15 +271,14 @@ class VendorOrderApi {
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top);
-    return VendorOrdersPage.parse(
-      data,
-      VendorManualOrderInvoice.fromJson,
-    );
+    return VendorOrdersPage.parse(data, VendorManualOrderInvoice.fromJson);
   }
 
   Future<VendorManualOrderInvoice> fetchManualOrderDetail(int invoiceId) async {
     final headers = await vendorOrderApiHeaders();
-    final uri = Uri.parse(VendorAPIController.vendorManualOrderDetail(invoiceId));
+    final uri = Uri.parse(
+      VendorAPIController.vendorManualOrderDetail(invoiceId),
+    );
     final res = await http.get(uri, headers: headers);
     _throwIfBad(res);
     final top = _decodeObj(res.body);
@@ -230,6 +294,9 @@ class VendorOrderApi {
     return VendorManualOrderInvoice.fromJson(data);
   }
 
+  /// `POST /api/vendor/manual-orders` — body per doc: `customer_name` (max 100),
+  /// optional `customer_phone` (max 30), `payment_method` ∈ `Cash`|`Card`|`Mobile`,
+  /// optional `customer_paid` (≥ 0), `items` (min 1).
   Future<VendorManualOrderInvoice> createManualOrder({
     required String customerName,
     String? customerPhone,
@@ -239,27 +306,36 @@ class VendorOrderApi {
   }) async {
     final headers = await vendorOrderApiHeaders();
     final uri = Uri.parse(VendorAPIController.vendorManualOrderCreate);
+    var nameTrim = customerName.trim();
+    if (nameTrim.length > 100) {
+      nameTrim = nameTrim.substring(0, 100);
+    }
     final body = <String, dynamic>{
-      'customer_name': customerName,
+      'customer_name': nameTrim,
       'payment_method': paymentMethod,
       'items': items
-          .map((e) => {'product_id': e['product_id'], 'quantity': e['quantity']})
+          .map(
+            (e) => {'product_id': e['product_id'], 'quantity': e['quantity']},
+          )
           .toList(),
     };
-    if (customerPhone != null && customerPhone.isNotEmpty) {
-      body['customer_phone'] = customerPhone;
+    final phoneTrim = customerPhone?.trim();
+    if (phoneTrim != null && phoneTrim.isNotEmpty) {
+      body['customer_phone'] = phoneTrim.length > 30
+          ? phoneTrim.substring(0, 30)
+          : phoneTrim;
     }
-    if (customerPaid != null) body['customer_paid'] = customerPaid;
-    final res = await http.post(
-      uri,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    if (customerPaid != null) {
+      body['customer_paid'] = customerPaid;
+    }
+    final res = await http.post(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     final top = _decodeObj(res.body);
+    _assertJsonSuccess(top);
     final data = _unwrapDataMap(top) ?? top;
-    // Response may nest invoice/items/summary
-    if (data.containsKey('invoice') && data['invoice'] is Map<String, dynamic>) {
+    // Response may nest invoice/items/summary (201 Created + `data.invoice` per API).
+    if (data.containsKey('invoice') &&
+        data['invoice'] is Map<String, dynamic>) {
       final inv = Map<String, dynamic>.from(
         data['invoice'] as Map<String, dynamic>,
       );
@@ -276,7 +352,9 @@ class VendorOrderApi {
     required int quantity,
   }) async {
     final headers = await vendorOrderApiHeaders();
-    final uri = Uri.parse(VendorAPIController.vendorManualOrderAddItem(invoiceId));
+    final uri = Uri.parse(
+      VendorAPIController.vendorManualOrderAddItem(invoiceId),
+    );
     final res = await http.post(
       uri,
       headers: headers,
@@ -285,7 +363,8 @@ class VendorOrderApi {
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top) ?? top;
-    if (data.containsKey('invoice') && data['invoice'] is Map<String, dynamic>) {
+    if (data.containsKey('invoice') &&
+        data['invoice'] is Map<String, dynamic>) {
       final inv = Map<String, dynamic>.from(
         data['invoice'] as Map<String, dynamic>,
       );
@@ -308,7 +387,8 @@ class VendorOrderApi {
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top) ?? top;
-    if (data.containsKey('invoice') && data['invoice'] is Map<String, dynamic>) {
+    if (data.containsKey('invoice') &&
+        data['invoice'] is Map<String, dynamic>) {
       final inv = Map<String, dynamic>.from(
         data['invoice'] as Map<String, dynamic>,
       );
@@ -325,7 +405,9 @@ class VendorOrderApi {
     String? note,
   }) async {
     final headers = await vendorOrderApiHeaders();
-    final uri = Uri.parse(VendorAPIController.vendorManualOrderDeliver(invoiceId));
+    final uri = Uri.parse(
+      VendorAPIController.vendorManualOrderDeliver(invoiceId),
+    );
     final body = <String, dynamic>{};
     if (customerPaid != null) body['customer_paid'] = customerPaid;
     if (note != null && note.isNotEmpty) body['note'] = note;
@@ -337,7 +419,8 @@ class VendorOrderApi {
     _throwIfBad(res);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top) ?? top;
-    if (data.containsKey('invoice') && data['invoice'] is Map<String, dynamic>) {
+    if (data.containsKey('invoice') &&
+        data['invoice'] is Map<String, dynamic>) {
       final inv = Map<String, dynamic>.from(
         data['invoice'] as Map<String, dynamic>,
       );
@@ -473,11 +556,7 @@ class VendorOrderApi {
     );
     final body = <String, dynamic>{'reason': reason.trim()};
     if (amount != null) body['amount'] = amount;
-    final res = await http.post(
-      uri,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    final res = await http.post(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     _maybeAssertEnvelope(res.body);
   }
@@ -525,11 +604,7 @@ class VendorOrderApi {
     };
     final n = note?.trim();
     if (n != null && n.isNotEmpty) body['note'] = n;
-    final res = await http.post(
-      uri,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    final res = await http.post(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     _maybeAssertEnvelope(res.body);
   }

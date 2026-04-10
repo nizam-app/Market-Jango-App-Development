@@ -51,7 +51,9 @@ class _VendorManualOrderDetailScreenState
       _error = null;
     });
     try {
-      final d = await VendorOrderApi.instance.fetchManualOrderDetail(widget.invoiceId);
+      final d = await VendorOrderApi.instance.fetchManualOrderDetail(
+        widget.invoiceId,
+      );
       if (mounted) {
         setState(() {
           _inv = d;
@@ -80,7 +82,10 @@ class _VendorManualOrderDetailScreenState
         title: const Text('Remove line'),
         content: const Text('Remove this product from the order?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Remove', style: TextStyle(color: AllColor.red)),
@@ -157,7 +162,9 @@ class _VendorManualOrderDetailScreenState
   }
 
   Future<void> _deliver() async {
-    final paid = _paid.text.trim().isEmpty ? null : double.tryParse(_paid.text.trim());
+    final paid = _paid.text.trim().isEmpty
+        ? null
+        : double.tryParse(_paid.text.trim());
     setState(() => _busy = true);
     try {
       final updated = await VendorOrderApi.instance.deliverManualOrder(
@@ -213,10 +220,12 @@ class _VendorManualOrderDetailScreenState
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? Center(child: Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Text(_error!),
-            ))
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Text(_error!),
+              ),
+            )
           : _buildBody(_inv!),
     );
   }
@@ -232,7 +241,10 @@ class _VendorManualOrderDetailScreenState
             children: [
               _summary(inv),
               SizedBox(height: 16.h),
-              Text('Items', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp)),
+              Text(
+                'Items',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
+              ),
               SizedBox(height: 8.h),
               ...inv.items.map((it) {
                 return Card(
@@ -241,7 +253,10 @@ class _VendorManualOrderDetailScreenState
                     subtitle: Text('Qty ${it.quantity} · ${it.status}'),
                     trailing: _isPendingLine(it)
                         ? IconButton(
-                            icon: Icon(Icons.delete_outline, color: AllColor.red),
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: AllColor.red,
+                            ),
                             onPressed: _busy ? null : () => _deleteLine(it),
                           )
                         : null,
@@ -250,7 +265,13 @@ class _VendorManualOrderDetailScreenState
               }),
               if (hasPending) ...[
                 SizedBox(height: 16.h),
-                Text('Add line', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.sp)),
+                Text(
+                  'Add line',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14.sp,
+                  ),
+                ),
                 SizedBox(height: 8.h),
                 Row(
                   children: [
@@ -291,7 +312,9 @@ class _VendorManualOrderDetailScreenState
               SizedBox(height: 24.h),
               TextField(
                 controller: _paid,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Customer paid (optional, for deliver)',
                   border: OutlineInputBorder(),

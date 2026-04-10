@@ -192,7 +192,7 @@ class DriverWalletScreen extends ConsumerWidget {
             ),
             SizedBox(height: 8.h),
             DropdownButtonFormField<String?>(
-              value: payoutStatusFilter,
+              initialValue: payoutStatusFilter,
               decoration: InputDecoration(
                 labelText: 'Status',
                 filled: true,
@@ -353,7 +353,7 @@ class DriverWalletScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: txTypeFilter,
+                    initialValue: txTypeFilter,
                     decoration: InputDecoration(
                       labelText: 'Tx type',
                       filled: true,
@@ -395,7 +395,7 @@ class DriverWalletScreen extends ConsumerWidget {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: txStatusFilter,
+                    initialValue: txStatusFilter,
                     decoration: InputDecoration(
                       labelText: 'Tx status',
                       filled: true,

@@ -3,26 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/buyer/screens/wallet/data/buyer_wallet_api.dart';
-import 'package:market_jango/features/buyer/screens/wallet/provider/buyer_wallet_provider.dart';
+import 'package:market_jango/features/transport/screens/wallet/data/transport_wallet_api.dart';
+import 'package:market_jango/features/transport/screens/wallet/provider/transport_wallet_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
-/// Buyer wallet — `doc/details.md` §D (balance, top-up, withdraw, transactions, payouts).
-class BuyerWalletScreen extends ConsumerWidget {
-  const BuyerWalletScreen({super.key});
+/// Transport wallet — `doc/details.md` (balance, top-up, payout, transactions).
+class TransportWalletScreen extends ConsumerWidget {
+  const TransportWalletScreen({super.key});
 
-  static const routeName = '/buyer/wallet';
+  static const routeName = '/transport/wallet';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final overview = ref.watch(buyerWalletOverviewProvider);
-    final txParams = ref.watch(buyerWalletTxParamsProvider);
-    final tx = ref.watch(buyerWalletTransactionsProvider);
-    final payouts = ref.watch(buyerWalletPayoutsProvider);
-    final payoutPage = ref.watch(buyerWalletPayoutsPageProvider);
-    final payoutStatusFilter = ref.watch(buyerWalletPayoutStatusFilterProvider);
-    final txTypeFilter = ref.watch(buyerWalletTxTypeFilterProvider);
-    final txStatusFilter = ref.watch(buyerWalletTxStatusFilterProvider);
+    final overview = ref.watch(transportWalletOverviewProvider);
+    final txParams = ref.watch(transportWalletTxParamsProvider);
+    final tx = ref.watch(transportWalletTransactionsProvider);
+    final payouts = ref.watch(transportWalletPayoutsProvider);
+    final payoutPage = ref.watch(transportWalletPayoutsPageProvider);
+    final payoutStatusFilter = ref.watch(transportWalletPayoutStatusFilterProvider);
+    final txTypeFilter = ref.watch(transportWalletTxTypeFilterProvider);
+    final txStatusFilter = ref.watch(transportWalletTxStatusFilterProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -34,7 +34,7 @@ class BuyerWalletScreen extends ConsumerWidget {
           child: const CustomBackButton(),
         ),
         title: Text(
-          'My wallet',
+          'Wallet',
           style: TextStyle(
             fontSize: 17.sp,
             fontWeight: FontWeight.w700,
@@ -45,13 +45,13 @@ class BuyerWalletScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(buyerWalletOverviewProvider);
-          ref.invalidate(buyerWalletTransactionsProvider);
-          ref.invalidate(buyerWalletPayoutsProvider);
+          ref.invalidate(transportWalletOverviewProvider);
+          ref.invalidate(transportWalletTransactionsProvider);
+          ref.invalidate(transportWalletPayoutsProvider);
           await Future.wait([
-            ref.read(buyerWalletOverviewProvider.future),
-            ref.read(buyerWalletTransactionsProvider.future),
-            ref.read(buyerWalletPayoutsProvider.future),
+            ref.read(transportWalletOverviewProvider.future),
+            ref.read(transportWalletTransactionsProvider.future),
+            ref.read(transportWalletPayoutsProvider.future),
           ]);
         },
         child: ListView(
@@ -66,7 +66,7 @@ class BuyerWalletScreen extends ConsumerWidget {
                 border: Border.all(color: AllColor.orange200),
               ),
               child: Text(
-                'Top up adds funds to your wallet. Approved refunds from vendors are credited here too.',
+                'Top up adds funds to your transporter wallet. Withdrawals are processed as payout requests.',
                 style: TextStyle(fontSize: 12.sp, height: 1.35),
               ),
             ),
@@ -138,11 +138,11 @@ class BuyerWalletScreen extends ConsumerWidget {
                             onPressed: () async {
                               final ok = await showDialog<bool>(
                                 context: context,
-                                builder: (_) => const _BuyerTopupDialog(),
+                                builder: (_) => const _TransportTopupDialog(),
                               );
                               if (ok == true && context.mounted) {
-                                ref.invalidate(buyerWalletOverviewProvider);
-                                ref.invalidate(buyerWalletTransactionsProvider);
+                                ref.invalidate(transportWalletOverviewProvider);
+                                ref.invalidate(transportWalletTransactionsProvider);
                                 GlobalSnackbar.show(
                                   context,
                                   title: 'Success',
@@ -166,14 +166,14 @@ class BuyerWalletScreen extends ConsumerWidget {
                             onPressed: () async {
                               final ok = await showDialog<bool>(
                                 context: context,
-                                builder: (_) => _BuyerPayoutDialog(
+                                builder: (_) => _TransportPayoutDialog(
                                   walletBalance: w.balanceNumeric,
                                 ),
                               );
                               if (ok == true && context.mounted) {
-                                ref.invalidate(buyerWalletOverviewProvider);
-                                ref.invalidate(buyerWalletTransactionsProvider);
-                                ref.invalidate(buyerWalletPayoutsProvider);
+                                ref.invalidate(transportWalletOverviewProvider);
+                                ref.invalidate(transportWalletTransactionsProvider);
+                                ref.invalidate(transportWalletPayoutsProvider);
                                 GlobalSnackbar.show(
                                   context,
                                   title: 'Success',
@@ -229,9 +229,9 @@ class BuyerWalletScreen extends ConsumerWidget {
                 DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
               ],
               onChanged: (v) {
-                ref.read(buyerWalletPayoutStatusFilterProvider.notifier).state =
+                ref.read(transportWalletPayoutStatusFilterProvider.notifier).state =
                     v;
-                ref.read(buyerWalletPayoutsPageProvider.notifier).state = 1;
+                ref.read(transportWalletPayoutsPageProvider.notifier).state = 1;
               },
             ),
             SizedBox(height: 8.h),
@@ -278,7 +278,7 @@ class BuyerWalletScreen extends ConsumerWidget {
                               ? null
                               : () {
                                   ref
-                                          .read(buyerWalletPayoutsPageProvider
+                                          .read(transportWalletPayoutsPageProvider
                                               .notifier)
                                           .state =
                                       payoutPage - 1;
@@ -291,7 +291,7 @@ class BuyerWalletScreen extends ConsumerWidget {
                               ? null
                               : () {
                                   ref
-                                          .read(buyerWalletPayoutsPageProvider
+                                          .read(transportWalletPayoutsPageProvider
                                               .notifier)
                                           .state =
                                       payoutPage + 1;
@@ -320,8 +320,8 @@ class BuyerWalletScreen extends ConsumerWidget {
                       if (d == null) return;
                       final f =
                           '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                      ref.read(buyerWalletTxParamsProvider.notifier).state =
-                          ref.read(buyerWalletTxParamsProvider).copyWith(
+                      ref.read(transportWalletTxParamsProvider.notifier).state =
+                          ref.read(transportWalletTxParamsProvider).copyWith(
                                 page: 1,
                                 fromDate: f,
                               );
@@ -343,8 +343,8 @@ class BuyerWalletScreen extends ConsumerWidget {
                       if (d == null) return;
                       final f =
                           '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-                      ref.read(buyerWalletTxParamsProvider.notifier).state =
-                          ref.read(buyerWalletTxParamsProvider).copyWith(
+                      ref.read(transportWalletTxParamsProvider.notifier).state =
+                          ref.read(transportWalletTxParamsProvider).copyWith(
                                 page: 1,
                                 toDate: f,
                               );
@@ -354,11 +354,11 @@ class BuyerWalletScreen extends ConsumerWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    ref.read(buyerWalletTxParamsProvider.notifier).state =
-                        const BuyerWalletTxParams(page: 1);
-                    ref.read(buyerWalletTxTypeFilterProvider.notifier).state =
+                    ref.read(transportWalletTxParamsProvider.notifier).state =
+                        const TransportWalletTxParams(page: 1);
+                    ref.read(transportWalletTxTypeFilterProvider.notifier).state =
                         null;
-                    ref.read(buyerWalletTxStatusFilterProvider.notifier).state =
+                    ref.read(transportWalletTxStatusFilterProvider.notifier).state =
                         null;
                   },
                   icon: const Icon(Icons.clear),
@@ -399,12 +399,16 @@ class BuyerWalletScreen extends ConsumerWidget {
                         value: 'order_payment',
                         child: Text('order_payment'),
                       ),
+                      DropdownMenuItem(
+                        value: 'adjustment',
+                        child: Text('adjustment'),
+                      ),
                     ],
                     onChanged: (v) {
-                      ref.read(buyerWalletTxTypeFilterProvider.notifier).state =
+                      ref.read(transportWalletTxTypeFilterProvider.notifier).state =
                           v;
-                      ref.read(buyerWalletTxParamsProvider.notifier).state =
-                          ref.read(buyerWalletTxParamsProvider).copyWith(
+                      ref.read(transportWalletTxParamsProvider.notifier).state =
+                          ref.read(transportWalletTxParamsProvider).copyWith(
                                 page: 1,
                               );
                     },
@@ -437,13 +441,17 @@ class BuyerWalletScreen extends ConsumerWidget {
                         value: 'processing',
                         child: Text('processing'),
                       ),
+                      DropdownMenuItem(
+                        value: 'failed',
+                        child: Text('failed'),
+                      ),
                     ],
                     onChanged: (v) {
                       ref
-                          .read(buyerWalletTxStatusFilterProvider.notifier)
+                          .read(transportWalletTxStatusFilterProvider.notifier)
                           .state = v;
-                      ref.read(buyerWalletTxParamsProvider.notifier).state =
-                          ref.read(buyerWalletTxParamsProvider).copyWith(
+                      ref.read(transportWalletTxParamsProvider.notifier).state =
+                          ref.read(transportWalletTxParamsProvider).copyWith(
                                 page: 1,
                               );
                     },
@@ -497,7 +505,7 @@ class BuyerWalletScreen extends ConsumerWidget {
                               ? null
                               : () {
                                   ref
-                                          .read(buyerWalletTxParamsProvider
+                                          .read(transportWalletTxParamsProvider
                                               .notifier)
                                           .state =
                                       txParams.copyWith(
@@ -512,7 +520,7 @@ class BuyerWalletScreen extends ConsumerWidget {
                               ? null
                               : () {
                                   ref
-                                          .read(buyerWalletTxParamsProvider
+                                          .read(transportWalletTxParamsProvider
                                               .notifier)
                                           .state =
                                       txParams.copyWith(
@@ -534,14 +542,14 @@ class BuyerWalletScreen extends ConsumerWidget {
   }
 }
 
-class _BuyerTopupDialog extends StatefulWidget {
-  const _BuyerTopupDialog();
+class _TransportTopupDialog extends StatefulWidget {
+  const _TransportTopupDialog();
 
   @override
-  State<_BuyerTopupDialog> createState() => _BuyerTopupDialogState();
+  State<_TransportTopupDialog> createState() => _TransportTopupDialogState();
 }
 
-class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
+class _TransportTopupDialogState extends State<_TransportTopupDialog> {
   final _amount = TextEditingController();
   final _note = TextEditingController();
   bool _busy = false;
@@ -568,7 +576,7 @@ class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
     }
     setState(() => _busy = true);
     try {
-      await BuyerWalletApi.instance.requestTopup(
+      await TransportWalletApi.instance.requestTopup(
         amount: a,
         note: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
@@ -675,16 +683,16 @@ class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
   }
 }
 
-class _BuyerPayoutDialog extends StatefulWidget {
-  const _BuyerPayoutDialog({this.walletBalance});
+class _TransportPayoutDialog extends StatefulWidget {
+  const _TransportPayoutDialog({this.walletBalance});
 
   final num? walletBalance;
 
   @override
-  State<_BuyerPayoutDialog> createState() => _BuyerPayoutDialogState();
+  State<_TransportPayoutDialog> createState() => _TransportPayoutDialogState();
 }
 
-class _BuyerPayoutDialogState extends State<_BuyerPayoutDialog> {
+class _TransportPayoutDialogState extends State<_TransportPayoutDialog> {
   static const _methods = <({String value, String label})>[
     (value: 'bank_transfer', label: 'Bank transfer'),
     (value: 'mobile_money', label: 'Mobile money'),
@@ -748,8 +756,8 @@ class _BuyerPayoutDialogState extends State<_BuyerPayoutDialog> {
       setState(() => _error = 'Enter a valid amount.');
       return;
     }
-    if (amtNum <= 0) {
-      setState(() => _error = 'Amount must be greater than zero.');
+    if (amtNum < 1) {
+      setState(() => _error = 'Minimum withdrawal amount is 1.');
       return;
     }
     final maxBal = widget.walletBalance;
@@ -762,7 +770,7 @@ class _BuyerPayoutDialogState extends State<_BuyerPayoutDialog> {
     }
     setState(() => _busy = true);
     try {
-      await BuyerWalletApi.instance.requestPayout(
+      await TransportWalletApi.instance.requestPayout(
         amount: a,
         paymentMethod: _method,
         account: acc,

@@ -99,6 +99,26 @@ class VendorAPIController {
 
   static String get vendorOrderStatuses => '$_base_api/vendor/orders/statuses';
 
+  /// Drivers available for assignment (`search` optional — user name).
+  static String vendorDriversAvailable({String? search}) {
+    final q = <String, String>{};
+    final s = search?.trim();
+    if (s != null && s.isNotEmpty) q['search'] = s;
+    if (q.isEmpty) return '$_base_api/vendor/drivers/available';
+    return Uri.parse('$_base_api/vendor/drivers/available')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String vendorOrderAssignDriver(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/assign-driver';
+
+  static String vendorOrderUnassignDriver(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/unassign-driver';
+
+  static String vendorOrderAssignment(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/assignment';
+
   /// Manual / walk-in orders (paginated invoices).
   static String vendorManualOrders({
     int page = 1,

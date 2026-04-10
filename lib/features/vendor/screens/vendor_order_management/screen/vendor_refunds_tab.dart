@@ -107,7 +107,7 @@ class VendorRefundsTab extends ConsumerWidget {
           ),
           SizedBox(height: 8.h),
           DropdownButtonFormField<String?>(
-            value: params.status,
+            initialValue: params.status,
             decoration: InputDecoration(
               labelText: 'Status',
               filled: true,

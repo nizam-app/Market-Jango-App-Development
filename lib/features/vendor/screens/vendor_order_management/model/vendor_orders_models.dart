@@ -94,9 +94,9 @@ class VendorNestedInvoice {
       isManualOrder: manual == null
           ? null
           : (manual == true ||
-              manual == 1 ||
-              manual.toString().toLowerCase() == 'true' ||
-              manual.toString() == '1'),
+                manual == 1 ||
+                manual.toString().toLowerCase() == 'true' ||
+                manual.toString() == '1'),
     );
   }
 }
@@ -129,6 +129,91 @@ class VendorNestedDriver {
       name: _s(user?['name'] ?? j['name']),
     );
   }
+}
+
+/// Row from `GET /vendor/drivers/available`.
+class VendorAvailableDriver {
+  final int id;
+  final String name;
+
+  VendorAvailableDriver({required this.id, required this.name});
+
+  factory VendorAvailableDriver.fromJson(Map<String, dynamic> j) {
+    final user = j['user'] is Map<String, dynamic>
+        ? j['user'] as Map<String, dynamic>
+        : null;
+    return VendorAvailableDriver(
+      id: _toInt(j['id']),
+      name: _s(user?['name'] ?? j['name']),
+    );
+  }
+}
+
+/// One assignment from `GET /vendor/orders/{id}/assignment` (`assignments` array).
+class VendorAssignmentEntry {
+  final int id;
+  final String status;
+  final VendorNestedDriver? driver;
+  final String? assignedByName;
+  final DateTime? createdAt;
+
+  VendorAssignmentEntry({
+    required this.id,
+    required this.status,
+    this.driver,
+    this.assignedByName,
+    this.createdAt,
+  });
+
+  factory VendorAssignmentEntry.fromJson(Map<String, dynamic> j) {
+    Map<String, dynamic>? by;
+    final ab = j['assignedBy'] ?? j['assigned_by'];
+    if (ab is Map<String, dynamic>) by = ab;
+    String? assigner;
+    if (by != null) {
+      assigner = _s(by['name']);
+      if (assigner.isEmpty && by['user'] is Map<String, dynamic>) {
+        assigner = _s((by['user'] as Map<String, dynamic>)['name']);
+      }
+      if (assigner.isEmpty) assigner = null;
+    }
+    return VendorAssignmentEntry(
+      id: _toInt(j['id']),
+      status: _s(j['status']),
+      driver: j['driver'] is Map<String, dynamic>
+          ? VendorNestedDriver.fromJson(j['driver'] as Map<String, dynamic>)
+          : null,
+      assignedByName: assigner,
+      createdAt: _dt(j['created_at']),
+    );
+  }
+}
+
+/// Payload from `GET /vendor/orders/{id}/assignment`.
+class VendorOrderAssignmentPayload {
+  final Map<String, dynamic>? orderItem;
+  final List<VendorAssignmentEntry> assignments;
+
+  VendorOrderAssignmentPayload({
+    this.orderItem,
+    required this.assignments,
+  });
+
+  factory VendorOrderAssignmentPayload.fromJson(Map<String, dynamic> j) {
+    final raw = j['assignments'] as List? ?? [];
+    final list = raw
+        .whereType<Map<String, dynamic>>()
+        .map(VendorAssignmentEntry.fromJson)
+        .toList();
+    final oi = j['order_item'];
+    return VendorOrderAssignmentPayload(
+      orderItem: oi is Map<String, dynamic> ? oi : null,
+      assignments: list,
+    );
+  }
+
+  static VendorOrderAssignmentPayload empty() =>
+      VendorOrderAssignmentPayload(assignments: []);
 }
 
 /// One marketplace `invoice_item` row from `GET /vendor/orders`.
@@ -283,7 +368,28 @@ class OrderSummary {
       payable: _s(j['payable']),
       vat: j['vat']?.toString(),
       customerPaid: j['customer_paid']?.toString(),
-      change: j['change']?.toString(),
+      change: (j['change'] ?? j['change_amount'])?.toString(),
+    );
+  }
+
+  /// `summary` object **or** invoice-level totals (e.g. `POST /vendor/manual-orders` 201).
+  factory OrderSummary.fromInvoiceOrSummary(Map<String, dynamic> j) {
+    final nested = j['summary'];
+    if (nested is Map<String, dynamic>) {
+      final p = _s(nested['payable']);
+      final t = _s(nested['total']);
+      if (p.isNotEmpty || t.isNotEmpty) {
+        return OrderSummary.fromJson(nested);
+      }
+    }
+    final total = _s(j['total']);
+    final payable = _s(j['payable']);
+    return OrderSummary(
+      total: total.isNotEmpty ? total : payable,
+      payable: payable.isNotEmpty ? payable : total,
+      vat: j['vat']?.toString(),
+      customerPaid: j['customer_paid']?.toString(),
+      change: (j['change'] ?? j['change_amount'])?.toString(),
     );
   }
 }
@@ -345,20 +451,22 @@ class VendorManualOrderInvoice {
         .whereType<Map<String, dynamic>>()
         .map(VendorManualLineItem.fromJson)
         .toList();
+    final orderNo = _s(j['order_number']);
+    final id = _toInt(j['id']);
     return VendorManualOrderInvoice(
-      id: _toInt(j['id']),
-      orderNumber: _s(j['order_number']),
+      id: id,
+      orderNumber: orderNo.isNotEmpty
+          ? orderNo
+          : (id > 0 ? 'INV-$id' : 'Walk-in'),
       status: _s(j['status']),
       paymentMethod: j['payment_method']?.toString(),
-      customerName: j['customer_name']?.toString(),
-      customerPhone: j['customer_phone']?.toString(),
+      customerName:
+          (j['customer_name'] ?? j['cus_name'])?.toString(),
+      customerPhone:
+          (j['customer_phone'] ?? j['cus_phone'])?.toString(),
       createdAt: _dt(j['created_at']),
       items: items,
-      summary: OrderSummary.fromJson(
-        j['summary'] is Map<String, dynamic>
-            ? j['summary'] as Map<String, dynamic>
-            : null,
-      ),
+      summary: OrderSummary.fromInvoiceOrSummary(j),
     );
   }
 }
@@ -557,10 +665,12 @@ class VendorRefundListItem {
     Map<String, dynamic>? inv = item?['invoice'] is Map<String, dynamic>
         ? item!['invoice'] as Map<String, dynamic>
         : null;
-    inv ??=
-        j['invoice'] is Map<String, dynamic> ? j['invoice'] as Map<String, dynamic> : null;
-    final user =
-        j['user'] is Map<String, dynamic> ? j['user'] as Map<String, dynamic> : null;
+    inv ??= j['invoice'] is Map<String, dynamic>
+        ? j['invoice'] as Map<String, dynamic>
+        : null;
+    final user = j['user'] is Map<String, dynamic>
+        ? j['user'] as Map<String, dynamic>
+        : null;
     return VendorRefundListItem(
       id: _toInt(j['id']),
       status: _s(j['status']),
@@ -581,10 +691,7 @@ class VendorRefundsPayload {
 
   static VendorRefundsPayload parse(Map<String, dynamic>? data) {
     if (data == null) {
-      return VendorRefundsPayload(
-        summary: null,
-        refunds: _emptyRefundPage(),
-      );
+      return VendorRefundsPayload(summary: null, refunds: _emptyRefundPage());
     }
     VendorRefundSummary? summary;
     final s = data['summary'];
@@ -594,10 +701,7 @@ class VendorRefundsPayload {
     Map<String, dynamic>? pageMap;
     final r = data['refunds'];
     if (r is Map<String, dynamic>) pageMap = r;
-    final page = VendorOrdersPage.parse(
-      pageMap,
-      VendorRefundListItem.fromJson,
-    );
+    final page = VendorOrdersPage.parse(pageMap, VendorRefundListItem.fromJson);
     return VendorRefundsPayload(summary: summary, refunds: page);
   }
 
@@ -649,12 +753,15 @@ class VendorRefundDetail {
     Map<String, dynamic>? inv = item?['invoice'] is Map<String, dynamic>
         ? item!['invoice'] as Map<String, dynamic>
         : null;
-    inv ??=
-        j['invoice'] is Map<String, dynamic> ? j['invoice'] as Map<String, dynamic> : null;
-    final user =
-        j['user'] is Map<String, dynamic> ? j['user'] as Map<String, dynamic> : null;
-    final reviewer =
-        j['reviewer'] is Map<String, dynamic> ? j['reviewer'] as Map<String, dynamic> : null;
+    inv ??= j['invoice'] is Map<String, dynamic>
+        ? j['invoice'] as Map<String, dynamic>
+        : null;
+    final user = j['user'] is Map<String, dynamic>
+        ? j['user'] as Map<String, dynamic>
+        : null;
+    final reviewer = j['reviewer'] is Map<String, dynamic>
+        ? j['reviewer'] as Map<String, dynamic>
+        : null;
     return VendorRefundDetail(
       id: _toInt(j['id']),
       status: _s(j['status']),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/features/buyer/screens/refunds/model/buyer_track_path_model.dart';
 
 Map<String, dynamic> _decodeObj(String body) {
   final decoded = jsonDecode(body);
@@ -37,6 +38,31 @@ void _throwIfBad(http.Response res) {
   }
 }
 
+String _formatBusinessError(Map<String, dynamic> top) {
+  final msg = top['message']?.toString().trim();
+  return (msg != null && msg.isNotEmpty) ? msg : 'Request failed';
+}
+
+void _assertJsonSuccess(Map<String, dynamic> top) {
+  final st = top['status']?.toString().toLowerCase();
+  if (st == 'error' || st == 'fail' || st == 'failed') {
+    throw Exception(_formatBusinessError(top));
+  }
+}
+
+void _maybeAssertEnvelope(String body) {
+  final raw = body.trim();
+  if (raw.isEmpty) return;
+  Map<String, dynamic>? top;
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) top = decoded;
+  } on FormatException {
+    return;
+  }
+  if (top != null) _assertJsonSuccess(top);
+}
+
 Future<Map<String, String>> _buyerAuthHeaders() async {
   final storage = AuthLocalStorage();
   final token = await storage.getToken();
@@ -64,8 +90,30 @@ class BuyerOrderTrackApi {
     final uri = Uri.parse(BuyerAPIController.buyerOrderTrack(invoiceId));
     final res = await http.get(uri, headers: headers);
     _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
     final top = _decodeObj(res.body);
     final data = _unwrapDataMap(top) ?? top;
     return Map<String, dynamic>.from(data);
+  }
+
+  /// `GET /api/buyer/orders/{invoice_id}/track/path` — pass [itemId] for the
+  /// correct line when the invoice has multiple items (`doc/details.md` §10).
+  Future<BuyerTrackPathData> fetchTrackPath(
+    int invoiceId, {
+    required int itemId,
+  }) async {
+    final headers = await _buyerAuthHeaders();
+    final uri = Uri.parse(
+      BuyerAPIController.buyerOrderTrackPath(
+        invoiceId,
+        itemId: itemId,
+      ),
+    );
+    final res = await http.get(uri, headers: headers);
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+    final top = _decodeObj(res.body);
+    final data = _unwrapDataMap(top) ?? top;
+    return BuyerTrackPathData.fromJson(Map<String, dynamic>.from(data));
   }
 }

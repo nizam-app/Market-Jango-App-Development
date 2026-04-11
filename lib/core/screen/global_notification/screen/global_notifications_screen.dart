@@ -40,28 +40,65 @@ class _GlobalNotificationsState
                 child: notification.when(
                   data: (data) {
                     if (data.isEmpty) {
-                      return Center(
-                        child: Text(ref.t(VKeys.thereAreNoNotificationsNow)),
+                      return RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(height: 120.h),
+                            Center(
+                              child: Text(
+                                ref.t(VKeys.thereAreNoNotificationsNow),
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }
 
-                    return ListView.builder(
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        final notifications = data[index];
-                        return NotificationTile(
-                          title: notifications.name ?? 'No Title',
-                          time: notifications.createdAt != null
-                              ? DateFormat.jm().format(notifications.createdAt!)
-                              : 'No time',
-                          isUnread: notifications.isRead,
-                          massage: notifications.message ?? 'No message',
-                        );
-                      },
+                    return RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          final n = data[index];
+                          final isUnread = !n.isRead;
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 16.h),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16.r),
+                                onTap: () async {
+                                  if (!n.isRead) {
+                                    try {
+                                      await markNotificationRead(n.id);
+                                      if (context.mounted) {
+                                        ref.invalidate(notificationProvider);
+                                      }
+                                    } catch (_) {}
+                                  }
+                                },
+                                child: NotificationTile(
+                                  title: n.name.isEmpty ? 'No Title' : n.name,
+                                  time: n.createdAt != null
+                                      ? DateFormat.jm().format(n.createdAt!)
+                                      : 'No time',
+                                  isUnread: isUnread,
+                                  massage: n.message.isEmpty
+                                      ? 'No message'
+                                      : n.message,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     );
                   },
                   loading: () =>
-                      const Center(child: Text('Loading...')),
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, stackTrace) =>
                       Center(child: Text(error.toString())),
                 ),
@@ -71,6 +108,11 @@ class _GlobalNotificationsState
         ),
       ),
     );
+  }
+
+  Future<void> _onRefresh() async {
+    ref.invalidate(notificationProvider);
+    await ref.read(notificationProvider.future);
   }
 }
 
@@ -91,7 +133,6 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: isUnread ? AllColor.grey100 : AllColor.white,
@@ -119,11 +160,14 @@ class NotificationTile extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 SizedBox(height: 4.h),
-                Text(massage, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  massage,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ],
             ),
           ),
@@ -137,7 +181,6 @@ class NotificationTile extends StatelessWidget {
                   context,
                 ).textTheme.titleMedium!.copyWith(fontSize: 8.sp),
               ),
-
               SizedBox(height: 8.h),
               if (isUnread)
                 CircleAvatar(radius: 5.r, backgroundColor: AllColor.orange700),

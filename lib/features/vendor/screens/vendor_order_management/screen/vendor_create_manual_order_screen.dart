@@ -698,7 +698,7 @@ class _VendorCreateManualOrderScreenState
           if (!_payCash) ...[
             SizedBox(height: 10.h),
             DropdownButtonFormField<String>(
-              value: _nonCashMethod,
+              initialValue: _nonCashMethod,
               decoration: _fieldDeco('Method'),
               items: const [
                 DropdownMenuItem(value: 'Card', child: Text('Card')),

@@ -73,7 +73,11 @@ class BuyerRefundsPayload {
     Map<String, dynamic>? pageMap;
     final r = data['refunds'];
     if (r is Map<String, dynamic>) {
+      // Nested shape: data.refunds = { current_page, data: [...] }
       pageMap = r;
+    } else if (data['data'] is List || data['current_page'] != null) {
+      // Laravel paginator returned directly as top-level `data` (no refunds key)
+      pageMap = data;
     }
     final page = BuyerWalletPage.parse(
       pageMap,

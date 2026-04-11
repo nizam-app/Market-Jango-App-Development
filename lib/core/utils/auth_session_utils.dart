@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/services/fcm_push_service.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
@@ -64,6 +65,8 @@ class AuthSessionUtils {
       token: token,
       userJson: user,
     );
+
+    await FcmPushService.instance.syncTokenToBackend();
   }
 
   /// Check if user is currently logged in

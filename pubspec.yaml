@@ -75,6 +75,8 @@ dependencies:
   firebase_core: ^4.6.0
   firebase_messaging: ^16.1.3
   flutter_local_notifications: ^21.0.0
+  barcode: ^2.2.9
+  barcode_widget: ^2.0.4
 #  google_maps_flutter: ^2.7.0
 
 flutter_launcher_icons:

@@ -9,6 +9,7 @@ import 'package:market_jango/features/vendor/screens/vendor_order_management/mod
 import 'package:market_jango/features/vendor/screens/vendor_order_management/provider/vendor_orders_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
+import 'vendor_create_manual_order_screen.dart';
 import 'vendor_manual_order_detail_screen.dart';
 import 'vendor_marketplace_order_detail_screen.dart';
 import 'vendor_refunds_tab.dart';
@@ -406,9 +407,9 @@ class _WalkInTab extends ConsumerWidget {
           bottom: fabBottom,
           child: FloatingActionButton.extended(
             onPressed: () async {
-              // Walk-in create → `POST /api/vendor/manual-orders`; pops created invoice id.
-              final newInvoiceId = await context.pushNamed<int?>(
-                'vendorCreateManualOrder',
+              // `POST /api/vendor/manual-orders` — screen pops created invoice id.
+              final newInvoiceId = await context.push<int?>(
+                VendorCreateManualOrderScreen.routeName,
               );
               if (!context.mounted) return;
               if (newInvoiceId != null) {

@@ -263,14 +263,7 @@ final GoRouter router = GoRouter(
         return VendorRefundDetailScreen(refundId: id);
       },
     ),
-    GoRoute(
-      path: '/vendor/manual-order/:id',
-      name: 'vendorManualOrderDetail',
-      builder: (context, state) {
-        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-        return VendorManualOrderDetailScreen(invoiceId: id);
-      },
-    ),
+    // Must be registered BEFORE `/vendor/manual-order/:id` or `create` is parsed as :id → 0.
     GoRoute(
       path: VendorCreateManualOrderScreen.routeName,
       name: 'vendorCreateManualOrder',
@@ -278,6 +271,14 @@ final GoRouter router = GoRouter(
         final extra = state.extra;
         final presetId = extra is int ? extra : null;
         return VendorCreateManualOrderScreen(presetProductId: presetId);
+      },
+    ),
+    GoRoute(
+      path: '/vendor/manual-order/:id',
+      name: 'vendorManualOrderDetail',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return VendorManualOrderDetailScreen(invoiceId: id);
       },
     ),
 

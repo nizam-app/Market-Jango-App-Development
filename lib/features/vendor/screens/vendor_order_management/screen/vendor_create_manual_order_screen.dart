@@ -2,12 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/models/global_search_model.dart';
+import 'package:market_jango/core/widget/global_search_bar.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/vendor/screens/vendor_home/data/global_search_riverpod.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/data/vendor_barcode_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_scan_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
@@ -72,11 +78,11 @@ class _VendorCreateManualOrderScreenState
     extends State<VendorCreateManualOrderScreen> {
   final _customerName = TextEditingController();
   final _customerPhone = TextEditingController();
-  final _search = TextEditingController();
   final _customerPaid = TextEditingController();
 
   /// `true` = Cash; `false` = Card / Mobile (online).
   bool _payCash = true;
+  /// Stored value must match API: `Card` or `Mobile`.
   String _nonCashMethod = 'Card';
 
   final List<_CartLine> _lines = [];
@@ -102,7 +108,6 @@ class _VendorCreateManualOrderScreenState
   void dispose() {
     _customerName.dispose();
     _customerPhone.dispose();
-    _search.dispose();
     _customerPaid.dispose();
     for (final l in _lines) {
       l.dispose();
@@ -110,6 +115,7 @@ class _VendorCreateManualOrderScreenState
     super.dispose();
   }
 
+  /// API expects `Cash`, `Card`, or `Mobile` (see `createManualOrder`).
   String _paymentMethodApi() {
     if (_payCash) return 'Cash';
     return _nonCashMethod;
@@ -248,65 +254,6 @@ class _VendorCreateManualOrderScreenState
       }
     }
     setState(() => _lines.add(_CartLine(product: p)));
-  }
-
-  void _pickProductFromSearch() {
-    final q = _search.text.trim().toLowerCase();
-    if (q.isEmpty) {
-      GlobalSnackbar.show(
-        context,
-        title: 'Search',
-        message: 'Type a product name to search',
-        type: CustomSnackType.warning,
-      );
-      return;
-    }
-    final matches = _catalog
-        .where((p) => p.name.toLowerCase().contains(q))
-        .toList();
-    if (matches.isEmpty) {
-      GlobalSnackbar.show(
-        context,
-        title: 'Search',
-        message: 'No products match “$q”',
-        type: CustomSnackType.warning,
-      );
-      return;
-    }
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Text(
-                  'Pick product',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800),
-                ),
-              ),
-              ...matches.take(40).map(
-                    (p) => ListTile(
-                      title: Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(
-                        'USD ${p.sellPrice.toStringAsFixed(2)} · stock ${p.stock}',
-                        style: TextStyle(fontSize: 12.sp),
-                      ),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        _addOrIncrementLine(p);
-                        _search.clear();
-                      },
-                    ),
-                  ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   Future<void> _openScanner() async {
@@ -491,14 +438,46 @@ class _VendorCreateManualOrderScreenState
     );
   }
 
+  /// Full border/label overrides so this screen matches itself — global
+  /// [ThemeData.inputDecorationTheme] uses pill radius (50) and gold borders.
   InputDecoration _fieldDeco(String label, {String? hint}) {
+    final radius = BorderRadius.circular(10.r);
+    final idle = BorderSide(color: AllColor.grey200, width: 1);
+    final focus = BorderSide(color: AllColor.loginButtomColor, width: 1.5);
     return InputDecoration(
       labelText: label,
       hintText: hint,
+      hintStyle: TextStyle(
+        color: AllColor.grey500,
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w400,
+      ),
+      labelStyle: TextStyle(
+        color: AllColor.grey500,
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w600,
+      ),
+      floatingLabelStyle: TextStyle(
+        color: AllColor.black87,
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w600,
+      ),
       filled: true,
       fillColor: AllColor.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)),
-      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      isDense: true,
+      border: OutlineInputBorder(borderRadius: radius, borderSide: idle),
+      enabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: idle),
+      focusedBorder: OutlineInputBorder(borderRadius: radius, borderSide: focus),
+      disabledBorder: OutlineInputBorder(borderRadius: radius, borderSide: idle),
+      errorBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: AllColor.red200, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: AllColor.red200, width: 1.5),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
     );
   }
 
@@ -539,17 +518,120 @@ class _VendorCreateManualOrderScreenState
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(color: AllColor.orange200),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'WALK IN',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                    color: AllColor.black,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Add line items below, then customer & payment. Saved via POST /api/vendor/manual-orders.',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: AllColor.grey500,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Icon(Icons.table_rows_rounded, color: AllColor.loginButtomColor, size: 22.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Order line items',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: _loadCatalog,
+                child: const Text('Refresh catalog'),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          _linesTableCard(),
+          SizedBox(height: 16.h),
+          Text(
+            'Add products',
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w800,
+              color: AllColor.grey500,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Consumer(
+            builder: (context, ref, _) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: GlobalSearchBar<GlobalSearchResponse,
+                        GlobalSearchProduct>(
+                      provider: searchProvider,
+                      itemsSelector: (res) => res.products,
+                      itemBuilder: (context, p) =>
+                          ProductSuggestionTile(p: p),
+                      onItemSelected: (p) => _addProductById(p.id),
+                      hintText: ref.t(VKeys.searchProducts),
+                      debounce: const Duration(seconds: 1),
+                      minChars: 1,
+                      showResults: true,
+                      resultsMaxHeight: 380,
+                      autofocus: false,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  IconButton.filled(
+                    onPressed: _loadingCatalog ? null : _openScanner,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AllColor.loginButtomColor,
+                      foregroundColor: AllColor.white,
+                      fixedSize: Size(48.r, 48.r),
+                    ),
+                    icon: const Icon(Icons.qr_code_scanner_rounded),
+                    tooltip: 'Scan barcode',
+                  ),
+                ],
+              );
+            },
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 6.h),
             child: Text(
-              'WALK IN',
+              'Same search as vendor home — type, then tap a product to add.',
               style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.2,
-                color: AllColor.black,
+                fontSize: 11.sp,
+                color: AllColor.grey500,
+                height: 1.3,
               ),
             ),
           ),
-          SizedBox(height: 14.h),
+          if (_loadingCatalog)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          SizedBox(height: 8.h),
+          Text(
+            'Customer',
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w800,
+              color: AllColor.grey500,
+            ),
+          ),
+          SizedBox(height: 8.h),
           TextField(
             controller: _customerName,
             textCapitalization: TextCapitalization.words,
@@ -580,67 +662,6 @@ class _VendorCreateManualOrderScreenState
               hint: 'Optional (e.g. +254700123456)',
             ),
           ),
-          SizedBox(height: 12.h),
-          Text(
-            'SEARCH by (product / scan)',
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w700,
-              color: AllColor.grey500,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _search,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => _pickProductFromSearch(),
-                  decoration: _fieldDeco(
-                    'Search products',
-                    hint: 'Type name, then Enter',
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              IconButton.filled(
-                onPressed: _loadingCatalog ? null : _openScanner,
-                style: IconButton.styleFrom(
-                  backgroundColor: AllColor.loginButtomColor,
-                  foregroundColor: AllColor.white,
-                ),
-                icon: const Icon(Icons.qr_code_scanner_rounded),
-                tooltip: 'Scan barcode',
-              ),
-            ],
-          ),
-          TextButton.icon(
-            onPressed: _loadingCatalog ? null : _pickProductFromSearch,
-            icon: const Icon(Icons.add_shopping_cart_outlined),
-            label: const Text('Add from search'),
-          ),
-          if (_loadingCatalog)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-          Row(
-            children: [
-              Text(
-                'Order lines',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: _loadCatalog,
-                child: const Text('Refresh catalog'),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          _linesTableCard(),
           SizedBox(height: 16.h),
           Container(
             padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 14.w),
@@ -673,9 +694,18 @@ class _VendorCreateManualOrderScreenState
           SizedBox(height: 16.h),
           Text(
             'Payment',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14.sp),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 15.sp,
+              color: AllColor.black,
+            ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
+          Text(
+            'Choose how the customer paid, then enter cash tender if needed.',
+            style: TextStyle(fontSize: 12.sp, color: AllColor.grey500, height: 1.3),
+          ),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
@@ -696,13 +726,16 @@ class _VendorCreateManualOrderScreenState
             ],
           ),
           if (!_payCash) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
             DropdownButtonFormField<String>(
               initialValue: _nonCashMethod,
               decoration: _fieldDeco('Method'),
               items: const [
                 DropdownMenuItem(value: 'Card', child: Text('Card')),
-                DropdownMenuItem(value: 'Mobile', child: Text('Mobile money')),
+                DropdownMenuItem(
+                  value: 'Mobile',
+                  child: Text('Mobile money'),
+                ),
               ],
               onChanged: (v) {
                 if (v != null) setState(() => _nonCashMethod = v);
@@ -711,84 +744,14 @@ class _VendorCreateManualOrderScreenState
           ],
           if (_payCash) ...[
             SizedBox(height: 14.h),
-            Text(
-              'Cash',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.sp),
-            ),
-            SizedBox(height: 8.h),
-            Table(
-              border: TableBorder.all(color: AllColor.grey200),
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(color: AllColor.grey100),
-                  children: [
-                    _tableHeader('Customer pays'),
-                    _tableHeader('Total'),
-                    _tableHeader('Change'),
-                  ],
-                ),
-                TableRow(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(6.w),
-                      child: TextField(
-                        controller: _customerPaid,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: '0.00',
-                          isDense: true,
-                        ),
-                        onChanged: (_) => setState(() {}),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.w),
-                      child: Text(
-                        totalStr,
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.w),
-                      child: Text(
-                        tender != null && tender >= _cartTotal
-                            ? changeStr
-                            : '—',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: AllColor.loginButtomColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            _cashTenderCard(
+              totalStr: totalStr,
+              tender: tender,
+              changeStr: changeStr,
             ),
           ],
           SizedBox(height: 16.h),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              'Status',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14.sp,
-              ),
-            ),
-            subtitle: Text(
-              'Saved as a walk-in invoice; line items start as pending until you mark delivered from order detail.',
-              style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
-            ),
-            trailing: Icon(Icons.chevron_right, color: AllColor.grey500),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.r),
-              side: BorderSide(color: AllColor.grey200),
-            ),
-            tileColor: AllColor.white,
-          ),
+          _orderStatusInfoCard(),
           SizedBox(height: 20.h),
           FilledButton(
             onPressed: _submitting
@@ -796,9 +759,10 @@ class _VendorCreateManualOrderScreenState
                 : () => _submit(showBill: false),
             style: FilledButton.styleFrom(
               backgroundColor: AllColor.loginButtomColor,
-              minimumSize: Size(double.infinity, 48.h),
+              foregroundColor: AllColor.white,
+              minimumSize: Size(double.infinity, 50.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
             child: Text(
@@ -816,10 +780,13 @@ class _VendorCreateManualOrderScreenState
                 : () => _submit(showBill: true),
             style: OutlinedButton.styleFrom(
               foregroundColor: AllColor.loginButtomColor,
-              side: BorderSide(color: AllColor.loginButtomColor),
-              minimumSize: Size(double.infinity, 46.h),
+              side: BorderSide(color: AllColor.loginButtomColor, width: 1.5),
+              minimumSize: Size(double.infinity, 48.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
-            icon: const Icon(Icons.receipt_long_outlined),
+            icon: Icon(Icons.receipt_long_outlined, size: 20.sp),
             label: Text(
               'Create order & preview bill',
               style: TextStyle(
@@ -838,16 +805,182 @@ class _VendorCreateManualOrderScreenState
     );
   }
 
-  Widget _tableHeader(String t) {
-    return Padding(
-      padding: EdgeInsets.all(8.w),
-      child: Text(
-        t,
-        style: TextStyle(
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
+  Widget _cashTenderCard({
+    required String totalStr,
+    required double? tender,
+    required String changeStr,
+  }) {
+    final headerStyle = TextStyle(
+      fontSize: 11.sp,
+      fontWeight: FontWeight.w800,
+      color: AllColor.grey500,
+    );
+    final valueStyle = TextStyle(
+      fontSize: 14.sp,
+      fontWeight: FontWeight.w800,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Cash',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15.sp,
+            color: AllColor.black,
+          ),
         ),
-      ),
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: AllColor.white,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AllColor.grey200),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                color: AllColor.grey100,
+                padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.w),
+                child: Row(
+                  children: [
+                    Expanded(child: Text('Customer pays', style: headerStyle)),
+                    Expanded(
+                      child: Text(
+                        'Total',
+                        textAlign: TextAlign.center,
+                        style: headerStyle,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Change',
+                        textAlign: TextAlign.right,
+                        style: headerStyle,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, thickness: 1, color: AllColor.grey200),
+              Padding(
+                padding: EdgeInsets.all(12.w),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _customerPaid,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: '0.00',
+                          filled: true,
+                          fillColor: const Color(0xFFF8F9FA),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 12.h,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(color: AllColor.grey200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                            borderSide: BorderSide(
+                              color: AllColor.loginButtomColor,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        totalStr,
+                        textAlign: TextAlign.center,
+                        style: valueStyle,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        tender != null && tender >= _cartTotal
+                            ? changeStr
+                            : '—',
+                        textAlign: TextAlign.right,
+                        style: valueStyle.copyWith(
+                          color: AllColor.loginButtomColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _orderStatusInfoCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Status',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15.sp,
+            color: AllColor.black,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: AllColor.white,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AllColor.grey200),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: AllColor.loginButtomColor,
+                size: 22.sp,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'Saved as a walk-in invoice; line items start as pending until you mark delivered from order detail.',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AllColor.black87,
+                    height: 1.45,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -17,6 +17,32 @@ Map<String, dynamic>? _unwrapDataMap(Map<String, dynamic> top) {
   return null;
 }
 
+VendorMarketplaceLineDetail _marketplaceDetailFromTop(Map<String, dynamic> top) {
+  Map<String, dynamic> data = _unwrapDataMap(top) ?? top;
+  final parentLineItems = data['line_items'];
+  // Parent `order` / `order_status` often sit next to `invoice_item`, not inside it.
+  // Assign-driver validates parent order state — keep these on the line map we parse.
+  final parentOrder = data['order'];
+  final parentOrderStatus = data['order_status'];
+  final nested = data['invoice_item'] ?? data['item'] ?? data['data'];
+  if (nested is Map<String, dynamic>) {
+    final merged = Map<String, dynamic>.from(nested);
+    if (merged['order'] == null && parentOrder != null) {
+      merged['order'] = parentOrder;
+    }
+    if (merged['order_status'] == null &&
+        parentOrderStatus != null &&
+        parentOrderStatus.toString().trim().isNotEmpty) {
+      merged['order_status'] = parentOrderStatus;
+    }
+    data = merged;
+  }
+  if (parentLineItems is List && data['line_items'] is! List) {
+    data = Map<String, dynamic>.from(data)..['line_items'] = parentLineItems;
+  }
+  return VendorMarketplaceLineDetail.fromJson(data);
+}
+
 String _formatApiError(Map<String, dynamic> j, int code) {
   final parts = <String>[];
   final msg = j['message']?.toString();
@@ -132,12 +158,7 @@ class VendorOrderApi {
     final res = await http.get(uri, headers: headers);
     _throwIfBad(res);
     final top = _decodeObj(res.body);
-    Map<String, dynamic> data = _unwrapDataMap(top) ?? top;
-    final nested = data['invoice_item'] ?? data['item'] ?? data['data'];
-    if (nested is Map<String, dynamic>) {
-      data = nested;
-    }
-    return VendorMarketplaceLineDetail.fromJson(data);
+    return _marketplaceDetailFromTop(top);
   }
 
   /// `GET /vendor/drivers/available` — optional `search` on driver user name.
@@ -230,12 +251,45 @@ class VendorOrderApi {
     final res = await http.put(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     final top = _decodeObj(res.body);
-    Map<String, dynamic> data = _unwrapDataMap(top) ?? top;
-    final nested = data['invoice_item'] ?? data['item'] ?? data['data'];
-    if (nested is Map<String, dynamic>) {
-      data = nested;
-    }
-    return VendorMarketplaceLineDetail.fromJson(data);
+    return _marketplaceDetailFromTop(top);
+  }
+
+  /// `POST /vendor/orders/{id}/cancel` — body `{ "reason": "..." }`.
+  Future<void> cancelMarketplaceLine({
+    required int invoiceItemId,
+    required String reason,
+  }) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(VendorAPIController.vendorOrderCancel(invoiceItemId));
+    final res = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(<String, dynamic>{'reason': reason}),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+  }
+
+  /// `PATCH /vendor/orders/{id}/quantity` — body `{ "quantity": n, "reason": "..." }`.
+  Future<void> patchMarketplaceLineQuantity({
+    required int invoiceItemId,
+    required int quantity,
+    required String reason,
+  }) async {
+    final headers = await vendorOrderApiHeaders();
+    final uri = Uri.parse(
+      VendorAPIController.vendorOrderQuantity(invoiceItemId),
+    );
+    final res = await http.patch(
+      uri,
+      headers: headers,
+      body: jsonEncode(<String, dynamic>{
+        'quantity': quantity,
+        'reason': reason,
+      }),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
   }
 
   Future<VendorOrderStatusesPayload> fetchOrderStatuses() async {

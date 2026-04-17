@@ -7,6 +7,7 @@ import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/provider/vendor_orders_provider.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_marketplace_line_product_card.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorMarketplaceOrderDetailScreen extends ConsumerStatefulWidget {
@@ -179,12 +180,6 @@ class _VendorMarketplaceOrderDetailScreenState
     return '—';
   }
 
-  String _saleAmount(VendorMarketplaceLineDetail d) {
-    final t = d.totalPay?.trim();
-    if (t != null && t.isNotEmpty) return t;
-    return d.salePrice.toString();
-  }
-
   bool _canRequestRefund(VendorMarketplaceLineDetail d) {
     final s = d.status.toLowerCase().replaceAll(RegExp(r'[\s_\-]+'), '');
     return s.contains('delivered') || s.contains('returned');
@@ -202,7 +197,75 @@ class _VendorMarketplaceOrderDetailScreenState
     return !_assignmentIsTerminal(p.assignments.first.status);
   }
 
+  /// Same gate as [_canAssignDriverToLine] for the driver picker sheet.
+  static bool _sheetAllowsAssignDriver(
+    String invoiceGateStatus,
+    String lineStatus,
+  ) {
+    if (_isPendingOrProcessingStatus(lineStatus)) return true;
+    return _isPendingOrProcessingStatus(invoiceGateStatus) &&
+        _isPendingOrProcessingStatus(lineStatus);
+  }
+
+  /// Matches server rule: assign-driver only when order + line are pending/processing.
+  static bool _isPendingOrProcessingStatus(String? raw) {
+    final s =
+        raw?.toLowerCase().trim().replaceAll(RegExp(r'[\s_\-]+'), '') ?? '';
+    if (s.isEmpty) return false;
+    return s == 'pending' ||
+        s == 'processing' ||
+        s == 'inprocess' ||
+        s == 'inprogress';
+  }
+
+  /// Status the backend uses for “order must be pending/processing” (parent order first).
+  String _orderGateStatus(VendorMarketplaceLineDetail d) {
+    final root = d.parentOrderStatus?.trim();
+    if (root != null && root.isNotEmpty) return root;
+    final o = d.invoice.orderStatus?.trim();
+    if (o != null && o.isNotEmpty) return o;
+    return d.invoice.status;
+  }
+
+  /// Assign is allowed when this **line** is still Pending/Processing (fulfilment),
+  /// or when both invoice (order gate) and line are Pending/Processing (legacy rule).
+  bool _canAssignDriverToLine(VendorMarketplaceLineDetail d) {
+    if (_isPendingOrProcessingStatus(d.status)) return true;
+    return _isPendingOrProcessingStatus(_orderGateStatus(d)) &&
+        _isPendingOrProcessingStatus(d.status);
+  }
+
+  String _assignDriverBlockedHint(VendorMarketplaceLineDetail d) {
+    if (_canAssignDriverToLine(d)) return '';
+    final gate = _orderGateStatus(d);
+    if (!_isPendingOrProcessingStatus(gate)) {
+      final label = (d.parentOrderStatus != null &&
+                  d.parentOrderStatus!.trim().isNotEmpty) ||
+              (d.invoice.orderStatus != null &&
+                  d.invoice.orderStatus!.trim().isNotEmpty)
+          ? 'order'
+          : 'invoice';
+      return 'Driver assignment needs this line to be Pending or Processing, '
+          'or the $label to allow fulfilment. Current $label status: '
+          '${gate.isEmpty ? '—' : gate}. Line status: '
+          '${d.status.isEmpty ? '—' : d.status}.';
+    }
+    return 'This line must be Pending or Processing to assign a driver. '
+        'Current line status: ${d.status.isEmpty ? '—' : d.status}.';
+  }
+
   Future<void> _openAssignDriverSheet() async {
+    final d = _detail;
+    if (d == null || !mounted) return;
+    if (!_canAssignDriverToLine(d)) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Cannot assign driver',
+        message: _assignDriverBlockedHint(d),
+        type: CustomSnackType.error,
+      );
+      return;
+    }
     if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
@@ -214,15 +277,31 @@ class _VendorMarketplaceOrderDetailScreenState
             height: h,
             child: _VendorAssignDriverSheet(
               lineId: widget.lineId,
+              invoiceStatus: _orderGateStatus(d),
+              lineStatus: d.status,
               onAssigned: () async {
                 Navigator.of(sheetCtx).pop();
                 await _load();
               },
+              onAssignFailed: _load,
             ),
           ),
         );
       },
     );
+  }
+
+  /// Dismisses a local overlay (e.g. modal bottom sheet) first, then pops this route.
+  void _handleDetailBack() {
+    if (!mounted) return;
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+      return;
+    }
+    if (context.canPop()) {
+      context.pop();
+    }
   }
 
   Future<void> _unassignDriver() async {
@@ -364,14 +443,20 @@ class _VendorMarketplaceOrderDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleDetailBack();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: AllColor.white,
         elevation: 0,
         leading: Padding(
           padding: EdgeInsets.only(left: 8.w),
-          child: const CustomBackButton(),
+          child: CustomBackButton(onTap: _handleDetailBack),
         ),
         title: Text(
           'LINE #${widget.lineId}',
@@ -418,12 +503,12 @@ class _VendorMarketplaceOrderDetailScreenState
                 ),
               ),
             ),
+      ),
     );
   }
 
   Widget _buildBody(VendorMarketplaceLineDetail d) {
-    final productName =
-        d.product.name.isEmpty ? '#${d.productId}' : d.product.name;
+    final orderGate = _orderGateStatus(d);
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -432,8 +517,16 @@ class _VendorMarketplaceOrderDetailScreenState
           _section(
             children: [
               _kv('Customer name', _customer(d)),
-              _kv('Order number', d.invoice.orderNumber.isEmpty ? '—' : d.invoice.orderNumber),
-              _kv('Invoice status', d.invoice.status.isEmpty ? '—' : d.invoice.status),
+              _kv(
+                'Order number',
+                d.invoice.orderNumber.isEmpty ? '—' : d.invoice.orderNumber,
+              ),
+              _kv(
+                'Invoice status',
+                d.invoice.status.isEmpty ? '—' : d.invoice.status,
+              ),
+              if (orderGate.trim().isNotEmpty && orderGate != d.invoice.status)
+                _kv('Order status', orderGate),
               _kv('Payment', _payment(d)),
               _kv('Mode', _modeFromStatus(d)),
               _kv('Destination', _destinationFromShip(d)),
@@ -445,23 +538,51 @@ class _VendorMarketplaceOrderDetailScreenState
             ],
           ),
           SizedBox(height: 12.h),
-          _section(
-            children: [
-              Text(
-                '1. Product name: $productName',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AllColor.black,
+          if (d.lineItems.isNotEmpty) ...[
+            Padding(
+              padding: EdgeInsets.only(left: 4.w, bottom: 10.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Line items',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF374151),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Each product on this invoice.',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AllColor.grey500,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ...d.lineItems.asMap().entries.map(
+              (e) => Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: VendorMarketplaceLineProductCard(
+                  line: e.value,
+                  indexOneBased: e.key + 1,
+                  screenLineId: widget.lineId,
+                  onRefresh: _load,
                 ),
               ),
-              SizedBox(height: 10.h),
-              _bullet('Quantity: ${d.quantity}'),
-              _bullet('Sale: ${_saleAmount(d)}'),
-              if (d.unitPrice != null && d.unitPrice!.trim().isNotEmpty)
-                _bullet('Unit price: ${d.unitPrice}'),
-            ],
-          ),
+            ),
+          ] else
+            VendorMarketplaceLineProductCard(
+              line: d,
+              indexOneBased: 1,
+              screenLineId: widget.lineId,
+              onRefresh: _load,
+            ),
           if (_canRequestRefund(d)) ...[
             SizedBox(height: 12.h),
             _section(
@@ -490,7 +611,9 @@ class _VendorMarketplaceOrderDetailScreenState
                       ? SizedBox(
                           width: 20.w,
                           height: 20.w,
-                          child: const CircularProgressIndicator(strokeWidth: 2),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text('Request refund'),
                 ),
@@ -513,76 +636,122 @@ class _VendorMarketplaceOrderDetailScreenState
           SizedBox(height: 12.h),
           _section(
             children: [
-              Text(
-                'Assign to drivers',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14.sp,
-                  color: AllColor.black,
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.r),
+                    decoration: BoxDecoration(
+                      color: AllColor.orange50.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.local_shipping_outlined,
+                      color: AllColor.loginButtomColor,
+                      size: 22.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Assign to drivers',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15.sp,
+                            color: AllColor.black,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'Pick-up and drop-off for this line.',
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            color: AllColor.grey500,
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 12.h),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'From',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: AllColor.grey500,
-                              fontWeight: FontWeight.w600,
+              SizedBox(height: 14.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(color: AllColor.grey200),
+                ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'FROM',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: AllColor.grey500,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 6.h),
-                          Text(
-                            _addrOrDash(d.pickupAddress),
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w500,
-                              color: AllColor.black,
+                            SizedBox(height: 6.h),
+                            Text(
+                              _addrOrDash(d.pickupAddress),
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AllColor.black,
+                                height: 1.3,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: VerticalDivider(
-                        width: 1,
-                        thickness: 1,
-                        color: AllColor.grey300,
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        child: VerticalDivider(
+                          width: 1,
+                          thickness: 1,
+                          color: AllColor.grey300,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'To',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: AllColor.grey500,
-                              fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'TO',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: AllColor.grey500,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 6.h),
-                          Text(
-                            _addrOrDash(d.shipAddress),
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w500,
-                              color: AllColor.black,
+                            SizedBox(height: 6.h),
+                            Text(
+                              _addrOrDash(d.shipAddress),
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AllColor.black,
+                                height: 1.3,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 14.h),
@@ -591,54 +760,130 @@ class _VendorMarketplaceOrderDetailScreenState
                   'Assignment history could not be loaded. Pull to refresh to retry.',
                   style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
                 )
-              else if (_assignment != null && _assignment!.assignments.isNotEmpty) ...[
+              else if (_assignment != null &&
+                  _assignment!.assignments.isNotEmpty) ...[
                 Text(
                   'Assignment history',
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 11.sp,
                     color: AllColor.grey500,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 ..._assignment!.assignments.map(
                   (a) => Padding(
-                    padding: EdgeInsets.only(bottom: 6.h),
-                    child: Text(
-                      '${a.status} · ${a.driver == null || a.driver!.name.isEmpty ? "Driver #${a.driver?.id ?? "—"}" : a.driver!.name}'
-                      '${a.assignedByName != null && a.assignedByName!.isNotEmpty ? " · by ${a.assignedByName}" : ""}',
-                      style: TextStyle(fontSize: 13.sp, color: AllColor.black),
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 10.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AllColor.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(color: AllColor.grey200),
+                      ),
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8.w,
+                        runSpacing: 6.h,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 4.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AllColor.orange50.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              a.status,
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w700,
+                                color: AllColor.loginButtomColor,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            a.driver == null || a.driver!.name.isEmpty
+                                ? 'Driver #${a.driver?.id ?? "—"}'
+                                : a.driver!.name,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AllColor.black,
+                            ),
+                          ),
+                          if (a.assignedByName != null &&
+                              a.assignedByName!.trim().isNotEmpty)
+                            Text(
+                              '· ${a.assignedByName}',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: AllColor.grey500,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ] else if (_assignment != null)
-                Text(
-                  'No assignments yet for this line.',
-                  style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 4.h),
+                  child: Text(
+                    'No assignments yet for this line.',
+                    style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                  ),
                 ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 14.h),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: _openAssignDriverSheet,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AllColor.loginButtomColor,
-                        side: BorderSide(color: AllColor.loginButtomColor),
+                    flex: 3,
+                    child: FilledButton.icon(
+                      onPressed: _canAssignDriverToLine(d)
+                          ? _openAssignDriverSheet
+                          : null,
+                      icon: Icon(Icons.person_add_outlined, size: 20.sp),
+                      label: Text(
+                        'Assign driver',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      child: const Text('Assign driver'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AllColor.loginButtomColor,
+                        foregroundColor: AllColor.white,
+                        disabledBackgroundColor: AllColor.grey300,
+                        disabledForegroundColor: AllColor.grey.shade600,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
+                    flex: 2,
                     child: OutlinedButton(
-                      onPressed:
-                          (!_showUnassignButton(d) || _unassignBusy)
-                              ? null
-                              : _unassignDriver,
+                      onPressed: (!_showUnassignButton(d) || _unassignBusy)
+                          ? null
+                          : _unassignDriver,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AllColor.grey.shade700,
-                        side: BorderSide(color: AllColor.grey300),
+                        foregroundColor: AllColor.grey.shade800,
+                        side: BorderSide(color: AllColor.grey.shade400),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
                       ),
                       child: _unassignBusy
                           ? SizedBox(
@@ -648,11 +893,45 @@ class _VendorMarketplaceOrderDetailScreenState
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text('Remove assignment'),
+                          : Text(
+                              'Remove',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ],
               ),
+              if (!_canAssignDriverToLine(d)) ...[
+                SizedBox(height: 10.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: AllColor.grey100,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, size: 18.sp, color: AllColor.grey500),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          _assignDriverBlockedHint(d),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AllColor.grey.shade600,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
           SizedBox(height: 12.h),
@@ -670,7 +949,11 @@ class _VendorMarketplaceOrderDetailScreenState
                       ),
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: AllColor.grey500, size: 22.sp),
+                  Icon(
+                    Icons.chevron_right,
+                    color: AllColor.grey500,
+                    size: 22.sp,
+                  ),
                 ],
               ),
               SizedBox(height: 10.h),
@@ -715,11 +998,18 @@ class _VendorMarketplaceOrderDetailScreenState
   Widget _section({required List<Widget> children}) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: AllColor.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AllColor.grey300),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -766,29 +1056,26 @@ class _VendorMarketplaceOrderDetailScreenState
       ],
     );
   }
-
-  Widget _bullet(String text) {
-    return Padding(
-      padding: EdgeInsets.only(left: 4.w),
-      child: Text(
-        '• $text',
-        style: TextStyle(fontSize: 13.sp, color: AllColor.black, height: 1.35),
-      ),
-    );
-  }
 }
 
 class _VendorAssignDriverSheet extends StatefulWidget {
   const _VendorAssignDriverSheet({
     required this.lineId,
+    required this.invoiceStatus,
+    required this.lineStatus,
     required this.onAssigned,
+    required this.onAssignFailed,
   });
 
   final int lineId;
+  final String invoiceStatus;
+  final String lineStatus;
   final Future<void> Function() onAssigned;
+  final Future<void> Function() onAssignFailed;
 
   @override
-  State<_VendorAssignDriverSheet> createState() => _VendorAssignDriverSheetState();
+  State<_VendorAssignDriverSheet> createState() =>
+      _VendorAssignDriverSheetState();
 }
 
 class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
@@ -837,6 +1124,20 @@ class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
   }
 
   Future<void> _assign(VendorAvailableDriver dr) async {
+    if (!_VendorMarketplaceOrderDetailScreenState._sheetAllowsAssignDriver(
+          widget.invoiceStatus,
+          widget.lineStatus,
+        )) {
+      if (!mounted) return;
+      GlobalSnackbar.show(
+        context,
+        title: 'Cannot assign driver',
+        message:
+            'This line must be Pending or Processing to assign a driver.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
     setState(() => _submitting = true);
     try {
       await VendorOrderApi.instance.assignDriverToOrderItem(
@@ -855,11 +1156,13 @@ class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
       if (mounted) {
         GlobalSnackbar.show(
           context,
-          title: 'Error',
+          title: 'Cannot assign driver',
           message: e.toString().replaceFirst('Exception: ', ''),
           type: CustomSnackType.error,
+          duration: const Duration(seconds: 4),
         );
         setState(() => _submitting = false);
+        await widget.onAssignFailed();
       }
     }
   }
@@ -884,7 +1187,9 @@ class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
                 ),
               ),
               IconButton(
-                onPressed: _loading || _submitting ? null : () => Navigator.pop(context),
+                onPressed: _loading || _submitting
+                    ? null
+                    : () => Navigator.pop(context),
                 icon: const Icon(Icons.close),
               ),
             ],
@@ -926,46 +1231,50 @@ class _VendorAssignDriverSheetState extends State<_VendorAssignDriverSheet> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
-                  ? Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
-                        ),
+              ? Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AllColor.grey500,
+                        fontSize: 13.sp,
                       ),
-                    )
-                  : _drivers.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No drivers match your search.',
-                            style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          itemCount: _drivers.length,
-                          itemBuilder: (ctx, i) {
-                            final dr = _drivers[i];
-                            final label =
-                                dr.name.isEmpty ? 'Driver #${dr.id}' : dr.name;
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(label),
-                              trailing: _submitting
-                                  ? SizedBox(
-                                      width: 22.w,
-                                      height: 22.w,
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.chevron_right),
-                              onTap: _submitting ? null : () => _assign(dr),
-                            );
-                          },
-                        ),
+                    ),
+                  ),
+                )
+              : _drivers.isEmpty
+              ? Center(
+                  child: Text(
+                    'No drivers match your search.',
+                    style: TextStyle(color: AllColor.grey500, fontSize: 13.sp),
+                  ),
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  itemCount: _drivers.length,
+                  itemBuilder: (ctx, i) {
+                    final dr = _drivers[i];
+                    final label = dr.name.isEmpty
+                        ? 'Driver #${dr.id}'
+                        : dr.name;
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(label),
+                      trailing: _submitting
+                          ? SizedBox(
+                              width: 22.w,
+                              height: 22.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.chevron_right),
+                      onTap: _submitting ? null : () => _assign(dr),
+                    );
+                  },
+                ),
         ),
       ],
     );

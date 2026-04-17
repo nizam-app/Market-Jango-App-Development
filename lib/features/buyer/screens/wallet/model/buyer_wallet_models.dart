@@ -154,3 +154,39 @@ class BuyerPayoutRequest {
     );
   }
 }
+
+/// `POST /api/wallet/topup/initiate` — open [paymentUrl] in WebView (same flow as checkout).
+class BuyerWalletTopupInitResult {
+  final String paymentUrl;
+  final String txRef;
+  final String? redirectUrl;
+  final num amount;
+  final String currency;
+  final int? intentId;
+
+  BuyerWalletTopupInitResult({
+    required this.paymentUrl,
+    required this.txRef,
+    this.redirectUrl,
+    required this.amount,
+    required this.currency,
+    this.intentId,
+  });
+
+  factory BuyerWalletTopupInitResult.fromJson(Map<String, dynamic> j) {
+    final pay = _s(j['payment_url']);
+    if (pay.isEmpty) {
+      throw Exception('payment_url missing in top-up response');
+    }
+    return BuyerWalletTopupInitResult(
+      paymentUrl: pay,
+      txRef: _s(j['tx_ref']),
+      redirectUrl: j['redirect_url']?.toString(),
+      amount: j['amount'] is num
+          ? j['amount'] as num
+          : (num.tryParse(j['amount'].toString()) ?? 0),
+      currency: _s(j['currency']).isEmpty ? 'USD' : _s(j['currency']),
+      intentId: j['intent_id'] != null ? _toInt(j['intent_id']) : null,
+    );
+  }
+}

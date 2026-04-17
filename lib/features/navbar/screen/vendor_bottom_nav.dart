@@ -9,10 +9,9 @@ import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/global_notification/screen/global_notifications_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/screen/vendor_driver_list.dart';
 import 'package:market_jango/features/vendor/screens/vendor_home/screen/vendor_home_screen.dart';
-
-final selectedIndexProvider = StateProvider<int>((ref) => 0);
 
 class VendorBottomNav extends ConsumerWidget {
   // Changed to ConsumerWidget
@@ -35,7 +34,7 @@ class VendorBottomNav extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Added WidgetRef
     // Watch the selectedIndexProvider
-    final selectedIndex = ref.watch(selectedIndexProvider);
+    final selectedIndex = ref.watch(vendorShellTabIndexProvider);
 
     return Scaffold(
       body: _pages[selectedIndex],
@@ -43,7 +42,7 @@ class VendorBottomNav extends ConsumerWidget {
         currentIndex: selectedIndex,
         onTap: (index) {
           // Update the selected index using the provider's notifier
-          ref.read(selectedIndexProvider.notifier).state = index;
+          ref.read(vendorShellTabIndexProvider.notifier).state = index;
         },
         backgroundColor: AllColor.white,
         selectedItemColor: AllColor.orange,

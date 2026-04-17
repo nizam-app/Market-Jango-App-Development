@@ -184,6 +184,34 @@ class TransportWalletApi {
     return BuyerWalletPage.parse(data, BuyerPayoutRequest.fromJson);
   }
 
+  /// `POST /api/transport/wallet/topup/initiate` — same payload shape as buyer wallet.
+  Future<BuyerWalletTopupInitResult> initiateTopupPayment({
+    required num amount,
+    String? note,
+  }) async {
+    final headers = await _transportWalletHeaders();
+    final uri = Uri.parse(TransportAPIController.transportWalletTopupInitiate);
+    final body = <String, dynamic>{'amount': amount};
+    final n = note?.trim();
+    if (n != null && n.isNotEmpty) body['note'] = n;
+    final res = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+    final top = _decodeObj(res.body);
+    final data = _unwrapDataMap(top);
+    if (data == null) {
+      throw Exception('Invalid transport top-up initiate response');
+    }
+    return BuyerWalletTopupInitResult.fromJson(
+      Map<String, dynamic>.from(data),
+    );
+  }
+
+  /// `POST /api/transport/wallet/topup` — legacy (no hosted pay).
   Future<void> requestTopup({
     required String amount,
     String? note,

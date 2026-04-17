@@ -217,8 +217,8 @@ class BKeys {
   static const String no_top_products = 'no_top_products';
   static const String no_popular_products_found = 'no_popular_products_found';
   static const String all_categories = 'all_categories';
-  static const String trend_Loop = ' trend_loop';
-  static const String no_vendors = ' no_vendors';
+  static const String trend_Loop = 'trend_loop';
+  static const String no_vendors = 'no_vendors';
   static const String please_add_the_cart_product =
       'please_add_the_cart_product';
   static const String updating = 'updating';

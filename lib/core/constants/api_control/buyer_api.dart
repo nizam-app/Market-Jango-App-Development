@@ -80,6 +80,9 @@ class BuyerAPIController {
   }
 
   static String get buyerWalletTopup => '$_base_api/wallet/topup';
+  /// Flutterwave (or gateway) hosted pay — returns `payment_url`, `tx_ref`, `redirect_url`.
+  static String get buyerWalletTopupInitiate =>
+      '$_base_api/wallet/topup/initiate';
   static String get buyerWalletPayout => '$_base_api/wallet/payout';
 
   static String buyerWalletPayouts({int page = 1, String? status}) {

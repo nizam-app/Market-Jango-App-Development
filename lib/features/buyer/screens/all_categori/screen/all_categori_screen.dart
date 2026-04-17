@@ -46,7 +46,7 @@ class CategoriesScreen extends ConsumerWidget {
                           child: CustomCategories(
                             categoriCount: page.data.length,
                             physics: const AlwaysScrollableScrollPhysics(),
-                            showOnlyTopCategories: false,
+                            showOnlyTopCategories: true,
                             requireProducts: false,
                             onTapCategory: (cat) => goToCategoriesProductPage(
                               context,

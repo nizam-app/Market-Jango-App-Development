@@ -90,8 +90,26 @@ class ProductLite {
     name: json['name']?.toString() ?? '',
     regularPrice: _toDouble(json['regular_price']),
     sellPrice: _toDouble(json['sell_price']),
-    image: json['image']?.toString() ?? '',
+    image: _primaryProductImage(json),
   );
+}
+
+/// Prefer `image`, then first `images[].image_path` / `url`.
+String _primaryProductImage(Map<String, dynamic> json) {
+  final direct = json['image']?.toString().trim() ?? '';
+  if (direct.isNotEmpty) return direct;
+  final imgs = json['images'];
+  if (imgs is List) {
+    for (final e in imgs) {
+      if (e is! Map) continue;
+      final m = Map<String, dynamic>.from(e);
+      final path = m['image_path']?.toString().trim() ??
+          m['url']?.toString().trim() ??
+          '';
+      if (path.isNotEmpty) return path;
+    }
+  }
+  return '';
 }
 
 /* helpers */

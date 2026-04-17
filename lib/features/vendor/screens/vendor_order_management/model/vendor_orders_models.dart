@@ -67,6 +67,8 @@ class VendorNestedInvoice {
   final int id;
   final String orderNumber;
   final String status;
+  /// Parent order status when API nests `order` — assign-driver often validates this.
+  final String? orderStatus;
   final String? paymentMethod;
   final String? cusName;
   final bool? isManualOrder;
@@ -75,6 +77,7 @@ class VendorNestedInvoice {
     required this.id,
     required this.orderNumber,
     required this.status,
+    this.orderStatus,
     this.paymentMethod,
     this.cusName,
     this.isManualOrder,
@@ -85,10 +88,21 @@ class VendorNestedInvoice {
       return VendorNestedInvoice(id: 0, orderNumber: '', status: '');
     }
     final manual = j['is_manual_order'];
+    String? orderStatus;
+    final ord = j['order'];
+    if (ord is Map<String, dynamic>) {
+      final s = _s(ord['status']);
+      if (s.isNotEmpty) orderStatus = s;
+    }
+    if (orderStatus == null) {
+      final alt = _s(j['order_status']);
+      if (alt.isNotEmpty) orderStatus = alt;
+    }
     return VendorNestedInvoice(
       id: _toInt(j['id']),
       orderNumber: _s(j['order_number']),
       status: _s(j['status']),
+      orderStatus: orderStatus,
       paymentMethod: j['payment_method']?.toString(),
       cusName: j['cus_name']?.toString(),
       isManualOrder: manual == null
@@ -194,10 +208,7 @@ class VendorOrderAssignmentPayload {
   final Map<String, dynamic>? orderItem;
   final List<VendorAssignmentEntry> assignments;
 
-  VendorOrderAssignmentPayload({
-    this.orderItem,
-    required this.assignments,
-  });
+  VendorOrderAssignmentPayload({this.orderItem, required this.assignments});
 
   factory VendorOrderAssignmentPayload.fromJson(Map<String, dynamic> j) {
     final raw = j['assignments'] as List? ?? [];
@@ -237,6 +248,10 @@ class VendorMarketplaceLine {
   final String? totalPay;
   final String? unitPrice;
   final String? lineNote;
+  final String? vendorName;
+
+  /// Parent order `status` when API puts `order` on the invoice_item (or merged from detail wrapper).
+  final String? parentOrderStatus;
 
   VendorMarketplaceLine({
     required this.id,
@@ -256,9 +271,28 @@ class VendorMarketplaceLine {
     this.totalPay,
     this.unitPrice,
     this.lineNote,
+    this.vendorName,
+    this.parentOrderStatus,
   });
 
   factory VendorMarketplaceLine.fromJson(Map<String, dynamic> j) {
+    String? vendorFromNested;
+    final v = j['vendor'];
+    if (v is Map<String, dynamic>) {
+      vendorFromNested = _s(v['business_name']);
+      if (vendorFromNested.isEmpty) vendorFromNested = null;
+    }
+    final vn = j['vendor_name']?.toString();
+    String? parentOrderStatus;
+    final ord = j['order'];
+    if (ord is Map<String, dynamic>) {
+      final s = _s(ord['status']);
+      if (s.isNotEmpty) parentOrderStatus = s;
+    }
+    if (parentOrderStatus == null) {
+      final alt = _s(j['order_status']);
+      if (alt.isNotEmpty) parentOrderStatus = alt;
+    }
     return VendorMarketplaceLine(
       id: _toInt(j['id']),
       quantity: _toInt(j['quantity'], d: 1),
@@ -287,12 +321,19 @@ class VendorMarketplaceLine {
       totalPay: j['total_pay']?.toString(),
       unitPrice: j['unit_price']?.toString(),
       lineNote: j['note']?.toString(),
+      vendorName: (vn != null && vn.trim().isNotEmpty)
+          ? vn.trim()
+          : vendorFromNested,
+      parentOrderStatus: parentOrderStatus,
     );
   }
 }
 
 class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
   final List<String> allowedNextStatuses;
+
+  /// Other invoice lines returned with the same order (`line_items` on detail GET).
+  final List<VendorMarketplaceLine> lineItems;
 
   VendorMarketplaceLineDetail({
     required super.id,
@@ -312,7 +353,10 @@ class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
     super.totalPay,
     super.unitPrice,
     super.lineNote,
+    super.vendorName,
+    super.parentOrderStatus,
     required this.allowedNextStatuses,
+    this.lineItems = const [],
   });
 
   factory VendorMarketplaceLineDetail.fromJson(Map<String, dynamic> j) {
@@ -321,6 +365,15 @@ class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
     final next = raw is List
         ? raw.map((e) => e.toString()).toList()
         : <String>[];
+    final liRaw = j['line_items'];
+    final List<VendorMarketplaceLine> lineItems = [];
+    if (liRaw is List) {
+      for (final e in liRaw) {
+        if (e is Map<String, dynamic>) {
+          lineItems.add(VendorMarketplaceLine.fromJson(e));
+        }
+      }
+    }
     return VendorMarketplaceLineDetail(
       id: base.id,
       quantity: base.quantity,
@@ -339,7 +392,10 @@ class VendorMarketplaceLineDetail extends VendorMarketplaceLine {
       totalPay: base.totalPay,
       unitPrice: base.unitPrice,
       lineNote: base.lineNote,
+      vendorName: base.vendorName,
+      parentOrderStatus: base.parentOrderStatus,
       allowedNextStatuses: next,
+      lineItems: lineItems,
     );
   }
 }
@@ -400,6 +456,10 @@ class VendorManualLineItem {
   final int quantity;
   final String status;
   final String? productName;
+  final String? unitPrice;
+  final String? totalPay;
+  final double? salePrice;
+  final String? lineNote;
 
   VendorManualLineItem({
     required this.id,
@@ -407,18 +467,27 @@ class VendorManualLineItem {
     required this.quantity,
     required this.status,
     this.productName,
+    this.unitPrice,
+    this.totalPay,
+    this.salePrice,
+    this.lineNote,
   });
 
   factory VendorManualLineItem.fromJson(Map<String, dynamic> j) {
     final p = j['product'] is Map<String, dynamic>
         ? j['product'] as Map<String, dynamic>
         : null;
+    final sp = j['sale_price'];
     return VendorManualLineItem(
       id: _toInt(j['id']),
       productId: _toInt(j['product_id']),
       quantity: _toInt(j['quantity'], d: 1),
       status: _s(j['status']),
       productName: p != null ? _s(p['name']) : null,
+      unitPrice: j['unit_price']?.toString(),
+      totalPay: j['total_pay']?.toString(),
+      salePrice: sp == null ? null : _toDouble(sp),
+      lineNote: j['note']?.toString(),
     );
   }
 }
@@ -460,10 +529,8 @@ class VendorManualOrderInvoice {
           : (id > 0 ? 'INV-$id' : 'Walk-in'),
       status: _s(j['status']),
       paymentMethod: j['payment_method']?.toString(),
-      customerName:
-          (j['customer_name'] ?? j['cus_name'])?.toString(),
-      customerPhone:
-          (j['customer_phone'] ?? j['cus_phone'])?.toString(),
+      customerName: (j['customer_name'] ?? j['cus_name'])?.toString(),
+      customerPhone: (j['customer_phone'] ?? j['cus_phone'])?.toString(),
       createdAt: _dt(j['created_at']),
       items: items,
       summary: OrderSummary.fromInvoiceOrSummary(j),

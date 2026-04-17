@@ -183,7 +183,34 @@ class BuyerWalletApi {
     return BuyerWalletPage.parse(data, BuyerPayoutRequest.fromJson);
   }
 
-  /// `POST /api/wallet/topup` — `amount`, optional `note`.
+  /// `POST /api/wallet/topup/initiate` — returns hosted `payment_url` (Flutterwave).
+  Future<BuyerWalletTopupInitResult> initiateTopupPayment({
+    required num amount,
+    String? note,
+  }) async {
+    final headers = await _buyerWalletHeaders();
+    final uri = Uri.parse(BuyerAPIController.buyerWalletTopupInitiate);
+    final body = <String, dynamic>{'amount': amount};
+    final n = note?.trim();
+    if (n != null && n.isNotEmpty) body['note'] = n;
+    final res = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    _throwIfBad(res);
+    _maybeAssertEnvelope(res.body);
+    final top = _decodeObj(res.body);
+    final data = _unwrapDataMap(top);
+    if (data == null) {
+      throw Exception('Invalid top-up initiate response');
+    }
+    return BuyerWalletTopupInitResult.fromJson(
+      Map<String, dynamic>.from(data),
+    );
+  }
+
+  /// `POST /api/wallet/topup` — legacy direct top-up (no hosted pay).
   Future<void> requestTopup({
     required String amount,
     String? note,

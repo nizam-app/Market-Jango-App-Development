@@ -8,8 +8,16 @@ import 'package:market_jango/features/buyer/screens/prement/model/prement_line_i
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentWebView extends StatefulWidget {
-  const PaymentWebView({super.key, required this.url});
+  const PaymentWebView({
+    super.key,
+    required this.url,
+    this.walletTopupCallback = false,
+  });
+
   final String url;
+
+  /// When true, redirect to `.../wallet/topup/callback` completes the flow (no order verify).
+  final bool walletTopupCallback;
 
   @override
   State<PaymentWebView> createState() => _PaymentWebViewState();
@@ -28,6 +36,11 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     'payment/success',
     'successful',
   ];
+
+  bool _isWalletTopupCallbackUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    return url.toLowerCase().contains('wallet/topup/callback');
+  }
 
   @override
   void initState() {
@@ -59,6 +72,13 @@ class _PaymentWebViewState extends State<PaymentWebView> {
             return NavigationDecision.navigate;
           },
           onUrlChange: (c) {
+            if (widget.walletTopupCallback &&
+                _isWalletTopupCallbackUrl(c.url) &&
+                !_finished) {
+              setState(() => _showWebView = false);
+              _finishWalletTopupSuccess();
+              return;
+            }
             // Also check URL changes (in case navigation request doesn't catch it)
             final uri = Uri.tryParse(c.url ?? '');
             final isPaymentResponse = uri != null && 
@@ -75,7 +95,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
             }
           },
           onPageFinished: (_) {
-            if (!_verifying && !_finished) {
+            if (!_verifying && !_finished && !widget.walletTopupCallback) {
               _inspectDom();
             }
           },
@@ -87,7 +107,13 @@ class _PaymentWebViewState extends State<PaymentWebView> {
               debugPrint('WebView error: ${error.description}');
               // If it's a payment response URL, hide WebView and verify
               final uri = Uri.tryParse(error.url ?? '');
-              if (uri != null && uri.path.contains('/api/payment/response')) {
+              if (widget.walletTopupCallback &&
+                  uri != null &&
+                  _isWalletTopupCallbackUrl(error.url)) {
+                setState(() => _showWebView = false);
+                _finishWalletTopupSuccess();
+              } else if (uri != null &&
+                  uri.path.contains('/api/payment/response')) {
                 setState(() {
                   _showWebView = false;
                 });
@@ -102,6 +128,13 @@ class _PaymentWebViewState extends State<PaymentWebView> {
 
   void _maybeVerifyByUrl(String? url) {
     if (_finished || url == null) return;
+    // Wallet top-up: only treat backend callback as completion (avoid order verify on FW URLs).
+    if (widget.walletTopupCallback) {
+      if (_isWalletTopupCallbackUrl(url)) {
+        _finishWalletTopupSuccess();
+      }
+      return;
+    }
     final uri = Uri.tryParse(url);
     final u = url.toLowerCase();
 
@@ -115,13 +148,21 @@ class _PaymentWebViewState extends State<PaymentWebView> {
     }
   }
 
+  void _finishWalletTopupSuccess() {
+    if (_finished) return;
+    _finished = true;
+    if (mounted) {
+      Navigator.pop(context, const PaymentStatusResult(success: true));
+    }
+  }
+
   Future<void> _inspectDom() async {
     if (_finished || _verifying) return;
     try {
       final raw = await _c.runJavaScriptReturningResult(
         r'''(function(){const t=document.body?(document.body.innerText||document.body.textContent):'';return t;})();''',
       );
-      String text = raw.toString() ?? '';
+      String text = raw.toString();
       if (text.startsWith('"') && text.endsWith('"')) {
         text = json.decode(text);
       }

@@ -30,11 +30,23 @@ import 'package:market_jango/features/transport/screens/wallet/screen/transport_
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
 import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../../features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
 import '../../../utils/get_user_type.dart';
 import '../data/profile_data.dart';
 import '../model/profile_model.dart';
+
+void _popOrShellHome(BuildContext context, WidgetRef ref) {
+  if (context.canPop()) {
+    context.pop();
+    return;
+  }
+  ref.read(vendorShellTabIndexProvider.notifier).state = 0;
+  ref.read(buyerShellTabIndexProvider.notifier).state = 0;
+  ref.read(driverNavIndexProvider.notifier).state = 0;
+  ref.read(transportNavIndexProvider.notifier).state = 0;
+}
 
 class GlobalSettingScreen extends ConsumerWidget {
   const GlobalSettingScreen({super.key});
@@ -72,6 +84,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                         SizedBox(height: 12.h),
                         Tuppertextandbackbutton(
                           screenName: ref.t(BKeys.settings),
+                          onBack: () => _popOrShellHome(context, ref),
                         ),
                         SizedBox(height: 16.h),
                         ProfileSection(

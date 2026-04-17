@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -260,16 +262,19 @@ class _MarketplaceTab extends ConsumerWidget {
                     ],
                   );
                 }
+                final groups = _groupMarketplaceLinesByOrder(page.items);
                 return ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 100.h),
-                  itemCount: page.items.length,
+                  itemCount: groups.length,
                   itemBuilder: (_, i) {
-                    final line = page.items[i];
-                    return _MarketplaceTile(
-                      line: line,
+                    final lines = groups[i];
+                    return _MarketplaceOrderGroupTile(
+                      lines: lines,
                       onTap: () => context.push(
-                        VendorMarketplaceOrderDetailScreen.routePath(line.id),
+                        VendorMarketplaceOrderDetailScreen.routePath(
+                          lines.first.id,
+                        ),
                       ),
                     );
                   },
@@ -1294,28 +1299,66 @@ class _PaginationBar extends StatelessWidget {
   }
 }
 
-class _MarketplaceTile extends StatelessWidget {
-  const _MarketplaceTile({required this.line, required this.onTap});
+/// Same customer fields as detail / API: line `cus_name`, then invoice `cus_name`.
+String _marketplaceCustomerLabel(VendorMarketplaceLine line) {
+  final a = line.lineCustomerName?.trim();
+  if (a != null && a.isNotEmpty) return a;
+  final b = line.invoice.cusName?.trim();
+  if (b != null && b.isNotEmpty) return b;
+  return 'Customer';
+}
 
-  final VendorMarketplaceLine line;
+String _marketplaceGroupCustomer(Iterable<VendorMarketplaceLine> lines) {
+  for (final l in lines) {
+    final c = _marketplaceCustomerLabel(l);
+    if (c != 'Customer') return c;
+  }
+  return 'Customer';
+}
+
+/// One card per marketplace order (invoice): same order number is not repeated per line.
+List<List<VendorMarketplaceLine>> _groupMarketplaceLinesByOrder(
+  List<VendorMarketplaceLine> items,
+) {
+  final map = LinkedHashMap<String, List<VendorMarketplaceLine>>();
+  for (final line in items) {
+    final on = line.invoice.orderNumber.trim();
+    final key = on.isNotEmpty ? on : 'inv_${line.invoice.id}';
+    map.putIfAbsent(key, () => []).add(line);
+  }
+  return map.values.toList();
+}
+
+class _MarketplaceOrderGroupTile extends StatelessWidget {
+  const _MarketplaceOrderGroupTile({
+    required this.lines,
+    required this.onTap,
+  });
+
+  final List<VendorMarketplaceLine> lines;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final first = lines.first;
+    final orderNo = first.invoice.orderNumber.trim().isEmpty
+        ? 'INV-${first.invoice.id}'
+        : first.invoice.orderNumber;
+    final totalQty = lines.fold<int>(0, (s, l) => s + l.quantity);
+    final customer = _marketplaceGroupCustomer(lines);
+
     return Card(
       margin: EdgeInsets.only(bottom: 10.h),
       child: ListTile(
         onTap: onTap,
         title: Text(
-          line.product.name.isEmpty
-              ? 'Product #${line.productId}'
-              : line.product.name,
+          customer,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          'Order Number: ${line.invoice.orderNumber}\n'
-          'Number of products: ${line.quantity}',
+          'Order Number: $orderNo\n'
+          '${lines.length} product(s) · $totalQty qty',
         ),
         trailing: const Icon(Icons.chevron_right),
       ),

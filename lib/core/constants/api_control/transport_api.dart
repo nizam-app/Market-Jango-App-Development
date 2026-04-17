@@ -50,6 +50,9 @@ class TransportAPIController {
   }
 
   static String get transportWalletTopup => '$_base_api/transport/wallet/topup';
+  /// Hosted gateway (Flutterwave) — returns `payment_url`, `tx_ref`, `redirect_url`.
+  static String get transportWalletTopupInitiate =>
+      '$_base_api/transport/wallet/topup/initiate';
   static String get transportWalletPayout => '$_base_api/transport/wallet/payout';
 
   /// Payout list: backend uses 15 per page by default; `page` is supported.

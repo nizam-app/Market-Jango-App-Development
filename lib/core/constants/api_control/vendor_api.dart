@@ -97,6 +97,12 @@ class VendorAPIController {
   static String vendorOrderUpdateStatus(int invoiceItemId) =>
       '$_base_api/vendor/orders/$invoiceItemId/status';
 
+  static String vendorOrderCancel(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/cancel';
+
+  static String vendorOrderQuantity(int invoiceItemId) =>
+      '$_base_api/vendor/orders/$invoiceItemId/quantity';
+
   static String get vendorOrderStatuses => '$_base_api/vendor/orders/statuses';
 
   /// Drivers available for assignment (`search` optional — user name).

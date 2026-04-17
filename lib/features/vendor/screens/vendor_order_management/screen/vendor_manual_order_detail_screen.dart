@@ -5,6 +5,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_manual_order_line_card.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorManualOrderDetailScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,31 @@ class _VendorManualOrderDetailScreenState
   final _addProductId = TextEditingController();
   final _addQty = TextEditingController(text: '1');
   bool _busy = false;
+
+  static final _fieldShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(8.r),
+  );
+
+  InputDecoration _inputDecoration({String? label, String? hint}) {
+    final orange = AllColor.loginButtomColor;
+    final soft = AllColor.orange200;
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      filled: true,
+      fillColor: AllColor.white,
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: soft, width: 1.2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(color: orange, width: 1.5),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -75,44 +101,12 @@ class _VendorManualOrderDetailScreenState
     return s == 'pending';
   }
 
-  Future<void> _deleteLine(VendorManualLineItem it) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove line'),
-        content: const Text('Remove this product from the order?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Remove', style: TextStyle(color: AllColor.red)),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    setState(() => _busy = true);
-    try {
-      final updated = await VendorOrderApi.instance.deleteManualOrderItem(
-        invoiceId: widget.invoiceId,
-        itemId: it.id,
-      );
-      if (mounted) setState(() => _inv = updated);
-    } catch (e) {
-      if (mounted) {
-        GlobalSnackbar.show(
-          context,
-          title: 'Error',
-          message: e.toString().replaceFirst('Exception: ', ''),
-          type: CustomSnackType.error,
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
+  bool _invoiceAllowsEdits(VendorManualOrderInvoice inv) {
+    final s = inv.status.toLowerCase().trim();
+    return s != 'completed' &&
+        s != 'complete' &&
+        s != 'cancelled' &&
+        s != 'canceled';
   }
 
   Future<void> _addLine() async {
@@ -232,154 +226,303 @@ class _VendorManualOrderDetailScreenState
 
   Widget _buildBody(VendorManualOrderInvoice inv) {
     final hasPending = inv.items.any(_isPendingLine);
+    final allowEdits = _invoiceAllowsEdits(inv);
+    final showDeliver = inv.status.toLowerCase() != 'completed' &&
+        inv.status.toLowerCase() != 'complete';
+
     return Stack(
       children: [
         RefreshIndicator(
           onRefresh: _load,
           child: ListView(
-            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 120.h),
             children: [
-              _summary(inv),
-              SizedBox(height: 16.h),
-              Text(
-                'Items',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
-              ),
-              SizedBox(height: 8.h),
-              ...inv.items.map((it) {
-                return Card(
-                  child: ListTile(
-                    title: Text(it.productName ?? 'Product #${it.productId}'),
-                    subtitle: Text('Qty ${it.quantity} · ${it.status}'),
-                    trailing: _isPendingLine(it)
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: AllColor.red,
-                            ),
-                            onPressed: _busy ? null : () => _deleteLine(it),
-                          )
-                        : null,
+              _section(
+                children: [
+                  Text(
+                    inv.customerName ?? 'Customer',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF111827),
+                    ),
                   ),
-                );
-              }),
-              if (hasPending) ...[
-                SizedBox(height: 16.h),
-                Text(
-                  'Add line',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14.sp,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _addProductId,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Product ID',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
+                  if (inv.customerPhone != null &&
+                      inv.customerPhone!.trim().isNotEmpty) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      inv.customerPhone!,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AllColor.grey.shade700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(width: 8.w),
-                    SizedBox(
-                      width: 80.w,
-                      child: TextField(
-                        controller: _addQty,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Qty',
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
+                  ],
+                  SizedBox(height: 10.h),
+                  _kv(
+                    'Totals',
+                    'Total ${inv.summary.total} · Payable ${inv.summary.payable}',
+                  ),
+                  if (inv.summary.customerPaid != null &&
+                      inv.summary.customerPaid!.trim().isNotEmpty)
+                    _kv('Paid', inv.summary.customerPaid!),
+                  if (inv.summary.change != null &&
+                      inv.summary.change!.trim().isNotEmpty)
+                    _kv('Change', inv.summary.change!),
+                  _kv(
+                    'Status',
+                    '${inv.status}${inv.paymentMethod != null && inv.paymentMethod!.trim().isNotEmpty ? ' · ${inv.paymentMethod}' : ''}',
+                  ),
+                ],
+              ),
+              SizedBox(height: 14.h),
+              Padding(
+                padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Line items',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF374151),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Each product on this invoice.',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AllColor.grey500,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ...inv.items.asMap().entries.map(
+                (e) => Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: VendorManualOrderLineCard(
+                    item: e.value,
+                    indexOneBased: e.key + 1,
+                    invoiceId: widget.invoiceId,
+                    canEdit: allowEdits && _isPendingLine(e.value),
+                    onRefresh: _load,
+                  ),
+                ),
+              ),
+              if (hasPending && allowEdits) ...[
+                SizedBox(height: 4.h),
+                _section(
+                  children: [
+                    Text(
+                      'Add line',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14.sp,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Merge by product ID adds to existing quantity.',
+                      style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                    ),
+                    SizedBox(height: 12.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _addProductId,
+                            enabled: !_busy,
+                            keyboardType: TextInputType.number,
+                            decoration: _inputDecoration(
+                              label: 'Product ID',
+                              hint: 'e.g. 34',
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        SizedBox(
+                          width: 88.w,
+                          child: TextField(
+                            controller: _addQty,
+                            enabled: !_busy,
+                            keyboardType: TextInputType.number,
+                            decoration: _inputDecoration(
+                              label: 'Qty',
+                              hint: '1',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+                    OutlinedButton(
+                      onPressed: _busy ? null : _addLine,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AllColor.loginButtomColor,
+                        side: BorderSide(color: AllColor.loginButtomColor, width: 1.2),
+                        minimumSize: Size(double.infinity, 44.h),
+                        shape: _fieldShape,
+                      ),
+                      child: Text(
+                        'Add / merge line',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
-                OutlinedButton(
-                  onPressed: _busy ? null : _addLine,
-                  child: const Text('Add / merge line'),
-                ),
               ],
-              SizedBox(height: 24.h),
-              TextField(
-                controller: _paid,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Customer paid (optional, for deliver)',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              TextField(
-                controller: _note,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Note (optional)',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+              SizedBox(height: 12.h),
+              _section(
+                children: [
+                  Text(
+                    'Update order',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14.sp,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Customer paid & note when marking delivered (optional).',
+                    style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+                  ),
+                  SizedBox(height: 12.h),
+                  TextField(
+                    controller: _paid,
+                    enabled: !_busy && showDeliver,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: _inputDecoration(
+                      label: 'Customer paid (optional)',
+                      hint: 'For deliver',
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  TextField(
+                    controller: _note,
+                    enabled: !_busy && showDeliver,
+                    maxLines: 3,
+                    decoration: _inputDecoration(
+                      label: 'Note (optional)',
+                      hint: 'Reason or message for delivery',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-        Positioned(
-          left: 16.w,
-          right: 16.w,
-          bottom: 16.h,
-          child: FilledButton(
-            onPressed: _busy ? null : _deliver,
-            style: FilledButton.styleFrom(
-              backgroundColor: AllColor.loginButtomColor,
-              minimumSize: Size(double.infinity, 48.h),
+        if (showDeliver)
+          Positioned(
+            left: 16.w,
+            right: 16.w,
+            bottom: 16.h,
+            child: SafeArea(
+              child: FilledButton(
+                onPressed: _busy ? null : _deliver,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AllColor.loginButtomColor,
+                  foregroundColor: Colors.white,
+                  shape: _fieldShape,
+                  minimumSize: Size(double.infinity, 48.h),
+                  elevation: 0,
+                ),
+                child: _busy
+                    ? SizedBox(
+                        width: 22.w,
+                        height: 22.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Mark delivered',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
             ),
-            child: const Text('Mark delivered'),
           ),
-        ),
       ],
     );
   }
 
-  Widget _summary(VendorManualOrderInvoice inv) {
-    final s = inv.summary;
-    return Material(
-      color: AllColor.white,
-      borderRadius: BorderRadius.circular(12.r),
-      child: Padding(
-        padding: EdgeInsets.all(14.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              inv.customerName ?? 'Customer',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
-            ),
-            if (inv.customerPhone != null && inv.customerPhone!.isNotEmpty)
-              Text(inv.customerPhone!),
-            SizedBox(height: 8.h),
-            Text('Total ${s.total} · Payable ${s.payable}'),
-            if (s.customerPaid != null && s.customerPaid!.isNotEmpty)
-              Text('Paid ${s.customerPaid}'),
-            if (s.change != null && s.change!.isNotEmpty)
-              Text('Change ${s.change}'),
-            SizedBox(height: 4.h),
-            Text('Status: ${inv.status} · ${inv.paymentMethod ?? ""}'),
-          ],
-        ),
+  Widget _section({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AllColor.white,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: _spaced(children),
+      ),
+    );
+  }
+
+  List<Widget> _spaced(List<Widget> items) {
+    if (items.isEmpty) return items;
+    final out = <Widget>[items.first];
+    for (var i = 1; i < items.length; i++) {
+      out.add(SizedBox(height: 10.h));
+      out.add(items[i]);
+    }
+    return out;
+  }
+
+  Widget _kv(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 108.w,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AllColor.grey500,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: AllColor.black87,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

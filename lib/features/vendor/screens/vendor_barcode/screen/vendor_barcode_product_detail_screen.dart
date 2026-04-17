@@ -43,7 +43,9 @@ class _VendorBarcodeProductDetailScreenState
       _error = null;
     });
     try {
-      final p = await VendorBarcodeApi.instance.fetchProductBarcode(widget.productId);
+      final p = await VendorBarcodeApi.instance.fetchProductBarcode(
+        widget.productId,
+      );
       if (mounted) setState(() => _product = p);
     } catch (e) {
       if (mounted) {
@@ -63,7 +65,10 @@ class _VendorBarcodeProductDetailScreenState
           'This replaces the current barcode on the server. Old printed labels will no longer match.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Regenerate', style: TextStyle(color: AllColor.red)),
@@ -74,7 +79,9 @@ class _VendorBarcodeProductDetailScreenState
     if (ok != true) return;
     setState(() => _actionBusy = true);
     try {
-      final p = await VendorBarcodeApi.instance.regenerateBarcode(widget.productId);
+      final p = await VendorBarcodeApi.instance.regenerateBarcode(
+        widget.productId,
+      );
       if (mounted) {
         setState(() => _product = p);
         GlobalSnackbar.show(
@@ -113,7 +120,10 @@ class _VendorBarcodeProductDetailScreenState
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () {
               final n = int.tryParse(countCtrl.text.trim()) ?? 0;
@@ -172,7 +182,9 @@ class _VendorBarcodeProductDetailScreenState
     }
   }
 
-  Future<void> _downloadLabelTemplatePdf(VendorBarcodeLabelsResult result) async {
+  Future<void> _downloadLabelTemplatePdf(
+    VendorBarcodeLabelsResult result,
+  ) async {
     try {
       final bytes = await buildBarcodeLabelTemplatePdf(result);
       if (!mounted) return;
@@ -193,13 +205,26 @@ class _VendorBarcodeProductDetailScreenState
   }
 
   String _formatPrintData(VendorBarcodeLabelsResult r) {
+    final p = r.product;
     final d = r.printData;
-    return 'barcode: ${d.barcode}\n'
-        'product_name: ${d.productName}\n'
-        'price: ${d.price}\n'
-        'vendor_name: ${d.vendorName}\n'
-        'copies: ${d.copies}\n'
-        'label_count: ${r.labelCount}';
+    final buf = StringBuffer()
+      ..writeln('id: ${p.id}')
+      ..writeln('name: ${p.name}')
+      ..writeln('barcode: ${p.barcode}')
+      ..writeln('regular_price: ${p.regularPrice}')
+      ..writeln('stock: ${p.stock}')
+      ..writeln('description: ${p.description}')
+      ..writeln('sku: ${p.sku}')
+      ..writeln('vendor_name: ${p.vendorName}')
+      ..writeln('weight: ${p.weight ?? 'null'}')
+      ..writeln('weight_unit: ${p.weightUnit}')
+      ..writeln('category_id: ${p.category.id}')
+      ..writeln('category_name: ${p.category.name}')
+      ..writeln('vendor_id: ${p.vendor.id}')
+      ..writeln('vendor_business_name: ${p.vendor.businessName}')
+      ..writeln('label_count: ${r.labelCount}')
+      ..writeln('copies: ${d.copies}');
+    return buf.toString();
   }
 
   @override
@@ -284,9 +309,40 @@ class _VendorBarcodeProductDetailScreenState
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    'Sell ${p.sellPrice} · Regular ${p.regularPrice} · Stock ${p.stock}',
+                    'Regular ${p.regularPrice} · Stock ${p.stock}',
                     style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
                   ),
+                  if (p.sku.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    _ProductDetailLine(label: 'SKU', value: p.sku),
+                  ],
+                  if (p.category.name.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    _ProductDetailLine(
+                      label: 'Category',
+                      value: p.category.name,
+                    ),
+                  ],
+                  if (p.vendorName.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    _ProductDetailLine(label: 'Vendor', value: p.vendorName),
+                  ],
+                  if (p.description.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AllColor.grey500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    SelectableText(
+                      p.description,
+                      style: TextStyle(fontSize: 13.sp, height: 1.35),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -356,6 +412,39 @@ class _VendorBarcodeProductDetailScreenState
   }
 }
 
+class _ProductDetailLine extends StatelessWidget {
+  const _ProductDetailLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100.w,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AllColor.grey500,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SelectableText(
+            value,
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Polished preview + primary “Download PDF template” action.
 class _BarcodeLabelPreviewDialog extends StatelessWidget {
   const _BarcodeLabelPreviewDialog({
@@ -375,9 +464,7 @@ class _BarcodeLabelPreviewDialog extends StatelessWidget {
     final d = result.printData;
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20.w),
@@ -432,7 +519,10 @@ class _BarcodeLabelPreviewDialog extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 12.h,
+                    horizontal: 8.w,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12.r),
@@ -491,9 +581,63 @@ class _BarcodeLabelPreviewDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _PreviewRow(label: 'Product', value: d.productName),
-                    _PreviewRow(label: 'Price', value: d.price.toString()),
-                    _PreviewRow(label: 'Vendor', value: d.vendorName),
+                    Text(
+                      'Product',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AllColor.grey500,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    _PreviewRow(label: 'ID', value: '${result.product.id}'),
+                    _PreviewRow(label: 'Name', value: result.product.name),
+                    _PreviewRow(label: 'SKU', value: result.product.sku),
+                    _PreviewRow(
+                      label: 'Barcode',
+                      value: result.product.barcode.isEmpty
+                          ? '—'
+                          : result.product.barcode,
+                    ),
+                    _PreviewRow(
+                      label: 'Regular price',
+                      value: '${result.product.regularPrice}',
+                    ),
+                    _PreviewRow(
+                      label: 'Stock',
+                      value: '${result.product.stock}',
+                    ),
+                    _PreviewRow(
+                      label: 'Description',
+                      value: result.product.description.isEmpty
+                          ? '—'
+                          : result.product.description,
+                    ),
+                    _PreviewRow(
+                      label: 'Vendor',
+                      value: result.product.vendorName.isEmpty
+                          ? '—'
+                          : result.product.vendorName,
+                    ),
+                    _PreviewRow(
+                      label: 'Weight',
+                      value: result.product.weight == null
+                          ? '—'
+                          : '${result.product.weight} ${result.product.weightUnit}',
+                    ),
+                    _PreviewRow(
+                      label: 'Category',
+                      value: result.product.category.name.isEmpty
+                          ? '—'
+                          : '${result.product.category.name} (id ${result.product.category.id})',
+                    ),
+                    _PreviewRow(
+                      label: 'Business (vendor)',
+                      value: result.product.vendor.businessName.isEmpty
+                          ? '—'
+                          : '${result.product.vendor.businessName} (id ${result.product.vendor.id})',
+                    ),
                     _PreviewRow(label: 'Copies', value: '${d.copies}'),
                     _PreviewRow(
                       label: 'Labels requested',

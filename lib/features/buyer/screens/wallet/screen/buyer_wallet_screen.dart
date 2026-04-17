@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
 import 'package:market_jango/features/buyer/screens/wallet/data/buyer_wallet_api.dart';
+import 'package:market_jango/features/buyer/screens/wallet/model/buyer_wallet_models.dart';
 import 'package:market_jango/features/buyer/screens/wallet/provider/buyer_wallet_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
@@ -136,17 +139,31 @@ class BuyerWalletScreen extends ConsumerWidget {
                         children: [
                           TextButton(
                             onPressed: () async {
-                              final ok = await showDialog<bool>(
+                              final init =
+                                  await showDialog<BuyerWalletTopupInitResult>(
                                 context: context,
                                 builder: (_) => const _BuyerTopupDialog(),
                               );
-                              if (ok == true && context.mounted) {
+                              if (!context.mounted || init == null) return;
+                              final payResult =
+                                  await Navigator.of(context).push<
+                                      PaymentStatusResult>(
+                                MaterialPageRoute(
+                                  builder: (_) => PaymentWebView(
+                                    url: init.paymentUrl,
+                                    walletTopupCallback: true,
+                                  ),
+                                ),
+                              );
+                              if (!context.mounted) return;
+                              if (payResult?.success == true) {
                                 ref.invalidate(buyerWalletOverviewProvider);
                                 ref.invalidate(buyerWalletTransactionsProvider);
                                 GlobalSnackbar.show(
                                   context,
                                   title: 'Success',
-                                  message: 'Top-up submitted',
+                                  message:
+                                      'Wallet topped up. Balance updates shortly.',
                                   type: CustomSnackType.success,
                                 );
                               }
@@ -568,11 +585,11 @@ class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
     }
     setState(() => _busy = true);
     try {
-      await BuyerWalletApi.instance.requestTopup(
-        amount: a,
+      final init = await BuyerWalletApi.instance.initiateTopupPayment(
+        amount: amtNum,
         note: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) Navigator.of(context).pop(init);
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -609,7 +626,7 @@ class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       title: Text(
-        'Top up wallet',
+        'Add money to wallet',
         style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
       ),
       content: SizedBox(
@@ -668,7 +685,7 @@ class _BuyerTopupDialogState extends State<_BuyerTopupDialog> {
                     color: Colors.white,
                   ),
                 )
-              : const Text('Submit'),
+              : const Text('Continue to payment'),
         ),
       ],
     );

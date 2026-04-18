@@ -1320,7 +1320,7 @@ String _marketplaceGroupCustomer(Iterable<VendorMarketplaceLine> lines) {
 List<List<VendorMarketplaceLine>> _groupMarketplaceLinesByOrder(
   List<VendorMarketplaceLine> items,
 ) {
-  final map = LinkedHashMap<String, List<VendorMarketplaceLine>>();
+  final map = <String, List<VendorMarketplaceLine>>{};
   for (final line in items) {
     final on = line.invoice.orderNumber.trim();
     final key = on.isNotEmpty ? on : 'inv_${line.invoice.id}';

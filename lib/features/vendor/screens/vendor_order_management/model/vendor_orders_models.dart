@@ -538,6 +538,39 @@ class VendorManualOrderInvoice {
   }
 }
 
+/// Maps a walk-in manual invoice line to [VendorMarketplaceLine] so the same
+/// UI ([VendorMarketplaceLineProductCard]) and order-item APIs can be used.
+VendorMarketplaceLine vendorMarketplaceLineFromManualItem(
+  VendorManualLineItem item,
+  VendorManualOrderInvoice invoice,
+) {
+  return VendorMarketplaceLine(
+    id: item.id,
+    quantity: item.quantity,
+    status: item.status,
+    salePrice: item.salePrice ?? 0,
+    invoiceId: invoice.id,
+    productId: item.productId,
+    createdAt: null,
+    invoice: VendorNestedInvoice(
+      id: invoice.id,
+      orderNumber: invoice.orderNumber,
+      status: invoice.status,
+      orderStatus: null,
+      paymentMethod: invoice.paymentMethod,
+      cusName: invoice.customerName,
+      isManualOrder: true,
+    ),
+    product: VendorNestedProduct(
+      id: item.productId,
+      name: (item.productName ?? '').trim(),
+    ),
+    unitPrice: item.unitPrice,
+    totalPay: item.totalPay,
+    lineNote: item.lineNote,
+  );
+}
+
 class VendorOrderStatusesPayload {
   final List<String> statuses;
   final Map<String, List<String>> transitions;

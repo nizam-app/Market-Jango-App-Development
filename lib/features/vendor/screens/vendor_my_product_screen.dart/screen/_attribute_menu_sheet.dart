@@ -28,7 +28,9 @@ class _AttributeMenuSheetState extends ConsumerState<AttributeMenuSheet> {
   @override
   void dispose() {
     _nameController.dispose();
-    _editControllers.values.forEach((c) => c.dispose());
+    for (var c in _editControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 

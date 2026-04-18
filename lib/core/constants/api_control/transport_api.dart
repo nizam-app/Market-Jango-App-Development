@@ -25,4 +25,44 @@ class TransportAPIController {
   /// POST initiate payment (returns payment_url for gateway/WebView)
   static String initiateShipmentPayment(int id) =>
       "$_base_api/shipments/$id/initiate-payment";
+
+  // --- Transport wallet (doc/details.md) — `/api/transport/wallet/...` ---
+  static String get transportWallet => '$_base_api/transport/wallet';
+
+  static String transportWalletTransactions({
+    int page = 1,
+    int perPage = 20,
+    String? fromDate,
+    String? toDate,
+    String? type,
+    String? status,
+  }) {
+    final q = <String, String>{'page': '$page', 'per_page': '$perPage'};
+    if (fromDate != null && fromDate.isNotEmpty) q['from_date'] = fromDate;
+    if (toDate != null && toDate.isNotEmpty) q['to_date'] = toDate;
+    if (type != null && type.trim().isNotEmpty) q['type'] = type.trim();
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/transport/wallet/transactions')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String get transportWalletTopup => '$_base_api/transport/wallet/topup';
+  /// Hosted gateway (Flutterwave) — returns `payment_url`, `tx_ref`, `redirect_url`.
+  static String get transportWalletTopupInitiate =>
+      '$_base_api/transport/wallet/topup/initiate';
+  static String get transportWalletPayout => '$_base_api/transport/wallet/payout';
+
+  /// Payout list: backend uses 15 per page by default; `page` is supported.
+  static String transportWalletPayouts({int page = 1, String? status}) {
+    final q = <String, String>{'page': '$page'};
+    if (status != null && status.trim().isNotEmpty) {
+      q['status'] = status.trim();
+    }
+    return Uri.parse('$_base_api/transport/wallet/payouts')
+        .replace(queryParameters: q)
+        .toString();
+  }
 }

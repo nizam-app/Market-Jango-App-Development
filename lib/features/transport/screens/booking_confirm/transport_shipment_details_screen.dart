@@ -93,7 +93,7 @@ class _TransportShipmentDetailsScreenState
     const Color textPrimary = Color(0xFF1E293B);
     const Color textSecondary = Color(0xFF64748B);
 
-    String _str(dynamic v) {
+    String str(dynamic v) {
       if (v == null) return '-';
       if (v is String) return v.isEmpty ? '-' : v;
       return v.toString();
@@ -102,7 +102,7 @@ class _TransportShipmentDetailsScreenState
     // From create flow we have result; from list tap we fetch by shipmentId
     final result = widget.args.result;
     if (result != null) {
-      return _buildBody(context, result, cardBg, textPrimary, textSecondary, _str);
+      return _buildBody(context, result, cardBg, textPrimary, textSecondary, str);
     }
 
     final shipmentId = widget.args.shipmentId!;
@@ -135,7 +135,7 @@ class _TransportShipmentDetailsScreenState
             totalPieces: (data['total_pieces'] as num?)?.toInt() ?? 0,
             totalWeightKg: (data['total_weight_kg'] as num?)?.toDouble() ?? 0,
           );
-          return _buildBody(context, loadedResult, cardBg, textPrimary, textSecondary, _str);
+          return _buildBody(context, loadedResult, cardBg, textPrimary, textSecondary, str);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Failed to load: $e')),
@@ -149,10 +149,10 @@ class _TransportShipmentDetailsScreenState
     Color cardBg,
     Color textPrimary,
     Color textSecondary,
-    String Function(dynamic) _str,
+    String Function(dynamic) str,
   ) {
     final shipment = result.shipment ?? {};
-    String _v(dynamic key) => _str(shipment[key]);
+    String v(dynamic key) => str(shipment[key]);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
@@ -188,13 +188,13 @@ class _TransportShipmentDetailsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _detailRow(ref.t(BKeys.id), _v('id'), textSecondary),
+                  _detailRow(ref.t(BKeys.id), v('id'), textSecondary),
                   _gap(),
-                  _detailRow(ref.t(BKeys.status), _v('status'), textSecondary),
+                  _detailRow(ref.t(BKeys.status), v('status'), textSecondary),
                   _gap(),
-                  _detailRow('Payment status', _v('payment_status'), textSecondary),
+                  _detailRow('Payment status', v('payment_status'), textSecondary),
                   _gap(),
-                  _detailRow('Created', _v('created_at'), textSecondary),
+                  _detailRow('Created', v('created_at'), textSecondary),
                 ],
               ),
             ),
@@ -207,10 +207,10 @@ class _TransportShipmentDetailsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _detailRow(ref.t(BKeys.origin), _v('origin_address'), textSecondary),
+                  _detailRow(ref.t(BKeys.origin), v('origin_address'), textSecondary),
                   _gap(),
-                  _detailRow(ref.t(BKeys.destination), _v('destination_address'), textSecondary),
-                  if (_v('transport_type') != '-') ...[_gap(), _detailRow('Transport type', _v('transport_type'), textSecondary)],
+                  _detailRow(ref.t(BKeys.destination), v('destination_address'), textSecondary),
+                  if (v('transport_type') != '-') ...[_gap(), _detailRow('Transport type', v('transport_type'), textSecondary)],
                 ],
               ),
             ),
@@ -223,21 +223,21 @@ class _TransportShipmentDetailsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _detailRow(ref.t(BKeys.building_shop_number_name), _v('pickup_instructions'), textSecondary),
+                  _detailRow(ref.t(BKeys.building_shop_number_name), v('pickup_instructions'), textSecondary),
                   _gap(),
-                  _detailRow(ref.t(BKeys.phone_number), _v('pickup_contact_phone'), textSecondary),
+                  _detailRow(ref.t(BKeys.phone_number), v('pickup_contact_phone'), textSecondary),
                 ],
               ),
             ),
             SizedBox(height: 20.h),
 
             /// Message to driver
-            if (_v('message_to_driver') != '-') ...[
+            if (v('message_to_driver') != '-') ...[
               _sectionTitle(ref.t(BKeys.message_to_driver)),
               SizedBox(height: 10.h),
               _card(
                 child: Text(
-                  _v('message_to_driver'),
+                  v('message_to_driver'),
                   style: TextStyle(fontSize: 14.sp, color: textPrimary, height: 1.4),
                 ),
               ),
@@ -251,22 +251,22 @@ class _TransportShipmentDetailsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _detailRow('Estimated price', _v('estimated_price') != '-' ? '\$${_v('estimated_price')}' : _v('estimated_price'), textSecondary),
+                  _detailRow('Estimated price', v('estimated_price') != '-' ? '\$${v('estimated_price')}' : v('estimated_price'), textSecondary),
                   _gap(),
-                  _detailRow('Final price', _v('final_price') != '-' ? '\$${_v('final_price')}' : _v('final_price'), textSecondary),
+                  _detailRow('Final price', v('final_price') != '-' ? '\$${v('final_price')}' : v('final_price'), textSecondary),
                   _gap(),
                   _detailRow(ref.t(BKeys.total_packages), '${result.totalPieces}', textSecondary),
                   _gap(),
                   _detailRow(ref.t(BKeys.total_weight_kg), '${result.totalWeightKg.toStringAsFixed(1)} kg', textSecondary),
-                  if (_v('declared_value_currency') != '-') _gap(),
-                  if (_v('declared_value_currency') != '-') _detailRow('Currency', _v('declared_value_currency'), textSecondary),
+                  if (v('declared_value_currency') != '-') _gap(),
+                  if (v('declared_value_currency') != '-') _detailRow('Currency', v('declared_value_currency'), textSecondary),
                 ],
               ),
             ),
             SizedBox(height: 28.h),
 
             /// Pay button
-            if (_v('payment_status') == 'pending' || _v('payment_status') == '-')
+            if (v('payment_status') == 'pending' || v('payment_status') == '-')
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

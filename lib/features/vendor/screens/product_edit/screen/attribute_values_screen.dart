@@ -31,7 +31,9 @@ class _AttributeValuesScreenState
   @override
   void dispose() {
     _addController.dispose();
-    _editControllers.values.forEach((c) => c.dispose());
+    for (var c in _editControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -403,7 +405,7 @@ class _AttributeValuesScreenState
                       ],
                     ),
                   );
-                }).toList(),
+                }),
             ],
           ),
         ),

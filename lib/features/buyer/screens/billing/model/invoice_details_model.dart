@@ -19,6 +19,8 @@ class InvoiceDetailsResponse {
 
 class InvoiceDetails {
   final int id;
+  /// Human-readable order code from API (`order_number`), e.g. ORD-20260407-6138A.
+  final String? orderNumber;
   final String total;
   final String vat;
   final String payable;
@@ -36,8 +38,13 @@ class InvoiceDetails {
   final DateTime? updatedAt;
   final List<InvoiceItemDetail> items;
 
+  /// Optional breakdown fields if the API returns them.
+  final String? deliveryCharge;
+  final String? platformFee;
+
   InvoiceDetails({
     required this.id,
+    this.orderNumber,
     required this.total,
     required this.vat,
     required this.payable,
@@ -54,12 +61,16 @@ class InvoiceDetails {
     this.createdAt,
     this.updatedAt,
     required this.items,
+    this.deliveryCharge,
+    this.platformFee,
   });
 
   factory InvoiceDetails.fromJson(Map<String, dynamic> json) {
     final itemsList = json['items'] as List? ?? [];
+    final platformRaw = json['platform_fee'] ?? json['platform_fees'] ?? json['service_fee'];
     return InvoiceDetails(
       id: _toInt(json['id']),
+      orderNumber: json['order_number']?.toString(),
       total: json['total']?.toString() ?? '0',
       vat: json['vat']?.toString() ?? '0',
       payable: json['payable']?.toString() ?? '0',
@@ -78,6 +89,8 @@ class InvoiceDetails {
       items: itemsList
           .map((e) => InvoiceItemDetail.fromJson(e as Map<String, dynamic>))
           .toList(),
+      deliveryCharge: json['delivery_charge']?.toString(),
+      platformFee: platformRaw?.toString(),
     );
   }
 }
@@ -87,6 +100,8 @@ class InvoiceItemDetail {
   final int quantity;
   final String status;
   final String totalPay;
+  /// Per-line delivery charge from API (summed in UI when invoice has no total).
+  final String? lineDeliveryCharge;
   final int invoiceId;
   final int productId;
   final int vendorId;
@@ -99,6 +114,7 @@ class InvoiceItemDetail {
     required this.quantity,
     required this.status,
     required this.totalPay,
+    this.lineDeliveryCharge,
     required this.invoiceId,
     required this.productId,
     required this.vendorId,
@@ -113,6 +129,7 @@ class InvoiceItemDetail {
         quantity: _toInt(json['quantity']),
         status: json['status']?.toString() ?? '',
         totalPay: json['total_pay']?.toString() ?? '0',
+        lineDeliveryCharge: json['delivery_charge']?.toString(),
         invoiceId: _toInt(json['invoice_id']),
         productId: _toInt(json['product_id']),
         vendorId: _toInt(json['vendor_id']),

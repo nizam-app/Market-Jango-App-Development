@@ -5,14 +5,10 @@ import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 
 import '../../transport/screens/my_booking/screen/transport_booking.dart';
 import '../../transport/screens/home/screen/transport_home.dart';
-
-// --- Providers ---------------------------------------------------------------
-
-// Active tab index
-final transportNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap with your actual screens)
 final transportPagesProvider = Provider<List<Widget>>(

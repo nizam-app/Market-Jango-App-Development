@@ -1,3 +1,4 @@
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,8 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/data/vendor_barcode_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_barcode/model/vendor_barcode_models.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/util/vendor_barcode_label_pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_create_manual_order_screen.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
@@ -40,7 +43,9 @@ class _VendorBarcodeProductDetailScreenState
       _error = null;
     });
     try {
-      final p = await VendorBarcodeApi.instance.fetchProductBarcode(widget.productId);
+      final p = await VendorBarcodeApi.instance.fetchProductBarcode(
+        widget.productId,
+      );
       if (mounted) setState(() => _product = p);
     } catch (e) {
       if (mounted) {
@@ -60,7 +65,10 @@ class _VendorBarcodeProductDetailScreenState
           'This replaces the current barcode on the server. Old printed labels will no longer match.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Regenerate', style: TextStyle(color: AllColor.red)),
@@ -71,7 +79,9 @@ class _VendorBarcodeProductDetailScreenState
     if (ok != true) return;
     setState(() => _actionBusy = true);
     try {
-      final p = await VendorBarcodeApi.instance.regenerateBarcode(widget.productId);
+      final p = await VendorBarcodeApi.instance.regenerateBarcode(
+        widget.productId,
+      );
       if (mounted) {
         setState(() => _product = p);
         GlobalSnackbar.show(
@@ -110,7 +120,10 @@ class _VendorBarcodeProductDetailScreenState
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () {
               final n = int.tryParse(countCtrl.text.trim()) ?? 0;
@@ -135,33 +148,24 @@ class _VendorBarcodeProductDetailScreenState
       }
       await showDialog<void>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Print label data'),
-          content: SingleChildScrollView(
-            child: SelectableText(
-              _formatPrintData(result),
-              style: TextStyle(fontSize: 13.sp, fontFamily: 'monospace'),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: _formatPrintData(result)));
-                Navigator.pop(ctx);
-                GlobalSnackbar.show(
-                  context,
-                  title: 'Copied',
-                  message: 'Label text copied',
-                  type: CustomSnackType.success,
-                );
-              },
-              child: const Text('Copy all'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
-            ),
-          ],
+        barrierDismissible: true,
+        builder: (ctx) => _BarcodeLabelPreviewDialog(
+          result: result,
+          onDownloadPdf: () async {
+            Navigator.pop(ctx);
+            await _downloadLabelTemplatePdf(result);
+          },
+          onCopyAll: () {
+            Clipboard.setData(ClipboardData(text: _formatPrintData(result)));
+            Navigator.pop(ctx);
+            GlobalSnackbar.show(
+              context,
+              title: 'Copied',
+              message: 'Label text copied',
+              type: CustomSnackType.success,
+            );
+          },
+          onClose: () => Navigator.pop(ctx),
         ),
       );
     } catch (e) {
@@ -178,14 +182,49 @@ class _VendorBarcodeProductDetailScreenState
     }
   }
 
+  Future<void> _downloadLabelTemplatePdf(
+    VendorBarcodeLabelsResult result,
+  ) async {
+    try {
+      final bytes = await buildBarcodeLabelTemplatePdf(result);
+      if (!mounted) return;
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'barcode_template_product_${result.product.id}.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
+    }
+  }
+
   String _formatPrintData(VendorBarcodeLabelsResult r) {
+    final p = r.product;
     final d = r.printData;
-    return 'barcode: ${d.barcode}\n'
-        'product_name: ${d.productName}\n'
-        'price: ${d.price}\n'
-        'vendor_name: ${d.vendorName}\n'
-        'copies: ${d.copies}\n'
-        'label_count: ${r.labelCount}';
+    final buf = StringBuffer()
+      ..writeln('id: ${p.id}')
+      ..writeln('name: ${p.name}')
+      ..writeln('barcode: ${p.barcode}')
+      ..writeln('regular_price: ${p.regularPrice}')
+      ..writeln('stock: ${p.stock}')
+      ..writeln('description: ${p.description}')
+      ..writeln('sku: ${p.sku}')
+      ..writeln('vendor_name: ${p.vendorName}')
+      ..writeln('weight: ${p.weight ?? 'null'}')
+      ..writeln('weight_unit: ${p.weightUnit}')
+      ..writeln('category_id: ${p.category.id}')
+      ..writeln('category_name: ${p.category.name}')
+      ..writeln('vendor_id: ${p.vendor.id}')
+      ..writeln('vendor_business_name: ${p.vendor.businessName}')
+      ..writeln('label_count: ${r.labelCount}')
+      ..writeln('copies: ${d.copies}');
+    return buf.toString();
   }
 
   @override
@@ -270,9 +309,40 @@ class _VendorBarcodeProductDetailScreenState
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    'Sell ${p.sellPrice} · Regular ${p.regularPrice} · Stock ${p.stock}',
+                    'Regular ${p.regularPrice} · Stock ${p.stock}',
                     style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
                   ),
+                  if (p.sku.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    _ProductDetailLine(label: 'SKU', value: p.sku),
+                  ],
+                  if (p.category.name.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    _ProductDetailLine(
+                      label: 'Category',
+                      value: p.category.name,
+                    ),
+                  ],
+                  if (p.vendorName.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    _ProductDetailLine(label: 'Vendor', value: p.vendorName),
+                  ],
+                  if (p.description.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AllColor.grey500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    SelectableText(
+                      p.description,
+                      style: TextStyle(fontSize: 13.sp, height: 1.35),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -312,8 +382,8 @@ class _VendorBarcodeProductDetailScreenState
             style: OutlinedButton.styleFrom(
               minimumSize: Size(double.infinity, 48.h),
             ),
-            icon: const Icon(Icons.label_outline),
-            label: const Text('Print label data'),
+            icon: const Icon(Icons.download_outlined),
+            label: const Text('Download barcode'),
           ),
           SizedBox(height: 10.h),
           OutlinedButton.icon(
@@ -335,6 +405,348 @@ class _VendorBarcodeProductDetailScreenState
           Text(
             'Scan this product with “Barcodes → Scan”, or add it to a walk-in order using the button above.',
             style: TextStyle(fontSize: 12.sp, color: AllColor.grey500),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductDetailLine extends StatelessWidget {
+  const _ProductDetailLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100.w,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AllColor.grey500,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SelectableText(
+            value,
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Polished preview + primary “Download PDF template” action.
+class _BarcodeLabelPreviewDialog extends StatelessWidget {
+  const _BarcodeLabelPreviewDialog({
+    required this.result,
+    required this.onDownloadPdf,
+    required this.onCopyAll,
+    required this.onClose,
+  });
+
+  final VendorBarcodeLabelsResult result;
+  final VoidCallback onDownloadPdf;
+  final VoidCallback onCopyAll;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final d = result.printData;
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10.r),
+                    decoration: BoxDecoration(
+                      color: AllColor.orange50,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      Icons.label_outline_rounded,
+                      color: AllColor.loginButtomColor,
+                      size: 26.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Barcode label',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w800,
+                            color: AllColor.black,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Review details, then download the PDF template.',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AllColor.grey500,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 18.h),
+              if (d.barcode.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(
+                    vertical: 12.h,
+                    horizontal: 8.w,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AllColor.grey200),
+                  ),
+                  child: BarcodeWidget(
+                    barcode: Barcode.code128(),
+                    data: d.barcode,
+                    drawText: true,
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    width: 280.w,
+                    height: 112.h,
+                    padding: EdgeInsets.all(8.w),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                    textPadding: 6,
+                    errorBuilder: (ctx, err) => Padding(
+                      padding: EdgeInsets.all(8.w),
+                      child: SelectableText(
+                        d.barcode,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AllColor.grey200),
+                  ),
+                  child: Text(
+                    'No barcode to render',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13.sp, color: AllColor.grey500),
+                  ),
+                ),
+              SizedBox(height: 16.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: AllColor.grey200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Product',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AllColor.grey500,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    _PreviewRow(label: 'ID', value: '${result.product.id}'),
+                    _PreviewRow(label: 'Name', value: result.product.name),
+                    _PreviewRow(label: 'SKU', value: result.product.sku),
+                    _PreviewRow(
+                      label: 'Barcode',
+                      value: result.product.barcode.isEmpty
+                          ? '—'
+                          : result.product.barcode,
+                    ),
+                    _PreviewRow(
+                      label: 'Regular price',
+                      value: '${result.product.regularPrice}',
+                    ),
+                    _PreviewRow(
+                      label: 'Stock',
+                      value: '${result.product.stock}',
+                    ),
+                    _PreviewRow(
+                      label: 'Description',
+                      value: result.product.description.isEmpty
+                          ? '—'
+                          : result.product.description,
+                    ),
+                    _PreviewRow(
+                      label: 'Vendor',
+                      value: result.product.vendorName.isEmpty
+                          ? '—'
+                          : result.product.vendorName,
+                    ),
+                    _PreviewRow(
+                      label: 'Weight',
+                      value: result.product.weight == null
+                          ? '—'
+                          : '${result.product.weight} ${result.product.weightUnit}',
+                    ),
+                    _PreviewRow(
+                      label: 'Category',
+                      value: result.product.category.name.isEmpty
+                          ? '—'
+                          : '${result.product.category.name} (id ${result.product.category.id})',
+                    ),
+                    _PreviewRow(
+                      label: 'Business (vendor)',
+                      value: result.product.vendor.businessName.isEmpty
+                          ? '—'
+                          : '${result.product.vendor.businessName} (id ${result.product.vendor.id})',
+                    ),
+                    _PreviewRow(label: 'Copies', value: '${d.copies}'),
+                    _PreviewRow(
+                      label: 'Labels requested',
+                      value: '${result.labelCount}',
+                      isLast: true,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20.h),
+              FilledButton.icon(
+                onPressed: onDownloadPdf,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AllColor.loginButtomColor,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                icon: Icon(Icons.picture_as_pdf_rounded, size: 22.sp),
+                label: Text(
+                  'Download PDF template',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    onPressed: onCopyAll,
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      size: 18.sp,
+                      color: AllColor.grey500,
+                    ),
+                    label: Text(
+                      'Copy as text',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AllColor.black87,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: onClose,
+                    child: Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AllColor.grey500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewRow extends StatelessWidget {
+  const _PreviewRow({
+    required this.label,
+    required this.value,
+    this.isLast = false,
+  });
+
+  final String label;
+  final String value;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 108.w,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: AllColor.grey500,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: SelectableText(
+              value,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: AllColor.black87,
+                height: 1.35,
+              ),
+            ),
           ),
         ],
       ),

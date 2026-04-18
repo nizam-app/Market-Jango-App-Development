@@ -8,13 +8,14 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_chat_screen.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
-import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/transport/screens/driver/screen/driver_details_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/screen/asign_to_order_driver.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/data/driver_list_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_driver_list/model/driver_list_model.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorDriverList extends ConsumerStatefulWidget {
   const VendorDriverList({super.key});
@@ -44,7 +45,15 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
       body: SafeArea(
         child: Column(
           children: [
-            CustomBackButton(),
+            CustomBackButton(
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  ref.read(vendorShellTabIndexProvider.notifier).state = 0;
+                }
+              },
+            ),
             SizedBox(height: 20.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.h),

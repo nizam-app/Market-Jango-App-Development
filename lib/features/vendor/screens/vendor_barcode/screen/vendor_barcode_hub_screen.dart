@@ -22,7 +22,8 @@ class VendorBarcodeHubScreen extends ConsumerStatefulWidget {
       _VendorBarcodeHubScreenState();
 }
 
-class _VendorBarcodeHubScreenState extends ConsumerState<VendorBarcodeHubScreen> {
+class _VendorBarcodeHubScreenState
+    extends ConsumerState<VendorBarcodeHubScreen> {
   final _search = TextEditingController();
 
   @override
@@ -163,8 +164,9 @@ class _VendorBarcodeHubScreenState extends ConsumerState<VendorBarcodeHubScreen>
             current: params.page,
             lastPage: async.valueOrNull?.lastPage ?? 1,
             onPage: (p) {
-              ref.read(vendorBarcodeListParamsProvider.notifier).state =
-                  ref.read(vendorBarcodeListParamsProvider).copyWith(page: p);
+              ref.read(vendorBarcodeListParamsProvider.notifier).state = ref
+                  .read(vendorBarcodeListParamsProvider)
+                  .copyWith(page: p);
             },
           ),
         ],
@@ -210,7 +212,9 @@ class _PaginationBar extends StatelessWidget {
                 child: Text('$current / $lastPage'),
               ),
               TextButton(
-                onPressed: current >= lastPage ? null : () => onPage(current + 1),
+                onPressed: current >= lastPage
+                    ? null
+                    : () => onPage(current + 1),
                 child: const Text('Next'),
               ),
             ],

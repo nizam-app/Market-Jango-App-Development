@@ -137,7 +137,7 @@ class VerifiUpperText extends StatelessWidget {
 }
 
 class CustomVerificationResendText extends ConsumerStatefulWidget {
-  CustomVerificationResendText({super.key, required this.onEnter, this.loading});
+  const CustomVerificationResendText({super.key, required this.onEnter, this.loading});
   final VoidCallback onEnter;
   final bool? loading;
 

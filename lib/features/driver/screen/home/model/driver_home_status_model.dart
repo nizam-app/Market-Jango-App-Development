@@ -64,18 +64,18 @@ class DriverHomeStats {
   });
 
   factory DriverHomeStats.fromJson(Map<String, dynamic> json) {
-     int _toInt(dynamic v) {
+     int toInt(dynamic v) {
       if (v == null) return 0;
       if (v is int) return v;
       return int.tryParse(v.toString()) ?? 0;
     }
 
     return DriverHomeStats(
-      totalActiveOrders: _toInt(json['total_active_orders']),
-      picked: _toInt(json['picked']),
+      totalActiveOrders: toInt(json['total_active_orders']),
+      picked: toInt(json['picked']),
       // API key typo: "pendings_deliveries"
-      pendingsDeliveries: _toInt(json['pendings_deliveries']),
-      deliveredToday: _toInt(json['delivered_today']),
+      pendingsDeliveries: toInt(json['pendings_deliveries']),
+      deliveredToday: toInt(json['delivered_today']),
     );
   }
 }

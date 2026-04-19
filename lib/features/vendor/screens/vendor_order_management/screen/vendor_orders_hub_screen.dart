@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -430,8 +428,17 @@ class _WalkInTab extends ConsumerWidget {
               }
             },
             backgroundColor: AllColor.loginButtomColor,
-            icon: const Icon(Icons.add),
-            label: const Text('New order'),
+            foregroundColor: AllColor.white,
+            extendedPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            extendedIconLabelSpacing: 6.w,
+            icon: Icon(Icons.add, size: 20.sp),
+            label: Text(
+              'New order',
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ],

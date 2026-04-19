@@ -19,6 +19,14 @@ class TransportAPIController {
   /// GET single shipment details
   static String shipmentById(int id) => "$_base_api/shipments/$id";
 
+  /// GET shipment invoice PDF (`doc/details.md` §2).
+  static String shipmentDownloadInvoice(int id) =>
+      "$_base_api/shipments/$id/download-invoice";
+
+  /// GET shipment delivery label PDF (`doc/details.md` §2).
+  static String shipmentDownloadDeliveryLabel(int id) =>
+      "$_base_api/shipments/$id/download-delivery-label";
+
   /// POST pay for shipment
   static String payShipment(int id) => "$_base_api/shipments/$id/pay";
 

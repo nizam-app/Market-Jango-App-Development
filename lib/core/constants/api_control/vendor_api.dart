@@ -33,6 +33,15 @@ class VendorAPIController {
   static String product_destroy = '$_base_api/product/destroy';
   // static String vendor_order_driver = '$_base_api/vendor/pending/order';
   static String vendor_order_driver = '$_base_api/vendor/all/order';
+
+  /// Invoice PDF — `GET /api/all/order/{id}/download-invoice` (see `doc/details.md`).
+  static String vendorAllOrderDownloadInvoice(int id) =>
+      '$_base_api/all/order/$id/download-invoice';
+
+  /// Delivery label PDF — `GET /api/all/order/{id}/download-delivery-label` (see `doc/details.md`).
+  static String vendorAllOrderDownloadDeliveryLabel(int id) =>
+      '$_base_api/all/order/$id/download-delivery-label';
+
   static String vendorInvoiceCreate(int driverId, int orderItemId) =>
       '$_base_api/vendor/invoice/create/$driverId/$orderItemId';
 

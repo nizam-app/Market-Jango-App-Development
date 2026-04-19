@@ -73,6 +73,9 @@ class VendorNestedInvoice {
   final String? cusName;
   final bool? isManualOrder;
 
+  /// Parent `orders.id` when API nests `order` — used for `vendor/all/order/{id}/…` downloads.
+  final int? orderRecordId;
+
   VendorNestedInvoice({
     required this.id,
     required this.orderNumber,
@@ -81,6 +84,7 @@ class VendorNestedInvoice {
     this.paymentMethod,
     this.cusName,
     this.isManualOrder,
+    this.orderRecordId,
   });
 
   factory VendorNestedInvoice.fromJson(Map<String, dynamic>? j) {
@@ -89,8 +93,11 @@ class VendorNestedInvoice {
     }
     final manual = j['is_manual_order'];
     String? orderStatus;
+    int? orderRecordId;
     final ord = j['order'];
     if (ord is Map<String, dynamic>) {
+      final oid = _toInt(ord['id']);
+      if (oid > 0) orderRecordId = oid;
       final s = _s(ord['status']);
       if (s.isNotEmpty) orderStatus = s;
     }
@@ -111,6 +118,7 @@ class VendorNestedInvoice {
                 manual == 1 ||
                 manual.toString().toLowerCase() == 'true' ||
                 manual.toString() == '1'),
+      orderRecordId: orderRecordId,
     );
   }
 }
@@ -503,6 +511,9 @@ class VendorManualOrderInvoice {
   final List<VendorManualLineItem> items;
   final OrderSummary summary;
 
+  /// Parent `orders.id` when API nests `order` — same as [VendorNestedInvoice.orderRecordId].
+  final int? orderRecordId;
+
   VendorManualOrderInvoice({
     required this.id,
     required this.orderNumber,
@@ -513,6 +524,7 @@ class VendorManualOrderInvoice {
     this.createdAt,
     required this.items,
     required this.summary,
+    this.orderRecordId,
   });
 
   factory VendorManualOrderInvoice.fromJson(Map<String, dynamic> j) {
@@ -522,6 +534,12 @@ class VendorManualOrderInvoice {
         .toList();
     final orderNo = _s(j['order_number']);
     final id = _toInt(j['id']);
+    int? orderRecordId;
+    final ord = j['order'];
+    if (ord is Map<String, dynamic>) {
+      final oid = _toInt(ord['id']);
+      if (oid > 0) orderRecordId = oid;
+    }
     return VendorManualOrderInvoice(
       id: id,
       orderNumber: orderNo.isNotEmpty
@@ -534,6 +552,7 @@ class VendorManualOrderInvoice {
       createdAt: _dt(j['created_at']),
       items: items,
       summary: OrderSummary.fromInvoiceOrSummary(j),
+      orderRecordId: orderRecordId,
     );
   }
 }
@@ -560,6 +579,7 @@ VendorMarketplaceLine vendorMarketplaceLineFromManualItem(
       paymentMethod: invoice.paymentMethod,
       cusName: invoice.customerName,
       isManualOrder: true,
+      orderRecordId: invoice.orderRecordId,
     ),
     product: VendorNestedProduct(
       id: item.productId,

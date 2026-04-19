@@ -1,9 +1,31 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/vendor_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/vendor_order_auth.dart';
+
+/// Laravel may return JSON errors as body; successful PDF starts with `%PDF`.
+void _throwIfOrderDownloadBodyIsJsonError(Uint8List bytes) {
+  if (bytes.isEmpty || bytes[0] != 0x7B) return;
+  try {
+    final decoded = jsonDecode(utf8.decode(bytes));
+    if (decoded is Map<String, dynamic>) {
+      final st = decoded['status']?.toString().toLowerCase();
+      final msg = decoded['message']?.toString();
+      if (st == 'error' ||
+          st == 'fail' ||
+          (msg != null && msg.trim().isNotEmpty)) {
+        throw Exception(
+          msg != null && msg.trim().isNotEmpty ? msg.trim() : 'Download failed',
+        );
+      }
+    }
+  } on FormatException {
+    // not JSON
+  }
+}
 
 Map<String, dynamic> _decodeObj(String body) {
   final decoded = jsonDecode(body);
@@ -105,6 +127,17 @@ VendorOrdersPage<VendorWalletTransaction> _parseWalletTransactionsPage(
     total: 0,
     items: [],
   );
+}
+
+/// Raw document from `vendor/all/order/{id}/download-*` (HTML or PDF bytes).
+class VendorOrderDocumentBytes {
+  const VendorOrderDocumentBytes({
+    required this.bytes,
+    this.contentType,
+  });
+
+  final Uint8List bytes;
+  final String? contentType;
 }
 
 void _throwIfBad(http.Response res) {
@@ -613,6 +646,54 @@ class VendorOrderApi {
     final res = await http.post(uri, headers: headers, body: jsonEncode(body));
     _throwIfBad(res);
     _maybeAssertEnvelope(res.body);
+  }
+
+  /// Same vendor auth as other calls, plus `Accept: application/pdf` and
+  /// `token: Bearer …` when storage omitted the prefix (see `doc/details.md` §1).
+  Future<Map<String, String>> _orderDocumentHeaders() async {
+    final headers = await vendorOrderApiHeaders();
+    final h = Map<String, String>.from(headers);
+    final raw = h['token']?.trim();
+    if (raw != null && raw.isNotEmpty) {
+      if (!raw.toLowerCase().startsWith('bearer ')) {
+        h['token'] = 'Bearer $raw';
+      }
+    }
+    h['Accept'] = 'application/pdf';
+    h.remove('Content-Type');
+    return h;
+  }
+
+  /// `GET /api/all/order/{id}/download-invoice` — PDF bytes on success (`doc/details.md`).
+  Future<VendorOrderDocumentBytes> fetchVendorAllOrderInvoiceDocument(
+    int id,
+  ) async {
+    if (id <= 0) throw Exception('Invalid order id');
+    final uri = Uri.parse(VendorAPIController.vendorAllOrderDownloadInvoice(id));
+    final res = await http.get(uri, headers: await _orderDocumentHeaders());
+    _throwIfBad(res);
+    _throwIfOrderDownloadBodyIsJsonError(res.bodyBytes);
+    return VendorOrderDocumentBytes(
+      bytes: res.bodyBytes,
+      contentType: res.headers['content-type'],
+    );
+  }
+
+  /// `GET /api/all/order/{id}/download-delivery-label` — PDF bytes on success (`doc/details.md`).
+  Future<VendorOrderDocumentBytes> fetchVendorAllOrderDeliveryLabelDocument(
+    int id,
+  ) async {
+    if (id <= 0) throw Exception('Invalid order id');
+    final uri = Uri.parse(
+      VendorAPIController.vendorAllOrderDownloadDeliveryLabel(id),
+    );
+    final res = await http.get(uri, headers: await _orderDocumentHeaders());
+    _throwIfBad(res);
+    _throwIfOrderDownloadBodyIsJsonError(res.bodyBytes);
+    return VendorOrderDocumentBytes(
+      bytes: res.bodyBytes,
+      contentType: res.headers['content-type'],
+    );
   }
 
   void _maybeAssertEnvelope(String body) {

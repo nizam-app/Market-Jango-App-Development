@@ -6,8 +6,10 @@ import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_assign_driver_sheet.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_order_document_local_save.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_marketplace_line_product_card.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_assign_rules.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_document_download_row.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorManualOrderDetailScreen extends ConsumerStatefulWidget {
@@ -40,6 +42,7 @@ class _VendorManualOrderDetailScreenState
   bool _unassignBusy = false;
   String? _nextStatus;
   bool _savingStatus = false;
+  String? _docLoadingKey;
 
   /// Sentinel: never equals a real line id, so cancelling a line does not pop this route.
   static const int _noPrimaryLineId = -1;
@@ -367,6 +370,72 @@ class _VendorManualOrderDetailScreenState
       }
     } finally {
       if (mounted) setState(() => _savingStatus = false);
+    }
+  }
+
+  int _manualOrderDocumentPathId(VendorManualOrderInvoice inv) {
+    final oid = inv.orderRecordId;
+    if (oid != null && oid > 0) return oid;
+    final iid = inv.id;
+    if (iid > 0) return iid;
+    return 0;
+  }
+
+  Future<void> _openOrderDocument(
+    VendorManualOrderInvoice inv,
+    bool deliveryLabel,
+  ) async {
+    final pathId = _manualOrderDocumentPathId(inv);
+    if (pathId <= 0) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Unavailable',
+        message: 'Could not resolve order id for download.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+    final key = deliveryLabel ? 'label' : 'invoice';
+    setState(() => _docLoadingKey = key);
+    try {
+      final doc = deliveryLabel
+          ? await VendorOrderApi.instance
+              .fetchVendorAllOrderDeliveryLabelDocument(pathId)
+          : await VendorOrderApi.instance
+              .fetchVendorAllOrderInvoiceDocument(pathId);
+      if (!mounted) return;
+      final orderNo = inv.orderNumber.trim().isEmpty
+          ? '$pathId'
+          : inv.orderNumber.trim();
+      await saveVendorOrderDocumentLocallyAndShare(
+        context: context,
+        bytes: doc.bytes,
+        contentType: doc.contentType,
+        orderLabel: orderNo,
+        isDeliveryLabel: deliveryLabel,
+      );
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Download complete',
+          message:
+              'Your PDF is ready. If you chose Downloads or Files in the menu, '
+              'look there; otherwise the file is kept in the app so you can '
+              'share it again whenever you like.',
+          type: CustomSnackType.success,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _docLoadingKey = null);
     }
   }
 
@@ -928,6 +997,14 @@ class _VendorManualOrderDetailScreenState
                   _kv('Mode', _modeFromItems(inv)),
                   _kv('Destination', '—'),
                 ],
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(2.w, 4.h, 2.w, 0),
+                child: VendorOrderDocumentDownloadRow(
+                  loadingKey: _docLoadingKey,
+                  onInvoiceTap: () => _openOrderDocument(inv, false),
+                  onDeliveryTap: () => _openOrderDocument(inv, true),
+                ),
               ),
               SizedBox(height: 12.h),
               if (inv.items.isNotEmpty) ...[

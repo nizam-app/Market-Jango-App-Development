@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +15,6 @@ Future<void> main() async {
 
   if (defaultTargetPlatform == TargetPlatform.android) {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await FcmPushService.instance.initializeIfAndroid();
   }
 
   runApp(
@@ -25,4 +27,11 @@ Future<void> main() async {
       ),
     ),
   );
+
+  // Let the first frame paint before Firebase / FCM / notification setup (reduces long white screen on slow devices).
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(FcmPushService.instance.initializeIfAndroid());
+    });
+  }
 }

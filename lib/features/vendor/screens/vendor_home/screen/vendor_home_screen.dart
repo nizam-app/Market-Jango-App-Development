@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/utils/auth_session_utils.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -42,6 +43,7 @@ class VendorHomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final canProducts = ref.watch(canManageProductsProvider);
     final vendorAsync = ref.watch(vendorProvider);
     final productAsync = ref.watch(productNotifierProvider);
 
@@ -134,13 +136,15 @@ class VendorHomeScreen extends ConsumerWidget {
                               child: Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton.icon(
-                                  onPressed: () {
-                                    _showReorderBottomSheet(
-                                      context,
-                                      ref,
-                                      products,
-                                    );
-                                  },
+                                  onPressed: (canProducts.valueOrNull ?? true)
+                                      ? () {
+                                          _showReorderBottomSheet(
+                                            context,
+                                            ref,
+                                            products,
+                                          );
+                                        }
+                                      : null,
                                   icon: const Icon(Icons.swap_vert),
                                   label: const Text('Reorder products'),
                                 ),
@@ -184,6 +188,36 @@ class VendorHomeScreen extends ConsumerWidget {
     BuildContext hostContext,
     WidgetRef ref,
   ) {
+    final canOrders = ref.watch(canManageOrdersProvider);
+    final canProducts = ref.watch(canManageProductsProvider);
+    final canReviews = ref.watch(canHandleReviewsReportsProvider);
+    final isOwner = ref.watch(isVendorOwnerProvider);
+
+    Widget tile({
+      required Widget leading,
+      required String title,
+      required VoidCallback onTap,
+      bool enabled = true,
+    }) {
+      return InkWell(
+        onTap: enabled ? onTap : null,
+        child: Opacity(
+          opacity: enabled ? 1 : 0.45,
+          child: ListTile(
+            leading: leading,
+            title: Text(
+              title,
+              style: TextStyle(color: Colors.black, fontSize: 14.sp),
+            ),
+            trailing: const Icon(
+              Icons.arrow_forward_ios_outlined,
+              color: Colors.black,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: SingleChildScrollView(
@@ -193,175 +227,143 @@ class VendorHomeScreen extends ConsumerWidget {
             SizedBox(height: 20.h),
             CustomBackButton(),
             SizedBox(height: 10.h),
-            InkWell(
-              onTap: () {
-                context.push(VendorShipmentsScreen.routeName);
-              },
-              child: ListTile(
-                leading: ImageIcon(
-                  const AssetImage("assets/icon/bag.png"),
-                  size: 20.r,
-                ),
-                title: Text(
-                  ref.t(BKeys.order),
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            canOrders.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: ImageIcon(
+                        const AssetImage("assets/icon/bag.png"),
+                        size: 20.r,
+                      ),
+                      title: ref.t(BKeys.order),
+                      onTap: () => context.push(VendorShipmentsScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push(VendorOrdersHubScreen.routeName);
-              },
-              child: ListTile(
-                leading: Icon(Icons.receipt_long, size: 20.r, color: Colors.black),
-                title: Text(
-                  'Orders & billing',
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            canOrders.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: Icon(
+                        Icons.receipt_long,
+                        size: 20.r,
+                        color: Colors.black,
+                      ),
+                      title: 'Orders & billing',
+                      onTap: () => context.push(VendorOrdersHubScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push(VendorBarcodeHubScreen.routeName);
-              },
-              child: ListTile(
-                leading: Icon(Icons.qr_code_2, size: 20.r, color: Colors.black),
-                title: Text(
-                  'Barcodes & scan',
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            canProducts.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: Icon(
+                        Icons.qr_code_2,
+                        size: 20.r,
+                        color: Colors.black,
+                      ),
+                      title: 'Barcodes & scan',
+                      onTap: () => context.push(VendorBarcodeHubScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push("/vendorSalePlatform");
-              },
-              child: ListTile(
-                leading: ImageIcon(
-                  const AssetImage("assets/icon/sale.png"),
-                  size: 20.r,
-                ),
-                title: Text(
-                  // "Sale",
-                  ref.t(BKeys.sales),
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            isOwner.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: ImageIcon(
+                        const AssetImage("assets/icon/sale.png"),
+                        size: 20.r,
+                      ),
+                      title: ref.t(BKeys.sales),
+                      onTap: () => context.push("/vendorSalePlatform"),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
 
-            InkWell(
-              onTap: () {
-                final vendorAsync = ref.read(vendorProvider);
-                vendorAsync.maybeWhen(
-                  data: (vendor) {
-                    context.push(ReviewScreen.routeName, extra: vendor.id);
-                  },
-                  orElse: () {
-                    // Handle case when vendor data is not available
-                    GlobalSnackbar.show(
-                      context,
-                      title: "Error",
-                      message: "Vendor information not available",
-                      type: CustomSnackType.error,
-                    );
-                  },
-                );
-              },
-              child: ListTile(
-                leading: const Icon(
-                  Icons.star_outline,
-                  size: 20,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  ref.t(BKeys.review),
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            canReviews.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: const Icon(
+                        Icons.star_outline,
+                        size: 20,
+                        color: Colors.black,
+                      ),
+                      title: ref.t(BKeys.review),
+                      onTap: () {
+                        final vendorAsync = ref.read(vendorProvider);
+                        vendorAsync.maybeWhen(
+                          data: (vendor) {
+                            context.push(ReviewScreen.routeName, extra: vendor.id);
+                          },
+                          orElse: () {
+                            GlobalSnackbar.show(
+                              context,
+                              title: "Error",
+                              message: "Vendor information not available",
+                              type: CustomSnackType.error,
+                            );
+                          },
+                        );
+                      },
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
 
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push(VisibilityManagementScreen.routeName);
-              },
-              child: ListTile(
-                leading: Icon(
-                  Icons.visibility_outlined,
-                  size: 20.r,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  'Visibility',
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            canProducts.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: Icon(
+                        Icons.visibility_outlined,
+                        size: 20.r,
+                        color: Colors.black,
+                      ),
+                      title: 'Visibility',
+                      onTap: () => context.push(VisibilityManagementScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push(VendorDeliverySettingScreen.routeName);
-              },
-              child: ListTile(
-                leading: Icon(
-                  Icons.delivery_dining_outlined,
-                  size: 20.r,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  'Delivery setting',
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            isOwner.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: Icon(
+                        Icons.delivery_dining_outlined,
+                        size: 20.r,
+                        color: Colors.black,
+                      ),
+                      title: 'Delivery setting',
+                      onTap: () => context.push(VendorDeliverySettingScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {
-                context.push(AffiliateScreen.routeName);
-              },
-              child: ListTile(
-                leading: Icon(Icons.link, size: 20.r, color: Colors.black),
-                title: Text(
-                  'Affiliate Links',
-                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
-              ),
+            isOwner.when(
+              data: (ok) => ok
+                  ? tile(
+                      leading: Icon(Icons.link, size: 20.r, color: Colors.black),
+                      title: 'Affiliate Links',
+                      onTap: () => context.push(AffiliateScreen.routeName),
+                    )
+                  : const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
             Divider(color: Colors.grey.shade300),
             InkWell(
@@ -424,6 +426,7 @@ class VendorHomeScreen extends ConsumerWidget {
     WidgetRef ref,
     List<VendorProduct> products,
   ) {
+    final canProducts = ref.watch(canManageProductsProvider);
     final safeProducts = products.whereType<VendorProduct>().toList();
 
     return GridView.builder(
@@ -438,7 +441,10 @@ class VendorHomeScreen extends ConsumerWidget {
       itemCount: safeProducts.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
-          return buildAddUrProduct(context);
+          if (canProducts.valueOrNull ?? true) {
+            return buildAddUrProduct(context);
+          }
+          return const SizedBox.shrink();
         }
         final prod = safeProducts.elementAtOrNull(index - 1);
         if (prod == null) {

@@ -71,8 +71,7 @@ class _DriverOrderState extends ConsumerState<DriverOrder> {
                 loading: () => const Center(child: Text('Loading...')),
                 error: (e, _) => _DriverOrdersError(
                   message: _driverOrderErrorMessage(e),
-                  onRetry: () =>
-                      ref.invalidate(driverAllOrdersProvider),
+                  onRetry: () => ref.invalidate(driverAllOrdersProvider),
                 ),
                 data: (_) => ListView.separated(
                   padding: EdgeInsets.symmetric(
@@ -124,10 +123,7 @@ class _DriverOrdersError extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _DriverOrdersError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _DriverOrdersError({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -183,8 +179,8 @@ class _DriverOrdersError extends StatelessWidget {
 
 class _SearchField extends StatelessWidget {
   final TextEditingController controller;
-  final ValueChanged<String>? onChanged;
-  const _SearchField({required this.controller, this.onChanged});
+  final ValueChanged<String>? onChanged = null;
+  const _SearchField({required this.controller});
 
   @override
   Widget build(BuildContext context) {

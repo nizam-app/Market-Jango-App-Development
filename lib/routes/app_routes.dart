@@ -106,6 +106,10 @@ import 'package:market_jango/features/ranking/screen/ranking_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport/screen/vendor_transport_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_transport_details/screen/vendor_transport_details.dart';
 import 'package:market_jango/features/vendor/screens/vendor_store_document_upload/screen/store_document_upload_screen.dart';
+import 'package:market_jango/features/vendor/staff_management/screen/vendor_staff_list_screen.dart';
+import 'package:market_jango/features/vendor/staff_management/screen/vendor_staff_upsert_screen.dart';
+import 'package:market_jango/features/vendor/inventory/screen/vendor_inventory_screen.dart';
+import 'package:market_jango/features/vendor/inventory/screen/vendor_inventory_product_screen.dart';
 
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login/screen/login_screen.dart';
@@ -962,6 +966,39 @@ final GoRouter router = GoRouter(
           screenName: screenName,
           vendorId: vendorId,
         );
+      },
+    ),
+
+    // --- Vendor: Staff Management + Inventory (doc/details.md) ---
+    GoRoute(
+      path: VendorStaffListScreen.routeName,
+      name: 'vendorStaffList',
+      builder: (context, state) => const VendorStaffListScreen(),
+    ),
+    GoRoute(
+      path: VendorStaffUpsertScreen.routeName,
+      name: 'vendorStaffUpsert',
+      builder: (context, state) {
+        final extra = state.extra;
+        final id = extra is int ? extra : int.tryParse('$extra') ?? 0;
+        return VendorStaffUpsertScreen(moderatorId: id > 0 ? id : null);
+      },
+    ),
+    GoRoute(
+      path: VendorInventoryScreen.routeName,
+      name: 'vendorInventory',
+      builder: (context, state) => const VendorInventoryScreen(),
+    ),
+    GoRoute(
+      path: VendorInventoryProductScreen.routeName,
+      name: 'vendorInventoryProduct',
+      builder: (context, state) {
+        final extra = state.extra;
+        final id = extra is int ? extra : int.tryParse('$extra') ?? 0;
+        if (id <= 0) {
+          return const Scaffold(body: Center(child: Text('Invalid product')));
+        }
+        return VendorInventoryProductScreen(productId: id);
       },
     ),
   ],

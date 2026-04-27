@@ -390,7 +390,6 @@ class _StatusTile extends StatefulWidget {
 
   // final String? badgeText; // e.g. "Not Delivery"
   final VoidCallback? onBadgeTap;
-  final Color? badgeColor;
 
   /// checkbox change
   final ValueChanged<bool>? onChanged;

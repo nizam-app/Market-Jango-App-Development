@@ -3,6 +3,7 @@ import 'global_api.dart';
 class VendorAPIController {
   static final String _base_api = "$api/api";
   static String vendor_product = "$_base_api/vendor/product";
+  static String get vendorMyRole => "$_base_api/vendor/my-role";
   static String vendor_product_reorder = "$_base_api/vendor/product/reorder";
   static String product_update(int id) => "$_base_api/product/update/$id";
   static String product_attribute_vendor =
@@ -264,4 +265,39 @@ class VendorAPIController {
 
   static String vendorProductBarcodeLabels(int productId) =>
       '$_base_api/vendor/products/$productId/barcode/labels';
+
+  // --- Vendor Staff (Moderators) + Inventory (see doc/details.md) ---
+  static String get vendorModerators => '$_base_api/vendor/moderators';
+  static String vendorModerator(int id) => '$_base_api/vendor/moderators/$id';
+
+  static String vendorInventory({String? search, int perPage = 20}) {
+    final q = <String, String>{'per_page': '$perPage'};
+    final s = search?.trim();
+    if (s != null && s.isNotEmpty) q['search'] = s;
+    return Uri.parse('$_base_api/vendor/inventory')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String vendorInventoryProduct(
+    int productId, {
+    String? changeType,
+    String? dateFrom,
+    String? dateTo,
+    int perPage = 30,
+  }) {
+    final q = <String, String>{'per_page': '$perPage'};
+    final ct = changeType?.trim();
+    if (ct != null && ct.isNotEmpty) q['change_type'] = ct;
+    final df = dateFrom?.trim();
+    if (df != null && df.isNotEmpty) q['date_from'] = df;
+    final dt = dateTo?.trim();
+    if (dt != null && dt.isNotEmpty) q['date_to'] = dt;
+    return Uri.parse('$_base_api/vendor/inventory/$productId')
+        .replace(queryParameters: q)
+        .toString();
+  }
+
+  static String vendorInventorySummary(int productId) =>
+      '$_base_api/vendor/inventory/$productId/summary';
 }

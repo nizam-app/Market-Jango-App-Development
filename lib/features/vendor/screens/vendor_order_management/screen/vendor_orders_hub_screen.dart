@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/widget/vendor_role_guard.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
-import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/provider/vendor_orders_provider.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
@@ -12,7 +13,6 @@ import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 import 'vendor_create_manual_order_screen.dart';
 import 'vendor_manual_order_detail_screen.dart';
 import 'vendor_marketplace_order_detail_screen.dart';
-import 'vendor_refunds_tab.dart';
 
 /// Entry: marketplace orders (date range), walk-in orders, wallet — see doc/VENDOR_ORDER_MANAGEMENT_AND_BILLING.md
 class VendorOrdersHubScreen extends ConsumerStatefulWidget {
@@ -36,7 +36,7 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -123,61 +123,62 @@ class _VendorOrdersHubScreenState extends ConsumerState<VendorOrdersHubScreen>
   Widget build(BuildContext context) {
     final statusesAsync = ref.watch(vendorOrderStatusesProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: AllColor.white,
-        elevation: 0,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 8.w),
-          child: const CustomBackButton(),
-        ),
-        title: Text(
-          'Orders & billing',
-          style: TextStyle(
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w700,
-            color: AllColor.black,
+    return VendorRoleGuard(
+      allowedProvider: canManageOrdersProvider,
+      title: 'Orders & billing',
+      message: 'Only Owner/Manager can access order management.',
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: AppBar(
+          backgroundColor: AllColor.white,
+          elevation: 0,
+          leading: Padding(
+            padding: EdgeInsets.only(left: 8.w),
+            child: const CustomBackButton(),
+          ),
+          title: Text(
+            'Orders & billing',
+            style: TextStyle(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
+              color: AllColor.black,
+            ),
+          ),
+          centerTitle: true,
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: AllColor.loginButtomColor,
+            unselectedLabelColor: AllColor.grey500,
+            indicatorColor: AllColor.loginButtomColor,
+            tabs: const [
+              Tab(text: 'Marketplace'),
+              Tab(text: 'Walk-in'),
+            ],
           ),
         ),
-        centerTitle: true,
-        bottom: TabBar(
+        body: TabBarView(
           controller: _tabController,
-          labelColor: AllColor.loginButtomColor,
-          unselectedLabelColor: AllColor.grey500,
-          indicatorColor: AllColor.loginButtomColor,
-          tabs: const [
-            Tab(text: 'Marketplace'),
-            Tab(text: 'Walk-in'),
-            Tab(text: 'Wallet'),
-            Tab(text: 'Refunds'),
+          children: [
+            _MarketplaceTab(
+              orderNoController: _orderNoMp,
+              statusValue: _statusMp,
+              onStatusChanged: (v) => setState(() => _statusMp = v),
+              statusesAsync: statusesAsync,
+              onPickDate: (from) => _pickDate(isFrom: from, marketplace: true),
+              onClearDates: () => _clearDates(true),
+              onApply: () => _applySearch(true),
+            ),
+            _WalkInTab(
+              orderNoController: _orderNoMan,
+              statusValue: _statusMan,
+              onStatusChanged: (v) => setState(() => _statusMan = v),
+              statusesAsync: statusesAsync,
+              onPickDate: (from) => _pickDate(isFrom: from, marketplace: false),
+              onClearDates: () => _clearDates(false),
+              onApply: () => _applySearch(false),
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _MarketplaceTab(
-            orderNoController: _orderNoMp,
-            statusValue: _statusMp,
-            onStatusChanged: (v) => setState(() => _statusMp = v),
-            statusesAsync: statusesAsync,
-            onPickDate: (from) => _pickDate(isFrom: from, marketplace: true),
-            onClearDates: () => _clearDates(true),
-            onApply: () => _applySearch(true),
-          ),
-          _WalkInTab(
-            orderNoController: _orderNoMan,
-            statusValue: _statusMan,
-            onStatusChanged: (v) => setState(() => _statusMan = v),
-            statusesAsync: statusesAsync,
-            onPickDate: (from) => _pickDate(isFrom: from, marketplace: false),
-            onClearDates: () => _clearDates(false),
-            onApply: () => _applySearch(false),
-          ),
-          const _WalletTab(),
-          const VendorRefundsTab(),
-        ],
       ),
     );
   }
@@ -448,6 +449,7 @@ class _WalkInTab extends ConsumerWidget {
 
 /// Payout form → `POST /vendor/wallet/payout`.
 /// API expects `payment_method` ∈ allowed values and `payment_details` as `{ account, name, ... }`.
+/* Payout dialog removed (wallet tab disabled for sub-accounts).
 class _VendorPayoutRequestDialog extends StatefulWidget {
   const _VendorPayoutRequestDialog({this.walletBalance});
 
@@ -704,7 +706,9 @@ class _VendorPayoutRequestDialogState
     );
   }
 }
+*/
 
+/* Wallet/Refunds tabs intentionally removed for role-based restrictions.
 class _WalletTab extends ConsumerWidget {
   const _WalletTab();
 
@@ -1153,6 +1157,7 @@ class _WalletTab extends ConsumerWidget {
     );
   }
 }
+*/
 
 class _FilterCard extends StatelessWidget {
   const _FilterCard({

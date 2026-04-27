@@ -33,7 +33,9 @@ import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_s
 import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../../features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
-import '../../../utils/get_user_type.dart';
+import 'package:market_jango/features/vendor/staff_management/screen/vendor_staff_list_screen.dart';
+import 'package:market_jango/features/vendor/inventory/screen/vendor_inventory_screen.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import '../data/profile_data.dart';
 import '../model/profile_model.dart';
 
@@ -180,11 +182,52 @@ class GlobalSettingScreen extends ConsumerWidget {
           ),
         ],
         if (userTypeAsync.value == "vendor")
+          Consumer(
+            builder: (context, ref, _) {
+              final canProducts = ref.watch(canManageProductsProvider);
+              return canProducts.when(
+                data: (ok) {
+                  if (!ok) return const SizedBox.shrink();
+                  return _SettingsTile(
+                    leadingIcon: Icons.shopping_bag_outlined,
+                    title: ref.t(BKeys.my_product),
+                    onTap: () => context.push(VendorMyProductScreen.routeName),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        if (userTypeAsync.value == "vendor")
+          Consumer(
+            builder: (context, ref, _) {
+              final canViewStaff = ref.watch(canViewStaffManagementProvider);
+              return canViewStaff.when(
+                data: (ok) {
+                  if (!ok) return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      _DividerLine(),
+                      _SettingsTile(
+                        leadingIcon: Icons.people_alt_outlined,
+                        title: 'Staff Management',
+                        onTap: () => context.push(VendorStaffListScreen.routeName),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        if (userTypeAsync.value == "vendor") _DividerLine(),
+        if (userTypeAsync.value == "vendor")
           _SettingsTile(
-            leadingIcon: Icons.shopping_bag_outlined,
-            //"My Product"
-            title: ref.t(BKeys.my_product),
-            onTap: () => context.push(VendorMyProductScreen.routeName),
+            leadingIcon: Icons.inventory_2_outlined,
+            title: 'Inventory',
+            onTap: () => context.push(VendorInventoryScreen.routeName),
           ),
         _DividerLine(),
         if (userTypeAsync.value == "buyer")
@@ -194,7 +237,7 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: ref.t(BKeys.orderHistory),
             onTap: () => context.push(BuyerOrderHistoryScreen.routeName),
           ),
-            _DividerLine(),
+        _DividerLine(),
         if (userTypeAsync.value == "buyer")
           _SettingsTile(
             leadingIcon: Icons.receipt_long_outlined,
@@ -231,14 +274,50 @@ class GlobalSettingScreen extends ConsumerWidget {
             onTap: () => context.push(TransportWalletScreen.routeName),
           ),
         _DividerLine(),
-        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+        if (userTypeAsync.value == "vendor")
+          Consumer(
+            builder: (context, ref, _) {
+              final isOwner = ref.watch(isVendorOwnerProvider);
+              return isOwner.when(
+                data: (ok) {
+                  if (!ok) return const SizedBox.shrink();
+                  return _SettingsTile(
+                    leadingIcon: Icons.card_membership_outlined,
+                    title: 'Subscription',
+                    onTap: () => context.push(SubscriptionScreen.routeName),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        if (userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.card_membership_outlined,
             title: 'Subscription',
             onTap: () => context.push(SubscriptionScreen.routeName),
           ),
         _DividerLine(),
-        if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
+        if (userTypeAsync.value == "vendor")
+          Consumer(
+            builder: (context, ref, _) {
+              final isOwner = ref.watch(isVendorOwnerProvider);
+              return isOwner.when(
+                data: (ok) {
+                  if (!ok) return const SizedBox.shrink();
+                  return _SettingsTile(
+                    leadingIcon: Icons.link,
+                    title: 'Affiliate Links',
+                    onTap: () => context.push(AffiliateScreen.routeName),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+        if (userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.link,
             title: 'Affiliate Links',

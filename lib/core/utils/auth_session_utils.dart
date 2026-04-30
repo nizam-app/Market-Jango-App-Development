@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/services/fcm_push_service.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
-import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/utils/session_cache_invalidation.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
@@ -171,11 +171,10 @@ class AuthSessionUtils {
 
     if (!context.mounted) return;
 
-    // Drop cached auth-derived state so APIs/UI do not keep the old user.
+    // Drop cached auth + home feeds so the next login does not reuse stale lists.
     try {
       final container = ProviderScope.containerOf(context, listen: false);
-      container.invalidate(getUserIdProvider);
-      container.invalidate(getUserTypeProvider);
+      invalidateCachesAfterLogout(container);
     } catch (_) {}
 
     // Navigate to login screen and remove all previous routes

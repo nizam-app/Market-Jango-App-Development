@@ -19,7 +19,12 @@ Future<void> loginAndGoSingleRole({
       Uri.parse(AuthAPIController.login),
     );
 
-    request.fields['email'] = id;
+    final t = id.trim();
+    if (t.contains('@')) {
+      request.fields['email'] = t.toLowerCase();
+    } else {
+      request.fields['phone'] = t.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    }
     request.fields['password'] = password;
 
     final response = await request.send();
@@ -65,10 +70,10 @@ Future<void> loginAndGoSingleRole({
       GlobalSnackbar.show(
         context,
         title: "Error",
-        message: json['message'] ?? 'Login failed',
+        message: "Invalid email, phone, or password",
         type: CustomSnackType.error,
       );
-      throw Exception(json['message'] ?? 'Login failed');
+      throw Exception("Invalid email, phone, or password");
 
     }
   } catch (e) {
@@ -76,7 +81,7 @@ Future<void> loginAndGoSingleRole({
     GlobalSnackbar.show(
       context,
       title: "Error",
-      message: e.toString(),
+      message: "Invalid email, phone, or password",
       type: CustomSnackType.error,
     );
   }

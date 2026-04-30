@@ -275,6 +275,13 @@ class BKeys {
   static const String assigned_driver = 'assigned_driver';
   static const String select_driver = 'select_driver';
 
+  // Transport - Terms & Conditions (select driver)
+  static const String terms_and_conditions = 'terms_and_conditions';
+  static const String i_agree_to_terms = 'i_agree_to_terms';
+  static const String accept = 'accept';
+  static const String decline = 'decline';
+  static const String please_accept_terms = 'please_accept_terms';
+
   // Transport booking confirm (package + pay)
   static const String my_package_details = 'my_package_details';
   static const String create_package = 'create_package';

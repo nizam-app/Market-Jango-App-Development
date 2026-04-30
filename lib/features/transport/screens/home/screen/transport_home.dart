@@ -355,6 +355,155 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
     }
   }
 
+  Future<bool> _showTermsAndConditionsIfNeeded(BuildContext context) async {
+    // If you later want to persist acceptance (SharedPreferences), this is the single place to do it.
+    bool agreed = false;
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setLocal) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 16.h,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16.h,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    ref.t(
+                      BKeys.terms_and_conditions,
+                      fallback: 'Terms & Conditions',
+                    ),
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 280.h),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        // Replace this with API text if/when available.
+                        'By selecting a driver, you agree to the service terms for transport bookings. '
+                        'Prices may vary by distance and availability. Cancellations may incur fees. '
+                        'Please confirm pickup and destination details before proceeding.',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          height: 1.45,
+                          color: const Color(0xFF374151),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  CheckboxListTile(
+                    value: agreed,
+                    onChanged: (v) => setLocal(() => agreed = v ?? false),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(
+                      ref.t(
+                        BKeys.i_agree_to_terms,
+                        fallback: 'I agree to the Terms & Conditions',
+                      ),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            side: const BorderSide(color: Color(0xFFE5E7EB)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            foregroundColor: const Color(0xFF374151),
+                          ),
+                          child: Text(
+                            ref.t(BKeys.decline, fallback: 'Decline'),
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: agreed
+                              ? () => Navigator.of(ctx).pop(true)
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            backgroundColor: AllColor.blue500,
+                            disabledBackgroundColor:
+                                AllColor.blue500.withOpacity(0.35),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: Text(
+                            ref.t(BKeys.accept, fallback: 'Accept'),
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result == true) return true;
+    if (result == false) return false;
+
+    // user dismissed sheet (swipe down / back)
+    return false;
+  }
+
   Widget _buildDriverListFromSearch(AsyncValue<List<Driver>>? searchState) {
     if (searchState == null) {
       return const Center(child: Text('Loading...'));
@@ -381,19 +530,25 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
                   driver: d,
                   images: d.images.whereType<String>().toList(),
                   onSelect: () {
-                    context.push(
-                      TransportBookingConfirmScreen.routeName,
-                      extra: TransportBookingConfirmArgs(
-                        driver: d,
-                        pickup: _pickupController.text.trim().isEmpty
-                            ? null
-                            : _pickupController.text.trim(),
-                        destination: _destinationController.text.trim().isEmpty
-                            ? null
-                            : _destinationController.text.trim(),
-                        transportType: _selectedTransportType?.name,
-                      ),
-                    );
+                    () async {
+                      final accepted =
+                          await _showTermsAndConditionsIfNeeded(context);
+                      if (!accepted) return;
+
+                      context.push(
+                        TransportBookingConfirmScreen.routeName,
+                        extra: TransportBookingConfirmArgs(
+                          driver: d,
+                          pickup: _pickupController.text.trim().isEmpty
+                              ? null
+                              : _pickupController.text.trim(),
+                          destination: _destinationController.text.trim().isEmpty
+                              ? null
+                              : _destinationController.text.trim(),
+                          transportType: _selectedTransportType?.name,
+                        ),
+                      );
+                    }();
                   },
                 ),
               )

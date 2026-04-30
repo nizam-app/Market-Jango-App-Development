@@ -12,6 +12,7 @@ import 'package:market_jango/features/buyer/screens/prement/screen/web_view_scre
 import 'package:market_jango/features/transport/screens/booking_confirm/data/create_shipment_data.dart';
 import 'package:market_jango/features/transport/screens/booking_confirm/data/transport_shipment_document_api.dart';
 import 'package:market_jango/features/transport/screens/my_booking/data/transport_booking_data.dart';
+import 'package:market_jango/features/transport/screens/my_booking/screen/transport_booking.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_order_document_local_save.dart';
 
 /// Arguments for the shipment details screen. Either [result] (from create flow) or [shipmentId] (from list tap).
@@ -69,13 +70,14 @@ class _TransportShipmentDetailsScreenState
             content: Text('${ref.t(BKeys.pay, fallback: 'Pay')} success'),
           ),
         );
+        // After successful payment, send user to "My bookings" (shipment list).
+        context.go(TransportBooking.routeName);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Payment not completed')),
         );
+        // Stay on this screen so user can try again.
       }
-      // Payment WebView theke firelei details screen theke pichone chole jao
-      context.pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -289,6 +291,12 @@ class _TransportShipmentDetailsScreenState
     String v(dynamic key) => str(shipment[key]);
     final statusDisplay = _humanizeSnake(v('status'));
     final paymentStatusDisplay = _humanizeSnake(v('payment_status'));
+    final paymentStatusRaw = v('payment_status').toLowerCase();
+    final statusRaw = v('status').toLowerCase();
+    final isPendingLike = paymentStatusRaw == 'pending' ||
+        paymentStatusRaw == '-' ||
+        statusRaw == 'pending' ||
+        statusRaw == 'draft';
     final sid = int.tryParse(v('id')) ?? 0;
     final currency = v('declared_value_currency');
     final cur = currency == '-' ? 'USD' : currency;
@@ -520,63 +528,88 @@ class _TransportShipmentDetailsScreenState
           ),
           SizedBox(height: 22.h),
 
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _docLoadingKey != null
-                      ? null
-                      : () => _downloadShipmentDocument(false),
-                  icon: _docLoadingKey == 'invoice'
-                      ? SizedBox(
-                          width: 16.w,
-                          height: 16.h,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AllColor.blue500,
-                          ),
-                        )
-                      : Icon(Icons.picture_as_pdf_outlined, size: 18.sp),
-                  label: Text('Invoice', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AllColor.blue500,
-                    side: BorderSide(color: AllColor.blue500.withValues(alpha: 0.55)),
-                    padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          if (!isPendingLike) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _docLoadingKey != null
+                        ? null
+                        : () => _downloadShipmentDocument(false),
+                    icon: _docLoadingKey == 'invoice'
+                        ? SizedBox(
+                            width: 16.w,
+                            height: 16.h,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AllColor.blue500,
+                            ),
+                          )
+                        : Icon(Icons.picture_as_pdf_outlined, size: 18.sp),
+                    label: Text(
+                      'Invoice',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AllColor.blue500,
+                      side: BorderSide(
+                        color: AllColor.blue500.withValues(alpha: 0.55),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 10.h,
+                        horizontal: 8.w,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _docLoadingKey != null
-                      ? null
-                      : () => _downloadShipmentDocument(true),
-                  icon: _docLoadingKey == 'label'
-                      ? SizedBox(
-                          width: 16.w,
-                          height: 16.h,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AllColor.blue500,
-                          ),
-                        )
-                      : Icon(Icons.local_shipping_outlined, size: 18.sp),
-                  label: Text(
-                    'Delivery label',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AllColor.blue500,
-                    side: BorderSide(color: AllColor.blue500.withValues(alpha: 0.55)),
-                    padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _docLoadingKey != null
+                        ? null
+                        : () => _downloadShipmentDocument(true),
+                    icon: _docLoadingKey == 'label'
+                        ? SizedBox(
+                            width: 16.w,
+                            height: 16.h,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AllColor.blue500,
+                            ),
+                          )
+                        : Icon(Icons.local_shipping_outlined, size: 18.sp),
+                    label: Text(
+                      'Delivery label',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AllColor.blue500,
+                      side: BorderSide(
+                        color: AllColor.blue500.withValues(alpha: 0.55),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 10.h,
+                        horizontal: 8.w,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 14.h),
+              ],
+            ),
+            SizedBox(height: 14.h),
+          ],
 
           if (v('payment_status') == 'pending' || v('payment_status') == '-')
             SizedBox(

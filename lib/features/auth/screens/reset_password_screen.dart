@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
+import 'package:market_jango/core/utils/navigate_to_shell_profile_after_reset.dart';
+import 'package:market_jango/core/utils/password_reset_from_profile_prefs.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
@@ -49,12 +51,29 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     final state = ref.read(resetPasswordProvider);
     state.when(
       data: (ok) async {
-        if (ok) {
-          GlobalSnackbar.show(context,
-              title: "Success",
-              message: "Password reset successful!",
-              type: CustomSnackType.success);
+        if (!ok) return;
 
+        GlobalSnackbar.show(
+          context,
+          title: "Success",
+          message: "Password reset successful!",
+          type: CustomSnackType.success,
+        );
+
+        final (wantProfile, shellUt) =
+            await PasswordResetFromProfilePrefs.consumePendingNavigation();
+
+        if (!context.mounted) return;
+
+        if (wantProfile &&
+            shellUt != null &&
+            shellUt.isNotEmpty) {
+          navigateToShellProfileTabForUserType(
+            ref: ref,
+            context: context,
+            userTypeRaw: shellUt,
+          );
+        } else {
           context.go(LoginScreen.routeName);
         }
       },

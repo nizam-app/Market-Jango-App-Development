@@ -19,6 +19,7 @@ import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_locaiton_button.dart';
 import 'package:market_jango/core/widget/global_save_botton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
+import 'package:market_jango/features/auth/logic/forget_password_reverport.dart';
 
 class BuyerProfileEditScreen extends ConsumerStatefulWidget {
   const BuyerProfileEditScreen({super.key, required this.user});
@@ -65,6 +66,29 @@ class _BuyerProfileEditScreenState
   bool get isTransport => widget.user.userType.toLowerCase() == 'transport';
   bool get isDriver => widget.user.userType.toLowerCase() == 'driver';
 
+  /// Dropdown must contain [user.currency] — otherwise Flutter asserts when value is e.g. UGX.
+  static const Set<String> _defaultCurrencyCodes = {
+    'USD', 'EUR', 'GBP', 'BDT', 'INR', 'JPY', 'CNY', 'AUD', 'CAD', 'UGX',
+  };
+
+  List<String> get _currencyMenuItems {
+    final codes = {..._defaultCurrencyCodes};
+    final saved = widget.user.currency?.trim();
+    if (saved != null && saved.isNotEmpty) codes.add(saved);
+    final sel = _selectedCurrency?.trim();
+    if (sel != null && sel.isNotEmpty) codes.add(sel);
+    final sorted = codes.toList()..sort();
+    return sorted;
+  }
+
+  String get _effectiveCurrencyDropdownValue {
+    final items = _currencyMenuItems;
+    final sel = _selectedCurrency?.trim() ?? '';
+    if (items.isEmpty) return 'USD';
+    if (items.contains(sel)) return sel;
+    return items.first;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,7 +97,9 @@ class _BuyerProfileEditScreenState
     nameC = TextEditingController(text: widget.user.name ?? '');
     emailC = TextEditingController(text: widget.user.email ?? '');
     phoneC = TextEditingController(text: widget.user.phone ?? '');
-    _selectedCurrency = widget.user.currency ?? 'USD';
+    final rawCurrency = widget.user.currency?.trim();
+    _selectedCurrency =
+        rawCurrency != null && rawCurrency.isNotEmpty ? rawCurrency : 'USD';
 
     // --------- buyer ----------
     ageC = TextEditingController(text: widget.user.buyer?.age ?? '');
@@ -147,9 +173,32 @@ class _BuyerProfileEditScreenState
     super.dispose();
   }
 
+  Future<void> _onPasswordSecurityTap() async {
+    final email = widget.user.email?.trim() ?? '';
+    if (email.isEmpty) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Error',
+        message:
+            'An email address is needed to reset your password. Add one via support if missing.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+
+    if (!mounted) return;
+
+    await ref.read(forgetPasswordProvider.notifier).sendForgetPassword(
+          context: context,
+          email: email,
+          shellUserTypeAfterReset: widget.user.userType,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final updateUserLoading = ref.watch(updateUserProvider).isLoading;
+    final forgotPwLoading = ref.watch(forgetPasswordProvider).isLoading;
 
     return Scaffold(
       body: SafeArea(
@@ -185,6 +234,64 @@ class _BuyerProfileEditScreenState
                   enabled: false,
                 ),
                 SizedBox(height: 12.h),
+                Material(
+                  color: const Color(0xffE6F0F8),
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8.r),
+                    onTap: forgotPwLoading ? null : _onPasswordSecurityTap,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 14.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline_rounded,
+                            color: const Color(0xff0168B8),
+                            size: 22.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Password settings',
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  (widget.user.email?.trim().isEmpty ?? true)
+                                      ? '${ref.t(BKeys.forgotPassword)} — add email to your account'
+                                      : 'OTP will be sent to ${widget.user.email}',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: Colors.black54,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (forgotPwLoading)
+                            SizedBox(
+                              width: 22.r,
+                              height: 22.r,
+                              child: CircularProgressIndicator(strokeWidth: 2.r),
+                            )
+                          else
+                            Icon(Icons.chevron_right, color: Colors.black45),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -196,9 +303,9 @@ class _BuyerProfileEditScreenState
                       ),
                     ),
                     SizedBox(height: 8.h),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedCurrency,
+                    InputDecorator(
                       decoration: InputDecoration(
+                        filled: true,
                         fillColor: const Color(0xffE6F0F8),
                         hintText: "Select Currency",
                         border: OutlineInputBorder(
@@ -224,22 +331,29 @@ class _BuyerProfileEditScreenState
                         ),
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 16.w,
-                          vertical: 12.h,
+                          vertical: 4.h,
                         ),
                       ),
-                      items: <String>['USD', 'EUR', 'GBP', 'BDT', 'INR', 'JPY', 'CNY', 'AUD', 'CAD']
-                          .map(
-                            (value) => DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCurrency = newValue;
-                        });
-                      },
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _effectiveCurrencyDropdownValue,
+                          hint: const Text("Select Currency"),
+                          items: _currencyMenuItems
+                              .map(
+                                (code) => DropdownMenuItem<String>(
+                                  value: code,
+                                  child: Text(code),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedCurrency = newValue;
+                            });
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:market_jango/core/constants/api_control/auth_api.dart';
+import 'package:market_jango/core/utils/password_reset_from_profile_prefs.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import '../screens/forget_otp_verification_screen.dart';
 
@@ -21,6 +22,9 @@ class ForgetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
     required BuildContext context,
     required String email,
     bool resendOnly = false,
+
+    /// If set (logged-in profile flow), OTP → reset completes with return to Profile tab instead of Login.
+    String? shellUserTypeAfterReset,
   }) async {
     state = const AsyncValue.loading();
 
@@ -50,6 +54,14 @@ class ForgetPasswordNotifier extends StateNotifier<AsyncValue<bool>> {
           message: json['message'] ?? "OTP sent successfully!",
           type: CustomSnackType.success,
         );
+
+        if (!resendOnly &&
+            shellUserTypeAfterReset != null &&
+            shellUserTypeAfterReset.trim().isNotEmpty) {
+          await PasswordResetFromProfilePrefs.markFlowStarted(
+            userType: shellUserTypeAfterReset.trim(),
+          );
+        }
 
         if (!resendOnly) {
           context.push(

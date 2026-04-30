@@ -33,6 +33,18 @@ class _GenericAttributePickerState extends ConsumerState<GenericAttributePicker>
     final attr1Entry = selectedAttrList.isNotEmpty ? selectedAttrList[0] : null;
     final attr2Entry = selectedAttrList.length > 1 ? selectedAttrList[1] : null;
 
+    // UX: when nothing is selected yet, show a single "Select Attribute" dropdown (no duplicate headers).
+    if (attr1Entry == null) {
+      return _AttributeDropdown(
+        availableAttributes: availableAttributes,
+        onSelected: (attrName) {
+          final current = Map<String, List<String>>.from(selectedAttributes);
+          current[attrName] = [];
+          ref.read(selectedAttributesProvider.notifier).state = current;
+        },
+      );
+    }
+
     return IntrinsicHeight(
       child: Row(
         children: [
@@ -41,26 +53,15 @@ class _GenericAttributePickerState extends ConsumerState<GenericAttributePicker>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CardHeader(label: attr1Entry != null ? _getAttributeDisplayName(attr1Entry.key) : 'Select Attribute'),
-                SizedBox(height: 20.h),
-                
-                // Dropdown for first attribute
-                if (attr1Entry == null)
-                  _AttributeDropdown(
-                    availableAttributes: availableAttributes,
-                    onSelected: (attrName) {
-                      final current = Map<String, List<String>>.from(selectedAttributes);
-                      current[attrName] = [];
-                      ref.read(selectedAttributesProvider.notifier).state = current;
-                    },
-                  )
-                else
-                  // Show values for first attribute
-                  _AttributeValuePicker(
-                    attributeName: attr1Entry.key,
-                    selectedValues: attr1Entry.value,
-                    attributes: widget.attributes,
-                  ),
+                _CardHeader(
+                  label: _getAttributeDisplayName(attr1Entry.key),
+                ),
+                SizedBox(height: 10.h),
+                _AttributeValuePicker(
+                  attributeName: attr1Entry.key,
+                  selectedValues: attr1Entry.value,
+                  attributes: widget.attributes,
+                ),
               ],
             ),
           ),
@@ -72,26 +73,29 @@ class _GenericAttributePickerState extends ConsumerState<GenericAttributePicker>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CardHeader(label: attr2Entry != null ? _getAttributeDisplayName(attr2Entry.key) : 'Select Attribute'),
-                SizedBox(height: 10.h),
-                
-                // Dropdown for second attribute (only if first is selected)
-                if (attr1Entry != null && attr2Entry == null)
-                  _AttributeDropdown(
-                    availableAttributes: availableAttributes,
-                    onSelected: (attrName) {
-                      final current = Map<String, List<String>>.from(selectedAttributes);
-                      current[attrName] = [];
-                      ref.read(selectedAttributesProvider.notifier).state = current;
-                    },
-                  )
-                else if (attr2Entry != null)
-                  // Show values for second attribute
+                if (attr2Entry != null) ...[
+                  _CardHeader(
+                    label: _getAttributeDisplayName(attr2Entry.key),
+                  ),
+                  SizedBox(height: 10.h),
                   _AttributeValuePicker(
                     attributeName: attr2Entry.key,
                     selectedValues: attr2Entry.value,
                     attributes: widget.attributes,
                   ),
+                ] else ...[
+                  // Second attribute selector (appears only after first attribute is chosen).
+                  _AttributeDropdown(
+                    availableAttributes: availableAttributes,
+                    onSelected: (attrName) {
+                      final current =
+                          Map<String, List<String>>.from(selectedAttributes);
+                      current[attrName] = [];
+                      ref.read(selectedAttributesProvider.notifier).state =
+                          current;
+                    },
+                  ),
+                ],
               ],
             ),
           ),

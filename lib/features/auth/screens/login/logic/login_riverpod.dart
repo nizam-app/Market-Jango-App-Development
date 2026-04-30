@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
+import 'package:market_jango/features/auth/screens/login/logic/email_validator.dart';
+
 import '../../../../../core/constants/api_control/auth_api.dart';
 import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../../../../core/utils/auth_header_provider.dart';
@@ -15,6 +17,7 @@ import '../../../../../core/utils/auth_local_storage.dart';
 import '../../../../../core/utils/auth_session_utils.dart';
 import '../../../../../core/utils/get_token_sharedpefarens.dart';
 import '../../../../../core/utils/get_user_type.dart';
+import '../../../../../core/utils/session_cache_invalidation.dart';
 import '../../../../../core/widget/global_snackbar.dart';
 
 // Login state provider
@@ -27,6 +30,9 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
   LoginNotifier(this.ref) : super(const AsyncValue.data(null));
   final Ref ref;
 
+  static const String _invalidCredentialMessage =
+      'Invalid email, phone, or password';
+
   Future<void> login({
     required BuildContext context,
     required String email,
@@ -36,7 +42,10 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
 
     try {
       // Network call with timeout
-      final response = await _performLoginRequest(email, password).timeout(
+      final response = await _performLoginRequest(
+        normalizeLoginIdentityField(email),
+        password,
+      ).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
           throw TimeoutException(
@@ -53,7 +62,7 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
         await _processLoginResponse(json, context);
         state = const AsyncValue.data(null);
       } else {
-        final errorMessage = json['message'] ?? 'Login failed';
+        final errorMessage = _invalidCredentialMessage;
         state = AsyncValue.error(errorMessage, StackTrace.current);
         GlobalSnackbar.show(
           context,
@@ -70,25 +79,43 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
         message: e.message ?? 'Request timed out',
         type: CustomSnackType.error,
       );
-    } catch (e, st) {
-      Logger().e("⛔ Login Error: $e");
+    } on FormatException catch (e, st) {
+      // Non-JSON response from server.
       state = AsyncValue.error(e, st);
       GlobalSnackbar.show(
         context,
         title: "Error",
-        message: e.toString().replaceAll('Exception: ', ''),
+        message: _invalidCredentialMessage,
+        type: CustomSnackType.error,
+      );
+    } catch (e, st) {
+      Logger().e("⛔ Login Error: $e");
+      final msg = e.toString();
+      final isUnauthorized =
+          msg.contains('401') || msg.toLowerCase().contains('unauthorized');
+      state = AsyncValue.error(e, st);
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: isUnauthorized ? _invalidCredentialMessage : msg.replaceAll('Exception: ', ''),
         type: CustomSnackType.error,
       );
     }
   }
 
-  Future<String> _performLoginRequest(String email, String password) async {
+  Future<String> _performLoginRequest(String identity, String password) async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse(AuthAPIController.login),
     );
 
-    request.fields['email'] = email;
+    final normalized = identity.trim();
+    if (looksLikeEmailInput(normalized)) {
+      request.fields['email'] = normalized.toLowerCase();
+    } else {
+      // Backend expects phone for phone login.
+      request.fields['phone'] = normalized;
+    }
     request.fields['password'] = password;
 
     final streamedResponse = await request.send().timeout(
@@ -98,9 +125,7 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
       },
     );
 
-    if (streamedResponse.statusCode != 200) {
-      throw Exception('HTTP ${streamedResponse.statusCode}');
-    }
+    // Backend can return 401 with JSON message; don't throw early so we can show friendly error.
 
     final body = await streamedResponse.stream.bytesToString().timeout(
       const Duration(seconds: 5),
@@ -157,6 +182,9 @@ class LoginNotifier extends StateNotifier<AsyncValue<void>> {
       Logger().e("⛔ Error waiting for token: $e");
       // Continue anyway, but log the error
     }
+
+    // Buyer/vendor home feeds must refetch after a new token (Riverpod caches old lists otherwise).
+    invalidateHomeFeedsAfterSuccessfulLogin(ref);
 
     // Get user type for logging and navigation
     final userType = await AuthSessionUtils.getUserType();

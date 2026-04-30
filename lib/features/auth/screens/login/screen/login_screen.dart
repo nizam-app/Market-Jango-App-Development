@@ -66,7 +66,8 @@ class LoginTextFormField extends ConsumerWidget {
             autovalidateMode: AutovalidateMode.disabled,
             textInputAction: TextInputAction.next,
             controller: controllerEmail,
-            validator: emailValidator,
+            keyboardType: TextInputType.text,
+            validator: loginEmailOrPhoneValidator,
             decoration: InputDecoration(
               hintText: "Email or Phone number",
               border: OutlineInputBorder(

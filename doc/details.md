@@ -13,7 +13,7 @@ GET /api/vendor/orders/{item_id}/assignment — current assignment
 POST /api/vendor/orders/{item_id}/unassign-driver — cancel assignment
 These live under tokenVerify and, for assign/unassign, under moderatorAccess:Owner,Manager (see routes/api.php).
 
-## WHO USES WHICH API — Quick Reference
+Note: There is still a legacy route POST /api/vendor/invoice/create/{driver_id}/{order_item_id} that goes through VendorHomePageController::vendorInvoice and is tied to the old “pay + assign” style flow. For “assign only, pay driver elsewhere,” the Flutter vendor app should use /vendor/orders/{item_id}/assign-driver, not that invoice route.
 
 **Flutter:** The driver-list flow “Assign order” screen (`AssignToOrderDriver` → `startVendorAssignCheckout` in `lib/features/vendor/screens/vendor_asign_to_order_driver/logic/vendor_driver_prement_logic.dart`) calls `VendorOrderApi.assignDriverToOrderItem` → `POST …/vendor/orders/{invoice_item_id}/assign-driver` with JSON `{ "driver_id": … }`. It does **not** open a payment WebView; payment is handled outside this path if needed.
 

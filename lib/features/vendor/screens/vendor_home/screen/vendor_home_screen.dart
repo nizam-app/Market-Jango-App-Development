@@ -346,7 +346,10 @@ class VendorHomeScreen extends ConsumerWidget {
                         size: 20.r,
                         color: Colors.black,
                       ),
-                      title: 'Delivery setting',
+                      title: ref.t(
+                        BKeys.delivery_setting,
+                        fallback: 'Delivery setting',
+                      ),
                       onTap: () => context.push(VendorDeliverySettingScreen.routeName),
                     )
                   : const SizedBox.shrink(),

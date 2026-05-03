@@ -9,6 +9,8 @@ import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/transport_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/vendor_bottom_nav.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/translation_providers.dart';
 
 /// AuthSessionUtils - utility class for managing authentication session
 /// 
@@ -183,6 +185,18 @@ class AuthSessionUtils {
     }
   }
 
+  static String _trl(BuildContext context, String key, String fallback) {
+    try {
+      final c = ProviderScope.containerOf(context);
+      return c.read(appTranslationsProvider).maybeWhen(
+            data: (t) => t.get(key, fallback: fallback),
+            orElse: () => fallback,
+          );
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   /// Confirm then [logoutAndGoToLogin] — same dialog as profile settings (full storage clear + go to login).
   static Future<void> showLogoutConfirmationDialog(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -190,21 +204,33 @@ class AuthSessionUtils {
       barrierDismissible: false,
       useRootNavigator: true,
       builder: (dialogContext) {
+        final title = _trl(
+          dialogContext,
+          BKeys.logout_dialog_title,
+          'Log out',
+        );
+        final body = _trl(
+          dialogContext,
+          BKeys.logout_dialog_message,
+          'Are you sure you want to log out from this account?',
+        );
+        final cancel = _trl(dialogContext, BKeys.cancel, 'Cancel');
+        final confirmBtn = _trl(dialogContext, BKeys.logOut, 'Log out');
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'Log out',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          content: const Text(
-            'Are you sure you want to log out from this account?',
-            style: TextStyle(fontSize: 14, height: 1.4),
+          content: Text(
+            body,
+            style: const TextStyle(fontSize: 14, height: 1.4),
           ),
           actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              child: Text(cancel, style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -216,9 +242,9 @@ class AuthSessionUtils {
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
-              child: const Text(
-                'Log out',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              child: Text(
+                confirmBtn,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],

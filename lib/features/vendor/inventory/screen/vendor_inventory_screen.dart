@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/vendor/inventory/data/vendor_inventory_api.dart';
 import 'package:market_jango/features/vendor/inventory/screen/vendor_inventory_product_screen.dart';
 
@@ -25,7 +27,7 @@ class VendorInventoryScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Inventory'),
+        title: Text(ref.t(BKeys.inventory, fallback: 'Inventory')),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.r),

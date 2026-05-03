@@ -165,19 +165,19 @@ class GlobalSettingScreen extends ConsumerWidget {
           _DividerLine(),
           _SettingsTile(
             leadingIcon: Icons.delivery_dining_outlined,
-            title: 'Delivery setting',
+            title: ref.t(BKeys.delivery_setting, fallback: 'Delivery setting'),
             onTap: () => context.push(VendorDeliverySettingScreen.routeName),
           ),
           _DividerLine(),
           _SettingsTile(
             leadingIcon: Icons.account_balance_wallet_outlined,
-            title: 'Wallet',
+            title: ref.t(BKeys.wallet, fallback: 'Wallet'),
             onTap: () => context.push(DriverWalletScreen.routeName),
           ),
           _DividerLine(),
           _SettingsTile(
             leadingIcon: Icons.local_shipping_outlined,
-            title: 'My deliveries',
+            title: ref.t(BKeys.my_deliveries, fallback: 'My deliveries'),
             onTap: () => context.push(DriverDeliveriesScreen.routeName),
           ),
         ],
@@ -211,7 +211,10 @@ class GlobalSettingScreen extends ConsumerWidget {
                       _DividerLine(),
                       _SettingsTile(
                         leadingIcon: Icons.people_alt_outlined,
-                        title: 'Staff Management',
+                        title: ref.t(
+                          BKeys.staff_management,
+                          fallback: 'Staff Management',
+                        ),
                         onTap: () => context.push(VendorStaffListScreen.routeName),
                       ),
                     ],
@@ -226,7 +229,7 @@ class GlobalSettingScreen extends ConsumerWidget {
         if (userTypeAsync.value == "vendor")
           _SettingsTile(
             leadingIcon: Icons.inventory_2_outlined,
-            title: 'Inventory',
+            title: ref.t(BKeys.inventory, fallback: 'Inventory'),
             onTap: () => context.push(VendorInventoryScreen.routeName),
           ),
         _DividerLine(),
@@ -249,7 +252,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                if (userTypeAsync.value == "buyer")
           _SettingsTile(
             leadingIcon: Icons.account_balance_wallet_outlined,
-            title: 'Wallet',
+            title: ref.t(BKeys.wallet, fallback: 'Wallet'),
             onTap: () => context.push(BuyerWalletScreen.routeName),
           ),
         if (userTypeAsync.value == "buyer")
@@ -257,7 +260,7 @@ class GlobalSettingScreen extends ConsumerWidget {
            if (userTypeAsync.value == "buyer")
           _SettingsTile(
             leadingIcon: Icons.undo_outlined,
-            title: 'Refunds',
+            title: ref.t(BKeys.refunds, fallback: 'Refunds'),
             onTap: () => context.push(BuyerRefundsScreen.routeName),
           ),
         if (userTypeAsync.value == "transport")
@@ -270,7 +273,7 @@ class GlobalSettingScreen extends ConsumerWidget {
         if (userTypeAsync.value == "transport")
           _SettingsTile(
             leadingIcon: Icons.account_balance_wallet_outlined,
-            title: 'Wallet',
+            title: ref.t(BKeys.wallet, fallback: 'Wallet'),
             onTap: () => context.push(TransportWalletScreen.routeName),
           ),
         _DividerLine(),
@@ -283,7 +286,10 @@ class GlobalSettingScreen extends ConsumerWidget {
                   if (!ok) return const SizedBox.shrink();
                   return _SettingsTile(
                     leadingIcon: Icons.card_membership_outlined,
-                    title: 'Subscription',
+                    title: ref.t(
+                      BKeys.subscription_title,
+                      fallback: 'Subscription',
+                    ),
                     onTap: () => context.push(SubscriptionScreen.routeName),
                   );
                 },
@@ -295,7 +301,10 @@ class GlobalSettingScreen extends ConsumerWidget {
         if (userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.card_membership_outlined,
-            title: 'Subscription',
+            title: ref.t(
+              BKeys.subscription_title,
+              fallback: 'Subscription',
+            ),
             onTap: () => context.push(SubscriptionScreen.routeName),
           ),
         _DividerLine(),
@@ -308,7 +317,10 @@ class GlobalSettingScreen extends ConsumerWidget {
                   if (!ok) return const SizedBox.shrink();
                   return _SettingsTile(
                     leadingIcon: Icons.link,
-                    title: 'Affiliate Links',
+                    title: ref.t(
+                      BKeys.affiliate_links,
+                      fallback: 'Affiliate Links',
+                    ),
                     onTap: () => context.push(AffiliateScreen.routeName),
                   );
                 },
@@ -320,7 +332,10 @@ class GlobalSettingScreen extends ConsumerWidget {
         if (userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.link,
-            title: 'Affiliate Links',
+            title: ref.t(
+              BKeys.affiliate_links,
+              fallback: 'Affiliate Links',
+            ),
             onTap: () => context.push(AffiliateScreen.routeName),
           ),
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
@@ -334,7 +349,7 @@ class GlobalSettingScreen extends ConsumerWidget {
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
           _SettingsTile(
             leadingIcon: Icons.leaderboard_outlined,
-            title: 'Rankings',
+            title: ref.t(BKeys.rankings, fallback: 'Rankings'),
             onTap: () => context.push(RankingScreen.routeName),
           ),
         _DividerLine(),
@@ -846,7 +861,7 @@ class ProfileSection extends ConsumerWidget {
                     style: TextStyle(fontSize: 13.sp, color: AllColor.black),
                   ),
                   SizedBox(width: 8.w),
-                  _PrivateBadge(status: userType.status),
+                  _PrivateBadge(statusRaw: userType.status),
                 ],
               ),
             ],
@@ -954,11 +969,14 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _PrivateBadge extends StatelessWidget {
-  final String status;
-  const _PrivateBadge({required this.status});
+class _PrivateBadge extends ConsumerWidget {
+  final String statusRaw;
+
+  const _PrivateBadge({required this.statusRaw});
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final label = _accountStatusLabel(ref, statusRaw);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
@@ -966,7 +984,7 @@ class _PrivateBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
-        status,
+        label,
         style: TextStyle(
           color: AllColor.white,
           fontWeight: FontWeight.w700,
@@ -974,6 +992,17 @@ class _PrivateBadge extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _accountStatusLabel(WidgetRef ref, String status) {
+    switch (status.trim().toLowerCase()) {
+      case 'approved':
+        return ref.t(BKeys.approved, fallback: status);
+      case 'pending':
+        return ref.t(BKeys.pending, fallback: status);
+      default:
+        return status;
+    }
   }
 }
 

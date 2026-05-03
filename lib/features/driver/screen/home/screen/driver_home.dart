@@ -735,11 +735,11 @@ class _OrderModel {
 
 // List<_OrderModel> _mockOrders() => _OrdersListData.list;
 
-class _DriverDeliveriesHomeCard extends StatelessWidget {
+class _DriverDeliveriesHomeCard extends ConsumerWidget {
   const _DriverDeliveriesHomeCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Material(
@@ -763,14 +763,17 @@ class _DriverDeliveriesHomeCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'My deliveries',
+                        ref.t(BKeys.my_deliveries, fallback: 'My deliveries'),
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15.sp,
                         ),
                       ),
                       Text(
-                        'Accept, pickup, deliver & GPS',
+                        ref.t(
+                          BKeys.my_deliveries_subtitle,
+                          fallback: 'Accept, pickup, deliver & GPS',
+                        ),
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: AllColor.grey500,

@@ -18,20 +18,41 @@ class GlobalLanguageScreen extends ConsumerStatefulWidget {
       _GlobalLanguageScreenState();
 }
 
-/// label <-> code map
+/// Display label (as returned by `/api/language`) -> ISO-style code for `user/update`.
 const Map<String, String> _labelToCode = {
   'English': 'en',
   'Français': 'fr',
   'Русский': 'ru',
   'Tiếng Việt': 'vi',
+  'Kiswahili': 'sw',
+  'Swahili': 'sw',
+  'العربية': 'ar',
+  'Arabic': 'ar',
 };
 
+/// Default label shown when restoring from saved code (must match an entry in API list if possible).
 const Map<String, String> _codeToLabel = {
   'en': 'English',
   'fr': 'Français',
   'ru': 'Русский',
   'vi': 'Tiếng Việt',
+  'sw': 'Kiswahili',
+  'ar': 'العربية',
 };
+
+String? _labelMatchingSavedCode(String savedCode, List<String> available) {
+  final preferred = _codeToLabel[savedCode];
+  if (preferred != null && available.contains(preferred)) return preferred;
+  for (final lang in available) {
+    if ((_labelToCode[lang] ?? '') == savedCode) return lang;
+  }
+  return null;
+}
+
+String _codeForLabel(String label) {
+  final t = label.trim();
+  return _labelToCode[t] ?? 'en';
+}
 
 class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
   String? selectedLang; // label: English / Français ...
@@ -63,17 +84,13 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
     String? initialLang;
 
     if (_savedLanguageCode != null) {
-      // Try to convert saved code to label
-      String? label = _codeToLabel[_savedLanguageCode];
-      // Or check if it's already a label
-      label ??= _labelToCode.keys.contains(_savedLanguageCode)
-          ? _savedLanguageCode
+      final saved = _savedLanguageCode!.trim();
+      String? label = _labelMatchingSavedCode(saved, availableLanguages);
+      label ??= _labelToCode.containsKey(saved) && availableLanguages.contains(saved)
+          ? saved
           : null;
 
-      // Verify the saved language exists in available languages
-      if (label != null && availableLanguages.contains(label)) {
-        initialLang = label;
-      }
+      if (label != null) initialLang = label;
     }
 
     // If no valid saved language, use first available
@@ -92,7 +109,7 @@ class _GlobalLanguageScreenState extends ConsumerState<GlobalLanguageScreen> {
   Future<void> _saveLanguage() async {
     if (selectedLang == null) return;
 
-    final code = _labelToCode[selectedLang] ?? 'en';
+    final code = _codeForLabel(selectedLang!);
     final notifier = ref.read(languageUpdateProvider.notifier);
 
     try {

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,14 +30,51 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
   final _priceCtrl = TextEditingController();
   String? _selectedRouteId;
   List<File> _pickedFiles = [];
+  bool _acceptedTerms = false;
+  late final TapGestureRecognizer _termsTapRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsTapRecognizer = TapGestureRecognizer()..onTap = _showTermsDialog;
+  }
 
   @override
   void dispose() {
+    _termsTapRecognizer.dispose();
     _carNameCtrl.dispose();
     _carModelCtrl.dispose();
     _locationCtrl.dispose();
     _priceCtrl.dispose();
     super.dispose();
+  }
+
+  void _showTermsDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Terms and Conditions'),
+        content: SingleChildScrollView(
+          child: Text(
+            'By registering as a driver on Market Jango, you agree that:\n\n'
+            '• The vehicle and license information you provide is accurate and up to date.\n'
+            '• You will comply with applicable traffic laws and safety requirements.\n'
+            '• Uploaded documents (e.g. driving license) may be verified by the platform.\n'
+            '• You are responsible for the service you provide to passengers and for any pricing '
+            'you list, in line with platform rules.\n'
+            '• The platform may update these terms; continued use after changes constitutes acceptance.\n\n'
+            'For full legal terms, refer to any official policy documents published by Market Jango.',
+            style: TextStyle(fontSize: 14.sp, height: 1.4),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickFiles() async {
@@ -67,6 +105,16 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
         context,
         title: "Error",
         message: "Please fill all fields and upload your documents",
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+
+    if (!_acceptedTerms) {
+      GlobalSnackbar.show(
+        context,
+        title: "Error",
+        message: "Please accept the Terms and Conditions to continue",
         type: CustomSnackType.error,
       );
       return;
@@ -234,7 +282,57 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                   ),
                 ),
 
-                SizedBox(height: 40.h),
+                SizedBox(height: 24.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 24.w,
+                        height: 24.h,
+                        child: Checkbox(
+                          value: _acceptedTerms,
+                          onChanged: (v) =>
+                              setState(() => _acceptedTerms = v ?? false),
+                          activeColor: AllColor.loginButtomColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 2.h),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: AllColor.black.withValues(alpha: 0.65),
+                                height: 1.35,
+                              ),
+                              children: [
+                                const TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'Terms and Conditions',
+                                  style: TextStyle(
+                                    color: AllColor.loginButtomColor,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: _termsTapRecognizer,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 24.h),
                 CustomAuthButton(
                   buttonText: loading ? "Submitting..." : "Confirm",
                   onTap: loading ? () {} : _submit,

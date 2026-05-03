@@ -8,14 +8,36 @@ import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/data/asign_to_order_driver_data.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/logic/vendor_driver_prement_logic.dart';
 import 'package:market_jango/features/vendor/screens/vendor_asign_to_order_driver/model/asign_to_order_driver_model.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_assign_rules.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
+/// Pass this as `GoRouterState.extra` when opening [AssignToOrderDriver].
+class AssignToOrderDriverArgs {
+  const AssignToOrderDriverArgs({required this.driverId, this.driverName});
+
+  final int driverId;
+  final String? driverName;
+}
+
 class AssignToOrderDriver extends ConsumerStatefulWidget {
-  const AssignToOrderDriver({super.key, required this.driverId});
+  const AssignToOrderDriver({
+    super.key,
+    required this.driverId,
+    this.driverName,
+  });
 
   static const routeName = "/assign_order_driver";
 
   final int driverId;
+  /// Display name from driver list; falls back to numeric id in titles.
+  final String? driverName;
+
+  /// Text after "Assign order to driver …" (name or `#id`).
+  String get driverDisplaySuffix {
+    final n = driverName?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    return '$driverId';
+  }
 
   @override
   ConsumerState<AssignToOrderDriver> createState() =>
@@ -45,10 +67,16 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
       ),
       data: (pageData) {
         final orders = pageData.data;
+        // API may return any line status; server only allows assign for pending/processing.
+        final assignable = orders
+            .where(
+              (o) => VendorOrderAssignRules.isPendingOrProcessingStatus(o.status),
+            )
+            .toList();
 
-        // search filter
+        // search filter (only among assignable lines)
         final q = _search.text.trim().toLowerCase();
-        final items = orders.where((o) {
+        final items = assignable.where((o) {
           final orderNo = _orderNo(o).toLowerCase();
           final line1 = _line1(o).toLowerCase();
           final line2 = _line2(o).toLowerCase();
@@ -66,6 +94,7 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
 
           // 🔹 Bottom button ta ekdom alada rakhlam — overflow possible na
           bottomNavigationBar: _BottomAssignBar(
+            driverDisplaySuffix: widget.driverDisplaySuffix,
             enabled: _selectedIndex != null && items.isNotEmpty,
             onPressed: _selectedIndex == null
                 ? null
@@ -74,8 +103,9 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
 
                     await startVendorAssignCheckout(
                       context,
+                      ref,
                       driverId: widget.driverId,
-                      orderItemId: chosen.id, // order_item_id
+                      orderItemId: chosen.id, // invoice_item_id / line id
                     );
                   },
           ),
@@ -93,11 +123,20 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
                       const CustomBackButton(),
                       SizedBox(height: 20.h),
                       Text(
-                        'Assign order to driver ${widget.driverId}',
+                        'Assign order to driver ${widget.driverDisplaySuffix}',
                         style: TextStyle(
                           color: AllColor.black,
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Only order lines in Pending or Processing can be assigned.',
+                        style: TextStyle(
+                          color: AllColor.black54,
+                          fontSize: 12.sp,
+                          height: 1.3,
                         ),
                       ),
                       SizedBox(height: 12.h),
@@ -145,11 +184,23 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: items.isEmpty
                         ? Center(
-                            child: Text(
-                              'No pending orders found',
-                              style: TextStyle(
-                                color: AllColor.black54,
-                                fontSize: 14.sp,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 24.w),
+                              child: Text(
+                                assignable.isEmpty && orders.isNotEmpty
+                                    ? 'No lines on this page can be assigned. '
+                                        'Delivered, cancelled, and other final '
+                                        'statuses are hidden. Try another page or '
+                                        'wait until an order is Pending or Processing.'
+                                    : orders.isEmpty
+                                        ? 'No orders on this page.'
+                                        : 'No matching orders for your search.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AllColor.black54,
+                                  fontSize: 14.sp,
+                                  height: 1.35,
+                                ),
                               ),
                             ),
                           )
@@ -240,7 +291,7 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
                                       Align(
                                         alignment: Alignment.topRight,
                                         child: Text(
-                                          item.status,
+                                          _formatStatusLabel(item.status),
                                           style: TextStyle(
                                             color: AllColor.blue500,
                                             fontWeight: FontWeight.w700,
@@ -283,24 +334,38 @@ class _AssignToOrderDriverState extends ConsumerState<AssignToOrderDriver> {
       return 'Pickup address: Not set';
     }
   }
+
+  String _formatStatusLabel(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return '—';
+    final lower = t.toLowerCase();
+    return lower[0].toUpperCase() + lower.substring(1);
+  }
 }
 
 /// ================= Bottom button =================
 
-class _BottomAssignBar extends ConsumerWidget {
+class _BottomAssignBar extends StatelessWidget {
+  final String driverDisplaySuffix;
   final bool enabled;
   final VoidCallback? onPressed;
 
-  const _BottomAssignBar({required this.enabled, this.onPressed});
+  const _BottomAssignBar({
+    required this.driverDisplaySuffix,
+    required this.enabled,
+    this.onPressed,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    // Keep in sync with the screen title: "Assign order to driver {name|id}".
+    final label = 'Assign order to driver $driverDisplaySuffix';
     return SafeArea(
       top: false,
       minimum: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 10.h),
       child: SizedBox(
         width: double.infinity,
-        height: 44.h,
+        height: 48.h,
         child: ElevatedButton(
           onPressed: enabled ? onPressed : null,
           style: ElevatedButton.styleFrom(
@@ -310,13 +375,17 @@ class _BottomAssignBar extends ConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
           ),
           child: Text(
-            //'Payment now'
-            ref.t(BKeys.payment),
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: AllColor.white,
               fontWeight: FontWeight.w700,
+              fontSize: 13.sp,
             ),
           ),
         ),
@@ -324,3 +393,4 @@ class _BottomAssignBar extends ConsumerWidget {
     );
   }
 }
+

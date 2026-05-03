@@ -37,7 +37,7 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         title: Text(
-          'Rankings',
+          ref.t(BKeys.rankings, fallback: 'Rankings'),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,

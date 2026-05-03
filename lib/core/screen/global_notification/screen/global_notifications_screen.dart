@@ -6,7 +6,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/screen/global_notification/data/notification_data.dart';
 
-import '../../../localization/Keys/vendor_kay.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 
 class GlobalNotificationsScreen extends ConsumerStatefulWidget {
   const GlobalNotificationsScreen({super.key});
@@ -32,7 +32,7 @@ class _GlobalNotificationsState
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  ref.t(VKeys.notification),
+                  ref.t(BKeys.notifications),
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -48,7 +48,7 @@ class _GlobalNotificationsState
                             SizedBox(height: 120.h),
                             Center(
                               child: Text(
-                                ref.t(VKeys.thereAreNoNotificationsNow),
+                                ref.t(BKeys.there_are_no_notifications_now),
                               ),
                             ),
                           ],

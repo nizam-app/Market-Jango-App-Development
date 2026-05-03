@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/driver/screen/deliveries/model/driver_assignment_models.dart';
 import 'package:market_jango/features/driver/screen/deliveries/provider/driver_deliveries_provider.dart';
 import 'package:market_jango/features/driver/screen/deliveries/screen/driver_delivery_detail_screen.dart';
@@ -30,7 +32,7 @@ class DriverDeliveriesScreen extends ConsumerWidget {
           child: const CustomBackButton(),
         ),
         title: Text(
-          'My deliveries',
+          ref.t(BKeys.my_deliveries, fallback: 'My deliveries'),
           style: TextStyle(
             fontSize: 17.sp,
             fontWeight: FontWeight.w700,
@@ -47,7 +49,10 @@ class DriverDeliveriesScreen extends ConsumerWidget {
             child: DropdownButtonFormField<String?>(
               initialValue: statusFilter,
               decoration: InputDecoration(
-                labelText: 'Status filter',
+                labelText: ref.t(
+                  BKeys.driver_deliveries_status_filter,
+                  fallback: 'Status filter',
+                ),
                 filled: true,
                 fillColor: AllColor.white,
                 border: OutlineInputBorder(
@@ -58,14 +63,52 @@ class DriverDeliveriesScreen extends ConsumerWidget {
                   vertical: 8.h,
                 ),
               ),
-              items: const [
-                DropdownMenuItem<String?>(value: null, child: Text('All')),
-                DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                DropdownMenuItem(value: 'accepted', child: Text('Accepted')),
-                DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
-                DropdownMenuItem(value: 'in_transit', child: Text('In transit')),
-                DropdownMenuItem(value: 'delivered', child: Text('Delivered')),
-                DropdownMenuItem(value: 'cancelled', child: Text('Cancelled')),
+              items: [
+                DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text(
+                    ref.t(BKeys.shipment_tab_all, fallback: 'All'),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'pending',
+                  child: Text(ref.t(BKeys.pending, fallback: 'Pending')),
+                ),
+                DropdownMenuItem(
+                  value: 'accepted',
+                  child: Text(
+                    ref.t(
+                      BKeys.delivery_status_accepted,
+                      fallback: 'Accepted',
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'rejected',
+                  child: Text(
+                    ref.t(
+                      BKeys.delivery_status_rejected,
+                      fallback: 'Rejected',
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'in_transit',
+                  child: Text(
+                    ref.t(
+                      BKeys.delivery_status_in_transit,
+                      fallback: 'In transit',
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'delivered',
+                  child: Text(ref.t(BKeys.delivered, fallback: 'Delivered')),
+                ),
+                DropdownMenuItem(
+                  value: 'cancelled',
+                  child: Text(ref.t(BKeys.cancelled, fallback: 'Cancelled')),
+                ),
               ],
               onChanged: (v) {
                 ref.read(driverDeliveriesStatusFilterProvider.notifier).state =
@@ -88,7 +131,7 @@ class DriverDeliveriesScreen extends ConsumerWidget {
                     Padding(
                       padding: EdgeInsets.all(24.w),
                       child: Text(
-                        e.toString().replaceFirst('Exception: ', ''),
+                        _driverDeliveriesErrorText(ref, e),
                         style: TextStyle(color: AllColor.red, fontSize: 13.sp),
                       ),
                     ),
@@ -102,7 +145,10 @@ class DriverDeliveriesScreen extends ConsumerWidget {
                         SizedBox(height: 80.h),
                         Center(
                           child: Text(
-                            'No assignments.',
+                            ref.t(
+                              BKeys.driver_deliveries_empty,
+                              fallback: 'No assignments.',
+                            ),
                             style: TextStyle(
                               color: AllColor.grey500,
                               fontSize: 14.sp,
@@ -153,6 +199,17 @@ class DriverDeliveriesScreen extends ConsumerWidget {
   }
 }
 
+String _driverDeliveriesErrorText(WidgetRef ref, Object e) {
+  final msg = e.toString().replaceFirst('Exception: ', '');
+  if (msg.toLowerCase().contains('driver not found')) {
+    return ref.t(
+      BKeys.driver_not_found,
+      fallback: msg,
+    );
+  }
+  return msg;
+}
+
 class _AssignmentTile extends StatelessWidget {
   const _AssignmentTile({required this.row});
   final DriverAssignmentRow row;
@@ -192,7 +249,7 @@ class _AssignmentTile extends StatelessWidget {
   }
 }
 
-class _PaginationRow extends StatelessWidget {
+class _PaginationRow extends ConsumerWidget {
   const _PaginationRow({
     required this.page,
     required this.lastPage,
@@ -206,15 +263,25 @@ class _PaginationRow extends StatelessWidget {
   final VoidCallback? onNext;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mid = ref
+        .t(BKeys.pagination_slash, fallback: '{current} / {total}')
+        .replaceAll('{current}', '$page')
+        .replaceAll('{total}', '$lastPage');
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextButton(onPressed: onPrev, child: const Text('Prev')),
-          Text('$page / $lastPage'),
-          TextButton(onPressed: onNext, child: const Text('Next')),
+          TextButton(
+            onPressed: onPrev,
+            child: Text(ref.t(BKeys.prev, fallback: 'Prev')),
+          ),
+          Text(mid),
+          TextButton(
+            onPressed: onNext,
+            child: Text(ref.t(BKeys.next, fallback: 'Next')),
+          ),
         ],
       ),
     );

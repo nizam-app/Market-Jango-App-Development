@@ -236,8 +236,21 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: AssignToOrderDriver.routeName,
       name: 'assign_order_driver',
-      builder: (context, state) =>
-          AssignToOrderDriver(driverId: state.extra as int),
+      builder: (context, state) {
+        final extra = state.extra;
+        if (extra is AssignToOrderDriverArgs) {
+          return AssignToOrderDriver(
+            driverId: extra.driverId,
+            driverName: extra.driverName,
+          );
+        }
+        if (extra is int) {
+          return AssignToOrderDriver(driverId: extra);
+        }
+        return const Scaffold(
+          body: Center(child: Text('Invalid assign screen arguments')),
+        );
+      },
     ),
 
     GoRoute(

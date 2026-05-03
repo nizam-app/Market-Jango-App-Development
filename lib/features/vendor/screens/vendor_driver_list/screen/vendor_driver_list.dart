@@ -122,7 +122,10 @@ class _VendorDriverListState extends ConsumerState<VendorDriverList> {
                               onAssign: () {
                                 context.push(
                                   AssignToOrderDriver.routeName,
-                                  extra: driver.id,
+                                  extra: AssignToOrderDriverArgs(
+                                    driverId: driver.id,
+                                    driverName: driver.user.name,
+                                  ),
                                 );
                               },
                               onChat: () async {

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/data/vendor_route_points_data.dart';
@@ -62,7 +64,7 @@ class _VendorDeliverySettingScreenState
           child: const CustomBackButton(),
         ),
         title: Text(
-          'Delivery setting',
+          ref.t(BKeys.delivery_setting, fallback: 'Delivery setting'),
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w600,

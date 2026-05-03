@@ -123,6 +123,8 @@ class BKeys {
   static const String myOrders = 'my_orders';
   static const String orderHistory = 'order_history';
   static const String billing = 'billing';
+  static const String wallet = 'wallet';
+  static const String refunds = 'refunds';
   static const String noInvoicesYet = 'no_invoices_yet';
   static const String invoiceDetails = 'invoice_details';
   static const String invoiceNotFound = 'invoice_not_found';
@@ -258,6 +260,35 @@ class BKeys {
   static const String shipment_tab_on_the_way = 'shipment_tab_on_the_way';
   static const String shipment_tab_completed = 'shipment_tab_completed';
 
+  /// Shipment list card + pagination (`transport_booking.dart`)
+  static const String shipment_card_heading = 'shipment_card_heading';
+  /// Template: `Page {current} of {total}`
+  static const String pagination_page_of = 'pagination_page_of';
+  /// Template: `{current} / {total}` (compact pagination)
+  static const String pagination_slash = 'pagination_slash';
+  /// Template: `No {filter} shipments found`
+  static const String shipment_list_empty_for_filter =
+      'shipment_list_empty_for_filter';
+  /// Template: `{count} pcs`
+  static const String format_pieces_count = 'format_pieces_count';
+  /// Template: `{weight} kg`
+  static const String format_weight_kg = 'format_weight_kg';
+
+  /// Driver profile settings + deliveries
+  static const String delivery_setting = 'delivery_setting';
+  static const String my_deliveries = 'my_deliveries';
+  static const String my_deliveries_subtitle = 'my_deliveries_subtitle';
+  static const String driver_deliveries_status_filter =
+      'driver_deliveries_status_filter';
+  static const String delivery_status_accepted = 'delivery_status_accepted';
+  static const String delivery_status_rejected = 'delivery_status_rejected';
+  static const String delivery_status_in_transit = 'delivery_status_in_transit';
+  static const String driver_deliveries_empty = 'driver_deliveries_empty';
+  static const String driver_not_found = 'driver_not_found';
+
+  /// Logout confirmation (`AuthSessionUtils.showLogoutConfirmationDialog`)
+  static const String logout_dialog_title = 'logout_dialog_title';
+  static const String logout_dialog_message = 'logout_dialog_message';
 
   // Transport item;
   static const String hello = 'hello';
@@ -407,5 +438,31 @@ class BKeys {
   static const String color_name_attribute = 'color_name_attribute';
   static const String gallery_multiple = 'gallery_multiple';
   static const String complete_payment = 'complete_payment';
+
+  /// Vendor settings menu (global profile)
+  static const String staff_management = 'staff_management';
+  /// Staff list — role explainer card (`vendor_staff_list_screen.dart`)
+  static const String vendor_staff_roles_title = 'vendor_staff_roles_title';
+  static const String vendor_staff_role_owner = 'vendor_staff_role_owner';
+  static const String vendor_staff_role_owner_desc = 'vendor_staff_role_owner_desc';
+  static const String vendor_staff_role_manager = 'vendor_staff_role_manager';
+  static const String vendor_staff_role_manager_desc =
+      'vendor_staff_role_manager_desc';
+  static const String vendor_staff_role_moderator = 'vendor_staff_role_moderator';
+  static const String vendor_staff_role_moderator_desc =
+      'vendor_staff_role_moderator_desc';
+  static const String vendor_staff_role_support = 'vendor_staff_role_support';
+  static const String vendor_staff_role_support_desc =
+      'vendor_staff_role_support_desc';
+  static const String vendor_staff_empty_title = 'vendor_staff_empty_title';
+  static const String vendor_staff_empty_subtitle = 'vendor_staff_empty_subtitle';
+
+  static const String inventory = 'inventory';
+  static const String affiliate_links = 'affiliate_links';
+  static const String rankings = 'rankings';
+
+  /// Notifications empty state (shared shell screens)
+  static const String there_are_no_notifications_now =
+      'there_are_no_notifications_now';
 
 }

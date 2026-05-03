@@ -127,9 +127,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                           child: ListView(
                             padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
                             children: [
-                              _emptyBox(
-                                "No ${selectedTab.toLowerCase()} shipments found",
-                              ),
+                              _emptyBox(_emptyFilterMessage()),
                             ],
                           ),
                         );
@@ -186,7 +184,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Page $cp of $lp",
+                            _pageOfLabel(cp, lp),
                             style: TextStyle(fontSize: 12.sp),
                           ),
                           Row(
@@ -216,6 +214,29 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
   }
 
   // ---------- helpers ----------
+
+  String _pageOfLabel(int cp, int lp) {
+    return ref
+        .t(
+          BKeys.pagination_page_of,
+          fallback: 'Page {current} of {total}',
+        )
+        .replaceAll('{current}', '$cp')
+        .replaceAll('{total}', '$lp');
+  }
+
+  String _emptyFilterMessage() {
+    final idx = tabs.indexOf(selectedTab);
+    final label = idx >= 0
+        ? ref.t(tabKeys[idx], fallback: tabs[idx])
+        : selectedTab;
+    return ref
+        .t(
+          BKeys.shipment_list_empty_for_filter,
+          fallback: 'No {filter} shipments found',
+        )
+        .replaceAll('{filter}', label);
+  }
 
   Widget _emptyBox(String text) => Container(
     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
@@ -347,7 +368,7 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Shipment',
+                  ref.t(BKeys.shipment_card_heading, fallback: 'Shipment'),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -441,7 +462,15 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                   children: [
                     if ((totalPieces ?? 0) > 0)
                       Text(
-                        '${totalPieces ?? 0} pcs',
+                        ref
+                            .t(
+                              BKeys.format_pieces_count,
+                              fallback: '{count} pcs',
+                            )
+                            .replaceAll(
+                              '{count}',
+                              '${totalPieces ?? 0}',
+                            ),
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: Colors.grey[700],
@@ -457,7 +486,15 @@ class _TransportBookingState extends ConsumerState<TransportBooking> {
                       ),
                     if ((totalWeightKg ?? 0) > 0)
                       Text(
-                        '${(totalWeightKg ?? 0).toStringAsFixed(1)} kg',
+                        ref
+                            .t(
+                              BKeys.format_weight_kg,
+                              fallback: '{weight} kg',
+                            )
+                            .replaceAll(
+                              '{weight}',
+                              (totalWeightKg ?? 0).toStringAsFixed(1),
+                            ),
                         style: TextStyle(
                           fontSize: 11.sp,
                           color: Colors.grey[700],

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
+import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/staff_management/data/vendor_moderator_api.dart';
@@ -28,7 +30,12 @@ class VendorStaffListScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: const Text('Staff Management'),
+        title: Text(
+          ref.t(
+            BKeys.staff_management,
+            fallback: 'Staff Management',
+          ),
+        ),
         actions: [
           canCreateDelete.when(
             data: (ok) => ok
@@ -78,22 +85,43 @@ class _List extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Vendor Moderator Roles',
+              ref.t(
+                BKeys.vendor_staff_roles_title,
+                fallback: 'Vendor Moderator Roles',
+              ),
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14.sp),
             ),
             SizedBox(height: 8.h),
-            _RoleBullet(title: 'Owner', body: 'Full control'),
             _RoleBullet(
-              title: 'Manager',
-              body: 'Manage products, orders, staff',
+              title: ref.t(BKeys.vendor_staff_role_owner, fallback: 'Owner'),
+              body: ref.t(
+                BKeys.vendor_staff_role_owner_desc,
+                fallback: 'Full control',
+              ),
             ),
             _RoleBullet(
-              title: 'Moderator',
-              body: 'Approve/reject product listings',
+              title: ref.t(BKeys.vendor_staff_role_manager, fallback: 'Manager'),
+              body: ref.t(
+                BKeys.vendor_staff_role_manager_desc,
+                fallback: 'Manage products, orders, staff',
+              ),
             ),
             _RoleBullet(
-              title: 'Support',
-              body: 'Handle reports/reviews; support staff',
+              title: ref.t(
+                BKeys.vendor_staff_role_moderator,
+                fallback: 'Moderator',
+              ),
+              body: ref.t(
+                BKeys.vendor_staff_role_moderator_desc,
+                fallback: 'Approve/reject product listings',
+              ),
+            ),
+            _RoleBullet(
+              title: ref.t(BKeys.vendor_staff_role_support, fallback: 'Support'),
+              body: ref.t(
+                BKeys.vendor_staff_role_support_desc,
+                fallback: 'Handle reports/reviews; support staff',
+              ),
             ),
           ],
         ),
@@ -110,12 +138,19 @@ class _List extends ConsumerWidget {
               Icon(Icons.people_alt_outlined, size: 44.r, color: Colors.grey),
               SizedBox(height: 10.h),
               Text(
-                'No staff found',
+                ref.t(
+                  BKeys.vendor_staff_empty_title,
+                  fallback: 'No staff found',
+                ),
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
               ),
               SizedBox(height: 6.h),
               Text(
-                'Add staff sub-accounts to help manage your store.',
+                ref.t(
+                  BKeys.vendor_staff_empty_subtitle,
+                  fallback:
+                      'Add staff sub-accounts to help manage your store.',
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade700),
               ),

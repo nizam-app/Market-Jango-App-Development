@@ -74,10 +74,12 @@ class FilterScreen extends ConsumerWidget {
         : int.tryParse((categoryId?.toString() ?? ''));
     if (cid == null || cid <= 0) return null;
     final state = m['visibility_state']?.toString().trim();
+    final town = m['visibility_town']?.toString().trim();
     return FilterSearchParams(
       visibilityCountry: country,
       categoryId: cid,
       visibilityState: (state != null && state.isNotEmpty) ? state : null,
+      visibilityTown: (town != null && town.isNotEmpty) ? town : null,
     );
   }
 }

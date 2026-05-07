@@ -12,6 +12,7 @@ import 'package:market_jango/features/buyer/screens/prement/logic/prement_done_l
 import 'package:market_jango/features/buyer/screens/prement/logic/prement_reverpod.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/widget/show_shipping_contract_sheet.dart';
+import 'package:market_jango/features/buyer/screens/prement/data/delivery_charges_data.dart';
 import 'package:market_jango/features/transport/screens/add_card_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/shiping_address_update_botton_shet.dart';
@@ -27,6 +28,231 @@ class BuyerPaymentScreen extends ConsumerStatefulWidget {
 }
 
 class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
+  String _prettyKey(String k) {
+    return k
+        .replaceAll('_', ' ')
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+
+  Widget _card({
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AllColor.grey200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  void _showDeliveryChargeDetails(
+    BuildContext context,
+    DeliveryChargesResponse resp,
+    String currency,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Delivery charge details',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Route/Items table
+                      if (resp.items.isNotEmpty)
+                        _card(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Route',
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    'Cost',
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.h),
+                              for (final it in resp.items)
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: 8.h),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${it.vendorTown} to ${it.buyerTown}',
+                                          style: TextStyle(fontSize: 12.sp),
+                                        ),
+                                      ),
+                                      Text(
+                                        '$currency${it.finalDeliveryCharge.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                      SizedBox(height: 12.h),
+
+                      // Extras (from charges_applied)
+                      Builder(
+                        builder: (_) {
+                          final totals = <String, num>{};
+                          for (final it in resp.items) {
+                            it.chargesApplied.forEach((k, v) {
+                              totals[k] = (totals[k] ?? 0) + v;
+                            });
+                          }
+                          totals.removeWhere((_, v) => v == 0);
+                          if (totals.isEmpty) return const SizedBox.shrink();
+
+                          return _card(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Extras',
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      'Cost',
+                                      style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8.h),
+                                for (final e in totals.entries)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 8.h),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _prettyKey(e.key),
+                                            style: TextStyle(fontSize: 12.sp),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$currency${(e.value).toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: 12.h),
+
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _card(
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Text(
+                                'Total',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(width: 10.w),
+                              Text(
+                                '$currency${resp.cartTotalDeliveryCharge.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = GoRouterState.of(context).extra as PaymentPageData?;
@@ -49,68 +275,44 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
       error: (_, __) => args?.buyer, // On error, use args
     );
 
-    // Build shipping address lines - showing ship_name, ship_location, address, and state
+    // Build shipping address lines - show zone/state/town (same as cart summary)
     final shippingLines = buyer == null
-        ? const ['No address available', 'Please add shipping address']
+        ? const ['No address available']
         : () {
             final lines = <String>[];
-            
-            // Ship Name (first line if available)
-            final shipName = buyer.shipName?.trim();
-            if (shipName != null && shipName.isNotEmpty && shipName != 'null') {
-              lines.add(shipName);
+
+            final zone = buyer.shipZone?.trim();
+            if (zone != null && zone.isNotEmpty && zone != 'null') {
+              lines.add(zone);
             }
-            
-            // Ship Location (second line if available, fallback to location)
-            final shipLocation = buyer.shipLocation?.trim();
-            final location = buyer.location?.trim();
-            final displayLocation = (shipLocation != null && shipLocation.isNotEmpty && shipLocation != 'null')
-                ? shipLocation
-                : (location != null && location.isNotEmpty && location != 'null')
-                    ? location
-                    : null;
-            if (displayLocation != null) {
-              lines.add(displayLocation);
+
+            final st = buyer.shipState?.trim();
+            if (st != null && st.isNotEmpty && st != 'null') {
+              lines.add(st);
             }
-            
-            // Address parts (third line)
-            final addressParts = <String>[];
-            
-            // Address (preferred) or fallback to ship_address
-            final address = buyer.address.trim();
-            final shipAddress = buyer.shipAddress?.trim();
-            final displayAddress = (address.isNotEmpty && address != 'null')
-                ? address
-                : ((shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null')
-                    ? shipAddress
-                    : null);
-            if (displayAddress != null) {
-              addressParts.add(displayAddress);
+
+            final town = buyer.shipTown?.trim();
+            if (town != null && town.isNotEmpty && town != 'null') {
+              lines.add(town);
             }
-            
-            // State (from state field, not ship_city)
-            final state = buyer.state?.trim();
-            if (state != null && state.isNotEmpty && state != 'null') {
-              addressParts.add(state);
-            }
-            
-            // Country (shipping preferred, fallback to regular)
-            final country = buyer.shipCountry?.trim() ?? buyer.country?.trim();
-            if (country != null && country.isNotEmpty && country != 'null') {
-              addressParts.add(country);
-            }
-            
-            // Add address line if we have address parts
-            if (addressParts.isNotEmpty) {
-              lines.add(addressParts.join(', '));
-            }
-            
-            // If nothing found, show message to add address
+
+            // Fallback: show something if shipping zone/state/town not set yet
             if (lines.isEmpty) {
-              return const ['No shipping address provided', 'Tap edit to add address'];
+              final shipLocation = buyer.shipLocation?.trim();
+              if (shipLocation != null &&
+                  shipLocation.isNotEmpty &&
+                  shipLocation != 'null') {
+                lines.add(shipLocation);
+              }
+              final shipAddress = buyer.shipAddress?.trim();
+              if (shipAddress != null &&
+                  shipAddress.isNotEmpty &&
+                  shipAddress != 'null') {
+                lines.add(shipAddress);
+              }
             }
-            
-            return lines;
+
+            return lines.isEmpty ? const ['No shipping address provided'] : lines;
           }();
 
     final contactLines = buyer == null
@@ -148,15 +350,14 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
               )
               .toList();
 
-    final List<ShippingOption> options = args == null
-        ? [
-            ShippingOption(title: 'Delivery charge', cost: 0.00),
-            ShippingOption(title: 'Own Pick up', cost: 0.0),
-          ]
-        : [
-            ShippingOption(title: 'Delivery charge', cost: args.deliveryTotal),
-            ShippingOption(title: 'Own Pick up', cost: 0.0),
-          ];
+    final deliveryChargesAsync = ref.watch(cartDeliveryChargesProvider);
+    final deliveryTotal = deliveryChargesAsync.valueOrNull?.cartTotalDeliveryCharge ??
+        (args?.deliveryTotal ?? 0);
+
+    final List<ShippingOption> options = [
+      ShippingOption(title: 'Delivery charge', cost: deliveryTotal.toDouble()),
+      ShippingOption(title: 'Own Pick up', cost: deliveryTotal.toDouble()),
+    ];
 
     // ⬇️ currently selected shipping index (0 or 1)
     final selectedShippingIndex = ref.watch(shippingMethodIndexProvider);
@@ -202,6 +403,11 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
                     ref.read(shippingMethodIndexProvider.notifier).state = i;
                   },
                   currency: '\$',
+                  onShippingDetails: deliveryChargesAsync.maybeWhen(
+                    data: (resp) => () =>
+                        _showDeliveryChargeDetails(context, resp, '\$'),
+                    orElse: () => null,
+                  ),
                 ),
 
                 // buildPaymentMethodText(theme, context),
@@ -389,6 +595,7 @@ class CustomItemShow extends StatefulWidget {
     required this.options,
     this.selectedIndex = 0,
     this.onShippingChanged,
+    this.onShippingDetails,
     this.currency = '\$',
     this.titleItems = 'Items',
     this.titleShipping = 'Shipping Options',
@@ -398,6 +605,7 @@ class CustomItemShow extends StatefulWidget {
   final List<ShippingOption> options;
   final int selectedIndex;
   final ValueChanged<int>? onShippingChanged;
+  final VoidCallback? onShippingDetails;
   final String currency;
   final String titleItems;
   final String titleShipping;
@@ -438,7 +646,18 @@ class _CustomItemShowState extends State<CustomItemShow> {
           ),
           SizedBox(height: 30.h),
 
-          Text(widget.titleShipping, style: theme.headlineLarge),
+          Row(
+            children: [
+              Expanded(
+                child: Text(widget.titleShipping, style: theme.headlineLarge),
+              ),
+              if (widget.onShippingDetails != null)
+                TextButton(
+                  onPressed: widget.onShippingDetails,
+                  child: const Text('Details'),
+                ),
+            ],
+          ),
           SizedBox(height: 20.h),
 
           Column(

@@ -409,54 +409,41 @@ class CartScreen extends ConsumerWidget {
   Widget _buildShippingAddress(BuildContext context, Buyer? buyer,WidgetRef ref) {
     final theme = Theme.of(context).textTheme;
     
-    // Build address lines - showing ship_name, location, and address
+    // Build address lines - showing ship_name + ship_zone/state/town (preferred)
     final addressLines = buyer == null
         ? ['No address available']
         : () {
             final lines = <String>[];
-            
-            // Ship Name (first line if available)
-            final shipName = buyer.shipName?.trim();
-            if (shipName != null && shipName.isNotEmpty && shipName != 'null') {
-              lines.add(shipName);
+
+            final zone = buyer.shipZone?.trim();
+            if (zone != null && zone.isNotEmpty && zone != 'null') {
+              lines.add(zone);
             }
-            
-            // Ship Location (second line if available, fallback to location)
-            final shipLocation = buyer.shipLocation?.trim();
-            final location = buyer.location?.trim();
-            final displayLocation = (shipLocation != null && shipLocation.isNotEmpty && shipLocation != 'null')
-                ? shipLocation
-                : (location != null && location.isNotEmpty && location != 'null')
-                    ? location
-                    : null;
-            if (displayLocation != null) {
-              lines.add(displayLocation);
+
+            final st = buyer.shipState?.trim();
+            if (st != null && st.isNotEmpty && st != 'null') {
+              lines.add(st);
             }
-            
-            // Address parts (third line)
-            final addressParts = <String>[];
-            final shipAddress = buyer.shipAddress?.trim();
-            if (shipAddress != null && shipAddress.isNotEmpty && shipAddress != 'null') {
-              addressParts.add(shipAddress);
-            } else {
-              final fallbackAddress = buyer.address.trim();
-              if (fallbackAddress.isNotEmpty && fallbackAddress != 'null') {
-                addressParts.add(fallbackAddress);
+
+            final town = buyer.shipTown?.trim();
+            if (town != null && town.isNotEmpty && town != 'null') {
+              lines.add(town);
+            }
+
+            // Fallback if none provided yet
+            if (lines.isEmpty) {
+              final shipLocation = buyer.shipLocation?.trim();
+              if (shipLocation != null &&
+                  shipLocation.isNotEmpty &&
+                  shipLocation != 'null') {
+                lines.add(shipLocation);
               }
-            }
-            
-            final city = buyer.shipCity?.trim();
-            if (city != null && city.isNotEmpty && city != 'null') {
-              addressParts.add(city);
-            }
-            
-            final country = buyer.shipCountry?.trim() ?? buyer.country?.trim();
-            if (country != null && country.isNotEmpty && country != 'null') {
-              addressParts.add(country);
-            }
-            
-            if (addressParts.isNotEmpty) {
-              lines.add(addressParts.join(', '));
+              final shipAddress = buyer.shipAddress?.trim();
+              if (shipAddress != null &&
+                  shipAddress.isNotEmpty &&
+                  shipAddress != 'null') {
+                lines.add(shipAddress);
+              }
             }
             
             return lines.isEmpty ? ['No address provided'] : lines;

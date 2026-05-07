@@ -33,6 +33,8 @@ import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/
 import 'package:market_jango/features/buyer/screens/buyer_vendor_profile/screen/vendor_promotion_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
 import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/available_vendors_screen.dart';
+import 'package:market_jango/features/buyer/screens/filter/data/visibility_vendors_data.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice_details_screen.dart';
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refund_detail_screen.dart';
@@ -458,6 +460,20 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return FilterScreen(filterParams: extra);
+      },
+    ),
+
+    GoRoute(
+      path: AvailableVendorsScreen.routeName,
+      name: AvailableVendorsScreen.routeName,
+      builder: (context, state) {
+        final extra = state.extra;
+        if (extra is! VisibilityVendorsParams) {
+          return const Scaffold(
+            body: Center(child: Text('Invalid vendor filter params')),
+          );
+        }
+        return AvailableVendorsScreen(params: extra);
       },
     ),
 

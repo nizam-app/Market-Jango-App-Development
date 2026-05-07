@@ -268,6 +268,8 @@ class Buyer {
   final String? shipAddress;
   final String? shipCity;
   final String? shipState;
+  final String? shipZone;
+  final String? shipTown;
   final String? shipCountry;
   final String? shipPhone;
   final String? shipLocation;
@@ -292,6 +294,8 @@ class Buyer {
     required this.shipAddress,
     required this.shipCity,
     required this.shipState,
+    required this.shipZone,
+    required this.shipTown,
     required this.shipCountry,
     required this.shipPhone,
     required this.shipLocation,
@@ -308,9 +312,9 @@ class Buyer {
 
     return Buyer(
       id: i(json['id']),
-      gender: s(json['gender']) ?? '',
+      gender: s(json['gender']),
       age: s(json['age']),
-      address: s(json['address']) ?? '',
+      address: s(json['address']),
       state: s(json['state']),
       postcode: s(json['postcode']),
       country: s(json['country']),
@@ -320,6 +324,8 @@ class Buyer {
       shipAddress: s(json['ship_address']),
       shipCity: s(json['ship_city']),
       shipState: s(json['ship_state']),
+      shipZone: s(json['ship_zone']),
+      shipTown: s(json['ship_town']),
       shipCountry: s(json['ship_country']),
       shipPhone: s(json['ship_phone']),
       shipLocation: s(json['ship_location']),
@@ -327,8 +333,8 @@ class Buyer {
       description: s(json['description']),
       location: s(json['location']),
       userId: i(json['user_id']),
-      createdAt: s(json['created_at']) ?? '',
-      updatedAt: s(json['updated_at']) ?? '',
+      createdAt: s(json['created_at']),
+      updatedAt: s(json['updated_at']),
     );
   }
 }

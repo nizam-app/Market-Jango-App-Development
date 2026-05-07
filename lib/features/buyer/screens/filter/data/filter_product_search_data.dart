@@ -11,11 +11,13 @@ class FilterSearchParams {
   final String visibilityCountry;
   final int categoryId;
   final String? visibilityState;
+  final String? visibilityTown;
 
   const FilterSearchParams({
     required this.visibilityCountry,
     required this.categoryId,
     this.visibilityState,
+    this.visibilityTown,
   });
 
   bool get isValid =>
@@ -27,10 +29,12 @@ class FilterSearchParams {
       other is FilterSearchParams &&
           visibilityCountry == other.visibilityCountry &&
           categoryId == other.categoryId &&
-          visibilityState == other.visibilityState;
+          visibilityState == other.visibilityState &&
+          visibilityTown == other.visibilityTown;
 
   @override
-  int get hashCode => Object.hash(visibilityCountry, categoryId, visibilityState);
+  int get hashCode =>
+      Object.hash(visibilityCountry, categoryId, visibilityState, visibilityTown);
 }
 
 /// GET api/product/search?visibility_country=&category_id=&visibility_state=
@@ -46,6 +50,7 @@ final filterProductSearchProvider =
       visibilityCountry: params.visibilityCountry,
       categoryId: params.categoryId,
       visibilityState: params.visibilityState,
+      visibilityTown: params.visibilityTown,
     );
 
     final res = await http.get(

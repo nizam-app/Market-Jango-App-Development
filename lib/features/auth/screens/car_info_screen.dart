@@ -29,9 +29,22 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
   final _locationCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   String? _selectedRouteId;
+  String? _selectedTransportType;
   List<File> _pickedFiles = [];
   bool _acceptedTerms = false;
   late final TapGestureRecognizer _termsTapRecognizer;
+
+  static const List<String> _transportTypes = [
+    'motorcycle',
+    'car',
+    'air',
+    'water',
+  ];
+
+  String _labelForTransportType(String type) {
+    if (type.isEmpty) return type;
+    return '${type[0].toUpperCase()}${type.substring(1)}';
+  }
 
   @override
   void initState() {
@@ -99,6 +112,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
         _carModelCtrl.text.isEmpty ||
         _locationCtrl.text.isEmpty ||
         _priceCtrl.text.isEmpty ||
+        _selectedTransportType == null ||
         _selectedRouteId == null ||
         _pickedFiles.isEmpty) {
       GlobalSnackbar.show(
@@ -127,6 +141,7 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
       carModel: _carModelCtrl.text.trim(),
       location: _locationCtrl.text.trim(),
       price: _priceCtrl.text.trim(),
+      transportType: _selectedTransportType!,
       routeId: _selectedRouteId!,
       files: _pickedFiles,
     );
@@ -171,6 +186,43 @@ class _CarInfoScreenState extends ConsumerState<CarInfoScreen> {
                       style: textTheme.bodySmall),
                 ),
                 SizedBox(height: 40.h),
+
+                /// Transport type dropdown (shown first)
+                Container(
+                  height: 60.h,
+                  padding: EdgeInsets.symmetric(horizontal: 16.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF8E7),
+                    borderRadius: BorderRadius.circular(30.r),
+                    border: Border.all(
+                        color: AllColor.textBorderColor, width: 0.5.sp),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      hint: const Text("Choose Transport Type"),
+                      value: _selectedTransportType,
+                      icon: const Icon(Icons.arrow_drop_down),
+                      dropdownColor: Colors.white,
+                      borderRadius: BorderRadius.circular(30.r),
+                      items: _transportTypes.map((type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(
+                            _labelForTransportType(type),
+                            style: const TextStyle(color: Colors.black87),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedTransportType = value;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(height: 28.h),
 
                 TextFormField(
                   controller: _carNameCtrl,

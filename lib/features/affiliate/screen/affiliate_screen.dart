@@ -20,6 +20,7 @@ class AffiliateScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDriver = ref.watch(getUserTypeProvider).value == 'driver';
     final statsAsync = ref.watch(affiliateStatisticsProvider);
+    final affiliateLinksAsync = ref.watch(affiliateLinksProvider);
     final influencerLinksAsync = isDriver
         ? ref.watch(driverInfluencerReferralLinksProvider)
         : ref.watch(influencerReferralLinksProvider);
@@ -27,9 +28,11 @@ class AffiliateScreen extends ConsumerWidget {
     final InfluencerReferralLinksNotifierInterface influencerNotifier = isDriver
         ? ref.read(driverInfluencerReferralLinksProvider.notifier)
         : ref.read(influencerReferralLinksProvider.notifier);
+    final linksNotifier = ref.read(affiliateLinksProvider.notifier);
 
     Future<void> onRefresh() async {
       if (!isDriver) await statsNotifier.refresh();
+      await linksNotifier.refresh();
       await influencerNotifier.refresh();
     }
 
@@ -98,12 +101,51 @@ class AffiliateScreen extends ConsumerWidget {
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.h),
                       child: Center(
-                        child: Text(
-                          'No influencer links yet.',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: AllColor.grey500,
+                        child: affiliateLinksAsync.when(
+                          loading: () => Text(
+                            'No influencer links yet.',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AllColor.grey500,
+                            ),
                           ),
+                          error: (_, __) => Text(
+                            'No influencer links yet.',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AllColor.grey500,
+                            ),
+                          ),
+                          data: (links) {
+                            final canCreateAffiliateLink = links.isEmpty;
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'No influencer links yet.',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: AllColor.grey500,
+                                  ),
+                                ),
+                                if (canCreateAffiliateLink) ...[
+                                  SizedBox(height: 16.h),
+                                  ElevatedButton.icon(
+                                    onPressed: () =>
+                                        _openAddSheet(context, ref, links),
+                                    icon: const Icon(Icons.add, size: 18),
+                                    label:
+                                        const Text('Create affiliate link'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          AllColor.loginButtomColor,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
                       ),
                     );
@@ -1114,6 +1156,15 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
 
   static const List<String> _attributionOptions = ['first_click', 'last_click'];
 
+  bool _isValidHttpUrl(String input) {
+    final uri = Uri.tryParse(input.trim());
+    if (uri == null) return false;
+    if (!uri.hasScheme) return false;
+    if (uri.scheme != 'http' && uri.scheme != 'https') return false;
+    if (uri.host.isEmpty) return false;
+    return true;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -1126,6 +1177,26 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
   }
 
   Future<void> _submit() async {
+    final destination = _destinationController.text.trim();
+    if (destination.isEmpty) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Invalid URL',
+        message: 'Destination URL is required',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+    if (!_isValidHttpUrl(destination)) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Invalid URL',
+        message: 'Destination URL must be a valid http/https link',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final token = await ref.read(authTokenProvider.future);
@@ -1153,9 +1224,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
-        destinationUrl: _destinationController.text.trim().isEmpty
-            ? null
-            : _destinationController.text.trim(),
+        destinationUrl: destination,
         customRate: customRate,
         cookieDurationDays: cookieDurationDays,
         attributionModel: _attributionModel,

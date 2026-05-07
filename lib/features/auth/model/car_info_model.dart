@@ -23,6 +23,7 @@ class DriverData {
   final String carModel;
   final String location;
   final String price;
+  final String transportType;
   final String routeId;
   final int id;
 
@@ -31,6 +32,7 @@ class DriverData {
     required this.carModel,
     required this.location,
     required this.price,
+    required this.transportType,
     required this.routeId,
     required this.id,
   });
@@ -41,6 +43,7 @@ class DriverData {
       carModel: json['car_model'] ?? '',
       location: json['location'] ?? '',
       price: json['price'] ?? '',
+      transportType: json['transport_type'] ?? '',
       routeId: json['route_id']?.toString() ?? '',
       id: json['id'] ?? 0,
     );

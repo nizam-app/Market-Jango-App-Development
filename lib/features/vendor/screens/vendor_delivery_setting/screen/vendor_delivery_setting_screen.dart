@@ -7,9 +7,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
-import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/data/vendor_route_points_data.dart';
-import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/model/vendor_route_point_model.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorDeliverySettingScreen extends ConsumerStatefulWidget {
@@ -120,18 +118,6 @@ class _VendorDeliverySettingScreenState
                           fontWeight: FontWeight.w600,
                           color: AllColor.black,
                         ),
-                      ),
-                      SizedBox(width: 12.w),
-                      IconButton(
-                        onPressed: items.isEmpty
-                            ? null
-                            : () => _showAddRouteSheet(context, ref, items),
-                        icon: Icon(
-                          Icons.add_circle_outline,
-                          size: 28.r,
-                          color: AllColor.orange,
-                        ),
-                        tooltip: 'Add route',
                       ),
                     ],
                   ),
@@ -256,29 +242,7 @@ class _VendorDeliverySettingScreenState
                                     item.cubicBaseRange ?? '—',
                                     style: TextStyle(fontSize: 12.sp),
                                   )),
-                                  DataCell(
-                                    _ActionCell(
-                                      item: item,
-                                      notifier: notifier,
-                                      onSuccess: () {
-                                        GlobalSnackbar.show(
-                                          context,
-                                          title: 'Success',
-                                          message: item.isSelected
-                                              ? 'Route removed'
-                                              : 'Route added',
-                                        );
-                                      },
-                                      onError: (msg) {
-                                        GlobalSnackbar.show(
-                                          context,
-                                          title: 'Error',
-                                          message: msg,
-                                          type: CustomSnackType.error,
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                  const DataCell(Text('—')),
                                 ],
                               );
                             }).toList(),
@@ -303,135 +267,4 @@ class _VendorDeliverySettingScreenState
     );
   }
 
-  void _showAddRouteSheet(
-    BuildContext context,
-    WidgetRef ref,
-    List<RoutePointItem> items,
-  ) {
-    final notSelected = items.where((e) => !e.isSelected).toList();
-    if (notSelected.isEmpty) {
-      GlobalSnackbar.show(
-        context,
-        title: 'Info',
-        message: 'All routes are already added.',
-      );
-      return;
-    }
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Text(
-                'Add route',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AllColor.black,
-                ),
-              ),
-            ),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: notSelected.length,
-                itemBuilder: (ctx, i) {
-                  final item = notSelected[i];
-                  return ListTile(
-                    title: Text(item.displayRouteName),
-                    subtitle: Text(
-                      '${item.zoneName} • ${item.price.toStringAsFixed(2)} ${item.currency}',
-                      style: TextStyle(fontSize: 12.sp),
-                    ),
-                    onTap: () async {
-                      Navigator.pop(ctx);
-                      try {
-                        await ref.read(routePointsProvider.notifier).optIn(item.id);
-                        if (context.mounted) {
-                          GlobalSnackbar.show(
-                            context,
-                            title: 'Success',
-                            message: 'Route added',
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          GlobalSnackbar.show(
-                            context,
-                            title: 'Error',
-                            message: e.toString(),
-                            type: CustomSnackType.error,
-                          );
-                        }
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionCell extends StatelessWidget {
-  const _ActionCell({
-    required this.item,
-    required this.notifier,
-    required this.onSuccess,
-    required this.onError,
-  });
-
-  final RoutePointItem item;
-  final RoutePointsNotifier notifier;
-  final VoidCallback onSuccess;
-  final void Function(String) onError;
-
-  @override
-  Widget build(BuildContext context) {
-    if (item.isSelected) {
-      return TextButton(
-        onPressed: () async {
-          try {
-            await notifier.optOut(item.id);
-            onSuccess();
-          } catch (e) {
-            onError(e.toString());
-          }
-        },
-        child: Text(
-          'Remove',
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: Colors.red,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
-    }
-    return TextButton(
-      onPressed: () async {
-        try {
-          await notifier.optIn(item.id);
-          onSuccess();
-        } catch (e) {
-          onError(e.toString());
-        }
-      },
-      child: Text(
-        'Add',
-        style: TextStyle(
-          fontSize: 12.sp,
-          color: AllColor.orange,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
 }

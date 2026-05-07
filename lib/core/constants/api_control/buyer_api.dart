@@ -5,6 +5,7 @@ class BuyerAPIController {
   static String buyer_product = "$_base_api/product";
   static String banner = "$_base_api/banner";
   static String cart = "$_base_api/cart";
+  static String get cartDeliveryCharges => "$_base_api/cart/delivery-charges";
   static String cartDelete(int id) => "$_base_api/cart/$id";
   static String cart_create = "$_base_api/cart/create";
   static String category = "$_base_api/category";
@@ -45,11 +46,15 @@ class BuyerAPIController {
     required String visibilityCountry,
     required int categoryId,
     String? visibilityState,
+    String? visibilityTown,
   }) {
     final country = Uri.encodeComponent(visibilityCountry.trim());
     var url = '$_base_api/product/search?visibility_country=$country&category_id=$categoryId';
     if (visibilityState != null && visibilityState.trim().isNotEmpty) {
       url += '&visibility_state=${Uri.encodeComponent(visibilityState.trim())}';
+    }
+    if (visibilityTown != null && visibilityTown.trim().isNotEmpty) {
+      url += '&visibility_town=${Uri.encodeComponent(visibilityTown.trim())}';
     }
     return url;
   }
@@ -133,6 +138,36 @@ class BuyerAPIController {
       Uri.parse('$_base_api/invoice').replace(queryParameters: {
         'page': '$page',
       }).toString();
+
+  // --- Shipping visibility locations (zones/states/towns) ---
+  static String get visibilityZones =>
+      '$_base_api/buyer/visibility-locations/zones';
+
+  static String visibilityStates({required String zone}) => Uri.parse(
+        '$_base_api/buyer/visibility-locations/states',
+      ).replace(queryParameters: {'zone': zone}).toString();
+
+  static String visibilityTowns({required String zone, required String state}) =>
+      Uri.parse(
+        '$_base_api/buyer/visibility-locations/towns',
+      ).replace(queryParameters: {'zone': zone, 'state': state}).toString();
+
+  static String visibilityVendors({
+    required String zone,
+    String? state,
+    String? town,
+    int perPage = 20,
+  }) {
+    final q = <String, String>{
+      'zone': zone.trim(),
+      'per_page': '$perPage',
+    };
+    if (state != null && state.trim().isNotEmpty) q['state'] = state.trim();
+    if (town != null && town.trim().isNotEmpty) q['town'] = town.trim();
+    return Uri.parse('$_base_api/buyer/visibility-locations/vendors')
+        .replace(queryParameters: q)
+        .toString();
+  }
 }
 
 // lib/core/constants/api_control/buyer_api.dart

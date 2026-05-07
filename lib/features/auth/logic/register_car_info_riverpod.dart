@@ -16,6 +16,7 @@ class DriverRegisterNotifier extends StateNotifier<AsyncValue<DriverRegisterMode
     required String carModel,
     required String location,
     required String price,
+    required String transportType,
     required String routeId,
     required List<File> files,
   }) async {
@@ -34,6 +35,7 @@ class DriverRegisterNotifier extends StateNotifier<AsyncValue<DriverRegisterMode
         'car_model': carModel,
         'location': location,
         'price': price,
+        'transport_type': transportType,
         'route_id': routeId,
       });
 

@@ -5,10 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
-import 'package:market_jango/features/buyer/screens/filter/model/all_categoris_show_model.dart';
-import 'package:market_jango/features/buyer/screens/filter/screen/filter_product_screen.dart';
-
-import '../data/all_categoris_show_data.dart';
+import 'package:market_jango/features/buyer/screens/cart/data/visibility_locations_data.dart';
+import 'package:market_jango/features/buyer/screens/filter/data/visibility_vendors_data.dart';
+import 'package:market_jango/features/buyer/screens/filter/screen/available_vendors_screen.dart';
 
 class LocationFilteringTab extends ConsumerStatefulWidget {
   const LocationFilteringTab({super.key});
@@ -19,19 +18,17 @@ class LocationFilteringTab extends ConsumerStatefulWidget {
 }
 
 class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
-  int? _selectedCategoryId;
-  final _locationController = TextEditingController();
-  String? _visibilityState;
+  String? _selectedZone;
+  String? _selectedState;
+  String? _selectedTown;
 
   @override
   void dispose() {
-    _locationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final categoriesAsync = ref.watch(locationCategoriesProvider);
     TextTheme theme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -72,79 +69,132 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                     ),
                   ),
                   SizedBox(height: 5.h),
-                  TextField(
-                    controller: _locationController,
-                    decoration: buildInputDecoration().copyWith(
-                      hintText: ref.t(BKeys.searchLocation),
-                      prefixIcon: Icon(Icons.search_rounded, size: 27.sp),
-                      fillColor: AllColor.grey100,
-                    ),
-                    onChanged: (v) => _visibilityState = v.trim().isEmpty ? null : v.trim(),
-                  ),
+                  ref.watch(visibilityZonesProvider).when(
+                        loading: () => const LinearProgressIndicator(),
+                        error: (e, _) => Text(
+                          e.toString().replaceFirst('Exception: ', ''),
+                          style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                        ),
+                        data: (zones) => DropdownButtonFormField<String>(
+                          value: _selectedZone != null &&
+                                  zones.contains(_selectedZone)
+                              ? _selectedZone
+                              : null,
+                          decoration: buildInputDecoration(),
+                          hint: Text(ref.t(BKeys.searchLocation)),
+                          items: zones
+                              .map(
+                                (z) => DropdownMenuItem<String>(
+                                  value: z,
+                                  child: Text(z),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (v) {
+                            setState(() {
+                              _selectedZone = v;
+                              _selectedState = null;
+                              _selectedTown = null;
+                            });
+                          },
+                        ),
+                      ),
 
-                  SizedBox(height: 20.h),
-
-                  /// Category dropdown
+                  SizedBox(height: 12.h),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      ref.t(BKeys.categories),
+                      'State',
                       style: theme.headlineMedium!.copyWith(fontSize: 14),
                     ),
                   ),
                   SizedBox(height: 5.h),
-
-                  categoriesAsync.when(
-                    loading: () => DropdownButtonFormField<int>(
-                      decoration: buildInputDecoration(),
-                      items: const [],
-                      onChanged: null,
-                      hint: Text('Loading categories...'),
-                    ),
-                    error: (e, _) => DropdownButtonFormField<int>(
-                      decoration: buildInputDecoration(),
-                      items: const [],
-                      onChanged: null,
-                      hint: const Text('Failed to load categories'),
-                    ),
-                    data: (page) {
-                      final List<LocationCategoryItem> list = page.data;
-
-                      if (list.isEmpty) {
-                        return DropdownButtonFormField<int>(
+                  ref
+                      .watch(visibilityStatesProvider((_selectedZone ?? '').trim()))
+                      .when(
+                        loading: () => const LinearProgressIndicator(),
+                        error: (e, _) => DropdownButtonFormField<String>(
                           decoration: buildInputDecoration(),
                           items: const [],
                           onChanged: null,
-                          hint: const Text('No categories found'),
-                        );
-                      }
-
-                      return DropdownButtonFormField<int>(
-                        initialValue: _selectedCategoryId,
-                        decoration: buildInputDecoration(),
-                        hint: Text(
-                          'Select category',
-                          style: theme.headlineMedium,
+                          hint: Text(
+                            e.toString().replaceFirst('Exception: ', ''),
+                            style: const TextStyle(color: Colors.red),
+                          ),
                         ),
-                        items: list
-                            .map(
-                              (c) => DropdownMenuItem<int>(
-                                value: c.id,
-                                child: Text(
-                                  c.name,
-                                  style: theme.headlineMedium,
+                        data: (states) => DropdownButtonFormField<String>(
+                          value: _selectedState != null &&
+                                  states.contains(_selectedState)
+                              ? _selectedState
+                              : null,
+                          decoration: buildInputDecoration(),
+                          hint: const Text('Select state'),
+                          items: states
+                              .map(
+                                (s) => DropdownMenuItem<String>(
+                                  value: s,
+                                  child: Text(s),
                                 ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedCategoryId = value);
-                          // চাইলে এখান থেকে provider এও পাঠাতে পারো
-                          // ref.read(selectedCategoryIdProvider.notifier).state = value;
-                        },
-                      );
-                    },
+                              )
+                              .toList(),
+                          onChanged: ((_selectedZone ?? '').trim().isEmpty)
+                              ? null
+                              : (v) {
+                                  setState(() {
+                                    _selectedState = v;
+                                    _selectedTown = null;
+                                  });
+                                },
+                        ),
+                      ),
+
+                  SizedBox(height: 12.h),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Town',
+                      style: theme.headlineMedium!.copyWith(fontSize: 14),
+                    ),
                   ),
+                  SizedBox(height: 5.h),
+                  ref
+                      .watch(
+                        visibilityTownsProvider(
+                          '${(_selectedZone ?? '').trim()}||${(_selectedState ?? '').trim()}',
+                        ),
+                      )
+                      .when(
+                        loading: () => const LinearProgressIndicator(),
+                        error: (e, _) => DropdownButtonFormField<String>(
+                          decoration: buildInputDecoration(),
+                          items: const [],
+                          onChanged: null,
+                          hint: Text(
+                            e.toString().replaceFirst('Exception: ', ''),
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        data: (towns) => DropdownButtonFormField<String>(
+                          value: _selectedTown != null &&
+                                  towns.contains(_selectedTown)
+                              ? _selectedTown
+                              : null,
+                          decoration: buildInputDecoration(),
+                          hint: const Text('Select town'),
+                          items: towns
+                              .map(
+                                (t) => DropdownMenuItem<String>(
+                                  value: t,
+                                  child: Text(t),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: ((_selectedZone ?? '').trim().isEmpty ||
+                                  (_selectedState ?? '').trim().isEmpty)
+                              ? null
+                              : (v) => setState(() => _selectedTown = v),
+                        ),
+                      ),
 
                   SizedBox(height: 20.h),
 
@@ -154,8 +204,11 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                     height: 48.h,
                     child: ElevatedButton(
                       onPressed: () {
-                        final country = _locationController.text.trim();
-                        if (country.isEmpty) {
+                        final zone = (_selectedZone ?? '').trim();
+                        final st = (_selectedState ?? '').trim();
+                        final town = (_selectedTown ?? '').trim();
+
+                        if (zone.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Please enter your location'),
@@ -163,22 +216,14 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                           );
                           return;
                         }
-                        if (_selectedCategoryId == null || _selectedCategoryId! <= 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please select a category'),
-                            ),
-                          );
-                          return;
-                        }
                         Navigator.pop(context);
                         context.push(
-                          FilterScreen.routeName,
-                          extra: {
-                            'visibility_country': country,
-                            'category_id': _selectedCategoryId!,
-                            'visibility_state': _visibilityState,
-                          },
+                          AvailableVendorsScreen.routeName,
+                          extra: VisibilityVendorsParams(
+                            zone: zone,
+                            state: st.isEmpty ? null : st,
+                            town: town.isEmpty ? null : town,
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(

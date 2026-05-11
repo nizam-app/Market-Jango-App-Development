@@ -52,3 +52,6 @@ React/
 
 # Cursor
 cursor.role
+
+# Build archives — never commit (causes multi‑GB git objects and failed/slow pushes)
+build.zip

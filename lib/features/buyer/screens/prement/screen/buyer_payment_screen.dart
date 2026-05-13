@@ -19,6 +19,12 @@ import 'package:market_jango/features/buyer/screens/cart/screen/shiping_address_
 
 import '../model/prement_page_data_model.dart'; // <-- PaymentPageData
 
+class _RouteLineAgg {
+  num total = 0;
+  final List<String> productLines = <String>[];
+  String skipReason = '';
+}
+
 class BuyerPaymentScreen extends ConsumerStatefulWidget {
   const BuyerPaymentScreen({super.key});
   static const routeName = "/buyerPaymentScreen";
@@ -37,25 +43,326 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
         .join(' ');
   }
 
-  Widget _card({
-    required Widget child,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AllColor.grey200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  String _humanizeSkipReason(String code) {
+    if (code.trim().isEmpty) return '';
+    final t = code.trim();
+    if (t == 'no_matching_route') {
+      return 'No matching delivery route for this vendor → buyer path.';
+    }
+    return _prettyKey(t);
+  }
+
+  static const Color _deliveryTableBorder = Color(0xFF212121);
+
+  String _fmtMoney(String currency, num v) =>
+      '$currency${v.toStringAsFixed(2)}';
+
+  TableRow _deliveryTableHeader(String col2, String col3) {
+    TextStyle headerStyle() => TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+        );
+    return TableRow(
+      children: [
+        TableCell(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
+            child: Text('#', textAlign: TextAlign.center, style: headerStyle()),
           ),
-        ],
+        ),
+        TableCell(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            child: Text(col2, style: headerStyle()),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            child: Text(
+              col3,
+              textAlign: TextAlign.right,
+              style: headerStyle(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TableRow _deliveryTableDataRow(
+    String idx,
+    String label,
+    String costRight, {
+    String? detailLine,
+    String? warningLine,
+  }) {
+    final base = TextStyle(fontSize: 12.sp, color: Colors.black87);
+    return TableRow(
+      children: [
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.top,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
+            child: Text(idx, textAlign: TextAlign.center, style: base),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.top,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: base),
+                if (detailLine != null && detailLine.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h),
+                    child: Text(
+                      detailLine,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: Colors.black45,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                if (warningLine != null && warningLine.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h),
+                    child: Text(
+                      warningLine,
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: Colors.deepOrange.shade800,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.top,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+            child: Text(
+              costRight,
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _deliveryChargeDetailTables(
+    DeliveryChargesResponse resp,
+    String currency,
+  ) {
+    final border = TableBorder.all(color: _deliveryTableBorder, width: 1);
+    final colWidths = {
+      0: FixedColumnWidth(34.w),
+      1: const FlexColumnWidth(1),
+      2: FixedColumnWidth(76.w),
+    };
+
+    // --- Route: prefer zone `per_town_breakdown`; else merge line_items by vendor→buyer ---
+    final routeRows = <TableRow>[_deliveryTableHeader('Route', 'Cost')];
+    if (resp.routeSummaries.isNotEmpty) {
+      var n = 0;
+      for (final s in resp.routeSummaries) {
+        n++;
+        final route = '${s.vendorTown} to ${s.buyerTown}';
+        final detailParts = <String>[];
+        if (s.flat != 0) {
+          detailParts.add('Flat ${_fmtMoney(currency, s.flat)}');
+        }
+        if (s.weightBased != 0) {
+          detailParts.add('Weight ${_fmtMoney(currency, s.weightBased)}');
+        }
+        final detail =
+            detailParts.isEmpty ? null : detailParts.join(' · ');
+        routeRows.add(
+          _deliveryTableDataRow(
+            '$n',
+            route,
+            _fmtMoney(currency, s.townTotal),
+            detailLine: detail,
+          ),
+        );
+      }
+    } else if (resp.items.isEmpty) {
+      routeRows.add(_deliveryTableDataRow('', '—', _fmtMoney(currency, 0)));
+    } else {
+      final byRoute = <String, _RouteLineAgg>{};
+      for (final it in resp.items) {
+        final key = '${it.vendorTown}|${it.buyerTown}';
+        final a = byRoute.putIfAbsent(key, _RouteLineAgg.new);
+        a.total += it.finalDeliveryCharge;
+        final sub = StringBuffer('${it.productName} ×${it.quantity}');
+        if (it.vendorName.isNotEmpty) {
+          sub.write(' · ${it.vendorName}');
+        }
+        a.productLines.add(sub.toString());
+        if (it.skipReason.isNotEmpty) {
+          a.skipReason = it.skipReason;
+        }
+      }
+      var n = 0;
+      for (final e in byRoute.entries) {
+        n++;
+        final parts = e.key.split('|');
+        final vt = parts.isNotEmpty ? parts[0] : '';
+        final bt = parts.length > 1 ? parts[1] : '';
+        final route = '$vt to $bt';
+        final a = e.value;
+        final skipNote = a.skipReason.isNotEmpty
+            ? _humanizeSkipReason(a.skipReason)
+            : null;
+        routeRows.add(
+          _deliveryTableDataRow(
+            '$n',
+            route,
+            _fmtMoney(currency, a.total),
+            detailLine: a.productLines.join(' · '),
+            warningLine: skipNote,
+          ),
+        );
+      }
+    }
+
+    // --- Extras: only merged `charges_applied` from `data.zones` (no weight row, no line surcharges) ---
+    final extraPairs = <(String, num)>[];
+    final zoneKeys = resp.zoneChargesApplied.keys.toList()
+      ..sort((a, b) {
+        const order = ['city_based', 'weight_based', 'cube_based'];
+        final ia = order.indexOf(a);
+        final ib = order.indexOf(b);
+        if (ia != -1 || ib != -1) {
+          final va = ia == -1 ? 999 : ia;
+          final vb = ib == -1 ? 999 : ib;
+          final c = va.compareTo(vb);
+          if (c != 0) return c;
+        }
+        return a.compareTo(b);
+      });
+    for (final k in zoneKeys) {
+      final v = resp.zoneChargesApplied[k]!;
+      extraPairs.add((_prettyKey(k), v));
+    }
+    if (extraPairs.isEmpty) {
+      extraPairs.add(('', 0));
+    }
+
+    final extraRows = <TableRow>[_deliveryTableHeader('Extras', 'Cost')];
+    var ex = 0;
+    for (final p in extraPairs) {
+      ex++;
+      extraRows.add(
+        _deliveryTableDataRow(
+          '$ex',
+          p.$1.isEmpty ? ' ' : p.$1,
+          _fmtMoney(currency, p.$2),
+        ),
+      );
+    }
+    extraRows.add(_deliveryTableDataRow('', ' ', ' '));
+
+    // --- Fees ---
+    final feeRows = <TableRow>[
+      _deliveryTableHeader('Fees', 'Cost'),
+      _deliveryTableDataRow(
+        '',
+        'Platform fees',
+        _fmtMoney(currency, resp.platformFee),
       ),
-      child: child,
+      _deliveryTableDataRow(
+        '1',
+        'Tax',
+        _fmtMoney(currency, resp.tax),
+      ),
+      _deliveryTableDataRow('', ' ', ' '),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Table(
+          border: border,
+          columnWidths: colWidths,
+          defaultVerticalAlignment: TableCellVerticalAlignment.top,
+          children: routeRows,
+        ),
+        SizedBox(height: 10.h),
+        Table(
+          border: border,
+          columnWidths: colWidths,
+          defaultVerticalAlignment: TableCellVerticalAlignment.top,
+          children: extraRows,
+        ),
+        SizedBox(height: 10.h),
+        Table(
+          border: border,
+          columnWidths: colWidths,
+          defaultVerticalAlignment: TableCellVerticalAlignment.top,
+          children: feeRows,
+        ),
+        SizedBox(height: 12.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            border: Border.all(color: _deliveryTableBorder, width: 1),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Total (merchandise + delivery + fees)',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              SizedBox(
+                width: 76.w,
+                child: Text(
+                  _fmtMoney(
+                    currency,
+                    resp.grandTotal > 0
+                        ? resp.grandTotal
+                        : (resp.merchandiseSubtotal +
+                            resp.cartTotalDeliveryCharge +
+                            resp.platformFee +
+                            resp.tax),
+                  ),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 6.h),
+        Text(
+          'Merchandise ${_fmtMoney(currency, resp.merchandiseSubtotal)} · '
+          'Delivery ${_fmtMoney(currency, resp.cartTotalDeliveryCharge)} · '
+          'Fees ${_fmtMoney(currency, resp.platformFee + resp.tax)}'
+          '${resp.zonesAggregatedWeightKg > 0 ? ' · Zone weight ${resp.zonesAggregatedWeightKg} kg' : ''}',
+          textAlign: TextAlign.right,
+          style: TextStyle(fontSize: 10.sp, color: Colors.black54),
+        ),
+      ],
     );
   }
 
@@ -97,153 +404,7 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
               SizedBox(height: 8.h),
               Flexible(
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Route/Items table
-                      if (resp.items.isNotEmpty)
-                        _card(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Route',
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    'Cost',
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8.h),
-                              for (final it in resp.items)
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.h),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          '${it.vendorTown} to ${it.buyerTown}',
-                                          style: TextStyle(fontSize: 12.sp),
-                                        ),
-                                      ),
-                                      Text(
-                                        '$currency${it.finalDeliveryCharge.toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          fontSize: 12.sp,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-
-                      SizedBox(height: 12.h),
-
-                      // Extras (from charges_applied)
-                      Builder(
-                        builder: (_) {
-                          final totals = <String, num>{};
-                          for (final it in resp.items) {
-                            it.chargesApplied.forEach((k, v) {
-                              totals[k] = (totals[k] ?? 0) + v;
-                            });
-                          }
-                          totals.removeWhere((_, v) => v == 0);
-                          if (totals.isEmpty) return const SizedBox.shrink();
-
-                          return _card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Extras',
-                                      style: TextStyle(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      'Cost',
-                                      style: TextStyle(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8.h),
-                                for (final e in totals.entries)
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 8.h),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            _prettyKey(e.key),
-                                            style: TextStyle(fontSize: 12.sp),
-                                          ),
-                                        ),
-                                        Text(
-                                          '$currency${(e.value).toStringAsFixed(2)}',
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-
-                      SizedBox(height: 12.h),
-
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _card(
-                          child: Row(
-                            children: [
-                              const Spacer(),
-                              Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              SizedBox(width: 10.w),
-                              Text(
-                                '$currency${resp.cartTotalDeliveryCharge.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: _deliveryChargeDetailTables(resp, currency),
                 ),
               ),
             ],
@@ -251,6 +412,16 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
         ),
       ),
     );
+  }
+
+  /// Pull-to-refresh: reload cart (buyer/address) and delivery-charges totals.
+  Future<void> _onRefreshPaymentScreen() async {
+    ref.invalidate(cartProvider);
+    ref.invalidate(cartDeliveryChargesProvider);
+    await Future.wait<void>([
+      ref.read(cartProvider.future).then((_) {}),
+      ref.read(cartDeliveryChargesProvider.future).then((_) {}),
+    ]);
   }
 
   @override
@@ -351,81 +522,106 @@ class _BuyerPaymentScreenState extends ConsumerState<BuyerPaymentScreen> {
               .toList();
 
     final deliveryChargesAsync = ref.watch(cartDeliveryChargesProvider);
-    final deliveryTotal = deliveryChargesAsync.valueOrNull?.cartTotalDeliveryCharge ??
-        (args?.deliveryTotal ?? 0);
+    final charges = deliveryChargesAsync.valueOrNull;
+
+    /// Authoritative delivery $ from GET /cart/delivery-charges when loaded.
+    final deliveryCost = charges != null
+        ? charges.cartTotalDeliveryCharge.toDouble()
+        : (args?.deliveryTotal ?? 0).toDouble();
 
     final List<ShippingOption> options = [
-      ShippingOption(title: 'Delivery charge', cost: deliveryTotal.toDouble()),
-      ShippingOption(title: 'Own Pick up', cost: deliveryTotal.toDouble()),
+      ShippingOption(title: 'Delivery charge', cost: deliveryCost),
+      ShippingOption(title: 'Own Pick up', cost: 0),
     ];
 
     // ⬇️ currently selected shipping index (0 or 1)
     final selectedShippingIndex = ref.watch(shippingMethodIndexProvider);
 
+    /// Payable total: API `cart_total_with_delivery_and_fees` (incl. fees), not cart-only args.
+    final double checkoutTotal;
+    if (charges != null) {
+      final fullPayable = charges.grandTotal.toDouble();
+      if (selectedShippingIndex == 0) {
+        checkoutTotal = fullPayable;
+      } else {
+        // Own pickup: no delivery component (merchandise + platform + tax).
+        checkoutTotal = (charges.merchandiseSubtotal +
+                charges.platformFee +
+                charges.tax)
+            .toDouble();
+      }
+    } else {
+      checkoutTotal = args?.grandTotal ?? 0;
+    }
+
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-            child: Column(
-              children: [
-                Tuppertextandbackbutton(screenName: ref.t(BKeys.payment)),
-                SizedBox(height: 20.h),
-                CustomAddressAnddContract(
-                  title: ref.t(BKeys.shippingAddress),
-                  lines: shippingLines,
-                  onEdit: () {
-                    // Get updated buyer from cart if available, otherwise use args
-                    final updatedBuyer = cartAsync.maybeWhen(
-                      data: (cart) => cart.items.isNotEmpty ? cart.items.first.buyer : null,
-                      orElse: () => null,
-                    );
-                    final buyerToUse = updatedBuyer ?? args?.buyer;
-                    showShippingAddressBottomSheet(context, ref, buyer: buyerToUse);
-                  },
-                ),
-                SizedBox(height: 20.h),
-                CustomAddressAnddContract(
-                  title: ref.t(BKeys.contactInformation),
-                  lines: contactLines,
-                  onEdit: () {
-                    showShippingContractSheet(context, ref, args);
-                  },
-                ),
-
-                SizedBox(height: 20.h),
-                CustomItemShow(
-                  items: uiItems,
-                  options: options,
-                  selectedIndex: selectedShippingIndex,
-                  onShippingChanged: (i) {
-                    // ⬇️ user নতুন যেটা select করবে সেটা riverpod এ save করলাম
-                    ref.read(shippingMethodIndexProvider.notifier).state = i;
-                  },
-                  currency: '\$',
-                  onShippingDetails: deliveryChargesAsync.maybeWhen(
-                    data: (resp) => () =>
-                        _showDeliveryChargeDetails(context, resp, '\$'),
-                    orElse: () => null,
+        child: RefreshIndicator(
+          onRefresh: _onRefreshPaymentScreen,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              child: Column(
+                children: [
+                  Tuppertextandbackbutton(screenName: ref.t(BKeys.payment)),
+                  SizedBox(height: 20.h),
+                  CustomAddressAnddContract(
+                    title: ref.t(BKeys.shippingAddress),
+                    lines: shippingLines,
+                    onEdit: () {
+                      // Get updated buyer from cart if available, otherwise use args
+                      final updatedBuyer = cartAsync.maybeWhen(
+                        data: (cart) => cart.items.isNotEmpty ? cart.items.first.buyer : null,
+                        orElse: () => null,
+                      );
+                      final buyerToUse = updatedBuyer ?? args?.buyer;
+                      showShippingAddressBottomSheet(context, ref, buyer: buyerToUse);
+                    },
                   ),
-                ),
+                  SizedBox(height: 20.h),
+                  CustomAddressAnddContract(
+                    title: ref.t(BKeys.contactInformation),
+                    lines: contactLines,
+                    onEdit: () {
+                      showShippingContractSheet(context, ref, args);
+                    },
+                  ),
 
-                // buildPaymentMethodText(theme, context),
-                // SizedBox(height: 12.h),
-                //
-                // CustomPaymentMethod(
-                //   options: paymentOptions,
-                //   initialIndex: 0,
-                //   onChanged: (i) {},
-                // ),
-              ],
+                  SizedBox(height: 20.h),
+                  CustomItemShow(
+                    items: uiItems,
+                    options: options,
+                    selectedIndex: selectedShippingIndex,
+                    onShippingChanged: (i) {
+                      // ⬇️ user নতুন যেটা select করবে সেটা riverpod এ save করলাম
+                      ref.read(shippingMethodIndexProvider.notifier).state = i;
+                    },
+                    currency: '\$',
+                    onShippingDetails: deliveryChargesAsync.maybeWhen(
+                      data: (resp) => () =>
+                          _showDeliveryChargeDetails(context, resp, '\$'),
+                      orElse: () => null,
+                    ),
+                  ),
+
+                  // buildPaymentMethodText(theme, context),
+                  // SizedBox(height: 12.h),
+                  //
+                  // CustomPaymentMethod(
+                  //   options: paymentOptions,
+                  //   initialIndex: 0,
+                  //   onChanged: (i) {},
+                  // ),
+                ],
+              ),
             ),
           ),
         ),
       ),
       // Bottom total: args থেকে
       bottomNavigationBar: CustomTotalCheckoutSection(
-        totalPrice: args?.grandTotal ?? 0,
+        totalPrice: checkoutTotal,
         context: context,
         onCheckout: () => startCheckout(context),
       ),

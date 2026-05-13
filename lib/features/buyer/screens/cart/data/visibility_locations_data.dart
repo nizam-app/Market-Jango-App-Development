@@ -39,45 +39,16 @@ final visibilityZonesProvider = FutureProvider.autoDispose<List<String>>(
   },
 );
 
-final visibilityStatesProvider =
+/// Towns for a delivery zone (`GET …/towns?zone_name=`).
+final visibilityTownsByZoneProvider =
     FutureProvider.autoDispose.family<List<String>, String>(
   (ref, zone) async {
     final token = await ref.watch(authTokenProvider.future);
     if (token == null || token.isEmpty) throw Exception('Not logged in');
     if (zone.trim().isEmpty) return [];
 
-    final uri = Uri.parse(BuyerAPIController.visibilityStates(zone: zone));
-    final res = await http.get(
-      uri,
-      headers: {'Accept': 'application/json', 'token': token},
-    );
-    final map = jsonDecode(res.body);
-    if (res.statusCode != 200) {
-      final msg = (map is Map<String, dynamic>)
-          ? (map['message']?.toString() ?? 'Failed to load states')
-          : 'Failed to load states';
-      throw Exception(msg);
-    }
-    return _parseItemsList(map);
-  },
-);
-
-/// Towns are keyed by a stable string to avoid refetch loops
-/// when using custom objects as family args.
-///
-/// Format: "<zone>||<state>"
-final visibilityTownsProvider =
-    FutureProvider.autoDispose.family<List<String>, String>(
-  (ref, key) async {
-    final token = await ref.watch(authTokenProvider.future);
-    if (token == null || token.isEmpty) throw Exception('Not logged in');
-    final parts = key.split('||');
-    final zone = (parts.isNotEmpty ? parts[0] : '').trim();
-    final state = (parts.length > 1 ? parts[1] : '').trim();
-    if (zone.isEmpty || state.isEmpty) return [];
-
     final uri = Uri.parse(
-      BuyerAPIController.visibilityTowns(zone: zone, state: state),
+      BuyerAPIController.visibilityTownsByZone(zoneName: zone.trim()),
     );
     final res = await http.get(
       uri,

@@ -19,11 +19,18 @@ class LocationFilteringTab extends ConsumerStatefulWidget {
 
 class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
   String? _selectedZone;
-  String? _selectedState;
   String? _selectedTown;
+  late final TextEditingController _stateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _stateController = TextEditingController();
+  }
 
   @override
   void dispose() {
+    _stateController.dispose();
     super.dispose();
   }
 
@@ -93,7 +100,6 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                           onChanged: (v) {
                             setState(() {
                               _selectedZone = v;
-                              _selectedState = null;
                               _selectedTown = null;
                             });
                           },
@@ -109,44 +115,14 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                     ),
                   ),
                   SizedBox(height: 5.h),
-                  ref
-                      .watch(visibilityStatesProvider((_selectedZone ?? '').trim()))
-                      .when(
-                        loading: () => const LinearProgressIndicator(),
-                        error: (e, _) => DropdownButtonFormField<String>(
-                          decoration: buildInputDecoration(),
-                          items: const [],
-                          onChanged: null,
-                          hint: Text(
-                            e.toString().replaceFirst('Exception: ', ''),
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                        data: (states) => DropdownButtonFormField<String>(
-                          value: _selectedState != null &&
-                                  states.contains(_selectedState)
-                              ? _selectedState
-                              : null,
-                          decoration: buildInputDecoration(),
-                          hint: const Text('Select state'),
-                          items: states
-                              .map(
-                                (s) => DropdownMenuItem<String>(
-                                  value: s,
-                                  child: Text(s),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: ((_selectedZone ?? '').trim().isEmpty)
-                              ? null
-                              : (v) {
-                                  setState(() {
-                                    _selectedState = v;
-                                    _selectedTown = null;
-                                  });
-                                },
-                        ),
-                      ),
+                  TextField(
+                    controller: _stateController,
+                    enabled: (_selectedZone ?? '').trim().isNotEmpty,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: buildInputDecoration().copyWith(
+                      hintText: 'Type state (optional)',
+                    ),
+                  ),
 
                   SizedBox(height: 12.h),
                   Align(
@@ -159,8 +135,8 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                   SizedBox(height: 5.h),
                   ref
                       .watch(
-                        visibilityTownsProvider(
-                          '${(_selectedZone ?? '').trim()}||${(_selectedState ?? '').trim()}',
+                        visibilityTownsByZoneProvider(
+                          (_selectedZone ?? '').trim(),
                         ),
                       )
                       .when(
@@ -189,8 +165,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                                 ),
                               )
                               .toList(),
-                          onChanged: ((_selectedZone ?? '').trim().isEmpty ||
-                                  (_selectedState ?? '').trim().isEmpty)
+                          onChanged: ((_selectedZone ?? '').trim().isEmpty)
                               ? null
                               : (v) => setState(() => _selectedTown = v),
                         ),
@@ -205,7 +180,7 @@ class _LocationFilteringTabState extends ConsumerState<LocationFilteringTab> {
                     child: ElevatedButton(
                       onPressed: () {
                         final zone = (_selectedZone ?? '').trim();
-                        final st = (_selectedState ?? '').trim();
+                        final st = _stateController.text.trim();
                         final town = (_selectedTown ?? '').trim();
 
                         if (zone.isEmpty) {

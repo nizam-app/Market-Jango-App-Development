@@ -8,6 +8,7 @@ import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/chat_block_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/meassage_data.dart'; // chatListProvider
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_route_model.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/massage_list_model.dart';
@@ -17,6 +18,91 @@ import 'package:market_jango/core/utils/image_controller.dart';
 
 import '../../../localization/Keys/buyer_kay.dart';
 import 'global_chat_screen.dart';
+
+Future<void> _openChatBlockActionForThread(
+  BuildContext context,
+  WidgetRef ref,
+  ChatThread chat,
+) async {
+  var snap = ref.read(blockedChatUserIdsProvider);
+  if (!snap.hasValue) {
+    try {
+      await ref.read(blockedChatUserIdsProvider.future);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+      return;
+    }
+  }
+  snap = ref.read(blockedChatUserIdsProvider);
+  final ids = snap.value ?? {};
+  if (!context.mounted) return;
+  final isBlocked = ids.contains(chat.partnerId);
+
+  if (isBlocked) {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Unblock user'),
+        content: Text('Allow ${chat.partnerName} to message you again?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Unblock')),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    try {
+      await ChatBlockApi.unblockUser(chat.partnerId);
+      await refreshChatBlockAndInbox(ref);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User unblocked')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+    return;
+  }
+
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Block user'),
+      content: Text(
+        'Block ${chat.partnerName}? You will not receive messages from them.',
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Block')),
+      ],
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  try {
+    await ChatBlockApi.blockUser(chat.partnerId);
+    await refreshChatBlockAndInbox(ref);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User blocked')),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+}
 
 class GlobalMassageScreen extends ConsumerStatefulWidget {
   const GlobalMassageScreen({super.key});
@@ -62,6 +148,8 @@ class _GlobalMassageScreenState extends ConsumerState<GlobalMassageScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     final chatState = ref.watch(chatListProvider);
+    // Preload blocked-user ids (same API for every role) so long-press actions work immediately.
+    ref.watch(blockedChatUserIdsProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -172,6 +260,7 @@ class ChatListView extends ConsumerWidget {
             maxLines: 2,
             style: TextStyle(color: isUnread ? AllColor.grey : AllColor.black),
           ),
+          onLongPress: () => _openChatBlockActionForThread(context, ref, chat),
           onTap: () async {
             try {
               // Use centralized AuthLocalStorage to get user ID

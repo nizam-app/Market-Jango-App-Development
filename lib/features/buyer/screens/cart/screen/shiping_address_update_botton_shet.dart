@@ -8,6 +8,7 @@ import 'package:market_jango/core/localization/tr.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/buyer_shiping_update_logic.dart';
 import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart'; // cartProvider
 import 'package:market_jango/features/buyer/screens/cart/data/visibility_locations_data.dart';
+import 'package:market_jango/features/buyer/screens/prement/data/delivery_charges_data.dart';
 import 'package:market_jango/features/buyer/screens/cart/model/cart_model.dart';
 
 Future<void> showShippingAddressBottomSheet(
@@ -38,10 +39,10 @@ class _ShippingSheet extends ConsumerStatefulWidget {
 
 class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
   bool _submitting = false;
-  
+
   String? _selectedZone;
-  String? _selectedState;
   String? _selectedTown;
+  late final TextEditingController _stateController;
 
   @override
   void initState() {
@@ -51,22 +52,28 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
     final zone = b?.shipZone?.trim();
     _selectedZone = (zone != null && zone.isNotEmpty && zone != 'null') ? zone : null;
     final st = b?.shipState?.trim();
-    _selectedState = (st != null && st.isNotEmpty && st != 'null') ? st : null;
+    final stateText =
+        (st != null && st.isNotEmpty && st != 'null') ? st : '';
+    _stateController = TextEditingController(text: stateText);
     final town = b?.shipTown?.trim();
     _selectedTown = (town != null && town.isNotEmpty && town != 'null') ? town : null;
   }
 
   @override
   void dispose() {
+    _stateController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    final stateText = _stateController.text.trim();
     if ((_selectedZone ?? '').trim().isEmpty ||
-        (_selectedState ?? '').trim().isEmpty ||
+        stateText.isEmpty ||
         (_selectedTown ?? '').trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select Zone, State and Town')),
+        const SnackBar(
+          content: Text('Please select zone and town, and type your state'),
+        ),
       );
       return;
     }
@@ -76,8 +83,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
       final fields = <String, String>{
         if (_selectedZone != null && _selectedZone!.trim().isNotEmpty)
           'ship_zone': _selectedZone!.trim(),
-        if (_selectedState != null && _selectedState!.trim().isNotEmpty)
-          'ship_state': _selectedState!.trim(),
+        'ship_state': stateText,
         if (_selectedTown != null && _selectedTown!.trim().isNotEmpty)
           'ship_town': _selectedTown!.trim(),
       };
@@ -90,6 +96,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
 
       if (mounted) {
         ref.invalidate(cartProvider);
+        ref.invalidate(cartDeliveryChargesProvider);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           //'Shipping address updated'
@@ -196,7 +203,6 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                           onChanged: (v) {
                             setState(() {
                               _selectedZone = v;
-                              _selectedState = null;
                               _selectedTown = null;
                             });
                           },
@@ -211,46 +217,12 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                         ),
                       ),
                       SizedBox(height: 6.h),
-                      ref
-                          .watch(
-                            visibilityStatesProvider((_selectedZone ?? '').trim()),
-                          )
-                          .when(
-                            loading: () => const LinearProgressIndicator(),
-                            error: (e, _) => Text(
-                              e.toString().replaceFirst('Exception: ', ''),
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                            data: (states) => DropdownButtonFormField<String>(
-                              value:
-                                  _selectedState != null && states.contains(_selectedState)
-                                      ? _selectedState
-                                      : null,
-                              decoration: _dec('Select state'),
-                              items: states
-                                  .map(
-                                    (s) => DropdownMenuItem<String>(
-                                      value: s,
-                                      child: Text(
-                                        s,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: ((_selectedZone ?? '').trim().isEmpty)
-                                  ? null
-                                  : (v) {
-                                      setState(() {
-                                        _selectedState = v;
-                                        _selectedTown = null;
-                                      });
-                                    },
-                            ),
-                          ),
+                      TextField(
+                        controller: _stateController,
+                        enabled: (_selectedZone ?? '').trim().isNotEmpty,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: _dec('Type your state'),
+                      ),
                       SizedBox(height: 14.h),
                       Align(
                         alignment: Alignment.centerLeft,
@@ -260,8 +232,7 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                         ),
                       ),
                       SizedBox(height: 6.h),
-                      ((_selectedZone ?? '').trim().isEmpty ||
-                              (_selectedState ?? '').trim().isEmpty)
+                      (_selectedZone ?? '').trim().isEmpty
                           ? DropdownButtonFormField<String>(
                               value: null,
                               decoration: _dec('Select town'),
@@ -270,8 +241,8 @@ class _ShippingSheetState extends ConsumerState<_ShippingSheet> {
                             )
                           : ref
                               .watch(
-                                visibilityTownsProvider(
-                                  '${(_selectedZone ?? '').trim()}||${(_selectedState ?? '').trim()}',
+                                visibilityTownsByZoneProvider(
+                                  (_selectedZone ?? '').trim(),
                                 ),
                               )
                               .when(

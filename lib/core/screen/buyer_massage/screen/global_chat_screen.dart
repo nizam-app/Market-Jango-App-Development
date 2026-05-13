@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/screen/buyer_massage/data/chat_block_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/data/chat_history_data.dart';
 import 'package:market_jango/core/screen/buyer_massage/logic/message_send_riverpod.dart';
 import 'package:market_jango/core/screen/buyer_massage/model/chat_history_model.dart';
@@ -50,6 +51,11 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
 
     // Fetch history
     final history = ref.watch(chatHistoryStreamProvider(widget.partnerId));
+    final blockedAsync = ref.watch(blockedChatUserIdsProvider);
+    final isBlocked = blockedAsync.maybeWhen(
+      data: (ids) => ids.contains(widget.partnerId),
+      orElse: () => false,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -69,22 +75,39 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
               ),
             ),
             SizedBox(width: 10.w),
-            Text(
-              widget.partnerName,
-              style: theme.titleLarge?.copyWith(fontSize: 20.sp),
+            Expanded(
+              child: Text(
+                widget.partnerName,
+                style: theme.titleLarge?.copyWith(fontSize: 20.sp),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.videocam_outlined, size: 24.sp),
-        //     onPressed: () {},
-        //   ),
-        //   IconButton(
-        //     icon: Icon(Icons.call_outlined, size: 24.sp),
-        //     onPressed: () {},
-        //   ),
-        // ],
+        actions: [
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: AllColor.black, size: 22.sp),
+            onSelected: (value) {
+              if (value == 'block') {
+                _confirmBlockUser();
+              } else if (value == 'unblock') {
+                _confirmUnblockUser();
+              }
+            },
+            itemBuilder: (context) => [
+              if (isBlocked)
+                const PopupMenuItem<String>(
+                  value: 'unblock',
+                  child: Text('Unblock user'),
+                )
+              else
+                const PopupMenuItem<String>(
+                  value: 'block',
+                  child: Text('Block user'),
+                ),
+            ],
+          ),
+        ],
         backgroundColor: AllColor.white,
         elevation: 1,
       ),
@@ -132,7 +155,7 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
                               m.image!.isNotEmpty &&
                               m.image != 'local')
                           ? null
-                          : (m.message ?? ''),
+                          : m.message,
                       imageUrl:
                           (!isLocal &&
                               (m.image ?? '').isNotEmpty &&
@@ -156,13 +179,93 @@ class _ChatScreenState extends ConsumerState<GlobalChatScreen> {
               const Divider(height: 1),
               Container(
                 decoration: BoxDecoration(color: Theme.of(context).cardColor),
-                child: _composer(),
+                child: _buildInputArea(isBlocked),
               ),
             ],
           );
         },
       ),
     );
+  }
+
+  Future<void> _confirmBlockUser() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Block user'),
+        content: Text(
+          'Block ${widget.partnerName}? You will not receive messages from them.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Block')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ChatBlockApi.blockUser(widget.partnerId);
+      await refreshChatBlockAndInbox(ref);
+      ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User blocked')),
+      );
+      context.pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmUnblockUser() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Unblock user'),
+        content: Text(
+          'Allow ${widget.partnerName} to message you again?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Unblock')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ChatBlockApi.unblockUser(widget.partnerId);
+      await refreshChatBlockAndInbox(ref);
+      ref.invalidate(chatHistoryStreamProvider(widget.partnerId));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User unblocked')),
+      );
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
+  Widget _buildInputArea(bool isBlocked) {
+    if (isBlocked) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        child: Text(
+          'You have blocked this user. Open the menu (⋮) and tap Unblock to send messages again.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13.sp, color: Colors.black87, height: 1.35),
+        ),
+      );
+    }
+    return _composer();
   }
 
   final _textController = TextEditingController();

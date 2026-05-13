@@ -139,18 +139,15 @@ class BuyerAPIController {
         'page': '$page',
       }).toString();
 
-  // --- Shipping visibility locations (zones/states/towns) ---
+  // --- Delivery charge locations (Postman: buyer/delivery-charge-locations/*) ---
+  /// GET …/zones — `data.items` = zone names.
   static String get visibilityZones =>
-      '$_base_api/buyer/visibility-locations/zones';
+      '$_base_api/buyer/delivery-charge-locations/zones';
 
-  static String visibilityStates({required String zone}) => Uri.parse(
-        '$_base_api/buyer/visibility-locations/states',
-      ).replace(queryParameters: {'zone': zone}).toString();
-
-  static String visibilityTowns({required String zone, required String state}) =>
-      Uri.parse(
-        '$_base_api/buyer/visibility-locations/towns',
-      ).replace(queryParameters: {'zone': zone, 'state': state}).toString();
+  /// GET …/towns?zone_name= — `data.items` = town names (no separate states API).
+  static String visibilityTownsByZone({required String zoneName}) => Uri.parse(
+        '$_base_api/buyer/delivery-charge-locations/towns',
+      ).replace(queryParameters: {'zone_name': zoneName.trim()}).toString();
 
   static String visibilityVendors({
     required String zone,

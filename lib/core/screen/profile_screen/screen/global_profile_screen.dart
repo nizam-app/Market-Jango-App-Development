@@ -30,6 +30,7 @@ import 'package:market_jango/features/transport/screens/wallet/screen/transport_
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
 import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
+import 'package:market_jango/features/vendor/screens/wallet/screen/vendor_wallet_screen.dart';
 import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../../features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
@@ -306,6 +307,13 @@ class GlobalSettingScreen extends ConsumerWidget {
               fallback: 'Subscription',
             ),
             onTap: () => context.push(SubscriptionScreen.routeName),
+          ),
+        if (userTypeAsync.value == "vendor") _DividerLine(),
+        if (userTypeAsync.value == "vendor")
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: ref.t(BKeys.wallet, fallback: 'Wallet'),
+            onTap: () => context.push(VendorWalletScreen.routeName),
           ),
         _DividerLine(),
         if (userTypeAsync.value == "vendor")

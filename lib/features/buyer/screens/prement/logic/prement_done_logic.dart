@@ -36,7 +36,181 @@ double _payableFromRouterExtra(BuildContext context) {
   return 0;
 }
 
+enum _CheckoutPaymentChoice { wallet, gateway }
+
+Future<void> _showMessagePopup(BuildContext context, String message) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Notice'),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<void> startCheckout(BuildContext context) async {
+  final choice = await showDialog<_CheckoutPaymentChoice>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Choose payment method'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.account_balance_wallet_outlined),
+            title: const Text('Payment by Wallet'),
+            onTap: () =>
+                Navigator.of(ctx).pop(_CheckoutPaymentChoice.wallet),
+          ),
+          ListTile(
+            leading: const Icon(Icons.account_balance_outlined),
+            title: const Text('Payment by bank and mobile'),
+            onTap: () =>
+                Navigator.of(ctx).pop(_CheckoutPaymentChoice.gateway),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+
+  if (!context.mounted || choice == null) return;
+
+  switch (choice) {
+    case _CheckoutPaymentChoice.wallet:
+      await _checkoutWithWallet(context);
+      break;
+    case _CheckoutPaymentChoice.gateway:
+      await _checkoutWithGateway(context);
+      break;
+  }
+}
+
+/// Wallet: GET `/api/wallet` then POST `/api/invoice/create` with `Wallet` if balance covers total.
+Future<void> _checkoutWithWallet(BuildContext context) async {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final payableTotal = _payableFromRouterExtra(context);
+  final selectedIndex = container.read(shippingMethodIndexProvider);
+  final String shippingPaymentMethod = selectedIndex == 0 ? 'FW' : 'OPU';
+
+  if (shippingPaymentMethod != 'FW') {
+    await _showMessagePopup(
+      context,
+      'Wallet payment is only available when delivery charge is selected.',
+    );
+    return;
+  }
+
+  if (payableTotal <= 0) {
+    await _showMessagePopup(context, 'Invalid order total.');
+    return;
+  }
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Dialog(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.4),
+            ),
+            SizedBox(width: 12),
+            Text('Checking wallet...'),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  try {
+    num? walletBalance;
+    try {
+      final overview = await BuyerWalletApi.instance.fetchWallet();
+      walletBalance = overview.balanceNumeric;
+    } catch (e) {
+      log.i('Wallet balance fetch failed: $e');
+      walletBalance = null;
+    }
+
+    if (context.mounted) {
+      final nav = Navigator.of(context, rootNavigator: true);
+      if (nav.canPop()) nav.pop();
+    }
+
+    if (!context.mounted) return;
+
+    if (walletBalance == null) {
+      await _showMessagePopup(
+        context,
+        'Could not load your wallet balance. Please try again or use bank and mobile payment.',
+      );
+      return;
+    }
+
+    final balance = walletBalance.toDouble();
+    if (balance + 1e-9 < payableTotal) {
+      await _showMessagePopup(
+        context,
+        'Insufficient wallet balance.\n'
+        'Available: $walletBalance · Required: $payableTotal',
+      );
+      return;
+    }
+
+    await _executeInvoiceCheckout(
+      context,
+      paymentMethod: 'Wallet',
+      shippingPaymentMethod: shippingPaymentMethod,
+    );
+  } catch (e, st) {
+    if (context.mounted) {
+      final nav = Navigator.of(context, rootNavigator: true);
+      if (nav.canPop()) nav.pop();
+    }
+    log.e('Wallet checkout exception: $e\nStack trace: $st');
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Checkout failed: $e')));
+  }
+}
+
+/// Bank / mobile (Flutterwave) or own pick-up — never auto-selects wallet.
+Future<void> _checkoutWithGateway(BuildContext context) async {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final selectedIndex = container.read(shippingMethodIndexProvider);
+  final String shippingPaymentMethod = selectedIndex == 0 ? 'FW' : 'OPU';
+
+  await _executeInvoiceCheckout(
+    context,
+    paymentMethod: shippingPaymentMethod,
+    shippingPaymentMethod: shippingPaymentMethod,
+  );
+}
+
+Future<void> _executeInvoiceCheckout(
+  BuildContext context, {
+  required String paymentMethod,
+  required String shippingPaymentMethod,
+}) async {
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -64,32 +238,11 @@ Future<void> startCheckout(BuildContext context) async {
     final payableTotal = _payableFromRouterExtra(context);
     final token = await container.read(authTokenProvider.future);
 
-    final selectedIndex = container.read(shippingMethodIndexProvider);
-    final String shippingPaymentMethod = selectedIndex == 0 ? 'FW' : 'OPU';
-
-    num? walletBalance;
-    try {
-      final overview = await BuyerWalletApi.instance.fetchWallet();
-      walletBalance = overview.balanceNumeric;
-    } catch (e) {
-      log.i('Wallet balance fetch failed, using gateway flow: $e');
-      walletBalance = null;
-    }
-
-    final balance = walletBalance?.toDouble() ?? 0.0;
-    // Wallet replaces the Flutterwave (FW) gateway only. Own pick-up (OPU) stays OPU.
-    final canPayWithWallet = shippingPaymentMethod == 'FW' &&
-        payableTotal > 0 &&
-        balance + 1e-9 >= payableTotal;
-
-    final String paymentMethod =
-        canPayWithWallet ? 'Wallet' : shippingPaymentMethod;
-
     final uri = Uri.parse(BuyerAPIController.invoice_createate);
     log.i(
       'InvoiceCreate → POST $uri '
       '(payment_method=$paymentMethod, payable=$payableTotal, '
-      'wallet=$walletBalance, token: ${maskToken(token)})',
+      'token: ${maskToken(token)})',
     );
 
     final res = await http.post(

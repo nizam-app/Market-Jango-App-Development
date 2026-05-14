@@ -40,6 +40,7 @@ import 'package:market_jango/features/buyer/screens/billing/screen/buyer_invoice
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refund_detail_screen.dart';
 import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
 import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
+import 'package:market_jango/features/vendor/screens/wallet/screen/vendor_wallet_screen.dart';
 import 'package:market_jango/features/transport/screens/wallet/screen/transport_wallet_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
@@ -897,6 +898,11 @@ final GoRouter router = GoRouter(
       path: BuyerWalletScreen.routeName,
       name: BuyerWalletScreen.routeName,
       builder: (context, state) => const BuyerWalletScreen(),
+    ),
+    GoRoute(
+      path: VendorWalletScreen.routeName,
+      name: VendorWalletScreen.routeName,
+      builder: (context, state) => const VendorWalletScreen(),
     ),
     GoRoute(
       path: TransportWalletScreen.routeName,

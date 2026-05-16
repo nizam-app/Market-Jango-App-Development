@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
+import 'package:market_jango/core/widget/vendor_role_guard.dart';
 import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/custom_auth_button.dart';
 import 'package:market_jango/core/widget/global_pagination.dart';
@@ -19,16 +21,27 @@ import 'package:market_jango/features/vendor/screens/vendor_product_add_page/scr
 import '../logic/vendor_product_delete.dart';
 import '_attribute_menu_sheet.dart';
 
-class VendorMyProductScreen extends ConsumerStatefulWidget {
+class VendorMyProductScreen extends ConsumerWidget {
   const VendorMyProductScreen({super.key});
   static const routeName = "/vendorMyProductScreen";
 
   @override
-  ConsumerState<VendorMyProductScreen> createState() =>
-      _VendorMyProductScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    return VendorRoleGuard(
+      allowedProvider: canManageProductsProvider,
+      title: 'My Product',
+      message: 'Only Owner/Manager/Moderator can manage products.',
+      child: _Body(),
+    );
+  }
 }
 
-class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
+class _Body extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends ConsumerState<_Body> {
   final List<String> attributes = [];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -43,7 +56,7 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
     // Get vendor ID
     final vendorAsync = ref.read(vendorProvider);
     int? vendorId;
-    await vendorAsync.when(
+    vendorAsync.when(
       data: (vendor) => vendorId = vendor.id,
       loading: () => null,
       error: (_, __) => null,
@@ -82,6 +95,7 @@ class _VendorMyProductScreenState extends ConsumerState<VendorMyProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // original build content remains below (unchanged)
     final productAsync = ref.watch(productNotifierProvider);
     final productNotifier = ref.read(productNotifierProvider.notifier);
     return Scaffold(

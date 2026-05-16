@@ -62,7 +62,7 @@ class BuyerNewItemsNotifier extends AsyncNotifier<TopProductsResponse?> {
       Logger().i('New items: loaded ${result.data.data.length} items');
       return result;
     } else {
-      Logger().e('New items failed: ${response.statusCode} ${response.body.length > 200 ? response.body.substring(0, 200) + "..." : response.body}');
+      Logger().e('New items failed: ${response.statusCode} ${response.body.length > 200 ? "${response.body.substring(0, 200)}..." : response.body}');
       throw Exception(
         'Failed to load new items: ${response.statusCode} ${response.reasonPhrase}',
       );

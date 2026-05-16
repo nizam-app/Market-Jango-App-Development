@@ -22,18 +22,26 @@ class NotificationModel {
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    final senderRaw = json['sender'];
     return NotificationModel(
-      id: json['id'],
-      name: json['name'],
-      message: json['message'],
+      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      name: json['name']?.toString() ?? json['title']?.toString() ?? '',
+      message: json['message']?.toString() ?? json['body']?.toString() ?? '',
       isRead: json['is_read'] == 1 ||
-          json['is_read'] == true, // Handle 0/1 and true/false
-      senderId: json['sender_id'],
-      receiverId: json['receiver_id'],
+          json['is_read'] == true ||
+          json['is_read'] == '1',
+      senderId: json['sender_id'] is int
+          ? json['sender_id'] as int
+          : int.tryParse('${json['sender_id'] ?? 0}') ?? 0,
+      receiverId: json['receiver_id'] is int
+          ? json['receiver_id'] as int
+          : int.tryParse('${json['receiver_id'] ?? 0}') ?? 0,
       createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
-      sender: Sender.fromJson(json['sender']),
+      sender: senderRaw is Map<String, dynamic>
+          ? Sender.fromJson(senderRaw)
+          : Sender(id: 0, name: '', email: ''),
     );
   }
 

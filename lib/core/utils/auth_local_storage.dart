@@ -17,6 +17,13 @@ class AuthLocalStorage {
   static const String _userJsonKey = 'user_json';
   static const String _hasLoggedInKey = 'has_logged_in';
 
+  // Vendor role data from GET /vendor/my-role
+  static const String _vendorRoleKey = 'role';
+  static const String _vendorIsOwnerKey = 'is_owner';
+  static const String _vendorPermissionsKey = 'permissions';
+  static const String _vendorIdKey = 'vendor_id';
+  static const String _vendorNameKey = 'vendor_name';
+
   // Legacy keys (for backward compatibility)
   static const String _legacyUserIdKey = 'user_id';
   static const String _legacyUserTypeKey = 'user_type';
@@ -45,6 +52,70 @@ class AuthLocalStorage {
 
     // Clear registration token after successful login
     await prefs.remove(_registrationTokenKey);
+    await _clearVendorRoleData(prefs);
+  }
+
+  Future<void> saveVendorRoleData(Map<String, dynamic> roleJson) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final role = roleJson['role']?.toString();
+    final isOwner = roleJson['is_owner'];
+    final permissions = roleJson['permissions'];
+    final vendorId = roleJson['vendor_id'];
+    final vendorName = roleJson['vendor_name']?.toString();
+
+    if (role != null && role.isNotEmpty) {
+      await prefs.setString(_vendorRoleKey, role);
+    }
+    if (isOwner is bool) {
+      await prefs.setBool(_vendorIsOwnerKey, isOwner);
+    } else if (isOwner != null) {
+      await prefs.setBool(
+        _vendorIsOwnerKey,
+        isOwner.toString() == '1' || isOwner.toString().toLowerCase() == 'true',
+      );
+    }
+    if (permissions is Map) {
+      await prefs.setString(
+        _vendorPermissionsKey,
+        jsonEncode(permissions.cast<String, dynamic>()),
+      );
+    }
+    if (vendorId != null) {
+      await prefs.setString(_vendorIdKey, vendorId.toString());
+    }
+    if (vendorName != null && vendorName.isNotEmpty) {
+      await prefs.setString(_vendorNameKey, vendorName);
+    }
+  }
+
+  Future<String?> getVendorRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_vendorRoleKey);
+  }
+
+  Future<bool> getVendorIsOwner() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_vendorIsOwnerKey) ?? false;
+  }
+
+  Future<Map<String, dynamic>> getVendorPermissions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_vendorPermissionsKey);
+    if (raw == null || raw.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+    } catch (_) {}
+    return const {};
+  }
+
+  Future<void> _clearVendorRoleData(SharedPreferences prefs) async {
+    await prefs.remove(_vendorRoleKey);
+    await prefs.remove(_vendorIsOwnerKey);
+    await prefs.remove(_vendorPermissionsKey);
+    await prefs.remove(_vendorIdKey);
+    await prefs.remove(_vendorNameKey);
   }
 
   /// Save registration token - called during registration flow
@@ -133,6 +204,7 @@ class AuthLocalStorage {
     await prefs.remove(_registrationTokenKey);
     await prefs.remove(_userJsonKey);
     await prefs.remove(_hasLoggedInKey);
+    await _clearVendorRoleData(prefs);
     // Also clear legacy keys
     await prefs.remove(_legacyUserIdKey);
     await prefs.remove(_legacyUserTypeKey);

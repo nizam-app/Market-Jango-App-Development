@@ -9,10 +9,10 @@ import '../model/user_details_model.dart';
 
 final vendorProvider = FutureProvider<VendorDetailsModel>((ref) async {
   final authStorage = AuthLocalStorage();
-  final user_token = await authStorage.getToken();
+  final userToken = await authStorage.getToken();
   final userId = await authStorage.getUserId();
   
-  if (user_token == null) {
+  if (userToken == null) {
     throw Exception("Auth token not found");
   }
   
@@ -27,7 +27,7 @@ final vendorProvider = FutureProvider<VendorDetailsModel>((ref) async {
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json",
-      "token": user_token,
+      "token": userToken,
     },
   );
 

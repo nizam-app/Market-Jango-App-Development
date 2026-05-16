@@ -12,7 +12,7 @@ class VendorCategoryModel {
   });
 
   factory VendorCategoryModel.fromJson(Map<String, dynamic> json) {
-    int _toInt(dynamic value, {int defaultValue = 0}) {
+    int toInt(dynamic value, {int defaultValue = 0}) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
@@ -21,10 +21,10 @@ class VendorCategoryModel {
     }
 
     return VendorCategoryModel(
-      id: _toInt(json['id']),
+      id: toInt(json['id']),
       name: json['name']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      vendorId: _toInt(json['vendor_id']),
+      vendorId: toInt(json['vendor_id']),
     );
   }
 }

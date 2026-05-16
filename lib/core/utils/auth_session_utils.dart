@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:market_jango/core/services/fcm_push_service.dart';
 import 'package:market_jango/core/utils/auth_local_storage.dart';
+import 'package:market_jango/core/utils/get_user_type.dart';
 import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/navbar/screen/buyer_bottom_nav_bar.dart';
 import 'package:market_jango/features/navbar/screen/driver_bottom_nav_bar.dart';
@@ -62,6 +65,8 @@ class AuthSessionUtils {
       token: token,
       userJson: user,
     );
+
+    await FcmPushService.instance.syncTokenToBackend();
   }
 
   /// Check if user is currently logged in
@@ -164,9 +169,65 @@ class AuthSessionUtils {
     // Clear all login data
     await _authStorage.clearLoginData();
 
+    if (!context.mounted) return;
+
+    // Drop cached auth-derived state so APIs/UI do not keep the old user.
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      container.invalidate(getUserIdProvider);
+      container.invalidate(getUserTypeProvider);
+    } catch (_) {}
+
     // Navigate to login screen and remove all previous routes
     if (context.mounted) {
       context.go(loginRoute);
+    }
+  }
+
+  /// Confirm then [logoutAndGoToLogin] — same dialog as profile settings (full storage clear + go to login).
+  static Future<void> showLogoutConfirmationDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            'Log out',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          content: const Text(
+            'Are you sure you want to log out from this account?',
+            style: TextStyle(fontSize: 14, height: 1.4),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+              child: const Text(
+                'Log out',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && context.mounted) {
+      await logoutAndGoToLogin(context);
     }
   }
 }

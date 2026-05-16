@@ -2,14 +2,39 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:market_jango/core/constants/api_control/buyer_api.dart';
 import 'package:market_jango/core/utils/get_token_sharedpefarens.dart';
+import 'package:market_jango/features/buyer/screens/cart/logic/cart_data.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/global_logger.dart';
 import 'package:market_jango/features/buyer/screens/prement/logic/prement_reverpod.dart';
 import 'package:market_jango/features/buyer/screens/prement/model/prement_line_items.dart';
-import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/model/prement_page_data_model.dart';
 import 'package:market_jango/features/buyer/screens/prement/screen/payment_complete_screen.dart';
+import 'package:market_jango/features/buyer/screens/prement/screen/web_view_screen.dart';
+import 'package:market_jango/features/buyer/screens/wallet/data/buyer_wallet_api.dart';
+import 'package:market_jango/features/buyer/screens/wallet/provider/buyer_wallet_provider.dart';
+
+bool _jsonStatusIsSuccess(Map<String, dynamic> top) {
+  final st = top['status']?.toString().toLowerCase();
+  return st == 'success';
+}
+
+String? _messageFromJson(Map<String, dynamic>? top) {
+  if (top == null) return null;
+  final m = top['message']?.toString().trim();
+  if (m == null || m.isEmpty) return null;
+  return m;
+}
+
+double _payableFromRouterExtra(BuildContext context) {
+  try {
+    final extra = GoRouterState.of(context).extra;
+    if (extra is PaymentPageData) return extra.grandTotal;
+  } catch (_) {}
+  return 0;
+}
 
 Future<void> startCheckout(BuildContext context) async {
   showDialog(
@@ -35,21 +60,38 @@ Future<void> startCheckout(BuildContext context) async {
   );
 
   try {
-    // ⬇️ riverpod container নিলাম
     final container = ProviderScope.containerOf(context, listen: false);
+    final payableTotal = _payableFromRouterExtra(context);
     final token = await container.read(authTokenProvider.future);
 
-    // ⬇️ কোন shipping select আছে? 0 = Delivery charge, 1 = Own Pick up
     final selectedIndex = container.read(shippingMethodIndexProvider);
-    final String paymentMethod = selectedIndex == 0 ? 'FW' : 'OPU';
+    final String shippingPaymentMethod = selectedIndex == 0 ? 'FW' : 'OPU';
+
+    num? walletBalance;
+    try {
+      final overview = await BuyerWalletApi.instance.fetchWallet();
+      walletBalance = overview.balanceNumeric;
+    } catch (e) {
+      log.i('Wallet balance fetch failed, using gateway flow: $e');
+      walletBalance = null;
+    }
+
+    final balance = walletBalance?.toDouble() ?? 0.0;
+    // Wallet replaces the Flutterwave (FW) gateway only. Own pick-up (OPU) stays OPU.
+    final canPayWithWallet = shippingPaymentMethod == 'FW' &&
+        payableTotal > 0 &&
+        balance + 1e-9 >= payableTotal;
+
+    final String paymentMethod =
+        canPayWithWallet ? 'Wallet' : shippingPaymentMethod;
 
     final uri = Uri.parse(BuyerAPIController.invoice_createate);
     log.i(
       'InvoiceCreate → POST $uri '
-      '(payment_method=$paymentMethod, token: ${maskToken(token)})',
+      '(payment_method=$paymentMethod, payable=$payableTotal, '
+      'wallet=$walletBalance, token: ${maskToken(token)})',
     );
 
-    // ⬇️ GET না, এখন POST + JSON body পাঠাচ্ছি
     final res = await http.post(
       uri,
       headers: {
@@ -60,8 +102,9 @@ Future<void> startCheckout(BuildContext context) async {
       body: jsonEncode({'payment_method': paymentMethod}),
     );
 
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
+    if (context.mounted) {
+      final nav = Navigator.of(context, rootNavigator: true);
+      if (nav.canPop()) nav.pop();
     }
 
     log.i('InvoiceCreate ← status=${res.statusCode}');
@@ -70,16 +113,26 @@ Future<void> startCheckout(BuildContext context) async {
       '${res.body.length > 400 ? '${res.body.substring(0, 400)}…' : res.body}',
     );
 
-    if (res.statusCode != 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invoice failed: ${res.statusCode}')),
-      );
+    Map<String, dynamic>? top;
+    try {
+      top = jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      top = null;
+    }
+
+    final success = res.statusCode == 200 &&
+        top != null &&
+        _jsonStatusIsSuccess(top);
+
+    if (!success) {
+      if (!context.mounted) return;
+      final msg = _messageFromJson(top) ??
+          'Invoice failed${res.statusCode != 200 ? ' (${res.statusCode})' : ''}';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
       return;
     }
 
-    final body = jsonDecode(res.body) as Map<String, dynamic>;
-    final data = body['data'];
-
+    final data = top['data'];
     Map<String, dynamic>? dataMap;
     if (data is Map<String, dynamic>) {
       dataMap = data;
@@ -89,11 +142,11 @@ Future<void> startCheckout(BuildContext context) async {
 
     final paymentField = dataMap?['paymentMethod'];
 
-    // 🔹 CASE 1: Own Pick Up → OPU → শুধু success, কোনো webview না
-    if (paymentMethod == 'OPU') {
+    // Wallet: order placed from balance — no hosted payment URL.
+    if (paymentMethod == 'Wallet') {
       if (!context.mounted) return;
-      // Replace payment screen with completion screen
-      // When completion screen closes, we'll be back to cart/previous screen
+      container.invalidate(cartProvider);
+      container.invalidate(buyerWalletOverviewProvider);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => const PaymentCompleteScreen(),
@@ -102,7 +155,19 @@ Future<void> startCheckout(BuildContext context) async {
       return;
     }
 
-    // 🔹 CASE 2: Online payment → FW → আগের মতো payment_url নিয়ে webview এ যাবে
+    // Own pick up — success without WebView
+    if (shippingPaymentMethod == 'OPU') {
+      if (!context.mounted) return;
+      container.invalidate(cartProvider);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const PaymentCompleteScreen(),
+        ),
+      );
+      return;
+    }
+
+    // Flutterwave / online — open payment_url in WebView
     String? paymentUrl;
     if (paymentField is Map<String, dynamic>) {
       paymentUrl = paymentField['payment_url']?.toString();
@@ -118,6 +183,7 @@ Future<void> startCheckout(BuildContext context) async {
       return;
     }
 
+    if (!context.mounted) return;
     final result = await Navigator.of(context).push<PaymentStatusResult>(
       MaterialPageRoute(builder: (_) => PaymentWebView(url: paymentUrl ?? "")),
     );
@@ -127,9 +193,8 @@ Future<void> startCheckout(BuildContext context) async {
     if (!context.mounted) return;
 
     if (result?.success == true) {
-      // Replace payment screen with completion screen
-      // When completion screen closes, we'll be back to cart/previous screen
       if (context.mounted) {
+        container.invalidate(cartProvider);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => const PaymentCompleteScreen(),
@@ -142,8 +207,9 @@ Future<void> startCheckout(BuildContext context) async {
       ).showSnackBar(const SnackBar(content: Text('Payment not completed')));
     }
   } catch (e, st) {
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
+    if (context.mounted) {
+      final nav = Navigator.of(context, rootNavigator: true);
+      if (nav.canPop()) nav.pop();
     }
     log.e('Checkout exception: $e\nStack trace: $st');
     if (!context.mounted) return;

@@ -4,15 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/screen/buyer_massage/screen/global_massage_screen.dart';
 import 'package:market_jango/core/screen/profile_screen/screen/global_profile_screen.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 
 import '../../../core/localization/tr.dart';
 import '../../driver/screen/driver_order/screen/driver_order.dart';
 import '../../driver/screen/home/screen/driver_home.dart';
-
-// --- Providers ---------------------------------------------------------------
-
-// Active tab index
-final driverNavIndexProvider = StateProvider<int>((_) => 0);
 
 // Pages (swap these with your real screens)
 final driverPagesProvider = Provider<List<Widget>>(

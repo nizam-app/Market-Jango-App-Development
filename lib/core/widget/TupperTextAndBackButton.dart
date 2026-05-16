@@ -4,8 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
 
 class Tuppertextandbackbutton extends StatelessWidget {
-  const Tuppertextandbackbutton({super.key, required this.screenName});
+  const Tuppertextandbackbutton({
+    super.key,
+    required this.screenName,
+    this.onBack,
+  });
+
   final String screenName;
+
+  /// When set, called instead of the default pop. Use for tab-embedded screens.
+  final VoidCallback? onBack;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -16,7 +25,11 @@ class Tuppertextandbackbutton extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  backButton(context);
+                  if (onBack != null) {
+                    onBack!();
+                  } else {
+                    _defaultBack(context);
+                  }
                 },
                 child: CircleAvatar(
                   radius: 15.r,
@@ -45,7 +58,9 @@ class Tuppertextandbackbutton extends StatelessWidget {
     );
   }
 
-  void backButton(BuildContext context) {
-    context.pop();
+  void _defaultBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    }
   }
 }

@@ -154,12 +154,14 @@ class InfluencerReferralLinksNotifier
         .toList();
   }
 
+  @override
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _fetch());
   }
 
   /// POST approve influencer referral link
+  @override
   Future<void> approveLink(int id) async {
     final token = await ref.read(authTokenProvider.future);
     if (token == null || token.isEmpty) throw Exception('Not logged in');
@@ -179,6 +181,7 @@ class InfluencerReferralLinksNotifier
   }
 
   /// DELETE influencer referral link
+  @override
   Future<void> deleteLink(int id) async {
     final token = await ref.read(authTokenProvider.future);
     if (token == null || token.isEmpty) throw Exception('Not logged in');
@@ -250,11 +253,13 @@ class DriverInfluencerReferralLinksNotifier
         .toList();
   }
 
+  @override
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _fetch());
   }
 
+  @override
   Future<void> approveLink(int id) async {
     final token = await ref.read(authTokenProvider.future);
     if (token == null || token.isEmpty) throw Exception('Not logged in');
@@ -273,6 +278,7 @@ class DriverInfluencerReferralLinksNotifier
     await refresh();
   }
 
+  @override
   Future<void> deleteLink(int id) async {
     final token = await ref.read(authTokenProvider.future);
     if (token == null || token.isEmpty) throw Exception('Not logged in');
@@ -348,15 +354,19 @@ Future<AffiliateGenerateResult> affiliateGenerate(
   final uri = Uri.parse(CommonAPIController.affiliateGenerate);
   final body = <String, dynamic>{};
   if (name != null && name.isNotEmpty) body['name'] = name;
-  if (description != null && description.isNotEmpty)
+  if (description != null && description.isNotEmpty) {
     body['description'] = description;
-  if (destinationUrl != null && destinationUrl.isNotEmpty)
+  }
+  if (destinationUrl != null && destinationUrl.isNotEmpty) {
     body['destination_url'] = destinationUrl;
+  }
   if (customRate != null) body['custom_rate'] = customRate;
-  if (cookieDurationDays != null)
+  if (cookieDurationDays != null) {
     body['cookie_duration_days'] = cookieDurationDays;
-  if (attributionModel != null && attributionModel.isNotEmpty)
+  }
+  if (attributionModel != null && attributionModel.isNotEmpty) {
     body['attribution_model'] = attributionModel;
+  }
   if (expiresAt != null && expiresAt.isNotEmpty) body['expires_at'] = expiresAt;
 
   final res = await http.post(

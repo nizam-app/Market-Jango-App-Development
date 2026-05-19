@@ -18,6 +18,10 @@ import 'package:market_jango/features/vendor/screens/vendor_barcode/data/vendor_
 import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_scan_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/data/vendor_order_api.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_orders_models.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_esc_pos_util.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_walk_in_bill_text.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_printer_choice_sheet.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_walk_in_bill_preview_dialog.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/vendor_order_auth.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
@@ -383,58 +387,49 @@ class _VendorCreateManualOrderScreenState
   }
 
   Future<void> _showBillSheet(VendorManualOrderInvoice inv) async {
-    final buf = StringBuffer()
-      ..writeln('WALK-IN — ${inv.orderNumber}')
-      ..writeln('Customer: ${inv.customerName ?? '—'}')
-      ..writeln('Payment: ${inv.paymentMethod ?? _paymentMethodApi()}')
-      ..writeln('---');
-    for (final line in inv.items) {
-      buf.writeln(
-        '${line.productName ?? 'Item'} × ${line.quantity}  (${line.status})',
-      );
-    }
-    buf
-      ..writeln('---')
-      ..writeln('Payable: ${inv.summary.payable}')
-      ..writeln(
-        'Paid: ${inv.summary.customerPaid ?? '—'}  Change: ${inv.summary.change ?? '—'}',
-      );
-
-    final text = buf.toString();
+    final text = formatWalkInBillText(inv);
     if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Print bill',
-          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w800),
-        ),
-        content: SingleChildScrollView(child: SelectableText(text)),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: text));
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (mounted) {
-                GlobalSnackbar.show(
-                  context,
-                  title: 'Copied',
-                  message: 'Bill text copied to clipboard',
-                  type: CustomSnackType.success,
-                );
-              }
-            },
-            child: const Text('Copy'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: FilledButton.styleFrom(
-              backgroundColor: AllColor.loginButtomColor,
-            ),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    await VendorWalkInBillPreviewDialog.show(
+      context,
+      invoice: inv,
+      billText: text,
+      onPrint: () => _openBillPrint(inv, text),
+      onCopy: () async {
+        await Clipboard.setData(ClipboardData(text: text));
+        if (mounted) {
+          GlobalSnackbar.show(
+            context,
+            title: 'Copied',
+            message: 'Bill text copied to clipboard',
+            type: CustomSnackType.success,
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> _openBillPrint(VendorManualOrderInvoice inv, String billText) async {
+    final pathId = walkInOrderDocumentPathId(inv);
+    if (!mounted) return;
+    await VendorPrinterChoiceSheet.show(
+      context,
+      title: 'Print bill',
+      subtitle: inv.orderNumber,
+      subtitle80: pathId > 0
+          ? 'Epson / Star · invoice PDF'
+          : 'Epson / Star · bill text PDF',
+      pdfJobName: 'bill_${inv.orderNumber}',
+      build58Bytes: () async => VendorEscPosUtil.buildPlainText58mm(billText),
+      build80Pdf: () async {
+        if (pathId > 0) {
+          try {
+            final doc = await VendorOrderApi.instance
+                .fetchVendorAllOrderInvoiceDocument(pathId);
+            if (doc.bytes.isNotEmpty) return doc.bytes;
+          } catch (_) {}
+        }
+        return buildWalkInBillTextPdf(billText);
+      },
     );
   }
 

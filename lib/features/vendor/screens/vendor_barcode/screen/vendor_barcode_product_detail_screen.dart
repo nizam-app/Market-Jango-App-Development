@@ -10,6 +10,8 @@ import 'package:market_jango/features/vendor/screens/vendor_barcode/model/vendor
 import 'package:market_jango/features/vendor/screens/vendor_barcode/util/vendor_barcode_label_pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_create_manual_order_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_esc_pos_util.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_printer_choice_sheet.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
 class VendorBarcodeProductDetailScreen extends StatefulWidget {
@@ -155,6 +157,10 @@ class _VendorBarcodeProductDetailScreenState
             Navigator.pop(ctx);
             await _downloadLabelTemplatePdf(result);
           },
+          onPrint: () {
+            Navigator.pop(ctx);
+            _openPrinterSheetForLabels(result);
+          },
           onCopyAll: () {
             Clipboard.setData(ClipboardData(text: _formatPrintData(result)));
             Navigator.pop(ctx);
@@ -168,6 +174,94 @@ class _VendorBarcodeProductDetailScreenState
           onClose: () => Navigator.pop(ctx),
         ),
       );
+    } catch (e) {
+      if (mounted) {
+        GlobalSnackbar.show(
+          context,
+          title: 'Error',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: CustomSnackType.error,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _actionBusy = false);
+    }
+  }
+
+  Future<void> _openPrinterSheetForLabels(VendorBarcodeLabelsResult result) async {
+    if (!mounted) return;
+    final name = result.product.name.isEmpty
+        ? 'Product #${result.product.id}'
+        : result.product.name;
+    await VendorPrinterChoiceSheet.show(
+      context,
+      title: 'Print barcode label',
+      subtitle: name,
+      subtitle80: 'Epson / Star · label PDF template',
+      pdfJobName: 'barcode_product_${result.product.id}',
+      build58Bytes: () async =>
+          VendorEscPosUtil.buildBarcodeLabel58mm(result),
+      build80Pdf: () async => buildBarcodeLabelTemplatePdf(result),
+    );
+  }
+
+  Future<void> _printBarcodeLabel(VendorBarcodeProduct p) async {
+    if (p.barcode.isEmpty) {
+      GlobalSnackbar.show(
+        context,
+        title: 'No barcode',
+        message: 'Generate or assign a barcode first.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+    final countCtrl = TextEditingController(text: '1');
+    final count = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Label count'),
+        content: TextField(
+          controller: countCtrl,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: '1–50',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final n = int.tryParse(countCtrl.text.trim()) ?? 0;
+              Navigator.pop(ctx, n);
+            },
+            child: const Text('Print'),
+          ),
+        ],
+      ),
+    );
+    countCtrl.dispose();
+    if (count == null || count < 1 || count > 50) return;
+
+    setState(() => _actionBusy = true);
+    try {
+      VendorBarcodeLabelsResult result;
+      try {
+        result = await VendorBarcodeApi.instance.fetchLabelPayload(
+          productId: widget.productId,
+          labelCount: count,
+        );
+        if (mounted && result.product.id != 0) {
+          setState(() => _product = result.product);
+        }
+      } catch (_) {
+        result = VendorEscPosUtil.labelsFromProduct(p, labelCount: count);
+      }
+      if (!mounted) return;
+      await _openPrinterSheetForLabels(result);
     } catch (e) {
       if (mounted) {
         GlobalSnackbar.show(
@@ -387,6 +481,17 @@ class _VendorBarcodeProductDetailScreenState
           ),
           SizedBox(height: 10.h),
           OutlinedButton.icon(
+            onPressed: _actionBusy || p.barcode.isEmpty
+                ? null
+                : () => _printBarcodeLabel(p),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size(double.infinity, 48.h),
+            ),
+            icon: const Icon(Icons.print_outlined),
+            label: const Text('Print barcode label'),
+          ),
+          SizedBox(height: 10.h),
+          OutlinedButton.icon(
             onPressed: _actionBusy
                 ? null
                 : () {
@@ -450,12 +555,14 @@ class _BarcodeLabelPreviewDialog extends StatelessWidget {
   const _BarcodeLabelPreviewDialog({
     required this.result,
     required this.onDownloadPdf,
+    required this.onPrint,
     required this.onCopyAll,
     required this.onClose,
   });
 
   final VendorBarcodeLabelsResult result;
   final VoidCallback onDownloadPdf;
+  final VoidCallback onPrint;
   final VoidCallback onCopyAll;
   final VoidCallback onClose;
 
@@ -661,6 +768,23 @@ class _BarcodeLabelPreviewDialog extends StatelessWidget {
                 icon: Icon(Icons.picture_as_pdf_rounded, size: 22.sp),
                 label: Text(
                   'Download PDF template',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              OutlinedButton.icon(
+                onPressed: onPrint,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 48.h),
+                  foregroundColor: AllColor.loginButtomColor,
+                  side: BorderSide(color: AllColor.loginButtomColor, width: 1.2),
+                ),
+                icon: const Icon(Icons.print_outlined),
+                label: Text(
+                  'Print label',
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,

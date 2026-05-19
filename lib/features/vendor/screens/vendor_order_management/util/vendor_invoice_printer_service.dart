@@ -40,6 +40,18 @@ class VendorInvoicePrinterService {
     required String macAddress,
     required String printerName,
   }) async {
+    await print58RawBytes(
+      bytes: VendorEscPosReceipt.build58mm(data),
+      macAddress: macAddress,
+      printerName: printerName,
+    );
+  }
+
+  static Future<void> print58RawBytes({
+    required List<int> bytes,
+    required String macAddress,
+    required String printerName,
+  }) async {
     final block = await ensureBluetoothReady();
     if (block != null) throw Exception(block);
 
@@ -54,7 +66,6 @@ class VendorInvoicePrinterService {
 
     await VendorPrinterPrefs.save58Printer(mac: macAddress, name: printerName);
 
-    final bytes = VendorEscPosReceipt.build58mm(data);
     final ok = await PrintBluetoothThermal.writeBytes(bytes);
     if (!ok) {
       throw Exception('Print failed. Check paper and printer power.');
@@ -71,11 +82,23 @@ class VendorInvoicePrinterService {
     if (doc.bytes.isEmpty) {
       throw Exception('Invoice PDF is empty.');
     }
+    await print80RawPdf(
+      pdfBytes: doc.bytes,
+      jobName: 'invoice_${data.orderNumber}',
+    );
+  }
 
+  static Future<void> print80RawPdf({
+    required Uint8List pdfBytes,
+    required String jobName,
+  }) async {
+    if (pdfBytes.isEmpty) {
+      throw Exception('PDF is empty.');
+    }
     await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => doc.bytes,
+      onLayout: (PdfPageFormat format) async => pdfBytes,
       format: PdfPageFormat.roll80,
-      name: 'invoice_${data.orderNumber}',
+      name: jobName,
     );
   }
 }

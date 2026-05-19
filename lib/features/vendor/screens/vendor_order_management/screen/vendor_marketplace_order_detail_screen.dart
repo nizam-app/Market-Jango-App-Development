@@ -11,6 +11,8 @@ import 'package:market_jango/features/vendor/screens/vendor_order_management/wid
 import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_order_document_local_save.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_marketplace_line_product_card.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_assign_rules.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_invoice_print_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_invoice_print_sheet.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_document_download_row.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
@@ -328,6 +330,23 @@ class _VendorMarketplaceOrderDetailScreenState
     return d.invoiceId;
   }
 
+  Future<void> _openPrintInvoice() async {
+    final d = _detail;
+    if (d == null) return;
+    final pathId = _orderDocumentPathId(d);
+    if (pathId <= 0) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Unavailable',
+        message: 'Could not resolve order id for printing.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+    final data = VendorInvoicePrintData.fromMarketplaceDetail(d, pathId);
+    await VendorInvoicePrintSheet.show(context, data);
+  }
+
   Future<void> _openOrderDocument(bool deliveryLabel) async {
     final d = _detail;
     if (d == null) return;
@@ -513,7 +532,9 @@ class _VendorMarketplaceOrderDetailScreenState
             child: CustomBackButton(onTap: _handleDetailBack),
           ),
           title: Text(
-            'LINE #${widget.lineId}',
+            _detail?.invoice.orderNumber.trim().isNotEmpty == true
+                ? _detail!.invoice.orderNumber.trim()
+                : 'LINE #${widget.lineId}',
             style: TextStyle(
               fontSize: 17.sp,
               fontWeight: FontWeight.w700,
@@ -597,6 +618,7 @@ class _VendorMarketplaceOrderDetailScreenState
               loadingKey: _docLoadingKey,
               onInvoiceTap: () => _openOrderDocument(false),
               onDeliveryTap: () => _openOrderDocument(true),
+              onPrintInvoiceTap: _openPrintInvoice,
             ),
           ),
           SizedBox(height: 12.h),

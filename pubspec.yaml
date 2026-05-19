@@ -78,6 +78,7 @@ dependencies:
   barcode: ^2.2.9
   barcode_widget: ^2.0.4
   share_plus: ^12.0.2
+  print_bluetooth_thermal: ^1.2.1
 #  google_maps_flutter: ^2.7.0
 
 flutter_launcher_icons:

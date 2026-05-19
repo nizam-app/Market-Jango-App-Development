@@ -1040,6 +1040,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
+  print_bluetooth_thermal:
+    dependency: "direct main"
+    description:
+      name: print_bluetooth_thermal
+      sha256: "5d524b9c445779fa46796b84130e63530c81f04864fb2ecbce47a0f5c91d1788"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   printing:
     dependency: "direct main"
     description:
@@ -1477,6 +1485,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.15.0"
+  win_ble:
+    dependency: transitive
+    description:
+      name: win_ble
+      sha256: "2a867e13c4b355b101fc2c6e2ac85eeebf965db34eca46856f8b478e93b41e96"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   xdg_directories:
     dependency: transitive
     description:

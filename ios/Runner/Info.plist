@@ -37,6 +37,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bluetooth is used to connect to your 58mm receipt printer for invoices.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth is used to connect to your 58mm receipt printer for invoices.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera is used to scan product barcodes and for photos when needed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

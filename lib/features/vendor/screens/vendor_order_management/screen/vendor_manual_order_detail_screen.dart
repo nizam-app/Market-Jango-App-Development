@@ -9,6 +9,8 @@ import 'package:market_jango/features/vendor/screens/vendor_order_management/wid
 import 'package:market_jango/features/vendor/screens/vendor_order_management/util/vendor_order_document_local_save.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_marketplace_line_product_card.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_assign_rules.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/model/vendor_invoice_print_data.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_invoice_print_sheet.dart';
 import 'package:market_jango/features/vendor/screens/vendor_order_management/widget/vendor_order_document_download_row.dart';
 import 'package:market_jango/features/vendor/widgets/custom_back_button.dart';
 
@@ -379,6 +381,21 @@ class _VendorManualOrderDetailScreenState
     final iid = inv.id;
     if (iid > 0) return iid;
     return 0;
+  }
+
+  Future<void> _openPrintInvoice(VendorManualOrderInvoice inv) async {
+    final pathId = _manualOrderDocumentPathId(inv);
+    if (pathId <= 0) {
+      GlobalSnackbar.show(
+        context,
+        title: 'Unavailable',
+        message: 'Could not resolve order id for printing.',
+        type: CustomSnackType.error,
+      );
+      return;
+    }
+    final data = VendorInvoicePrintData.fromManualInvoice(inv, pathId);
+    await VendorInvoicePrintSheet.show(context, data);
   }
 
   Future<void> _openOrderDocument(
@@ -977,9 +994,10 @@ class _VendorManualOrderDetailScreenState
 
     return Stack(
       children: [
-        RefreshIndicator(
-          onRefresh: _load,
-          child: ListView(
+        Positioned.fill(
+          child: RefreshIndicator(
+            onRefresh: _load,
+            child: ListView(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, listBottomPad),
             children: [
               _section(
@@ -1004,6 +1022,7 @@ class _VendorManualOrderDetailScreenState
                   loadingKey: _docLoadingKey,
                   onInvoiceTap: () => _openOrderDocument(inv, false),
                   onDeliveryTap: () => _openOrderDocument(inv, true),
+                  onPrintInvoiceTap: () => _openPrintInvoice(inv),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -1171,6 +1190,7 @@ class _VendorManualOrderDetailScreenState
               ],
             ],
           ),
+        ),
         ),
         if (bottomCount > 0)
           Positioned(

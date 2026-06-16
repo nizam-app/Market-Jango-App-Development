@@ -197,9 +197,6 @@ class AffiliateScreen extends ConsumerWidget {
     String name,
 
     InfluencerReferralLinksNotifierInterface notifier,
-=======
-   // InfluencerReferralLinksNotifier notifier,
-
   ) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -1512,7 +1509,7 @@ class _AddLinkSheetState extends ConsumerState<_AddLinkSheet> {
               ),
               SizedBox(height: 14.h),
               DropdownButtonFormField<String>(
-                value: _attributionModel,
+                initialValue: _attributionModel,
                 decoration: InputDecoration(
                   labelText: 'Attribution model',
                   labelStyle: TextStyle(
@@ -1922,7 +1919,7 @@ class _EditLinkSheetState extends ConsumerState<_EditLinkSheet> {
                 ),
                 value: _active,
                 onChanged: (v) => setState(() => _active = v),
-                activeColor: AllColor.loginButtomColor,
+                activeThumbColor: AllColor.loginButtomColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),

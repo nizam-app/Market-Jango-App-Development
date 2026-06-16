@@ -21,18 +21,32 @@ import 'package:market_jango/core/utils/image_controller.dart';
 import 'package:market_jango/core/widget/TupperTextAndBackButton.dart';
 import 'package:market_jango/core/widget/global_snackbar.dart';
 import 'package:market_jango/core/widget/sreeen_brackground.dart';
-import 'package:market_jango/features/auth/screens/login/screen/login_screen.dart';
 import 'package:market_jango/features/buyer/screens/billing/screen/buyer_billing_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_history_screen.dart';
+import 'package:market_jango/features/driver/screen/deliveries/screen/driver_deliveries_screen.dart';
+import 'package:market_jango/features/driver/screen/wallet/screen/driver_wallet_screen.dart';
 import 'package:market_jango/features/transport/screens/billing/screen/transport_billing_screen.dart';
+import 'package:market_jango/features/transport/screens/wallet/screen/transport_wallet_screen.dart';
 import 'package:market_jango/features/buyer/screens/order/screen/buyer_order_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:market_jango/features/buyer/screens/refunds/screen/buyer_refunds_screen.dart';
+import 'package:market_jango/features/buyer/screens/wallet/screen/buyer_wallet_screen.dart';
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 import '../../../../features/vendor/screens/vendor_my_product_screen.dart/screen/vendor_my_product_screen.dart';
 import '../../../../features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
 import '../../../utils/get_user_type.dart';
 import '../data/profile_data.dart';
 import '../model/profile_model.dart';
+
+void _popOrShellHome(BuildContext context, WidgetRef ref) {
+  if (context.canPop()) {
+    context.pop();
+    return;
+  }
+  ref.read(vendorShellTabIndexProvider.notifier).state = 0;
+  ref.read(buyerShellTabIndexProvider.notifier).state = 0;
+  ref.read(driverNavIndexProvider.notifier).state = 0;
+  ref.read(transportNavIndexProvider.notifier).state = 0;
+}
 
 class GlobalSettingScreen extends ConsumerWidget {
   const GlobalSettingScreen({super.key});
@@ -40,53 +54,7 @@ class GlobalSettingScreen extends ConsumerWidget {
 
   /// Show logout confirmation dialog
   static void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Logout',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: AllColor.black,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to logout?',
-            style: TextStyle(fontSize: 16.sp, color: AllColor.black87),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(fontSize: 16.sp, color: AllColor.black87),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-                await AuthSessionUtils.logoutAndGoToLogin(context);
-              },
-              child: Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  color: AllColor.orange,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    AuthSessionUtils.showLogoutConfirmationDialog(context);
   }
 
   @override
@@ -116,6 +84,7 @@ class GlobalSettingScreen extends ConsumerWidget {
                         SizedBox(height: 12.h),
                         Tuppertextandbackbutton(
                           screenName: ref.t(BKeys.settings),
+                          onBack: () => _popOrShellHome(context, ref),
                         ),
                         SizedBox(height: 16.h),
                         ProfileSection(
@@ -197,6 +166,18 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: 'Delivery setting',
             onTap: () => context.push(VendorDeliverySettingScreen.routeName),
           ),
+          _DividerLine(),
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: 'Wallet',
+            onTap: () => context.push(DriverWalletScreen.routeName),
+          ),
+          _DividerLine(),
+          _SettingsTile(
+            leadingIcon: Icons.local_shipping_outlined,
+            title: 'My deliveries',
+            onTap: () => context.push(DriverDeliveriesScreen.routeName),
+          ),
         ],
         if (userTypeAsync.value == "vendor")
           _SettingsTile(
@@ -220,11 +201,34 @@ class GlobalSettingScreen extends ConsumerWidget {
             title: ref.t(BKeys.billing),
             onTap: () => context.push(BuyerBillingScreen.routeName),
           ),
+        if (userTypeAsync.value == "buyer")
+          _DividerLine(),
+               if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: 'Wallet',
+            onTap: () => context.push(BuyerWalletScreen.routeName),
+          ),
+        if (userTypeAsync.value == "buyer")
+         _DividerLine(),
+           if (userTypeAsync.value == "buyer")
+          _SettingsTile(
+            leadingIcon: Icons.undo_outlined,
+            title: 'Refunds',
+            onTap: () => context.push(BuyerRefundsScreen.routeName),
+          ),
         if (userTypeAsync.value == "transport")
           _SettingsTile(
             leadingIcon: Icons.receipt_long_outlined,
             title: ref.t(BKeys.billing),
             onTap: () => context.push(TransportBillingScreen.routeName),
+          ),
+        if (userTypeAsync.value == "transport") _DividerLine(),
+        if (userTypeAsync.value == "transport")
+          _SettingsTile(
+            leadingIcon: Icons.account_balance_wallet_outlined,
+            title: 'Wallet',
+            onTap: () => context.push(TransportWalletScreen.routeName),
           ),
         _DividerLine(),
         if (userTypeAsync.value == "vendor" || userTypeAsync.value == "driver")
@@ -902,64 +906,5 @@ class _DividerLine extends StatelessWidget {
       thickness: 1,
       color: AllColor.grey.withOpacity(0.25),
     );
-  }
-}
-
-Future<void> _performLogout(BuildContext context) async {
-  final prefs = await SharedPreferences.getInstance();
-
-  await prefs.remove('auth_token');
-  await prefs.remove('user_type');
-
-  // jodi sob clear korte chau:
-  // await prefs.clear();
-}
-
-Future<void> showLogoutDialog(BuildContext context) async {
-  final shouldLogout = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Log out',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        content: const Text(
-          'Are you sure you want to log out from this account?',
-          style: TextStyle(fontSize: 14, height: 1.4),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            child: const Text(
-              'Log out',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-
-  if (shouldLogout == true) {
-    await _performLogout(context);
-
-    // 🔥 navigate to login & clear back stack
-    context.go(LoginScreen.routeName);
   }
 }

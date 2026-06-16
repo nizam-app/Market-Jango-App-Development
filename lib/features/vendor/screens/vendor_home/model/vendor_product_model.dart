@@ -41,7 +41,7 @@ class VendorProduct {
     final rawColor = json['color'];
 
     // Helper to safely convert to int
-    int _toInt(dynamic value, {int defaultValue = 0}) {
+    int toInt(dynamic value, {int defaultValue = 0}) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
@@ -50,14 +50,14 @@ class VendorProduct {
     }
 
     return VendorProduct(
-      id: _toInt(json['id']),
+      id: toInt(json['id']),
       name: json['name']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       regularPrice: json['regular_price']?.toString() ?? '',
       sellPrice: json['sell_price']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
-      vendorId: _toInt(json['vendor_id']),
-      categoryId: _toInt(json['category_id']),
+      vendorId: toInt(json['vendor_id']),
+      categoryId: toInt(json['category_id']),
       categoryName: json['category']?['name']?.toString() ?? '',
 
       /// ✅ Safe list conversion
@@ -121,7 +121,7 @@ class PaginatedProducts {
 
   factory PaginatedProducts.fromJson(Map<String, dynamic> json) {
     // Helper to safely convert to int
-    int _toInt(dynamic value, {int defaultValue = 0}) {
+    int toInt(dynamic value, {int defaultValue = 0}) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
@@ -146,9 +146,9 @@ class PaginatedProducts {
     }
 
     return PaginatedProducts(
-      currentPage: _toInt(json['current_page'], defaultValue: 1),
-      lastPage: _toInt(json['last_page'], defaultValue: 1),
-      total: _toInt(json['total']),
+      currentPage: toInt(json['current_page'], defaultValue: 1),
+      lastPage: toInt(json['last_page'], defaultValue: 1),
+      total: toInt(json['total']),
       products: productsList,
     );
   }
@@ -193,7 +193,7 @@ class ProductImage {
 
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     // Helper to safely convert to int
-    int _toInt(dynamic value, {int defaultValue = 0}) {
+    int toInt(dynamic value, {int defaultValue = 0}) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
@@ -202,9 +202,9 @@ class ProductImage {
     }
 
     return ProductImage(
-      id: _toInt(json['id']),
+      id: toInt(json['id']),
       imagePath: json['image_path']?.toString() ?? '',
-      productId: _toInt(json['product_id']),
+      productId: toInt(json['product_id']),
     );
   }
 }

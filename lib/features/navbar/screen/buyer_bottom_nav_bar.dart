@@ -8,8 +8,7 @@ import 'package:market_jango/core/screen/profile_screen/screen/global_profile_sc
 import 'package:market_jango/features/buyer/screens/all_categori/screen/all_categori_screen.dart';
 import 'package:market_jango/features/buyer/screens/buyer_home_screen.dart';
 import 'package:market_jango/features/buyer/screens/cart/screen/cart_screen.dart';
-
-final selectedIndexProvider = StateProvider<int>((ref) => 0);
+import 'package:market_jango/features/navbar/provider/shell_tab_index_providers.dart';
 
 class BuyerBottomNavBar extends ConsumerWidget {
   const BuyerBottomNavBar({super.key});
@@ -35,7 +34,7 @@ class BuyerBottomNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Added WidgetRef
     // Watch the selectedIndexProvider
-    final selectedIndex = ref.watch(selectedIndexProvider);
+    final selectedIndex = ref.watch(buyerShellTabIndexProvider);
 
     return Scaffold(
       body: _pages[selectedIndex],
@@ -43,7 +42,7 @@ class BuyerBottomNavBar extends ConsumerWidget {
         currentIndex: selectedIndex,
         onTap: (index) {
           // Update the selected index using the provider's notifier
-          ref.read(selectedIndexProvider.notifier).state = index;
+          ref.read(buyerShellTabIndexProvider.notifier).state = index;
         },
         backgroundColor: AllColor.white,
         selectedItemColor: AllColor.orange,

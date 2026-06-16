@@ -509,7 +509,7 @@ class _ProductSection extends ConsumerWidget {
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButtonFormField<int>(
-                      value: selectedProductId,
+                      initialValue: selectedProductId,
                       isExpanded: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -843,7 +843,7 @@ class _ActiveSwitch extends StatelessWidget {
         ),
         value: value,
         onChanged: onChanged,
-        activeColor: AllColor.loginButtomColor,
+        activeThumbColor: AllColor.loginButtomColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.r),
         ),

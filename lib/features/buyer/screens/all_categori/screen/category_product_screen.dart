@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -79,8 +77,7 @@ class _CategoryProductScreenState extends ConsumerState<CategoryProductScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               child: Text(
-                // "Trend Loop",
-                ref.t(BKeys.trend_Loop),
+                ref.t(BKeys.trend_Loop, fallback: 'Trending'),
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge!.copyWith(fontSize: 24.sp),
@@ -235,7 +232,8 @@ class ProductGridSection extends ConsumerWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 12.h,
             crossAxisSpacing: 12.w,
-            childAspectRatio: 0.5,
+            // Slightly taller cells than 0.5 to avoid bottom overflow on long titles.
+            childAspectRatio: 0.52,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
@@ -320,15 +318,32 @@ class ProductCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                FirstTimeShimmerImage(
-                  imageUrl: imageUrl,
-                  height: 130.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(4.r),
+                if (imageUrl.trim().isNotEmpty)
+                  FirstTimeShimmerImage(
+                    imageUrl: imageUrl,
+                    height: 120.h,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(4.r),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 120.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AllColor.grey200,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(4.r),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      size: 40.r,
+                      color: AllColor.grey500,
+                    ),
                   ),
-                ),
 
                 if (discount != null && discount != 0)
                   Positioned(
@@ -340,24 +355,29 @@ class ProductCard extends StatelessWidget {
             ),
 
             Padding(
-              padding: EdgeInsets.all(10.w),
+              padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 8.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium!.copyWith(color: AllColor.black),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                      color: AllColor.black,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
                   ),
-                  SizedBox(height: 3.h),
+                  SizedBox(height: 4.h),
                   Text(
                     "\$$price",
-                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 6.h),
                   InkWell(
                     onTap: () {
                       context.push(
@@ -368,38 +388,53 @@ class ProductCard extends StatelessWidget {
                     child: Row(
                       children: [
                         ClipOval(
-                          child: FirstTimeShimmerImage(
-                            imageUrl: storeImage,
-                            width: 16.r,
-                            height: 16.r,
-                            fit: BoxFit.cover,
-                          ),
+                          child: storeImage.trim().isNotEmpty
+                              ? FirstTimeShimmerImage(
+                                  imageUrl: storeImage,
+                                  width: 16.r,
+                                  height: 16.r,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 16.r,
+                                  height: 16.r,
+                                  color: AllColor.grey200,
+                                  child: Icon(
+                                    Icons.store_outlined,
+                                    size: 10.r,
+                                    color: AllColor.grey500,
+                                  ),
+                                ),
                         ),
-                        SizedBox(width: 8.w),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              storeName.substring(
-                                0,
-                                math.min(10, storeName.length),
+                        SizedBox(width: 6.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                storeName.length > 12
+                                    ? '${storeName.substring(0, 12)}…'
+                                    : storeName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: AllColor.black,
+                                ),
                               ),
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                color: AllColor.black,
+                              Text(
+                                memberSince,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9.sp,
+                                  color: AllColor.grey,
+                                ),
                               ),
-                            ),
-                            Text(
-                              memberSince.length > 12
-                                  ? '${memberSince.substring(0, 12)}...'
-                                  : memberSince,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                color: AllColor.grey,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),

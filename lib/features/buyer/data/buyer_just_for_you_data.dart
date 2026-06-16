@@ -67,7 +67,7 @@ class JustForYouNotifier
       Logger().i('Just for you: loaded ${result.data.data.length} items');
       return result;
     } else {
-      Logger().e('Just for you failed: ${res.statusCode} ${res.body.length > 200 ? res.body.substring(0, 200) + "..." : res.body}');
+      Logger().e('Just for you failed: ${res.statusCode} ${res.body.length > 200 ? "${res.body.substring(0, 200)}..." : res.body}');
       throw Exception('Failed: ${res.statusCode} ${res.reasonPhrase}');
     }
   }

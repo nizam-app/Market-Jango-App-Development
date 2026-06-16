@@ -1,4 +1,5 @@
 /// Models for GET /api/vendor/route-points response (see API_VENDOR_ROUTE_POINTS.md).
+library;
 
 int _toInt(dynamic v) =>
     v == null ? 0 : (v is int ? v : int.tryParse(v.toString()) ?? 0);

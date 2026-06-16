@@ -490,9 +490,9 @@ void _showImagePreview({
                         localImage,
                         fit: BoxFit.contain,
                       )
-                    : (imageUrl != null && imageUrl!.isNotEmpty)
+                    : (imageUrl != null && imageUrl.isNotEmpty)
                         ? FirstTimeShimmerImage(
-                            imageUrl: imageUrl!,
+                            imageUrl: imageUrl,
                             fit: BoxFit.contain,
                           )
                         : Container(

@@ -55,7 +55,7 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
               children: [
                 Stack(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 439.h,
                       width: double.maxFinite,
                       child: mainImage != null
@@ -110,8 +110,9 @@ class _ProductEditScreenState extends ConsumerState<ProductEditScreen> {
                   //  int? _selectedCategoryId; // ✅ use id, not name
                   categoryAsync.when(
                     data: (categories) {
-                      if (categories.isEmpty)
+                      if (categories.isEmpty) {
                         return const Text("No category found");
+                      }
 
                       // ✅ ensure selected id exists
                       final bool selectedExists =

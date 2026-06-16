@@ -714,7 +714,7 @@ class _TransportHomeScreenState extends ConsumerState<TransportHomeScreen> {
     required bool loading,
   }) {
     return DropdownButtonFormField<TransportType?>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         isDense: true,
         filled: true,

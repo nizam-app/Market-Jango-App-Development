@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:market_jango/core/constants/color_control/all_color.dart';
+import 'package:market_jango/core/utils/auth_session_utils.dart';
 import 'package:market_jango/core/localization/Keys/buyer_kay.dart';
 import 'package:market_jango/core/localization/Keys/vendor_kay.dart';
 import 'package:market_jango/core/localization/tr.dart';
@@ -27,6 +28,8 @@ import '../../../../../core/constants/api_control/vendor_api.dart';
 import '../../vendor_product_add_page/screen/product_add_page.dart';
 import '../../visibility/screen/visibility_management_screen.dart';
 import 'package:market_jango/features/vendor/screens/vendor_delivery_setting/screen/vendor_delivery_setting_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_order_management/screen/vendor_orders_hub_screen.dart';
+import 'package:market_jango/features/vendor/screens/vendor_barcode/screen/vendor_barcode_hub_screen.dart';
 import 'package:market_jango/features/affiliate/screen/affiliate_screen.dart';
 import '../data/vendor_product_category_riverpod.dart';
 import '../data/vendor_product_data.dart';
@@ -48,7 +51,10 @@ class VendorHomeScreen extends ConsumerWidget {
       child: Scaffold(
         endDrawer: Drawer(
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-          child: buildDrawer(context, ref),
+          child: Builder(
+            builder: (drawerContext) =>
+                buildDrawer(drawerContext, context, ref),
+          ),
         ),
         body: Builder(
           builder: (innerContext) {
@@ -171,7 +177,13 @@ class VendorHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget buildDrawer(BuildContext context, WidgetRef ref) {
+  /// [hostContext] = [VendorHomeScreen] build context; stays mounted when the
+  /// drawer closes (drawer context does not — use host for logout dialog/nav).
+  Widget buildDrawer(
+    BuildContext context,
+    BuildContext hostContext,
+    WidgetRef ref,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: SingleChildScrollView(
@@ -192,6 +204,40 @@ class VendorHomeScreen extends ConsumerWidget {
                 ),
                 title: Text(
                   ref.t(BKeys.order),
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VendorOrdersHubScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(Icons.receipt_long, size: 20.r, color: Colors.black),
+                title: Text(
+                  'Orders & billing',
+                  style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Divider(color: Colors.grey.shade300),
+            InkWell(
+              onTap: () {
+                context.push(VendorBarcodeHubScreen.routeName);
+              },
+              child: ListTile(
+                leading: Icon(Icons.qr_code_2, size: 20.r, color: Colors.black),
+                title: Text(
+                  'Barcodes & scan',
                   style: TextStyle(color: Colors.black, fontSize: 14.sp),
                 ),
                 trailing: const Icon(
@@ -339,26 +385,32 @@ class VendorHomeScreen extends ConsumerWidget {
               ),
             ),
             Divider(color: Colors.grey.shade300),
-            InkWell(
-              onTap: () {},
-              child: ListTile(
-                leading: ImageIcon(
-                  const AssetImage("assets/icon/logout.png"),
-                  size: 20.r,
+            ListTile(
+              onTap: () {
+                Scaffold.of(context).closeEndDrawer();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (hostContext.mounted) {
+                    AuthSessionUtils.showLogoutConfirmationDialog(
+                      hostContext,
+                    );
+                  }
+                });
+              },
+              leading: ImageIcon(
+                const AssetImage("assets/icon/logout.png"),
+                size: 20.r,
+                color: const Color(0xffFF3B3B),
+              ),
+              title: Text(
+                ref.t(BKeys.logOut),
+                style: TextStyle(
                   color: const Color(0xffFF3B3B),
+                  fontSize: 14.sp,
                 ),
-                title: Text(
-                  // "Log Out",
-                  ref.t(BKeys.logOut),
-                  style: TextStyle(
-                    color: const Color(0xffFF3B3B),
-                    fontSize: 14.sp,
-                  ),
-                ),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  color: Colors.black,
-                ),
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios_outlined,
+                color: Colors.black,
               ),
             ),
           ],
